@@ -1,10 +1,8 @@
 .buttonContainer {
-  background-color: rgb(250, 250, 250);
   padding: 10px 15px 10px 15px;
   border-radius: 10px;
-  transition: background-color 0.3s ease-in-out;
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
   width: fit-content;
-}
-.buttonContainer:hover {
-  background-color: rgb(240, 240, 240);
 }

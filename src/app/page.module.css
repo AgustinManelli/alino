@@ -11,10 +11,10 @@
   left: -10vw;
   width: 40vw;
   height: 200px;
-  background-color: rgb(225, 0, 255);
+  background-color: #87189d;
   z-index: -1;
   border-radius: 0px 100px 100px 0px;
-  filter: blur(170px);
+  filter: blur(170px) saturate(200%);
   opacity: 0.4;
 }
 
@@ -44,7 +44,7 @@
 .heroLeft {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 30px;
 }
 
 .paraph {
@@ -64,7 +64,8 @@
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  background: -webkit-linear-gradient(30deg, #e100ff, #e5e5e5);
+  background: -webkit-linear-gradient(30deg, #87189d, #e5e5e5);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   opacity: 0.7;

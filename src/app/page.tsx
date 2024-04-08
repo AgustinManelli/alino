@@ -15,7 +15,9 @@ export default function Home() {
         <ButtonComponent
           name="Iniciar sesion"
           back="rgb(250, 250, 250)"
+          hover="rgb(240, 240, 240)"
           letterColor="#000"
+          to="login"
         />
       </nav>
       <header className={styles.hero}>
@@ -42,7 +44,10 @@ export default function Home() {
           <ButtonComponent
             name="Pruebalo ya mismo"
             back="#87189d"
+            hover="#6a0d7d"
             letterColor="#fff"
+            to="login"
+            strokeB={true}
           />
         </section>
       </header>
