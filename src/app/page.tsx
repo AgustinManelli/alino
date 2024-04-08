@@ -18,6 +18,7 @@ export default function Home() {
           hover="rgb(240, 240, 240)"
           letterColor="#000"
           to="login"
+          strokeB={false}
         />
       </nav>
       <header className={styles.hero}>
