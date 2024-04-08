@@ -12,7 +12,11 @@ export default function Home() {
         {/* <Link href="/login">
           <p>iniciar sesion</p>
         </Link> */}
-        <ButtonComponent name="Iniciar sesion" />
+        <ButtonComponent
+          name="Iniciar sesion"
+          back="rgb(250, 250, 250)"
+          letterColor="#000"
+        />
       </nav>
       <header className={styles.hero}>
         {/* <AlinoTape /> */}
