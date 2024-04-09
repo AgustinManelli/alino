@@ -16,7 +16,7 @@ export default function Login() {
         <section className={styles.form}>
           <div>
             <h2 className={styles.title}>Iniciar sesión</h2>
-            <p className={styles.paraph}>Inicia sesión si tienes una cuenta</p>
+            <p className={styles.paraph}>Inicia sesión si tienes una cuenta.</p>
           </div>
           <form className={styles.inputs}>
             <div className={styles.inputContainer}>
