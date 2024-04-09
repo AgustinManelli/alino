@@ -6,6 +6,7 @@ export default function Login() {
     <main className={styles.container}>
       <div className={styles.backButton}>
         <ArrowLeft />
+        git
       </div>
       <AlinoLogo height="50px" />
       <section className={styles.form}>
