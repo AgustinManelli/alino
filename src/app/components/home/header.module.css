@@ -10,10 +10,18 @@
   opacity: 0.4;
 }
 
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100lvh;
+}
+
 .hero {
   width: 100vw;
   height: 100lvh;
-  max-width: 1920px;
+  max-width: 1366px;
   padding-left: 100px;
   padding-right: 100px;
   display: flex;
