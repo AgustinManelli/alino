@@ -22,32 +22,30 @@ export const AlinoLogo = ({ height }: { height: string }) => {
   );
 };
 
-export const AlinoTape = () => {
+export const ArrowLeft = () => {
   return (
     <svg
-      id="Capa_2"
-      data-name="Capa 2"
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 31.57 193.78"
-      style={{
-        fill: "none",
-        stroke: "black",
-        strokeWidth: "2",
-        position: "absolute",
-        left: "-30px",
-        top: "-10lvh",
-        height: "100lvh",
-        overflow: "visible",
-        zIndex: "-1",
-        opacity: "0.02",
-      }}
+      viewBox="0 0 24 24"
+      width="24"
+      height="24"
+      color="#000000"
+      fill="none"
     >
-      <g id="Page_1" data-name="Page 1">
-        <g>
-          <path d="M2.24,193.4l12.62-12.62c.51-.51,1.34-.51,1.86,0l12.62,12.62c.83.83,2.24.24,2.24-.93v-25.12c0-1.81-1.47-3.28-3.28-3.28H3.28c-1.81,0-3.28,1.47-3.28,3.28v25.12c0,1.17,1.41,1.76,2.24.93Z" />
-          <path d="M31.57,3.28v145.23c0,1.81-1.47,3.28-3.28,3.28H3.28c-1.81,0-3.28-1.47-3.28-3.28V3.28C0,1.47,1.47,0,3.28,0h25.01c1.81,0,3.28,1.47,3.28,3.28Z" />
-        </g>
-      </g>
+      <path
+        d="M4 12L20 12"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M8.99996 17C8.99996 17 4.00001 13.3176 4 12C3.99999 10.6824 9 7 9 7"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
     </svg>
   );
 };
