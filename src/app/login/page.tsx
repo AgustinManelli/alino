@@ -2,14 +2,8 @@
 import styles from "./login.module.css";
 import { AlinoLogo, ArrowLeft } from "../components/icons";
 import Link from "next/link";
-import { useState } from "react";
 import { login, signup } from "./actions";
 export default function Login() {
-  const [email, setEmail] = useState<string>("");
-
-  // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  // };
   return (
     <div className={styles.container}>
       <main className={styles.main}>
@@ -32,7 +26,6 @@ export default function Login() {
                 name="email"
                 placeholder="email"
                 className={styles.input}
-                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
