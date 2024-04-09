@@ -10,8 +10,8 @@ export default function Navbar() {
         <AlinoLogo height="35px" />
         <ButtonComponent
           name="Iniciar sesion"
-          back="rgb(250, 250, 250)"
-          hover="rgb(240, 240, 240)"
+          back="rgb(240, 240, 240)"
+          hover="rgb(230, 230, 230)"
           letterColor="#000"
           to="login"
           strokeB={false}

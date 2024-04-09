@@ -27,12 +27,12 @@ export default function Header() {
             gratis.
           </p>
           <ButtonComponent
-            name="Pruebalo ya mismo"
+            name="Pruébalo ya mismo"
             back="#87189d"
             hover="#6a0d7d"
             letterColor="#fff"
             to="login"
-            strokeB={true}
+            strokeB={false}
           />
         </section>
       </header>
