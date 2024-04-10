@@ -3,25 +3,37 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "../utils/supabase/server";
+import { CreateUserInput, LoginUserInput } from "../lib/user-schema";
 
-export async function login(formData: FormData) {
-  const supabase = createClient();
+// export async function login(formData: FormData) {
+//   const supabase = createClient();
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
-  const data = {
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
-  };
+//   // type-casting here for convenience
+//   // in practice, you should validate your inputs
+//   const data = {
+//     email: formData.get("email") as string,
+//     password: formData.get("password") as string,
+//   };
 
-  const { error } = await supabase.auth.signInWithPassword(data);
+//   const { error } = await supabase.auth.signInWithPassword(data);
 
-  if (error) {
-    redirect("login");
-  }
+//   if (error) {
+//     redirect("login");
+//   }
 
-  revalidatePath("/", "layout");
-  redirect("/alino-app");
+//   revalidatePath("/", "layout");
+//   redirect("/alino-app");
+//   return JSON.stringify(error);
+// }
+
+export async function signInWithEmailAndPassword(data: LoginUserInput) {
+  const supabase = await createClient();
+  const result = await supabase.auth.signInWithPassword({
+    email: data.email,
+    password: data.password,
+  });
+  console.log(result);
+  return JSON.stringify(result);
 }
 
 export async function signup(formData: FormData) {
