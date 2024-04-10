@@ -1,8 +1,9 @@
 "use client";
 import styles from "./login.module.css";
-import { AlinoLogo, ArrowLeft } from "../components/icons";
+import { AlinoLogo, ArrowLeft } from "../../components/icons";
 import Link from "next/link";
-import { login, signup } from "./actions";
+import { login } from "./actions";
+
 export default function Login() {
   return (
     <div className={styles.container}>
@@ -20,6 +21,7 @@ export default function Login() {
           </div>
           <form className={styles.inputs}>
             <div className={styles.inputContainer}>
+              <p style={{ color: "red" }}>email incorrecto</p>
               <input
                 id="email"
                 type="email"
@@ -30,6 +32,7 @@ export default function Login() {
               />
             </div>
             <div className={styles.inputContainer}>
+              <p style={{ color: "red" }}>contraseña incorrecta</p>
               <input
                 id="password"
                 name="password"
@@ -39,16 +42,15 @@ export default function Login() {
                 required
               />
             </div>
+            {/*//formAction={login}*/}
             <button className={styles.buttom} formAction={login}>
               Iniciar sesion
             </button>
-            <button className={styles.buttom} formAction={signup}>
-              Crear
-            </button>
           </form>
           <div className={styles.moreInfo}>
-            <p>¿Olvidaste tu constraseña?</p>
-            <p>¿No tienes una cuenta?</p>
+            <button className={styles.textButton}>
+              ¿No tienes una cuenta?
+            </button>
           </div>
         </section>
       </main>

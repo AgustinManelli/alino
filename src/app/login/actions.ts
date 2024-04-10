@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
 import { createClient } from "../utils/supabase/server";
 
 export async function login(formData: FormData) {
@@ -18,11 +17,11 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
-    redirect("/error");
+    redirect("login");
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/alino-app");
 }
 
 export async function signup(formData: FormData) {
@@ -42,5 +41,26 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/alino-app");
+}
+
+export async function signout() {
+  const supabase = createClient();
+
+  await supabase.auth.signOut();
+
+  redirect("/login");
+}
+
+export async function updatePassword(formData: FormData) {
+  const supabase = createClient();
+  const data = {
+    password: formData.get("password") as string,
+  };
+  const { error } = await supabase.auth.updateUser(data);
+  if (error) {
+    redirect("/error");
+  }
+  revalidatePath("/", "layout");
+  redirect("/alino-app");
 }

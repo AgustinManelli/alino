@@ -95,4 +95,20 @@
 
 .moreInfo {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 5px;
+}
+
+.textButton {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.textButton:hover {
+  color: #87189d;
 }

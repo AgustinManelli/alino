@@ -13,7 +13,7 @@ export default function Navbar() {
           back="rgb(240, 240, 240)"
           hover="rgb(230, 230, 230)"
           letterColor="#000"
-          to="login"
+          to="alino-app"
           strokeB={false}
         />
       </nav>
