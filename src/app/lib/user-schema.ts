@@ -5,29 +5,29 @@ export const createUserSchema = object({
   //   1,
   //   "Name is required"
   // ),
-  email: string({ required_error: "Email is required" })
-    .min(1, "Email is required")
-    .email("Invalid email"),
+  email: string({ required_error: "Ingrese el email" })
+    .min(1, "Ingrese el email")
+    .email("Email incorrecto"),
   // photo: string().optional(),
-  password: string({ required_error: "Password is required" })
-    .min(1, "Password is required")
-    .min(6, "Password must be more than 8 characters")
-    .max(32, "Password must be less than 32 characters"),
+  password: string({ required_error: "Ingrese una contraseña" })
+    .min(1, "Ingrese una contraseña")
+    .min(6, "La contraseña debe contener mas de 6 caracteres")
+    .max(32, "La contraseña debe contener menos de 32 caracteres"),
   passwordConfirm: string({
-    required_error: "Please confirm your password",
-  }).min(1, "Please confirm your password"),
+    required_error: "Porfavor, confirme su contraseña",
+  }).min(1, "Porfavor, confirma tu contraseña"),
 }).refine((data) => data.password === data.passwordConfirm, {
   path: ["passwordConfirm"],
-  message: "Passwords do not match",
+  message: "Las contraseñas no coinciden",
 });
 
 export const loginUserSchema = object({
-  email: string({ required_error: "Email is required" })
-    .min(1, "Email is required")
-    .email("Invalid email or password"),
-  password: string({ required_error: "Password is required" }).min(
+  email: string({ required_error: "Ingrese el email" })
+    .min(1, "Ingrese el email")
+    .email("Email o contraseña incorrecto"),
+  password: string({ required_error: "Ingrese una contraseña" }).min(
     1,
-    "Password is required"
+    "Ingrese una contraseña"
   ),
 });
 
