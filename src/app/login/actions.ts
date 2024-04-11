@@ -32,32 +32,53 @@ export async function signInWithEmailAndPassword(data: LoginUserInput) {
     email: data.email,
     password: data.password,
   });
-  console.log(result);
+
   return JSON.stringify(result);
 }
 
-export async function signup(formData: FormData) {
-  const supabase = createClient();
-
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
-  const data = {
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
-  };
-
-  const { error } = await supabase.auth.signUp(data);
-
-  if (error) {
-    redirect("/error");
-  }
-
-  revalidatePath("/", "layout");
-  redirect("/alino-app");
+export async function signUpWithEmailAndPassword({
+  data,
+  emailRedirectTo,
+}: {
+  data: CreateUserInput;
+  emailRedirectTo?: string;
+}) {
+  const supabase = await createClient();
+  const result = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+    options: {
+      emailRedirectTo,
+    },
+  });
+  console.log(result);
+  console.log(JSON.parse(JSON.stringify(result)));
+  console.log(JSON.stringify(result));
+  return JSON.stringify(result);
 }
 
+// export async function signup(formData: FormData) {
+//   const supabase = createClient();
+
+//   // type-casting here for convenience
+//   // in practice, you should validate your inputs
+//   const data = {
+//     email: formData.get("email") as string,
+//     password: formData.get("password") as string,
+//   };
+
+//   const { error } = await supabase.auth.signUp(data);
+
+//   if (error) {
+//     redirect("/error");
+//   }
+
+//   revalidatePath("/", "layout");
+//   redirect("/alino-app");
+// }
+
 export async function signout() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   await supabase.auth.signOut();
 
@@ -65,7 +86,7 @@ export async function signout() {
 }
 
 export async function updatePassword(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const data = {
     password: formData.get("password") as string,
   };

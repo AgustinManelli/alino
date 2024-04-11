@@ -12,20 +12,9 @@ export default async function AlinoApp() {
 
   return (
     <div>
-      {/* <p>Hello {data.user.email}</p>
-      <p>{data.user.updated_at}</p> */}
       <form>
         <button formAction={signout}> salir </button>
       </form>
-      {/* <form>
-        <input
-          type="number"
-          name="number"
-          id="number"
-          placeholder="password update"
-        />
-        <button formAction={updatePhone}>update</button>
-      </form> */}
     </div>
   );
 }
