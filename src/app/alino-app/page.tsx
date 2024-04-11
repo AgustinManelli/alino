@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { createClient } from "../utils/supabase/server";
 import { signout } from "../login/actions";
 import { readUserSession } from "../lib/actions";
+import Link from "next/link";
 
 export default async function AlinoApp() {
   const { data } = await readUserSession();
@@ -15,6 +15,9 @@ export default async function AlinoApp() {
       <form>
         <button formAction={signout}> salir </button>
       </form>
+      <Link href={"/"}>
+        <p style={{ backgroundColor: "red", width: "fit-content" }}>home</p>
+      </Link>
     </div>
   );
 }

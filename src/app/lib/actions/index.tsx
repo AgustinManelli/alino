@@ -5,6 +5,6 @@ import { unstable_noStore as noStore } from "next/cache";
 
 export async function readUserSession() {
   noStore();
-  const supabsae = await createClient();
-  return await supabsae.auth.getSession();
+  const supabase = await createClient();
+  return await supabase.auth.getSession();
 }
