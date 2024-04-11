@@ -13,7 +13,7 @@ export default async function AlinoApp() {
   return (
     <div>
       <form>
-        <button formAction={signout}> salir </button>
+        <button formAction={signout}> salirr </button>
       </form>
     </div>
   );
