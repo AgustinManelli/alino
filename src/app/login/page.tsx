@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { readUserSession } from "../lib/actions";
-import LoginForms from "./login-forms";
+import AuthForms from "./auth-forms";
 
 export default async function Login() {
   const { data } = await readUserSession();
@@ -10,7 +10,7 @@ export default async function Login() {
 
   return (
     <>
-      <LoginForms />;
+      <AuthForms />;
     </>
   );
 }

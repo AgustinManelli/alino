@@ -7,7 +7,7 @@ import { useState } from "react";
 import { LoginForm } from "./login-form";
 import { RegisterForm } from "./register-form";
 
-export default function LoginForms() {
+export default function AuthForms() {
   const [formType, setFormType] = useState<string>("login");
 
   const handleSetFormType = (type: string): void => {
