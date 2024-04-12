@@ -1,11 +1,10 @@
 "use client";
 
 import styles from "./login.module.css";
-import { AlinoLogo, ArrowLeft, HomeIcon } from "../../components/icons";
-import Link from "next/link";
+import { AlinoLogo, HomeIcon } from "../../lib/ui/icons";
 import { useState } from "react";
-import { LoginForm } from "./login-form";
-import { RegisterForm } from "./register-form";
+import { LoginForm } from "./components/login-form";
+import { RegisterForm } from "./components/register-form";
 import { ButtonComponent } from "@/components/buttonComponent/buttonComponent";
 
 export default function AuthForms() {
@@ -20,12 +19,11 @@ export default function AuthForms() {
       <main className={styles.main}>
         <div className={styles.backButton}>
           <ButtonComponent
-            name=""
-            back="rgb(240, 240, 240)"
+            background="rgb(240, 240, 240)"
             hover="rgb(230, 230, 230)"
             letterColor="#000"
             to="/"
-            strokeB={false}
+            strokeBorder={false}
           >
             <HomeIcon
               style={{

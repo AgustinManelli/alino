@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { readUserSession } from "../lib/actions";
+import { readUserSession } from "../../lib/actions";
 import AuthForms from "./auth-forms";
 
 export default async function Login() {

@@ -1,8 +1,8 @@
 "use client";
 
-import { LoginUserInput, loginUserSchema } from "../lib/user-schema";
-import styles from "./login.module.css";
-import { signInWithEmailAndPassword } from "./actions";
+import { LoginUserInput, loginUserSchema } from "../../../lib/user-schema";
+import styles from "../login.module.css";
+import { signInWithEmailAndPassword } from "../actions";
 import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";

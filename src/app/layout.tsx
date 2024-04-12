@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { inter } from "./ui/fonts";
+import { inter } from "../lib/ui/fonts";
 import "./globals.css";
 import { Toaster } from "sonner";
 
@@ -18,6 +18,8 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <div
           style={{
+            position: "absolute",
+            bottom: "0",
             height: "20px",
             width: "100vw",
             backgroundColor: "#1c1c1c",

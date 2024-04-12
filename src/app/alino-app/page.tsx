@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { signout } from "../login/actions";
-import { readUserSession } from "../lib/actions";
+import { readUserSession } from "../../lib/actions";
 import Link from "next/link";
 
 export default async function AlinoApp() {

@@ -4,56 +4,60 @@ import Styles from "./buttonComponent.module.css";
 import { useState } from "react";
 
 interface Props {
-  name: string;
-  back: string;
+  text?: string;
+  background: string;
   hover: string;
   letterColor: string;
   to: string;
-  strokeB: boolean;
+  strokeBorder: boolean;
   children?: string | JSX.Element | JSX.Element[] | null;
+  style?: React.CSSProperties;
 }
 
 export const ButtonComponent: React.FC<Props> = ({
-  name,
-  back,
+  text,
+  background,
   hover,
   letterColor,
   to,
-  strokeB,
+  strokeBorder,
   children,
+  style,
 }) => {
-  const [state, setState] = useState<string>("false");
-  const handleState = (inp: string): void => {
+  const [state, setState] = useState<boolean>(false);
+  const handleState = (inp: boolean): void => {
     setState(inp);
   };
+  const inlineStyles = {
+    backgroundColor: strokeBorder
+      ? state === true
+        ? `${background}`
+        : "transparent"
+      : state === true
+        ? `${hover}`
+        : `${background}`,
+    color: strokeBorder
+      ? state === true
+        ? `${letterColor}`
+        : `${background}`
+      : `${letterColor}`,
+    border: strokeBorder ? `solid ${background} 2px` : "none",
+    fontWeight: strokeBorder ? "600" : "initial",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+  const combinedStyles = Object.assign({}, inlineStyles, style);
   return (
     <Link
       href={`${to}`}
       className={Styles.buttonContainer}
-      style={{
-        backgroundColor: strokeB
-          ? state === "true"
-            ? `${back}`
-            : "transparent"
-          : state === "true"
-            ? `${hover}`
-            : `${back}`,
-        color: strokeB
-          ? state === "true"
-            ? `${letterColor}`
-            : `${back}`
-          : `${letterColor}`,
-        border: strokeB ? `solid ${back} 2px` : "none",
-        fontWeight: strokeB ? "600" : "initial",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
+      style={combinedStyles}
       onMouseEnter={() => {
-        handleState("true");
+        handleState(true);
       }}
       onMouseLeave={() => {
-        handleState("false");
+        handleState(false);
       }}
     >
       <div
@@ -66,7 +70,7 @@ export const ButtonComponent: React.FC<Props> = ({
         }}
       >
         {children}
-        {name}
+        {text}
       </div>
     </Link>
   );

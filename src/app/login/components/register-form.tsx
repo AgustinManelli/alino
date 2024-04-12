@@ -1,13 +1,13 @@
 "use client";
 
-import { CreateUserInput, createUserSchema } from "../lib/user-schema";
+import { CreateUserInput, createUserSchema } from "../../../lib/user-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { signUpWithEmailAndPassword } from "./actions";
+import { signUpWithEmailAndPassword } from "../actions";
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./login.module.css";
+import styles from "../login.module.css";
 
 interface Props {
   formType: string;

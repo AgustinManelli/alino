@@ -21,12 +21,12 @@ export default function Header() {
             gratis.
           </p>
           <ButtonComponent
-            name="Pruébalo ya mismo"
-            back="#87189d"
-            hover="#6a0d7d"
+            text="Pruebalo ya mismo"
+            background="#1c1c1c"
+            hover="rgb(230, 230, 230)"
             letterColor="#fff"
             to="login"
-            strokeB={false}
+            strokeBorder={true}
           />
         </section>
       </header>
