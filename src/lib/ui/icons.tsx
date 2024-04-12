@@ -1,3 +1,4 @@
+import styles from "./icons.module.css";
 export const AlinoLogo = ({ height }: { height: string }) => {
   return (
     <svg
@@ -22,7 +23,7 @@ export const AlinoLogo = ({ height }: { height: string }) => {
   );
 };
 
-export const ArrowLeft = ({ style }: { style: React.CSSProperties }) => {
+export const ArrowLeft = ({ style }: { style?: React.CSSProperties }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -40,7 +41,7 @@ export const ArrowLeft = ({ style }: { style: React.CSSProperties }) => {
   );
 };
 
-export const UserIcon = ({ style }: { style: React.CSSProperties }) => {
+export const UserIcon = ({ style }: { style?: React.CSSProperties }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -58,7 +59,7 @@ export const UserIcon = ({ style }: { style: React.CSSProperties }) => {
   );
 };
 
-export const HomeIcon = ({ style }: { style: React.CSSProperties }) => {
+export const HomeIcon = ({ style }: { style?: React.CSSProperties }) => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={style}>
       <path
@@ -67,6 +68,58 @@ export const HomeIcon = ({ style }: { style: React.CSSProperties }) => {
         stroke-linejoin="round"
       />
       <path d="M12 16H12.009" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  );
+};
+
+export const LoadingIcon = ({ style }: { style?: React.CSSProperties }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      style={style}
+    >
+      <path
+        d="M12 3V6"
+        stroke-linecap="round"
+        className={`${styles.path1} ${styles.path}`}
+      />
+      <path
+        d="M18.3635 5.63672L16.2422 7.75804"
+        stroke-linecap="round"
+        className={`${styles.path2} ${styles.path}`}
+      />
+      <path
+        d="M21 12L18 12"
+        stroke-linecap="round"
+        className={`${styles.path3} ${styles.path}`}
+      />
+      <path
+        d="M18.3635 18.3635L16.2422 16.2422"
+        stroke-linecap="round"
+        className={`${styles.path4} ${styles.path}`}
+      />
+      <path
+        d="M12 18V21"
+        stroke-linecap="round"
+        className={`${styles.path5} ${styles.path}`}
+      />
+      <path
+        d="M7.75706 16.2422L5.63574 18.3635"
+        stroke-linecap="round"
+        className={`${styles.path6} ${styles.path}`}
+      />
+      <path
+        d="M6 12L3 12"
+        stroke-linecap="round"
+        className={`${styles.path7} ${styles.path}`}
+      />
+      <path
+        d="M7.75706 7.75804L5.63574 5.63672"
+        stroke-linecap="round"
+        className={`${styles.path8} ${styles.path}`}
+      />
     </svg>
   );
 };

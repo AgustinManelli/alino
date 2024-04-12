@@ -10,14 +10,14 @@ import {
   UpdatePasswordInput,
 } from "../../lib/user-schema";
 
-export async function signInWithEmailAndPassword(data: LoginUserInput) {
+export async function signInWithEmailAndPassword(dataInput: LoginUserInput) {
   const supabase = await createClient();
-  const result = await supabase.auth.signInWithPassword({
-    email: data.email,
-    password: data.password,
+  const { error, data } = await supabase.auth.signInWithPassword({
+    email: dataInput.email,
+    password: dataInput.password,
   });
 
-  return JSON.stringify(result);
+  return JSON.stringify(error?.message);
 }
 
 export async function signUpWithEmailAndPassword({

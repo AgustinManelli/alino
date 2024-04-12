@@ -75,7 +75,7 @@ export const ResetForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
             handleSetFormType("login");
           }}
         >
-          Iniciar sesión
+          ¿Te acuerdas tu contraseña? inicia sesión
         </button>
       </div>
     </section>

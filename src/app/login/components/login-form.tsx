@@ -8,6 +8,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { redirect, useRouter } from "next/navigation";
+import { LoadingIcon } from "@/lib/ui/icons";
 
 interface Props {
   formType: string;
@@ -31,17 +32,23 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
     startTransition(async () => {
       const result = await signInWithEmailAndPassword(values);
 
-      const { error } = JSON.parse(result);
+      const typeError = JSON.parse(result);
 
-      if (error) {
-        setError(error.message);
-        toast.error("Email o contraseña incorrecta");
+      if (result) {
+        setError(typeError);
+        if (typeError === "Invalid login credentials") {
+          toast.error("Email o contraseña incorrecta.");
+        } else {
+          toast.error(typeError);
+        }
+
         reset({ password: "" });
         return;
       }
       setError("");
-      toast.success("successfully logged in");
-      redirect("/alino-app");
+      toast.success("Sesión iniciada correctamente");
+      // redirect("/alino-app");
+      router.push("/alino-app");
     });
   };
   return (
@@ -52,7 +59,11 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
       </div>
       <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
         <div className={styles.inputContainer}>
-          {error && <p className={styles.errorMsg}>{error}</p>}
+          {errors["email"] && (
+            <p className={styles.errorMsg}>
+              {errors["email"]?.message as string}
+            </p>
+          )}
           <input
             id="email"
             type="email"
@@ -72,9 +83,20 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
             required
           />
         </div>
-        {/*//formAction={login}*/}
         <button className={styles.buttom} type="submit" disabled={isPending}>
-          Iniciar sesion
+          {isPending ? (
+            <LoadingIcon
+              style={{
+                width: "20px",
+                height: "auto",
+                stroke: "#fff",
+                strokeWidth: "3",
+              }}
+            />
+          ) : (
+            ""
+          )}
+          <p>{isPending ? "Iniciando sesión..." : "Iniciar sesión"}</p>
         </button>
       </form>
       <div className={styles.moreInfo}>

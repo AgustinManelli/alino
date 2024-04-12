@@ -33,7 +33,7 @@ export default function RootLayout({
             Alino testing version
           </p>
         </div>
-        {children} <Toaster />
+        {children} <Toaster richColors />
       </body>
     </html>
   );

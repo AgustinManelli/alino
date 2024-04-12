@@ -47,8 +47,8 @@ export const ResetForm = () => {
   return (
     <section className={styles.form}>
       <div>
-        <h2 className={styles.title}>Iniciar sesión</h2>
-        <p className={styles.paraph}>Inicia sesión si tienes una cuenta.</p>
+        <h2 className={styles.title}>Cambiar contraseña</h2>
+        <p className={styles.paraph}>Ingresa tu nueva contraseña.</p>
       </div>
       <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
         <div className={styles.inputContainer}>
