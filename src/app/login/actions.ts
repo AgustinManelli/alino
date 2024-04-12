@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
-import { CreateUserInput, LoginUserInput } from "../../lib/user-schema";
+import {
+  CreateUserInput,
+  LoginUserInput,
+  ResetUserInput,
+  UpdatePasswordInput,
+} from "../../lib/user-schema";
 
 export async function signInWithEmailAndPassword(data: LoginUserInput) {
   const supabase = await createClient();
@@ -30,9 +35,6 @@ export async function signUpWithEmailAndPassword({
       emailRedirectTo,
     },
   });
-  console.log(result);
-  console.log(JSON.parse(JSON.stringify(result)));
-  console.log(JSON.stringify(result));
   return JSON.stringify(result);
 }
 
@@ -44,7 +46,23 @@ export async function signout() {
   redirect("/login");
 }
 
-export async function updatePassword(formData: FormData) {
+export async function resetPassword(data: ResetUserInput, href: string) {
+  const supabase = await createClient();
+  const result = await supabase.auth.resetPasswordForEmail(data.email, {
+    redirectTo: `${href}/auth/callback`,
+  });
+  return JSON.stringify(result);
+}
+
+export async function updatePassword(data: UpdatePasswordInput) {
+  const supabase = await createClient();
+  const result = await supabase.auth.updateUser({
+    password: data.password,
+  });
+  return JSON.stringify(result);
+}
+
+export async function updatePasswordLogin(formData: FormData) {
   const supabase = await createClient();
   const data = {
     password: formData.get("password") as string,

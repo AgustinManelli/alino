@@ -6,6 +6,7 @@ import { useState } from "react";
 import { LoginForm } from "./components/login-form";
 import { RegisterForm } from "./components/register-form";
 import { ButtonComponent } from "@/components/buttonComponent/buttonComponent";
+import { ResetForm } from "./components/resetPassword-form";
 
 export default function AuthForms() {
   const [formType, setFormType] = useState<string>("login");
@@ -42,8 +43,13 @@ export default function AuthForms() {
             formType={formType}
             handleSetFormType={handleSetFormType}
           />
-        ) : (
+        ) : formType === "signup" ? (
           <RegisterForm
+            formType={formType}
+            handleSetFormType={handleSetFormType}
+          />
+        ) : (
+          <ResetForm
             formType={formType}
             handleSetFormType={handleSetFormType}
           />
