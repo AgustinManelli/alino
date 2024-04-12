@@ -3,21 +3,25 @@ import Link from "next/link";
 import Styles from "./buttonComponent.module.css";
 import { useState } from "react";
 
-export default function ButtonComponent({
-  name,
-  back,
-  hover,
-  letterColor,
-  to,
-  strokeB,
-}: {
+interface Props {
   name: string;
   back: string;
   hover: string;
   letterColor: string;
   to: string;
   strokeB: boolean;
-}) {
+  children?: string | JSX.Element | JSX.Element[] | null;
+}
+
+export const ButtonComponent: React.FC<Props> = ({
+  name,
+  back,
+  hover,
+  letterColor,
+  to,
+  strokeB,
+  children,
+}) => {
   const [state, setState] = useState<string>("false");
   const handleState = (inp: string): void => {
     setState(inp);
@@ -41,6 +45,9 @@ export default function ButtonComponent({
           : `${letterColor}`,
         border: strokeB ? `solid ${back} 2px` : "none",
         fontWeight: strokeB ? "600" : "initial",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
       onMouseEnter={() => {
         handleState("true");
@@ -49,7 +56,18 @@ export default function ButtonComponent({
         handleState("false");
       }}
     >
-      {name}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "7px",
+        }}
+      >
+        {children}
+        {name}
+      </div>
     </Link>
   );
-}
+};

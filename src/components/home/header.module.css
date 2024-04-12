@@ -1,13 +1,13 @@
 .blurredFx {
   position: absolute;
-  left: -10vw;
-  width: 40vw;
+  left: -500px;
+  width: 400px;
   height: 200px;
   background-color: #87189d;
   z-index: -1;
   border-radius: 0px 100px 100px 0px;
-  filter: blur(170px) saturate(200%);
-  opacity: 0.4;
+  box-shadow: #87189d 300px 0px 300px;
+  opacity: 0.6;
 }
 
 .container {
@@ -39,7 +39,7 @@
 .paraph {
   font-weight: 600;
   font-size: 30px;
-  max-width: 40vw;
+  max-width: 600px;
 }
 
 .textSloganHeader {
@@ -109,5 +109,70 @@
   }
   100% {
     margin-top: 0;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .hero {
+    padding-left: 50px;
+    padding-right: 50px;
+  }
+}
+@media only screen and (max-width: 500px) {
+  .hero {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .textSloganHeader {
+    font-size: 45px;
+  }
+
+  .textSloganHeader p {
+    height: 55px;
+  }
+
+  .animation {
+    height: 55px;
+    margin-left: 1rem;
+  }
+
+  .animation > div > div {
+    height: 55px;
+    display: inline-block;
+  }
+  .animation div:first-child {
+    animation: text-animation2 10s infinite;
+  }
+  @keyframes text-animation2 {
+    0% {
+      margin-top: 0;
+    }
+    10% {
+      margin-top: 0;
+    }
+    20% {
+      margin-top: -55px;
+    }
+    30% {
+      margin-top: -55px;
+    }
+    40% {
+      margin-top: -110px;
+    }
+    60% {
+      margin-top: -110px;
+    }
+    70% {
+      margin-top: -110px;
+    }
+    80% {
+      margin-top: -110px;
+    }
+    90% {
+      margin-top: -110px;
+    }
+    100% {
+      margin-top: 0;
+    }
   }
 }

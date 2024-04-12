@@ -1,5 +1,5 @@
 "use client";
-import ButtonComponent from "../../components/buttonComponent/buttonComponent";
+import { ButtonComponent } from "../../components/buttonComponent/buttonComponent";
 import styles from "./header.module.css";
 
 export default function Header() {
@@ -11,15 +11,9 @@ export default function Header() {
           <div className={styles.textSloganHeader}>
             <p>It's</p>
             <section className={styles.animation}>
-              <div className={styles.first}>
-                <div>all in one</div>
-              </div>
-              <div className={styles.second}>
-                <div>all in order</div>
-              </div>
-              <div className={styles.third}>
-                <div>alino</div>
-              </div>
+              <div>all in one</div>
+              <div>all in order</div>
+              <div>alino</div>
             </section>
           </div>
           <p className={styles.paraph}>

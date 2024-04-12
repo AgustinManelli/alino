@@ -16,3 +16,21 @@
   padding-left: 100px;
   padding-right: 100px;
 }
+.buttonsDiv {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+@media only screen and (max-width: 600px) {
+  .navbar {
+    padding-left: 50px;
+    padding-right: 50px;
+  }
+}
+@media only screen and (max-width: 500px) {
+  .navbar {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}

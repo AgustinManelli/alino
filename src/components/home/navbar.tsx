@@ -1,6 +1,6 @@
 "use client";
-import { AlinoLogo } from "../../components/icons";
-import ButtonComponent from "../../components/buttonComponent/buttonComponent";
+import { AlinoLogo, UserIcon } from "../../components/icons";
+import { ButtonComponent } from "../../components/buttonComponent/buttonComponent";
 import styles from "./navbar.module.css";
 
 export default function Navbar() {
@@ -8,14 +8,33 @@ export default function Navbar() {
     <div className={styles.container}>
       <nav className={styles.navbar}>
         <AlinoLogo height="35px" />
-        <ButtonComponent
-          name="Iniciar sesion"
-          back="rgb(240, 240, 240)"
-          hover="rgb(230, 230, 230)"
-          letterColor="#000"
-          to="login"
-          strokeB={false}
-        />
+        <div className={styles.buttonsDiv}>
+          <ButtonComponent
+            name="iniciar sesión"
+            back="rgb(240, 240, 240)"
+            hover="rgb(230, 230, 230)"
+            letterColor="#000"
+            to="login"
+            strokeB={false}
+          >
+            <UserIcon
+              style={{
+                strokeWidth: "1.5",
+                stroke: "#1c1c1c",
+                width: "20px",
+                height: "auto",
+              }}
+            />
+          </ButtonComponent>
+          <ButtonComponent
+            name="sobre alino"
+            back="transparent"
+            hover="rgb(240, 240, 240)"
+            letterColor="#000"
+            to="https://www.youtube.com"
+            strokeB={false}
+          ></ButtonComponent>
+        </div>
       </nav>
     </div>
   );
