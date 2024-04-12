@@ -26,14 +26,14 @@ export default function Navbar() {
               }}
             />
           </ButtonComponent>
-          <ButtonComponent
+          {/* <ButtonComponent
             name="sobre alino"
             back="transparent"
             hover="rgb(240, 240, 240)"
             letterColor="#000"
-            to="https://www.youtube.com"
+            to="/"
             strokeB={false}
-          ></ButtonComponent>
+          ></ButtonComponent> */}
         </div>
       </nav>
     </div>

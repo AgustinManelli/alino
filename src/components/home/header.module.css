@@ -112,13 +112,10 @@
   }
 }
 
-@media only screen and (max-width: 600px) {
-  .hero {
-    padding-left: 50px;
-    padding-right: 50px;
+@media only screen and (max-width: 700px) {
+  .heroLeft {
+    gap: 15px;
   }
-}
-@media only screen and (max-width: 500px) {
   .hero {
     padding-left: 20px;
     padding-right: 20px;
@@ -133,7 +130,6 @@
 
   .animation {
     height: 55px;
-    margin-left: 1rem;
   }
 
   .animation > div > div {

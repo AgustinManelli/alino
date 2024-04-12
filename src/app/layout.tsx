@@ -16,6 +16,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
+        <div
+          style={{
+            height: "20px",
+            width: "100vw",
+            backgroundColor: "#1c1c1c",
+            display: "flex",
+            justifyContent: "start",
+            alignItems: "center",
+            paddingLeft: "20px",
+          }}
+        >
+          <p style={{ color: "#fff", fontSize: "10px" }}>
+            Alino testing version
+          </p>
+        </div>
         {children} <Toaster />
       </body>
     </html>
