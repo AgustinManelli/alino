@@ -1,14 +1,15 @@
 "use client";
 
-import { LoginUserInput, loginUserSchema } from "../../../lib/user-schema";
+import { LoginUserInput, loginUserSchema } from "@/lib/user-schema";
 import styles from "../login.module.css";
-import { signInWithEmailAndPassword } from "../actions";
+import { signInWithEmailAndPassword, signInWithGithub } from "../actions";
 import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { redirect, useRouter } from "next/navigation";
 import { LoadingIcon } from "@/lib/ui/icons";
+import { createClient } from "@/utils/supabase/client";
 
 interface Props {
   formType: string;
@@ -19,37 +20,54 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const router = useRouter();
+
   const methods = useForm<LoginUserInput>({
     resolver: zodResolver(loginUserSchema),
   });
+
   const {
     reset,
     handleSubmit,
     register,
     formState: { errors },
   } = methods;
+
   const onSubmitHandler: SubmitHandler<LoginUserInput> = async (values) => {
     startTransition(async () => {
       const result = await signInWithEmailAndPassword(values);
+      const typeError = JSON.parse(result)[0];
+      const error = JSON.parse(result)[1];
 
-      const typeError = JSON.parse(result);
-
-      if (result) {
+      if (error) {
         setError(typeError);
         if (typeError === "Invalid login credentials") {
           toast.error("Email o contraseña incorrecta.");
         } else {
           toast.error(typeError);
         }
-
         reset({ password: "" });
         return;
       }
-      setError("");
       toast.success("Sesión iniciada correctamente");
-      // redirect("/alino-app");
+      setError("");
       router.push("/alino-app");
     });
+  };
+
+  const handleSignIn = async () => {
+    const supabase = await createClient();
+    const href = window.location.origin;
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: {
+        redirectTo: `${href}/auth/callback`,
+      },
+    });
+    if (error) {
+      toast.error("error");
+      return;
+    }
+    toast.success("good");
   };
   return (
     <section className={styles.form}>
@@ -98,6 +116,9 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
           )}
           <p>{isPending ? "Iniciando sesión..." : "Iniciar sesión"}</p>
         </button>
+      </form>
+      <form onSubmit={handleSignIn}>
+        <button>github</button>
       </form>
       <div className={styles.moreInfo}>
         <button

@@ -38,15 +38,17 @@ export const RegisterForm: React.FC<Props> = ({
         data: values,
         emailRedirectTo: `${location.origin}/auth/callback`,
       });
-      const { error } = JSON.parse(result);
+      const typeError = JSON.parse(result)[0];
+      const error = JSON.parse(result)[1];
       if (error) {
-        toast.error(error.message);
+        toast.error(typeError);
         reset({ password: "", passwordConfirm: "" });
         return;
       }
 
       toast.success("registered successfully");
-      router.push("/alino-app");
+      // router.push("/login");
+      handleSetFormType("login");
     });
   };
 

@@ -12,12 +12,13 @@ import {
 
 export async function signInWithEmailAndPassword(dataInput: LoginUserInput) {
   const supabase = await createClient();
-  const { error, data } = await supabase.auth.signInWithPassword({
+
+  const { error } = await supabase.auth.signInWithPassword({
     email: dataInput.email,
     password: dataInput.password,
   });
 
-  return JSON.stringify(error?.message);
+  return JSON.stringify([error?.message, error]);
 }
 
 export async function signUpWithEmailAndPassword({
@@ -28,14 +29,14 @@ export async function signUpWithEmailAndPassword({
   emailRedirectTo?: string;
 }) {
   const supabase = await createClient();
-  const result = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email: data.email,
     password: data.password,
     options: {
       emailRedirectTo,
     },
   });
-  return JSON.stringify(result);
+  return JSON.stringify([error?.message, error]);
 }
 
 export async function signout() {
