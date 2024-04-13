@@ -2,13 +2,13 @@
 
 import { LoginUserInput, loginUserSchema } from "@/lib/user-schema";
 import styles from "../login.module.css";
-import { signInWithEmailAndPassword, signInWithGithub } from "../actions";
+import { signInWithEmailAndPassword } from "../actions";
 import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { redirect, useRouter } from "next/navigation";
-import { LoadingIcon } from "@/lib/ui/icons";
+import { GithubIcon, LoadingIcon } from "@/lib/ui/icons";
 import { createClient } from "@/utils/supabase/client";
 
 interface Props {
@@ -117,9 +117,10 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
           <p>{isPending ? "Iniciando sesión..." : "Iniciar sesión"}</p>
         </button>
       </form>
-      <form onSubmit={handleSignIn}>
-        <button>github</button>
-      </form>
+      <button onClick={handleSignIn}>
+        <GithubIcon style={{ width: "25px" }} />
+        <p>sign in with github</p>
+      </button>
       <div className={styles.moreInfo}>
         <button
           className={styles.textButton}
