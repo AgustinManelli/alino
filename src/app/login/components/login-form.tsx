@@ -64,10 +64,10 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
       },
     });
     if (error) {
-      toast.error("error");
+      toast.error("Hubo un error al iniciar sesión");
       return;
     }
-    toast.success("good");
+    toast.success("Sesión iniciada con GitHub correctamente");
   };
   return (
     <section className={styles.form}>
