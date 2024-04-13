@@ -101,26 +101,32 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
             required
           />
         </div>
-        <button className={styles.buttom} type="submit" disabled={isPending}>
-          {isPending ? (
-            <LoadingIcon
-              style={{
-                width: "20px",
-                height: "auto",
-                stroke: "#fff",
-                strokeWidth: "3",
-              }}
-            />
-          ) : (
-            ""
-          )}
-          <p>{isPending ? "Iniciando sesión..." : "Iniciar sesión"}</p>
-        </button>
+        <div className={styles.buttonsContainer}>
+          <button className={styles.buttom} type="submit" disabled={isPending}>
+            {isPending ? (
+              <LoadingIcon
+                style={{
+                  width: "20px",
+                  height: "auto",
+                  stroke: "#fff",
+                  strokeWidth: "3",
+                }}
+              />
+            ) : (
+              ""
+            )}
+            <p>{isPending ? "Iniciando sesión..." : "Iniciar sesión"}</p>
+          </button>
+          <button
+            onClick={handleSignIn}
+            className={styles.githubLogin}
+            type="button"
+          >
+            <GithubIcon style={{ width: "25px" }} />
+            <p>sign in with github</p>
+          </button>
+        </div>
       </form>
-      <button onClick={handleSignIn}>
-        <GithubIcon style={{ width: "25px" }} />
-        <p>sign in with github</p>
-      </button>
       <div className={styles.moreInfo}>
         <button
           className={styles.textButton}
