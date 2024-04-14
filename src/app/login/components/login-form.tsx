@@ -7,9 +7,9 @@ import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { redirect, useRouter } from "next/navigation";
-import { GithubIcon, LoadingIcon } from "@/lib/ui/icons";
-import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
+import { GithubIcon, GoogleIcon, LoadingIcon } from "@/lib/ui/icons";
+import { OauthButton } from "./oauthButton";
 
 interface Props {
   formType: string;
@@ -54,21 +54,6 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
     });
   };
 
-  const handleSignIn = async () => {
-    const supabase = await createClient();
-    const href = window.location.origin;
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "github",
-      options: {
-        redirectTo: `${href}/auth/callback`,
-      },
-    });
-    if (error) {
-      toast.error("Hubo un error al iniciar sesión");
-      return;
-    }
-    toast.success("Sesión iniciada con GitHub correctamente");
-  };
   return (
     <section className={styles.form}>
       <div>
@@ -117,14 +102,20 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
             )}
             <p>{isPending ? "Iniciando sesión..." : "Iniciar sesión"}</p>
           </button>
-          <button
-            onClick={handleSignIn}
-            className={styles.githubLogin}
-            type="button"
+          <OauthButton
+            providerName={"Github"}
+            providerType={"github"}
+            style={{ backgroundColor: "#1c1c1c", color: "#fff" }}
           >
             <GithubIcon style={{ width: "25px" }} />
-            <p>sign in with github</p>
-          </button>
+          </OauthButton>
+          <OauthButton
+            providerName={"Google"}
+            providerType={"google"}
+            style={{ backgroundColor: "#fff", color: "#1c1c1c" }}
+          >
+            <GoogleIcon style={{ width: "25px" }} />
+          </OauthButton>
         </div>
       </form>
       <div className={styles.moreInfo}>

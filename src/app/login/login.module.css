@@ -132,14 +132,12 @@
   gap: 10px;
 }
 
-.githubLogin {
+.LoginOauth {
   cursor: pointer;
   width: 100%;
   height: 50px;
   border: none;
-  background-color: #1c1c1c;
   font-weight: 600;
-  color: #fff;
   border-radius: 10px;
   display: flex;
   justify-content: center;
