@@ -17,22 +17,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
         {children} <Toaster richColors />
-        <div
-          style={{
-            position: "relative",
-            height: "20px",
-            width: "100vw",
-            backgroundColor: "#1c1c1c",
-            display: "flex",
-            justifyContent: "start",
-            alignItems: "center",
-            paddingLeft: "20px",
-          }}
-        >
-          <p style={{ color: "#fff", fontSize: "10px" }}>
-            Alino testing version
-          </p>
-        </div>
       </body>
     </html>
   );

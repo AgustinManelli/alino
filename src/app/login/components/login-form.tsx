@@ -18,7 +18,6 @@ interface Props {
 
 export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState("");
   const router = useRouter();
 
   const methods = useForm<LoginUserInput>({
@@ -39,7 +38,6 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
       const error = JSON.parse(result)[1];
 
       if (error) {
-        setError(typeError);
         if (typeError === "Invalid login credentials") {
           toast.error("Email o contraseña incorrecta.");
         } else {
@@ -49,7 +47,6 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
         return;
       }
       toast.success("Sesión iniciada correctamente");
-      setError("");
       router.push("/alino-app");
     });
   };
