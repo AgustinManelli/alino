@@ -5,9 +5,14 @@ import Link from "next/link";
 
 export async function generateMetadata() {
   const { data } = await readUserSession();
-  const nameSession = (await data.session.user.user_metadata.name) ?? "user";
+  if (data.session) {
+    const nameSession = data.session.user.user_metadata.name ?? "user";
+    return {
+      title: `alino app | ${nameSession}`,
+    };
+  }
   return {
-    title: `alino app | ${nameSession}`,
+    title: "alino app",
   };
 }
 
