@@ -1,3 +1,5 @@
+"use server";
+
 import { redirect } from "next/navigation";
 import { signout, readUserSession } from "@/lib/auth/actions";
 import Link from "next/link";

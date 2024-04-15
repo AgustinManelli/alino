@@ -1,14 +1,14 @@
-.blurredFx {
+/* .blurredFx {
   position: absolute;
   left: -500px;
   width: 400px;
   height: 200px;
-  background-color: #87189d;
+  background-color: transparent;
   z-index: -1;
   border-radius: 0px 100px 100px 0px;
   box-shadow: #87189d 300px 0px 300px;
   opacity: 0.6;
-}
+} */
 
 .container {
   display: flex;
@@ -19,6 +19,7 @@
 }
 
 .hero {
+  position: relative;
   width: 100vw;
   height: 100lvh;
   max-width: 1366px;
@@ -33,13 +34,34 @@
 .heroLeft {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 25px;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  right: 0px;
+  opacity: 0.3;
+  filter: blur(100px);
+  transform: translate(-30%, -50%) translateZ(0px);
+  height: 300px;
+  width: 300px;
+  background-color: #87189d;
+  border-radius: 75%;
+  pointer-events: none;
 }
 
 .paraph {
-  font-weight: 600;
+  font-weight: 500;
   font-size: 30px;
   max-width: 600px;
+}
+
+.paraphSpan {
+  color: #87189d;
+  font-weight: 700;
 }
 
 .textSloganHeader {

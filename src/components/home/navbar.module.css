@@ -5,6 +5,7 @@
   align-items: center;
   width: 100vw;
   height: 80px;
+  z-index: 1;
 }
 .navbar {
   width: 100%;

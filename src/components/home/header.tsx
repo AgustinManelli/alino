@@ -7,7 +7,7 @@ export default function Header() {
   return (
     <div className={styles.container}>
       <header className={styles.hero}>
-        <div className={styles.blurredFx}></div>
+        {/* <div className={styles.blurredFx}></div> */}
         <section className={styles.heroLeft}>
           <div className={styles.textSloganHeader}>
             <p>It's</p>
@@ -18,8 +18,8 @@ export default function Header() {
             </section>
           </div>
           <p className={styles.paraph}>
-            Organizá tus clases, tareas y horarios en un mismo lugar. Es 100%
-            gratis.
+            Organizá tus clases, tareas y horarios en un mismo lugar. Es{" "}
+            <span className={styles.paraphSpan}>100% gratis</span>.
           </p>
           <ButtonComponent
             text="Pruebalo ya mismo"
