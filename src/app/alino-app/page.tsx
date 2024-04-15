@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { signout } from "../login/actions";
-import { readUserSession } from "../login/actions";
+import { signout, readUserSession } from "@/lib/auth/actions";
 import Link from "next/link";
 
 export async function generateMetadata() {
@@ -20,7 +19,7 @@ export default async function AlinoApp() {
   const { data } = await readUserSession();
 
   if (!data.session) {
-    return redirect("/login");
+    return redirect("/sign-in");
   }
 
   return (

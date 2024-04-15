@@ -4,8 +4,8 @@ import {
   UpdatePasswordInput,
   updatePasswordScheme,
 } from "../../lib/user-schema";
-import styles from "../login/login.module.css";
-import { updatePassword, signout } from "../login/actions";
+import styles from "../sign-in/login.module.css";
+import { updatePassword, signout } from "@/lib/auth/actions";
 import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
@@ -45,7 +45,7 @@ export const ResetForm = () => {
     });
   };
   return (
-    <section className={styles.form}>
+    <>
       <div>
         <h2 className={styles.title}>Cambiar contraseña</h2>
         <p className={styles.paraph}>Ingresa tu nueva contraseña.</p>
@@ -80,6 +80,6 @@ export const ResetForm = () => {
           Cambiar contraseña
         </button>
       </form>
-    </section>
+    </>
   );
 };

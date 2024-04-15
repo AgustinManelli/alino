@@ -15,7 +15,7 @@ export default function Navbar() {
             background="rgb(240, 240, 240)"
             hover="rgb(230, 230, 230)"
             letterColor="#000"
-            to="login"
+            to="sign-in"
             strokeBorder={false}
           >
             <UserIcon

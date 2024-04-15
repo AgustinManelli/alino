@@ -1,23 +1,16 @@
 "use client";
 
-import { CreateUserInput, createUserSchema } from "../../../lib/user-schema";
+import { CreateUserInput, createUserSchema } from "../../lib/user-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { signUpWithEmailAndPassword } from "../actions";
+import { signUpWithEmailAndPassword } from "@/lib/auth/actions";
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import styles from "../login.module.css";
+import styles from "../sign-in/login.module.css";
+import Link from "next/link";
 
-interface Props {
-  formType: string;
-  handleSetFormType: (type: string) => void;
-}
-
-export const RegisterForm: React.FC<Props> = ({
-  formType,
-  handleSetFormType,
-}) => {
+export const RegisterForm = () => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -46,14 +39,15 @@ export const RegisterForm: React.FC<Props> = ({
         return;
       }
 
-      toast.success("registered successfully");
-      // router.push("/login");
-      handleSetFormType("login");
+      toast.success(
+        "Registrado correctamente, verifique su correo para verificar su cuenta"
+      );
+      router.push("/sign-in");
     });
   };
 
   return (
-    <section className={styles.form}>
+    <>
       <div>
         <h2 className={styles.title}>Registrarte</h2>
         <p className={styles.paraph}>Crea una cuenta alino, es 100% gratis.</p>
@@ -110,15 +104,10 @@ export const RegisterForm: React.FC<Props> = ({
         </button>
       </form>
       <div className={styles.moreInfo}>
-        <button
-          className={styles.textButton}
-          onClick={() => {
-            handleSetFormType("login");
-          }}
-        >
+        <Link className={styles.textButton} href="/sign-in">
           ¿Ya tienes una cuenta?
-        </button>
+        </Link>
       </div>
-    </section>
+    </>
   );
 };

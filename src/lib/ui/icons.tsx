@@ -64,10 +64,10 @@ export const HomeIcon = ({ style }: { style?: React.CSSProperties }) => {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={style}>
       <path
         d="M9.06165 4.82633L3.23911 9.92134C2.7398 10.3583 3.07458 11.1343 3.76238 11.1343C4.18259 11.1343 4.52324 11.4489 4.52324 11.8371V15.0806C4.52324 17.871 4.52324 19.2662 5.46176 20.1331C6.40029 21 7.91082 21 10.9319 21H13.0681C16.0892 21 17.5997 21 18.5382 20.1331C19.4768 19.2662 19.4768 17.871 19.4768 15.0806V11.8371C19.4768 11.4489 19.8174 11.1343 20.2376 11.1343C20.9254 11.1343 21.2602 10.3583 20.7609 9.92134L14.9383 4.82633C13.5469 3.60878 12.8512 3 12 3C11.1488 3 10.4531 3.60878 9.06165 4.82633Z"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
-      <path d="M12 16H12.009" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M12 16H12.009" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 };
@@ -82,42 +82,42 @@ export const LoadingIcon = ({ style }: { style?: React.CSSProperties }) => {
     >
       <path
         d="M12 3V6"
-        stroke-linecap="round"
+        strokeLinecap="round"
         className={`${styles.path1} ${styles.path}`}
       />
       <path
         d="M18.3635 5.63672L16.2422 7.75804"
-        stroke-linecap="round"
+        strokeLinecap="round"
         className={`${styles.path2} ${styles.path}`}
       />
       <path
         d="M21 12L18 12"
-        stroke-linecap="round"
+        strokeLinecap="round"
         className={`${styles.path3} ${styles.path}`}
       />
       <path
         d="M18.3635 18.3635L16.2422 16.2422"
-        stroke-linecap="round"
+        strokeLinecap="round"
         className={`${styles.path4} ${styles.path}`}
       />
       <path
         d="M12 18V21"
-        stroke-linecap="round"
+        strokeLinecap="round"
         className={`${styles.path5} ${styles.path}`}
       />
       <path
         d="M7.75706 16.2422L5.63574 18.3635"
-        stroke-linecap="round"
+        strokeLinecap="round"
         className={`${styles.path6} ${styles.path}`}
       />
       <path
         d="M6 12L3 12"
-        stroke-linecap="round"
+        strokeLinecap="round"
         className={`${styles.path7} ${styles.path}`}
       />
       <path
         d="M7.75706 7.75804L5.63574 5.63672"
-        stroke-linecap="round"
+        strokeLinecap="round"
         className={`${styles.path8} ${styles.path}`}
       />
     </svg>

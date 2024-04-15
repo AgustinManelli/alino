@@ -1,20 +1,16 @@
 "use client";
 
-import { resetUserSchema, ResetUserInput } from "../../../lib/user-schema";
-import styles from "../login.module.css";
-import { resetPassword, signInWithEmailAndPassword } from "../actions";
+import { resetUserSchema, ResetUserInput } from "../../lib/user-schema";
+import styles from "../sign-in/login.module.css";
+import { resetPassword } from "../../lib/auth/actions";
 import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-interface Props {
-  formType: string;
-  handleSetFormType: (type: string) => void;
-}
-
-export const ResetForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
+export const ForgotPasswordForm = () => {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const router = useRouter();
@@ -40,12 +36,14 @@ export const ResetForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
         return;
       }
       setError("");
-      toast.success("successfully logged in");
-      router.push("/login");
+      toast.success(
+        "Verifique su casilla de correo para recuperar su contraseña"
+      );
+      router.push("/sign-in");
     });
   };
   return (
-    <section className={styles.form}>
+    <>
       <div>
         <h2 className={styles.title}>Recupera tu cuenta</h2>
         <p className={styles.paraph}>
@@ -69,15 +67,10 @@ export const ResetForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
         </button>
       </form>
       <div className={styles.moreInfo}>
-        <button
-          className={styles.textButton}
-          onClick={() => {
-            handleSetFormType("login");
-          }}
-        >
+        <Link className={styles.textButton} href="/sign-in">
           ¿Te acuerdas tu contraseña? inicia sesión
-        </button>
+        </Link>
       </div>
-    </section>
+    </>
   );
 };

@@ -26,7 +26,7 @@ export default function Header() {
             background="#1c1c1c"
             hover="rgb(230, 230, 230)"
             letterColor="#fff"
-            to="login"
+            to="sign-in"
             strokeBorder={true}
           />
         </section>

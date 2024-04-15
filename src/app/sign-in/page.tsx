@@ -1,8 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { readUserSession } from "./actions";
-import AuthForms from "./auth-forms";
+import { readUserSession } from "../../lib/auth/actions";
+import { FormContainer } from "../../components/forms/form-container";
+import { LoginForm } from "./login-form";
 
 export async function generateMetadata() {
   return {
@@ -18,7 +19,9 @@ export default async function Login() {
 
   return (
     <>
-      <AuthForms />
+      <FormContainer>
+        <LoginForm />
+      </FormContainer>
     </>
   );
 }

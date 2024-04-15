@@ -1,20 +1,14 @@
 "use client";
 
-import styles from "./login.module.css";
+import styles from "./form-container.module.css";
 import { AlinoLogo, HomeIcon } from "../../lib/ui/icons";
-import { useState } from "react";
-import { LoginForm } from "./components/login-form";
-import { RegisterForm } from "./components/register-form";
 import { ButtonComponent } from "@/components/buttonComponent/buttonComponent";
-import { ResetForm } from "./components/resetPassword-form";
 
-export default function AuthForms() {
-  const [formType, setFormType] = useState<string>("login");
+interface Props {
+  children?: string | JSX.Element | JSX.Element[] | null;
+}
 
-  const handleSetFormType = (type: string): void => {
-    setFormType(type);
-  };
-
+export const FormContainer: React.FC<Props> = ({ children }) => {
   return (
     <main className={styles.main}>
       <section className={styles.container}>
@@ -38,20 +32,8 @@ export default function AuthForms() {
           </ButtonComponent>
         </div>
         <AlinoLogo height="50px" />
-        {formType === "login" ? (
-          <LoginForm handleSetFormType={handleSetFormType} />
-        ) : formType === "signup" ? (
-          <RegisterForm
-            formType={formType}
-            handleSetFormType={handleSetFormType}
-          />
-        ) : (
-          <ResetForm
-            formType={formType}
-            handleSetFormType={handleSetFormType}
-          />
-        )}
+        <div className={styles.form}>{children}</div>
       </section>
     </main>
   );
-}
+};

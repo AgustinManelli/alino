@@ -1,21 +1,18 @@
 "use client";
 
-import styles from "../login.module.css";
+import styles from "./login.module.css";
 import { LoginUserInput, loginUserSchema } from "@/lib/user-schema";
-import { signInWithEmailAndPassword } from "../actions";
+import { signInWithEmailAndPassword } from "../../lib/auth/actions";
 import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { GithubIcon, GoogleIcon, LoadingIcon } from "@/lib/ui/icons";
-import { OauthButton } from "./oauthButton";
+import { OauthButton } from "./components/oauthButton";
+import Link from "next/link";
 
-interface Props {
-  handleSetFormType: (type: string) => void;
-}
-
-export const LoginForm: React.FC<Props> = ({ handleSetFormType }) => {
+export const LoginForm = () => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -51,7 +48,7 @@ export const LoginForm: React.FC<Props> = ({ handleSetFormType }) => {
   };
 
   return (
-    <section className={styles.form}>
+    <>
       <div>
         <h2 className={styles.title}>Iniciar sesión</h2>
         <p className={styles.paraph}>Accede a tu cuenta alino.</p>
@@ -119,23 +116,13 @@ export const LoginForm: React.FC<Props> = ({ handleSetFormType }) => {
         </section>
       </form>
       <div className={styles.moreInfo}>
-        <button
-          className={styles.textButton}
-          onClick={() => {
-            handleSetFormType("signup");
-          }}
-        >
+        <Link className={styles.textButton} href="/sign-up">
           ¿No tienes una cuenta?
-        </button>
-        <button
-          className={styles.textButton}
-          onClick={() => {
-            handleSetFormType("recover");
-          }}
-        >
+        </Link>
+        <Link className={styles.textButton} href="/forgot-password">
           ¿No recuerdas tu contraseña?
-        </button>
+        </Link>
       </div>
-    </section>
+    </>
   );
 };

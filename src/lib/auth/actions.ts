@@ -8,7 +8,7 @@ import {
   LoginUserInput,
   ResetUserInput,
   UpdatePasswordInput,
-} from "../../lib/user-schema";
+} from "../user-schema";
 import { unstable_noStore as noStore } from "next/cache";
 
 export async function signInWithEmailAndPassword(dataInput: LoginUserInput) {
@@ -45,7 +45,7 @@ export async function signout() {
 
   await supabase.auth.signOut();
 
-  redirect("/login");
+  redirect("/sign-in");
 }
 
 export async function resetPassword(data: ResetUserInput, href: string) {
