@@ -8,6 +8,7 @@ interface Provider {
   providerType: any;
   children?: string | JSX.Element | JSX.Element[] | null;
   style?: React.CSSProperties;
+  text?: boolean | null;
 }
 
 export const OauthButton: React.FC<Provider> = ({
@@ -15,6 +16,7 @@ export const OauthButton: React.FC<Provider> = ({
   providerType,
   children,
   style,
+  text,
 }) => {
   const handleSignIn = async () => {
     const supabase = await createClient();
@@ -30,7 +32,6 @@ export const OauthButton: React.FC<Provider> = ({
       toast.error("Hubo un error al iniciar sesión");
       return;
     }
-    // toast.success(`Sesión iniciada con ${providerName} correctamente`);
   };
   return (
     <button
@@ -40,7 +41,7 @@ export const OauthButton: React.FC<Provider> = ({
       style={style}
     >
       {children}
-      <p>Continue with {providerName}</p>
+      {text ? <p>Continue with {providerName}</p> : ""}
     </button>
   );
 };

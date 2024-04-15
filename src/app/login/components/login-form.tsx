@@ -61,32 +61,34 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
         <p className={styles.paraph}>Inicia sesión si tienes una cuenta.</p>
       </div>
       <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
-        <div className={styles.inputContainer}>
-          {errors["email"] && (
-            <p className={styles.errorMsg}>
-              {errors["email"]?.message as string}
-            </p>
-          )}
-          <input
-            id="email"
-            type="email"
-            placeholder="email"
-            className={styles.input}
-            {...register("email")}
-            required
-          />
-        </div>
-        <div className={styles.inputContainer}>
-          <input
-            id="password"
-            type="password"
-            placeholder="password"
-            className={styles.input}
-            {...register("password")}
-            required
-          />
-        </div>
-        <div className={styles.buttonsContainer}>
+        <section className={styles.inputContainer}>
+          <div className={styles.inputDiv}>
+            {errors["email"] && (
+              <p className={styles.errorMsg}>
+                {errors["email"]?.message as string}
+              </p>
+            )}
+            <input
+              id="email"
+              type="email"
+              placeholder="email"
+              className={styles.input}
+              {...register("email")}
+              required
+            />
+          </div>
+          <div className={styles.inputDiv}>
+            <input
+              id="password"
+              type="password"
+              placeholder="password"
+              className={styles.input}
+              {...register("password")}
+              required
+            />
+          </div>
+        </section>
+        <section className={styles.buttonsContainer}>
           <button className={styles.buttom} type="submit" disabled={isPending}>
             {isPending ? (
               <LoadingIcon
@@ -102,21 +104,23 @@ export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
             )}
             <p>{isPending ? "Iniciando sesión..." : "Iniciar sesión"}</p>
           </button>
-          <OauthButton
-            providerName={"Github"}
-            providerType={"github"}
-            style={{ backgroundColor: "#1c1c1c", color: "#fff" }}
-          >
-            <GithubIcon style={{ width: "25px" }} />
-          </OauthButton>
-          <OauthButton
-            providerName={"Google"}
-            providerType={"google"}
-            style={{ backgroundColor: "#fff", color: "#1c1c1c" }}
-          >
-            <GoogleIcon style={{ width: "25px" }} />
-          </OauthButton>
-        </div>
+          <section className={styles.oauthButtonContainer}>
+            <OauthButton
+              providerName={"Github"}
+              providerType={"github"}
+              style={{ backgroundColor: "#1c1c1c", color: "#fff" }}
+            >
+              <GithubIcon style={{ width: "25px" }} />
+            </OauthButton>
+            <OauthButton
+              providerName={"Google"}
+              providerType={"google"}
+              style={{ backgroundColor: "#fff", color: "#1c1c1c" }}
+            >
+              <GoogleIcon style={{ width: "25px" }} />
+            </OauthButton>
+          </section>
+        </section>
       </form>
       <div className={styles.moreInfo}>
         <button

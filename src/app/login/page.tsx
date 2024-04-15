@@ -1,3 +1,5 @@
+"use server";
+
 import { redirect } from "next/navigation";
 import { readUserSession } from "../../lib/actions";
 import AuthForms from "./auth-forms";

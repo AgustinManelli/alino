@@ -16,10 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
+        {children} <Toaster richColors />
         <div
           style={{
-            position: "absolute",
-            bottom: "0",
+            position: "relative",
             height: "20px",
             width: "100vw",
             backgroundColor: "#1c1c1c",
@@ -33,7 +33,6 @@ export default function RootLayout({
             Alino testing version
           </p>
         </div>
-        {children} <Toaster richColors />
       </body>
     </html>
   );

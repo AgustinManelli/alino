@@ -16,8 +16,8 @@ export default function AuthForms() {
   };
 
   return (
-    <div className={styles.container}>
-      <main className={styles.main}>
+    <main className={styles.main}>
+      <section className={styles.container}>
         <div className={styles.backButton}>
           <ButtonComponent
             background="rgb(240, 240, 240)"
@@ -54,7 +54,7 @@ export default function AuthForms() {
             handleSetFormType={handleSetFormType}
           />
         )}
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }
