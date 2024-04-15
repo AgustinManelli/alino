@@ -51,7 +51,7 @@ export async function signout() {
 export async function resetPassword(data: ResetUserInput, href: string) {
   const supabase = await createClient();
   const result = await supabase.auth.resetPasswordForEmail(data.email, {
-    redirectTo: `${href}/auth/callback`,
+    redirectTo: `${href}/auth/update-password`,
   });
   return JSON.stringify(result);
 }
