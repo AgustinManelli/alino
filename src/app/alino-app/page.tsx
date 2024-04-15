@@ -3,7 +3,7 @@ import { signout } from "../login/actions";
 import { readUserSession } from "../login/actions";
 import Link from "next/link";
 
-export async function generateMetadata({ name }: { name: string }) {
+export async function generateMetadata() {
   const { data } = await readUserSession();
   const nameSession = data.session.user.user_metadata.name;
   return {
