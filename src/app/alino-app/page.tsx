@@ -27,7 +27,10 @@ export default async function AlinoApp() {
           home
         </p>
       </Link>
-      <p>Hola {data.session.user.email}, estás logeado correctamente.</p>
+      <p>
+        Hola {data.session.user.user_metadata.name} ({data.session.user.email}),
+        estás logeado correctamente.
+      </p>
       <p>Tu id en nuestra base de datos es: {data.session.user.id}</p>
       <p>Tu access_token es: {data.session.access_token}</p>
     </div>

@@ -22,16 +22,16 @@ export async function signInWithEmailAndPassword(dataInput: LoginUserInput) {
 }
 
 export async function signUpWithEmailAndPassword({
-  data,
+  dataInput,
   emailRedirectTo,
 }: {
-  data: CreateUserInput;
+  dataInput: CreateUserInput;
   emailRedirectTo?: string;
 }) {
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
-    email: data.email,
-    password: data.password,
+  const { error, data } = await supabase.auth.signUp({
+    email: dataInput.email,
+    password: dataInput.password,
     options: {
       emailRedirectTo,
     },

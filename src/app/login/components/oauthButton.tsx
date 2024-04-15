@@ -21,7 +21,6 @@ export const OauthButton: React.FC<Provider> = ({
   const handleSignIn = async () => {
     const supabase = await createClient();
     const href = window.location.origin;
-    const git = providerType;
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: providerType,
       options: {

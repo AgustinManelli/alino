@@ -35,7 +35,7 @@ export const RegisterForm: React.FC<Props> = ({
   const onSubmitHandler: SubmitHandler<CreateUserInput> = (values) => {
     startTransition(async () => {
       const result = await signUpWithEmailAndPassword({
-        data: values,
+        dataInput: values,
         emailRedirectTo: `${location.origin}/auth/callback`,
       });
       const typeError = JSON.parse(result)[0];

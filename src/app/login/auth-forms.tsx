@@ -39,10 +39,7 @@ export default function AuthForms() {
         </div>
         <AlinoLogo height="50px" />
         {formType === "login" ? (
-          <LoginForm
-            formType={formType}
-            handleSetFormType={handleSetFormType}
-          />
+          <LoginForm handleSetFormType={handleSetFormType} />
         ) : formType === "signup" ? (
           <RegisterForm
             formType={formType}

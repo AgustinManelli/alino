@@ -1,22 +1,21 @@
 "use client";
 
-import { LoginUserInput, loginUserSchema } from "@/lib/user-schema";
 import styles from "../login.module.css";
+import { LoginUserInput, loginUserSchema } from "@/lib/user-schema";
 import { signInWithEmailAndPassword } from "../actions";
 import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { GithubIcon, GoogleIcon, LoadingIcon } from "@/lib/ui/icons";
 import { OauthButton } from "./oauthButton";
 
 interface Props {
-  formType: string;
   handleSetFormType: (type: string) => void;
 }
 
-export const LoginForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
+export const LoginForm: React.FC<Props> = ({ handleSetFormType }) => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
