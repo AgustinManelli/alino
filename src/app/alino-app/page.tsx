@@ -26,27 +26,67 @@ export default async function AlinoApp() {
 
   return (
     <div>
-      <form>
-        <button formAction={signout}> salir </button>
-      </form>
-      <Link href={"/"}>
-        <p
+      <div
+        style={{
+          position: "absolute",
+          backgroundColor: "rgb(100,100,100)",
+          border: "solid #1c1c1c 2px",
+          borderRadius: "10px",
+          width: "fit-content",
+          height: "fit-content",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "10px",
+          bottom: "20px",
+          right: "20px",
+        }}
+      >
+        <div
           style={{
-            width: "fit-content",
-            border: "solid #000 1px",
-            marginTop: "10px",
-            marginBottom: "10px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: "20px",
           }}
         >
-          home
-        </p>
-      </Link>
-      <p>
-        Hola {data.session.user.user_metadata.name} ({data.session.user.email}),
-        estás logeado correctamente.
-      </p>
-      <p>Tu id en nuestra base de datos es: {data.session.user.id}</p>
-      <p>Tu access_token es: {data.session.access_token}</p>
+          <form>
+            <button
+              formAction={signout}
+              style={{
+                borderRadius: "100%",
+                width: "50px",
+                height: "50px",
+                border: "none",
+                backgroundColor: "#fff",
+                fontSize: "15px",
+                cursor: "pointer",
+              }}
+            >
+              {" "}
+              salir{" "}
+            </button>
+          </form>
+          <Link href={"/"}>
+            <p
+              style={{
+                borderRadius: "100%",
+                width: "50px",
+                height: "50px",
+                border: "none",
+                backgroundColor: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "15px",
+              }}
+            >
+              home
+            </p>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
