@@ -1,4 +1,5 @@
 "use client";
+
 import { AlinoLogo, UserIcon } from "../../lib/ui/icons";
 import { ButtonComponent } from "../../components/buttonComponent/buttonComponent";
 import styles from "./navbar.module.css";
@@ -26,14 +27,6 @@ export default function Navbar() {
               }}
             />
           </ButtonComponent>
-          {/* <ButtonComponent
-            name="sobre alino"
-            back="transparent"
-            hover="rgb(240, 240, 240)"
-            letterColor="#000"
-            to="/"
-            strokeB={false}
-          ></ButtonComponent> */}
         </div>
       </nav>
     </div>

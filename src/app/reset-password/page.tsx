@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { readUserSession } from "../../lib/actions";
+import { readUserSession } from "../login/actions";
 import styles from "../login/login.module.css";
 import { ButtonComponent } from "@/components/buttonComponent/buttonComponent";
 import { AlinoLogo, HomeIcon } from "../../lib/ui/icons";

@@ -1,8 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { readUserSession } from "../../lib/actions";
+import { readUserSession } from "./actions";
 import AuthForms from "./auth-forms";
+
+export async function generateMetadata() {
+  return {
+    title: `alino | auth`,
+  };
+}
 
 export default async function Login() {
   const { data } = await readUserSession();

@@ -9,6 +9,7 @@ import {
   ResetUserInput,
   UpdatePasswordInput,
 } from "../../lib/user-schema";
+import { unstable_noStore as noStore } from "next/cache";
 
 export async function signInWithEmailAndPassword(dataInput: LoginUserInput) {
   const supabase = await createClient();
@@ -74,4 +75,10 @@ export async function updatePasswordLogin(formData: FormData) {
   }
   revalidatePath("/", "layout");
   redirect("/alino-app");
+}
+
+export async function readUserSession() {
+  noStore();
+  const supabase = await createClient();
+  return await supabase.auth.getSession();
 }

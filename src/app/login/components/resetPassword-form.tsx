@@ -47,9 +47,9 @@ export const ResetForm: React.FC<Props> = ({ formType, handleSetFormType }) => {
   return (
     <section className={styles.form}>
       <div>
-        <h2 className={styles.title}>Cambiar contraseña</h2>
+        <h2 className={styles.title}>Recupera tu cuenta</h2>
         <p className={styles.paraph}>
-          Si no recuerdas tu contraseña puedes cambiarla.
+          Introduce tu correo electrónico para recuperar tu cuenta.
         </p>
       </div>
       <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>

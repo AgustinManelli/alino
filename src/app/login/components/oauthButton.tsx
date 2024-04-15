@@ -1,8 +1,9 @@
 "use client";
-import { GithubIcon } from "@/lib/ui/icons";
+
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import styles from "../login.module.css";
+
 interface Provider {
   providerName: string;
   providerType: any;

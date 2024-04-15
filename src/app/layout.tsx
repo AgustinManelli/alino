@@ -4,7 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "alino",
+  title: "alino | home",
   description: "class and homework organizer",
 };
 

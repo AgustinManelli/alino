@@ -55,8 +55,8 @@ export const RegisterForm: React.FC<Props> = ({
   return (
     <section className={styles.form}>
       <div>
-        <h2 className={styles.title}>Registrate</h2>
-        <p className={styles.paraph}>Creá una cuenta alino, es 100% gratis.</p>
+        <h2 className={styles.title}>Registrarte</h2>
+        <p className={styles.paraph}>Crea una cuenta alino, es 100% gratis.</p>
       </div>
       <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
         <div className={styles.inputContainer}>

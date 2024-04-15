@@ -54,7 +54,7 @@ export const LoginForm: React.FC<Props> = ({ handleSetFormType }) => {
     <section className={styles.form}>
       <div>
         <h2 className={styles.title}>Iniciar sesión</h2>
-        <p className={styles.paraph}>Inicia sesión si tienes una cuenta.</p>
+        <p className={styles.paraph}>Accede a tu cuenta alino.</p>
       </div>
       <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
         <section className={styles.inputContainer}>
