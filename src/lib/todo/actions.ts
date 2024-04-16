@@ -34,3 +34,18 @@ export const AddSubjectToDB = async (subject: string) => {
   }
   return error;
 };
+
+export const DeleteSubjectToDB = async (id: string) => {
+  noStore();
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getSession();
+  if (!error) {
+    if (data.session) {
+      const user = data.session.user;
+      console.log(user.id);
+      const result = await supabase.from("subjects").delete().eq("id", id);
+      return result;
+    }
+  }
+  return error;
+};
