@@ -11,7 +11,7 @@ export async function GetSubjects() {
   const result = await supabase
     .from("subjects")
     .select("*")
-    // .order("id", { ascending: true })
+    .order("inserted_at", { ascending: true })
     .eq("user_id", data.session?.user.id);
   return result;
 }

@@ -3,6 +3,7 @@
 import { DeleteSubjectToDB, GetSubjects } from "@/lib/todo/actions";
 import styles from "./subjects-cards.module.css";
 import { useSubjects } from "@/store/todos";
+import { DeleteIcon } from "@/lib/ui/icons";
 
 export function SubjectsCards({
   subjectName,
@@ -29,8 +30,18 @@ export function SubjectsCards({
           backgroundColor: `${color}`,
           position: "absolute",
           left: "-25px",
-          filter: "blur(50px)",
+          filter: "blur(40px) saturate(200%)",
           zIndex: "0",
+        }}
+      ></div>
+      <div
+        style={{
+          width: "12px",
+          height: "12px",
+          backgroundColor: `${color}`,
+          position: "relative",
+          zIndex: "0",
+          borderRadius: "5px",
         }}
       ></div>
       <p>{subjectName}</p>
@@ -38,16 +49,13 @@ export function SubjectsCards({
         onClick={handleDelete}
         style={{
           position: "absolute",
-          right: "7px",
+          right: "10px",
           border: "none",
-          backgroundColor: "#fff",
-          width: "55px",
-          height: "35px",
           borderRadius: "10px",
           cursor: "pointer",
         }}
       >
-        delete
+        <DeleteIcon style={{ stroke: "#1c1c1c", width: "20px" }} />
       </button>
     </div>
   );
