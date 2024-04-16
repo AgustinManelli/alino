@@ -11,13 +11,14 @@ type SubjectsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 export default function SubjectsInput() {
   const [input, setInput] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
+  const [color, setColor] = useState<string>("");
   const [transition, setTransition] = useState<boolean>(false);
   const setSubjects = useSubjects((state) => state.setSubjects);
   const subjects = useSubjects((state) => state.subjects);
 
   const handleSubmit = async () => {
     setTransition(true);
-    await AddSubjectToDB(value);
+    await AddSubjectToDB(value, color);
     const { data: getSubjects } = (await GetSubjects()) as any;
     setSubjects(getSubjects);
     setValue("");
@@ -41,6 +42,13 @@ export default function SubjectsInput() {
             onChange={(e) => {
               setValue(e.target.value);
             }}
+          ></input>
+          <input
+            type="color"
+            onChange={(e) => {
+              setColor(e.target.value);
+            }}
+            value={color}
           ></input>
           {transition ? (
             <LoadingIcon

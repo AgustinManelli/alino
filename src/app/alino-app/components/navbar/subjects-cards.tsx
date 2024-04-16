@@ -21,12 +21,34 @@ export function SubjectsCards({
     setSubjects(getSubjects);
   };
   return (
-    <div
-      className={styles.subjectsCardsContainer}
-      style={{ backgroundColor: `${color}` }}
-    >
+    <div className={styles.subjectsCardsContainer}>
+      <div
+        style={{
+          width: "50px",
+          height: "50px",
+          backgroundColor: `${color}`,
+          position: "absolute",
+          left: "-25px",
+          filter: "blur(50px)",
+          zIndex: "0",
+        }}
+      ></div>
       <p>{subjectName}</p>
-      <button onClick={handleDelete}>delete</button>
+      <button
+        onClick={handleDelete}
+        style={{
+          position: "absolute",
+          right: "7px",
+          border: "none",
+          backgroundColor: "#fff",
+          width: "55px",
+          height: "35px",
+          borderRadius: "10px",
+          cursor: "pointer",
+        }}
+      >
+        delete
+      </button>
     </div>
   );
 }

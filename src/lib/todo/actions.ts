@@ -16,8 +16,13 @@ export async function GetSubjects() {
   return result;
 }
 
-export const AddSubjectToDB = async (subject: string) => {
+export const AddSubjectToDB = async (subject: string, color: string) => {
   noStore();
+  if (color === "") {
+    var setColor = "#87189d";
+  } else {
+    var setColor = color;
+  }
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
   if (!error) {
@@ -25,7 +30,7 @@ export const AddSubjectToDB = async (subject: string) => {
       const user = data.session.user;
       const result = await supabase
         .from("subjects")
-        .insert({ subject, user_id: user.id, color: "#000" })
+        .insert({ subject, user_id: user.id, color: setColor })
         .select()
         .single();
       return result;
