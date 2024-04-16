@@ -21,12 +21,15 @@ export const AddSubjectToDB = async (subject: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
   if (!error) {
-    const user = data.session.user;
-    const result = await supabase
-      .from("subjects")
-      .insert({ subject, user_id: user.id })
-      .select()
-      .single();
-    return result;
+    if (data.session) {
+      const user = data.session.user;
+      const result = await supabase
+        .from("subjects")
+        .insert({ subject, user_id: user.id })
+        .select()
+        .single();
+      return result;
+    }
   }
+  return error;
 };
