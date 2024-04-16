@@ -7,18 +7,20 @@ import { createClient } from "@/utils/supabase/client";
 import { GetSubjects } from "@/lib/todo/actions";
 import { SubjectsCards } from "./subjects-cards";
 import SubjectsInput from "./subjects-input";
+import { useSubjects } from "@/store/todos";
 
 type SubjectType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
 export default function Navbar() {
   const supabase = createClient();
-  const [todos, setTodos] = useState<SubjectType[]>([]);
+  const subjects = useSubjects((state) => state.subjects);
+  const setSubjects = useSubjects((state) => state.setSubjects);
 
   useEffect(() => {
     const fetchTodos = async () => {
-      const { data: subjects, error } = await GetSubjects();
+      const { data: subjects, error } = (await GetSubjects()) as any;
       if (error) console.log("error", error);
-      else setTodos(subjects);
+      else setSubjects(subjects);
     };
 
     fetchTodos();
@@ -29,7 +31,7 @@ export default function Navbar() {
       <nav className={styles.navbar}>
         <h2 className={styles.navbarTitle}>Materias</h2>
         <section className={styles.SubjectsCardsSection}>
-          {todos.map((subj) => (
+          {subjects.map((subj) => (
             <SubjectsCards subjectName={subj.subject} id={subj.id} />
           ))}
           <SubjectsInput />

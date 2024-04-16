@@ -23,6 +23,7 @@ export const AddSubjectToDB = async (subject: string) => {
   if (!error) {
     if (data.session) {
       const user = data.session.user;
+      console.log(user.id);
       const result = await supabase
         .from("subjects")
         .insert({ subject, user_id: user.id })
