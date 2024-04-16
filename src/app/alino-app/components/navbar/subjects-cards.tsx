@@ -14,12 +14,11 @@ export function SubjectsCards({
   id: number;
   color: string;
 }) {
-  const setSubjects = useSubjects((state) => state.setSubjects);
+  const deleteSubject = useSubjects((state) => state.deleteSubject);
   const handleDelete = async () => {
+    deleteSubject(id);
     await DeleteSubjectToDB(id.toString());
-
-    const { data: getSubjects } = (await GetSubjects()) as any;
-    setSubjects(getSubjects);
+    // const { data: getSubjects } = (await GetSubjects()) as any;
   };
   return (
     <div className={styles.subjectsCardsContainer}>
@@ -30,7 +29,7 @@ export function SubjectsCards({
           backgroundColor: `${color}`,
           position: "absolute",
           left: "-25px",
-          filter: "blur(40px) saturate(200%)",
+          filter: "blur(70px) saturate(200%)",
           zIndex: "0",
         }}
       ></div>
@@ -55,7 +54,9 @@ export function SubjectsCards({
           cursor: "pointer",
         }}
       >
-        <DeleteIcon style={{ stroke: "#1c1c1c", width: "20px" }} />
+        <DeleteIcon
+          style={{ stroke: "#1c1c1c", width: "20px", strokeWidth: "1.5" }}
+        />
       </button>
     </div>
   );
