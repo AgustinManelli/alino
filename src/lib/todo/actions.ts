@@ -11,7 +11,7 @@ export async function GetSubjects() {
   const result = await supabase
     .from("subjects")
     .select("*")
-    .order("id", { ascending: true })
+    // .order("id", { ascending: true })
     .eq("user_id", data.session?.user.id);
   return result;
 }
@@ -23,10 +23,9 @@ export const AddSubjectToDB = async (subject: string) => {
   if (!error) {
     if (data.session) {
       const user = data.session.user;
-      console.log(user.id);
       const result = await supabase
         .from("subjects")
-        .insert({ subject, user_id: user.id })
+        .insert({ subject, user_id: user.id, color: "#000" })
         .select()
         .single();
       return result;
@@ -42,7 +41,6 @@ export const DeleteSubjectToDB = async (id: string) => {
   if (!error) {
     if (data.session) {
       const user = data.session.user;
-      console.log(user.id);
       const result = await supabase.from("subjects").delete().eq("id", id);
       return result;
     }

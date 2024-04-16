@@ -22,7 +22,6 @@ export default function Navbar() {
       if (error) console.log("error", error);
       else setSubjects(subjects);
     };
-
     fetchTodos();
   }, [supabase]);
 
@@ -32,7 +31,11 @@ export default function Navbar() {
         <h2 className={styles.navbarTitle}>Materias</h2>
         <section className={styles.SubjectsCardsSection}>
           {subjects.map((subj) => (
-            <SubjectsCards subjectName={subj.subject} id={subj.id} />
+            <SubjectsCards
+              subjectName={subj.subject}
+              id={subj.id}
+              color={subj.color}
+            />
           ))}
           <SubjectsInput />
         </section>

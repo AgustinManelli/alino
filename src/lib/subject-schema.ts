@@ -8,18 +8,21 @@ export interface SubjectSchema {
           id: number;
           user_id: string;
           subject: string;
+          color: string;
           inserted_at: string;
         };
         Insert: {
           id?: number;
           user_id?: string;
           subject?: string;
+          color?: string;
           inserted_at?: string;
         };
         Update: {
           id?: number;
           user_id?: string;
           subject?: string;
+          color?: string;
           inserted_at?: string;
         };
       };

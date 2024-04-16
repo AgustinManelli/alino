@@ -19,8 +19,8 @@ export default function SubjectsInput() {
     setTransition(true);
     await AddSubjectToDB(value);
     const { data: getSubjects } = (await GetSubjects()) as any;
-
     setSubjects(getSubjects);
+    setValue("");
     setTransition(false);
   };
 

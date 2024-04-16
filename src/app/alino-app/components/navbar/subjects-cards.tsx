@@ -7,9 +7,11 @@ import { useSubjects } from "@/store/todos";
 export function SubjectsCards({
   subjectName,
   id,
+  color,
 }: {
   subjectName: string;
   id: number;
+  color: string;
 }) {
   const setSubjects = useSubjects((state) => state.setSubjects);
   const handleDelete = async () => {
@@ -19,7 +21,10 @@ export function SubjectsCards({
     setSubjects(getSubjects);
   };
   return (
-    <div className={styles.subjectsCardsContainer}>
+    <div
+      className={styles.subjectsCardsContainer}
+      style={{ backgroundColor: `${color}` }}
+    >
       <p>{subjectName}</p>
       <button onClick={handleDelete}>delete</button>
     </div>
