@@ -1,3 +1,4 @@
+import { readUserSession } from "@/lib/auth/actions";
 import Navbar from "./components/navbar/navbar";
 
 export default function appLayout({ children }: { children: React.ReactNode }) {
