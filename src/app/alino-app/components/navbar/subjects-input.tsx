@@ -4,22 +4,24 @@ import { AddSubjectToDB, GetSubjects } from "@/lib/todo/actions";
 import { useState } from "react";
 import { useSubjects } from "@/store/todos";
 import { SubjectSchema } from "@/lib/subject-schema";
+import { LoadingIcon } from "@/lib/ui/icons";
 
 type SubjectsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
 export default function SubjectsInput() {
   const [input, setInput] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
+  const [transition, setTransition] = useState<boolean>(false);
   const setSubjects = useSubjects((state) => state.setSubjects);
   const subjects = useSubjects((state) => state.subjects);
 
   const handleSubmit = async () => {
-    const subjectsAdd = await AddSubjectToDB(value);
+    setTransition(true);
+    await AddSubjectToDB(value);
     const { data: getSubjects } = (await GetSubjects()) as any;
 
     setSubjects(getSubjects);
-
-    console.log(subjects);
+    setTransition(false);
   };
 
   return (
@@ -40,6 +42,18 @@ export default function SubjectsInput() {
               setValue(e.target.value);
             }}
           ></input>
+          {transition ? (
+            <LoadingIcon
+              style={{
+                width: "20px",
+                height: "auto",
+                stroke: "#000",
+                strokeWidth: "3",
+              }}
+            />
+          ) : (
+            ""
+          )}
         </form>
       ) : (
         <button
