@@ -4,6 +4,7 @@ import { DeleteSubjectToDB, GetSubjects } from "@/lib/todo/actions";
 import styles from "./subjects-cards.module.css";
 import { useSubjects } from "@/store/todos";
 import { DeleteIcon } from "@/lib/ui/icons";
+import { useState } from "react";
 
 export function SubjectsCards({
   subjectName,
@@ -15,15 +16,26 @@ export function SubjectsCards({
   color: string;
 }) {
   const deleteSubject = useSubjects((state) => state.deleteSubject);
+  const [hover, setHover] = useState<boolean>(false);
   const handleDelete = async () => {
     deleteSubject(id);
     await DeleteSubjectToDB(id.toString());
     // const { data: getSubjects } = (await GetSubjects()) as any;
   };
   return (
-    <div className={styles.subjectsCardsContainer}>
+    <div
+      className={styles.subjectsCardsContainer}
+      onMouseEnter={() => {
+        setHover(true);
+      }}
+      onMouseLeave={() => {
+        setHover(false);
+      }}
+    >
       <div
         style={{
+          opacity: hover ? "1" : "0",
+          transition: "opacity 0.3s ease-in-out",
           width: "50px",
           height: "50px",
           backgroundColor: `${color}`,
@@ -55,7 +67,7 @@ export function SubjectsCards({
         }}
       >
         <DeleteIcon
-          style={{ stroke: "#1c1c1c", width: "20px", strokeWidth: "1.5" }}
+          style={{ stroke: "#1c1c1c", width: "17px", strokeWidth: "1.5" }}
         />
       </button>
     </div>
