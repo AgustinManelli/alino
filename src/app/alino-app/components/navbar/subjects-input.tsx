@@ -20,7 +20,7 @@ export default function SubjectsInput({
   const setSubjects = useSubjects((state) => state.setSubjects);
   const subjects = useSubjects((state) => state.subjects);
   const inputRef = useRef<HTMLInputElement>(null);
-  const divRef = useRef<HTMLDivElement>(null);
+  const divRef = useRef<any>(null);
 
   const handleSubmit = async () => {
     setWaiting(true);
@@ -42,8 +42,10 @@ export default function SubjectsInput({
   }, [input]);
 
   window.addEventListener("mousedown", function (e) {
+    console.log(e.target);
     if (divRef.current !== null) {
-      if (!divRef.current.contains(e.target as Node)) {
+      console.log(divRef.current);
+      if (!divRef.current.contains(e.target)) {
         setInput(false);
       }
     }
