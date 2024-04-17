@@ -43,7 +43,7 @@ export default function SubjectsInput({
 
   window.addEventListener("mousedown", function (e) {
     if (divRef.current !== null) {
-      if (!divRef.current.contains(e.target as HTMLDivElement)) {
+      if (!divRef.current.contains(e.target as Node)) {
         setInput(false);
       }
     }
