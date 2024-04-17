@@ -15,7 +15,6 @@ export const useSubjects = create<Subjects>()((set, get) => ({
   deleteSubject: (id) => {
     const { subjects } = get();
     const filtered = subjects.filter((all) => all.id !== id);
-    console.log(filtered);
     set({ subjects: filtered });
   },
 }));

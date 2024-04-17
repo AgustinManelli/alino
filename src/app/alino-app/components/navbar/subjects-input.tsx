@@ -31,6 +31,7 @@ export default function SubjectsInput({
     setValue("");
     setTransition(false);
     setWaiting(false);
+    setInput(false);
   };
 
   useEffect(() => {
