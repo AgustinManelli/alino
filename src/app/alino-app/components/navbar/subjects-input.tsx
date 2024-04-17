@@ -33,23 +33,21 @@ export default function SubjectsInput({
     setWaiting(false);
   };
 
-  useEffect(() => {
-    if (input) {
-      if (inputRef.current !== null) {
-        inputRef.current.focus();
-      }
-    }
-  }, [input]);
+  // useEffect(() => {
+  //   if (input) {
+  //     if (inputRef.current !== null) {
+  //       inputRef.current.focus();
+  //     }
+  //   }
+  // }, [input]);
 
-  window.addEventListener("mousedown", function (e) {
-    console.log(e.target);
-    if (divRef.current !== null) {
-      console.log(divRef.current);
-      if (!divRef.current.contains(e.target)) {
-        setInput(false);
-      }
-    }
-  });
+  // window.addEventListener("mousedown", function (e) {
+  //   if (divRef.current !== null) {
+  //     if (!divRef.current.contains(e.target)) {
+  //       setInput(false);
+  //     }
+  //   }
+  // });
 
   return (
     <div ref={divRef}>
