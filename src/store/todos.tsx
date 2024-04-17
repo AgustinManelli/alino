@@ -1,3 +1,5 @@
+"use client";
+
 import { create } from "zustand";
 import { SubjectSchema } from "@/lib/subject-schema";
 

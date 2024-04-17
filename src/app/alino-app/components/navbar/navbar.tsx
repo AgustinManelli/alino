@@ -2,23 +2,15 @@
 
 import { useEffect, useState } from "react";
 import styles from "./navbar.module.css";
-import { SubjectSchema } from "@/lib/subject-schema";
 import { createClient } from "@/utils/supabase/client";
 import { GetSubjects } from "@/lib/todo/actions";
 import { SubjectsCards } from "./subjects-cards";
 import SubjectsInput from "./subjects-input";
 import { useSubjects } from "@/store/todos";
-import { LoadingIcon } from "@/lib/ui/icons";
+import Skeleton from "@/components/skeleton";
 
-type SubjectType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
-
-const SubjectAddCardSkeleton = () => {
-  return (
-    <div className={styles.subjectAddCardSkeletonContainer}>
-      <div className={styles.subjectAddCardSkeleton}></div>
-    </div>
-  );
-};
+// import { SubjectSchema } from "@/lib/subject-schema";
+// type SubjectType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
 export default function Navbar() {
   const supabase = createClient();
@@ -44,7 +36,22 @@ export default function Navbar() {
         <h2 className={styles.navbarTitle}>Materias</h2>
         <section className={styles.SubjectsCardsSection}>
           {fetching
-            ? [<SubjectAddCardSkeleton />, <SubjectAddCardSkeleton />]
+            ? [
+                <Skeleton
+                  style={{
+                    width: "100%",
+                    height: "45px",
+                    borderRadius: "15px",
+                  }}
+                />,
+                <Skeleton
+                  style={{
+                    width: "100%",
+                    height: "45px",
+                    borderRadius: "15px",
+                  }}
+                />,
+              ]
             : subjects.map((subj) => (
                 <SubjectsCards
                   subjectName={subj.subject}
@@ -53,18 +60,13 @@ export default function Navbar() {
                 />
               ))}
           {waiting ? (
-            <div className={styles.subjectAddCardSkeletonContainer}>
-              <div className={styles.subjectAddCardSkeleton}></div>
-              <LoadingIcon
-                style={{
-                  width: "20px",
-                  height: "auto",
-                  stroke: "#000",
-                  strokeWidth: "3",
-                  opacity: "0.2",
-                }}
-              />
-            </div>
+            <Skeleton
+              style={{
+                width: "100%",
+                height: "45px",
+                borderRadius: "15px",
+              }}
+            />
           ) : (
             ""
           )}
