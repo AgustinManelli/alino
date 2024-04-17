@@ -19,8 +19,8 @@ export default function SubjectsInput({
   const [transition, setTransition] = useState<boolean>(false);
   const setSubjects = useSubjects((state) => state.setSubjects);
   const subjects = useSubjects((state) => state.subjects);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const divRef = useRef<any>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const divRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = async () => {
     setWaiting(true);
@@ -33,21 +33,21 @@ export default function SubjectsInput({
     setWaiting(false);
   };
 
-  // useEffect(() => {
-  //   if (input) {
-  //     if (inputRef.current !== null) {
-  //       inputRef.current.focus();
-  //     }
-  //   }
-  // }, [input]);
+  useEffect(() => {
+    if (input) {
+      if (inputRef.current !== null) {
+        inputRef.current.focus();
+      }
+    }
+  }, [input]);
 
-  // window.addEventListener("mousedown", function (e) {
-  //   if (divRef.current !== null) {
-  //     if (!divRef.current.contains(e.target)) {
-  //       setInput(false);
-  //     }
-  //   }
-  // });
+  window.addEventListener("mousedown", function (e: MouseEvent | TouchEvent) {
+    if (divRef.current !== null) {
+      if (!divRef.current.contains(e.target as Node)) {
+        setInput(false);
+      }
+    }
+  });
 
   return (
     <div ref={divRef}>
