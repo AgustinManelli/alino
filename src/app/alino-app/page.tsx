@@ -4,7 +4,6 @@ import styles from "./page.module.css";
 import { redirect } from "next/navigation";
 import { signout, readUserSession } from "@/lib/auth/actions";
 import Link from "next/link";
-import { Coloricker } from "@/components/color-picker";
 
 export async function generateMetadata() {
   const { data } = await readUserSession();
