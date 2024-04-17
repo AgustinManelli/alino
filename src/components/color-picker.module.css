@@ -8,7 +8,7 @@
   height: 20px;
 }
 .container {
-  right: -210px;
+  right: -215px;
   top: -90px;
   position: absolute;
   background-color: rgb(255, 255, 255);
@@ -24,11 +24,17 @@
   padding: 15px;
   z-index: 100;
 }
+.title {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgb(200, 200, 200);
+}
 .mainButton {
   width: 20px;
   height: 20px;
   border: none;
   border-radius: 5px;
+  cursor: pointer;
 }
 .separator {
   width: 100%;
@@ -114,5 +120,15 @@
 .copyButton {
   background-color: transparent;
   border: none;
+  cursor: pointer;
+}
+.saveButton {
+  background-color: #fff;
+  border: none;
+  font-family: inter;
+  font-size: 14px;
+  color: #1c1c1c;
+  height: 30px;
+  border-radius: 10px;
   cursor: pointer;
 }

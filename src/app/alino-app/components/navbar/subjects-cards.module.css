@@ -1,6 +1,6 @@
 .subjectsCardsContainer {
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
   background-color: rgb(240, 240, 240);
   border-radius: 15px;
   height: 45px;

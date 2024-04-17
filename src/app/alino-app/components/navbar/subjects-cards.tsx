@@ -1,10 +1,11 @@
 "use client";
 
-import { DeleteSubjectToDB } from "@/lib/todo/actions";
+import { DeleteSubjectToDB, UpdateSubjectToDB } from "@/lib/todo/actions";
 import styles from "./subjects-cards.module.css";
 import { useSubjects } from "@/store/todos";
 import { DeleteIcon } from "@/lib/ui/icons";
 import { useState } from "react";
+import { Coloricker } from "@/components/color-picker";
 
 export function SubjectsCards({
   subjectName,
@@ -17,9 +18,13 @@ export function SubjectsCards({
 }) {
   const deleteSubject = useSubjects((state) => state.deleteSubject);
   const [hover, setHover] = useState<boolean>(false);
+  const [colorTemp, setColorTemp] = useState<string>(color);
   const handleDelete = async () => {
     deleteSubject(id);
     await DeleteSubjectToDB(id.toString());
+  };
+  const handleSave = async () => {
+    await UpdateSubjectToDB(id.toString(), colorTemp);
   };
 
   return (
@@ -33,7 +38,7 @@ export function SubjectsCards({
       }}
       style={{ backgroundColor: hover ? "rgb(240, 240, 240)" : "transparent" }}
     >
-      <div
+      {/* <div
         style={{
           opacity: hover ? "1" : "0",
           transition: "opacity 0.3s ease-in-out",
@@ -45,8 +50,8 @@ export function SubjectsCards({
           filter: "blur(70px) saturate(200%)",
           zIndex: "0",
         }}
-      ></div>
-      <div
+      ></div> */}
+      {/* <div
         style={{
           width: "12px",
           height: "12px",
@@ -55,7 +60,15 @@ export function SubjectsCards({
           zIndex: "0",
           borderRadius: "5px",
         }}
-      ></div>
+      ></div> */}
+      <Coloricker
+        color={colorTemp}
+        setColor={setColorTemp}
+        save={true}
+        handleSave={handleSave}
+        width={"12px"}
+        height={"12px"}
+      />
       <p className={styles.subjectName}>{subjectName}</p>
       <button
         onClick={handleDelete}
