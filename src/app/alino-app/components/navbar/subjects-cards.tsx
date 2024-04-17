@@ -47,12 +47,12 @@ export function SubjectsCards({
         style={{
           opacity: hover ? "1" : "0",
           transition: "opacity 0.3s ease-in-out",
-          width: "50px",
-          height: "50px",
+          width: "20px",
+          height: "20px",
           backgroundColor: `${color}`,
           position: "absolute",
-          left: "-25px",
-          filter: "blur(70px) saturate(200%)",
+          left: "6px",
+          filter: "blur(30px) saturate(200%)",
           zIndex: "0",
         }}
       ></div> */}

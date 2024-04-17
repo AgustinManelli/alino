@@ -63,4 +63,7 @@
   background-color: rgb(255, 255, 255);
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

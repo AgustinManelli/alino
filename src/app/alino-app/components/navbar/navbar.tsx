@@ -52,6 +52,15 @@ export default function Navbar() {
                     height: "45px",
                     borderRadius: "15px",
                   }}
+                  delay={0.15}
+                />,
+                <Skeleton
+                  style={{
+                    width: "100%",
+                    height: "45px",
+                    borderRadius: "15px",
+                  }}
+                  delay={0.3}
                 />,
               ]
             : subjects.map((subj) => (
