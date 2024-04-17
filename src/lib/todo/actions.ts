@@ -17,7 +17,6 @@ export async function GetSubjects() {
 }
 
 export const AddSubjectToDB = async (subject: string, color: string) => {
-  noStore();
   if (color === "") {
     var setColor = "#87189d";
   } else {
@@ -40,7 +39,6 @@ export const AddSubjectToDB = async (subject: string, color: string) => {
 };
 
 export const DeleteSubjectToDB = async (id: string) => {
-  noStore();
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
   if (!error) {
@@ -53,7 +51,6 @@ export const DeleteSubjectToDB = async (id: string) => {
 };
 
 export const UpdateSubjectToDB = async (id: string, color: string) => {
-  noStore();
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
   if (!error) {

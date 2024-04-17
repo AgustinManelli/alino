@@ -17,8 +17,8 @@ export function Coloricker({
   setColor: (value: string) => void;
   save?: boolean | null;
   handleSave?: () => void | null;
-  width: string;
-  height: string;
+  width?: string;
+  height?: string;
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
