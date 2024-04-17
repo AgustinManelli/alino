@@ -19,8 +19,8 @@ export default function SubjectsInput({
   const [transition, setTransition] = useState<boolean>(false);
   const setSubjects = useSubjects((state) => state.setSubjects);
   const subjects = useSubjects((state) => state.subjects);
-  const inputRef = useRef(null);
-  const divRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const divRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = async () => {
     setWaiting(true);
@@ -35,13 +35,17 @@ export default function SubjectsInput({
 
   useEffect(() => {
     if (input) {
-      inputRef.current.focus();
+      if (inputRef.current !== null) {
+        inputRef.current.focus();
+      }
     }
   }, [input]);
 
   window.addEventListener("mousedown", function (e) {
-    if (!divRef.current.contains(e.target)) {
-      setInput(false);
+    if (divRef.current !== null) {
+      if (!divRef.current.contains(e.target as HTMLDivElement)) {
+        setInput(false);
+      }
     }
   });
 
