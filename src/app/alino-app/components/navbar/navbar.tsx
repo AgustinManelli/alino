@@ -14,8 +14,10 @@ import Skeleton from "@/components/skeleton";
 
 export default function Navbar() {
   const supabase = createClient();
+
   const subjects = useSubjects((state) => state.subjects);
   const setSubjects = useSubjects((state) => state.setSubjects);
+
   const [waiting, setWaiting] = useState<boolean>(false);
   const [fetching, setFetching] = useState<boolean>(true);
 

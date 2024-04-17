@@ -1,6 +1,6 @@
 "use client";
 
-import { DeleteSubjectToDB, GetSubjects } from "@/lib/todo/actions";
+import { DeleteSubjectToDB } from "@/lib/todo/actions";
 import styles from "./subjects-cards.module.css";
 import { useSubjects } from "@/store/todos";
 import { DeleteIcon } from "@/lib/ui/icons";
@@ -20,8 +20,8 @@ export function SubjectsCards({
   const handleDelete = async () => {
     deleteSubject(id);
     await DeleteSubjectToDB(id.toString());
-    // const { data: getSubjects } = (await GetSubjects()) as any;
   };
+
   return (
     <div
       className={styles.subjectsCardsContainer}
@@ -56,18 +56,22 @@ export function SubjectsCards({
         }}
       ></div>
       <p>{subjectName}</p>
+
       <button
         onClick={handleDelete}
         style={{
+          opacity: hover ? "1" : "0",
           position: "absolute",
           right: "10px",
           border: "none",
           borderRadius: "10px",
           cursor: "pointer",
+          backgroundColor: "transparent",
+          transition: "opacity 0.2s ease-in-out",
         }}
       >
         <DeleteIcon
-          style={{ stroke: "#1c1c1c", width: "17px", strokeWidth: "1.5" }}
+          style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "1.5" }}
         />
       </button>
     </div>

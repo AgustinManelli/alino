@@ -1,5 +1,6 @@
 "use client";
 
+import styles from "./subjects-input.module.css";
 import { AddSubjectToDB, GetSubjects } from "@/lib/todo/actions";
 import { useEffect, useRef, useState } from "react";
 import { useSubjects } from "@/store/todos";
@@ -16,6 +17,7 @@ export default function SubjectsInput({
   const [input, setInput] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
   const [color, setColor] = useState<string>("#87189d");
+  const [hover, setHover] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
   const setSubjects = useSubjects((state) => state.setSubjects);
   const subjects = useSubjects((state) => state.subjects);
@@ -65,7 +67,7 @@ export default function SubjectsInput({
             e.preventDefault();
             handleSubmit();
           }}
-          style={{ display: "flex" }}
+          className={styles.form}
         >
           <input
             type="text"
@@ -75,16 +77,7 @@ export default function SubjectsInput({
             onChange={(e) => {
               setValue(e.target.value);
             }}
-            style={{
-              width: "100%",
-              height: "45px",
-              borderRadius: "15px",
-              border: "none",
-              backgroundColor: "rgb(240,240,240)",
-              cursor: "pointer",
-              padding: "0px 0px 0px 10px",
-              outline: "none",
-            }}
+            className={styles.inputText}
           ></input>
           <input
             type="color"
@@ -92,15 +85,8 @@ export default function SubjectsInput({
               setColor(e.target.value);
             }}
             value={color}
-            style={{
-              height: "30px",
-              width: "30px",
-              borderRadius: "15px",
-              border: "none",
-              cursor: "pointer",
-              position: "absolute",
-              right: "10px",
-            }}
+            id="colorInput"
+            className={styles.colorInput}
           ></input>
           {transition ? (
             <LoadingIcon
@@ -120,20 +106,24 @@ export default function SubjectsInput({
           onClick={() => {
             setInput(!input);
           }}
+          className={styles.button}
           style={{
-            width: "100%",
-            height: "45px",
-            borderRadius: "15px",
-            border: "none",
-            backgroundColor: "rgb(250,250,250)",
-            cursor: "pointer",
+            backgroundColor: hover
+              ? "rgb(240, 240, 240)"
+              : "rgb(255, 255, 255)",
+          }}
+          onMouseEnter={() => {
+            setHover(true);
+          }}
+          onMouseLeave={() => {
+            setHover(false);
           }}
         >
           <PlusBoxIcon
             style={{
               stroke: "#1c1c1c",
               strokeWidth: "1.5",
-              width: "25px",
+              width: "20px",
             }}
           />
         </button>
