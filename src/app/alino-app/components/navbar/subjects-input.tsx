@@ -41,13 +41,18 @@ export default function SubjectsInput({
     }
   }, [input]);
 
-  window.addEventListener("mousedown", function (e: MouseEvent | TouchEvent) {
-    if (divRef.current !== null) {
-      if (!divRef.current.contains(e.target as Node)) {
-        setInput(false);
+  if (window !== undefined) {
+    window.addEventListener(
+      "mousedown",
+      function (event: MouseEvent | TouchEvent) {
+        if (divRef.current !== null) {
+          if (!divRef.current.contains(event.target as Node)) {
+            setInput(false);
+          }
+        }
       }
-    }
-  });
+    );
+  }
 
   return (
     <div ref={divRef}>
