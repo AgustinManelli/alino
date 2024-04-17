@@ -254,3 +254,20 @@ export const PaintBoard = ({ style }: { style?: React.CSSProperties }) => {
     </svg>
   );
 };
+
+export const SquircleIcon = ({ style }: { style?: React.CSSProperties }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 100 125"
+      version="1.1"
+      x="0px"
+      y="0px"
+      style={style}
+    >
+      <g>
+        <path d="M50,5 C14,5 5,14 5,50 C5,86 14,95 50,95 C86,95 95,86 95,50 C95,14 86,5 50,5 L50,5 Z" />
+      </g>
+    </svg>
+  );
+};

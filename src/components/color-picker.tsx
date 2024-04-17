@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./color-picker.module.css";
-import { CopyToClipboardIcon, PaintBoard } from "@/lib/ui/icons";
+import { CopyToClipboardIcon, PaintBoard, SquircleIcon } from "@/lib/ui/icons";
 import { toast } from "sonner";
 
 export function ColorPicker({
@@ -54,14 +54,15 @@ export function ColorPicker({
       <button
         className={styles.mainButton}
         style={{
-          backgroundColor: `${color}`,
           width: `${width}`,
           height: `${height}`,
         }}
         onClick={() => {
           setOpen(!open);
         }}
-      ></button>
+      >
+        <SquircleIcon style={{ fill: `${color}` }} />
+      </button>
       {open ? (
         <section className={styles.container}>
           <section className={styles.titleSection}>
@@ -72,24 +73,31 @@ export function ColorPicker({
             {colors.map((colorHex) => (
               <button
                 className={styles.button}
-                style={{ backgroundColor: `${colorHex}` }}
                 onClick={() => {
                   setColor(colorHex);
                 }}
-              ></button>
+              >
+                <SquircleIcon style={{ fill: `${colorHex}` }} />
+              </button>
             ))}
             <div className={styles.customColorContainer}>
               <PaintBoard
                 style={{ strokeWidth: "1.5", stroke: "#1c1c1c", width: "20px" }}
               />
-              <input
-                type="color"
-                value={color}
-                onChange={(e) => {
-                  setColor(e.target.value);
-                }}
-                className={styles.colorInput}
-              ></input>
+              <div className={styles.inputColorContainer}>
+                <input
+                  id="colorInput"
+                  type="color"
+                  value={color}
+                  onChange={(e) => {
+                    setColor(e.target.value);
+                  }}
+                  className={styles.colorInput}
+                ></input>
+                <label htmlFor="colorInput" className={styles.labelColor}>
+                  <SquircleIcon style={{ fill: `${color}` }} />
+                </label>
+              </div>
             </div>
           </section>
           <div className={styles.separator}></div>
