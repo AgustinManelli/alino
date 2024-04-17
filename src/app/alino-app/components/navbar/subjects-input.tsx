@@ -41,18 +41,20 @@ export default function SubjectsInput({
     }
   }, [input]);
 
-  if (window !== undefined) {
-    window.addEventListener(
-      "mousedown",
-      function (event: MouseEvent | TouchEvent) {
-        if (divRef.current !== null) {
-          if (!divRef.current.contains(event.target as Node)) {
-            setInput(false);
-          }
+  useEffect(function mount() {
+    function divOnClick(event: MouseEvent | TouchEvent) {
+      if (divRef.current !== null) {
+        if (!divRef.current.contains(event.target as Node)) {
+          setInput(false);
         }
       }
-    );
-  }
+    }
+    window.addEventListener("mousedown", divOnClick);
+
+    return function unMount() {
+      window.removeEventListener("mousedown", divOnClick);
+    };
+  });
 
   return (
     <div ref={divRef}>
