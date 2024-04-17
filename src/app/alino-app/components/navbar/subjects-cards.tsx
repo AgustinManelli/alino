@@ -5,7 +5,7 @@ import styles from "./subjects-cards.module.css";
 import { useSubjects } from "@/store/todos";
 import { DeleteIcon } from "@/lib/ui/icons";
 import { useState } from "react";
-import { Coloricker } from "@/components/color-picker";
+import { ColorPicker } from "@/components/color-picker";
 
 export function SubjectsCards({
   subjectName,
@@ -61,7 +61,7 @@ export function SubjectsCards({
           borderRadius: "5px",
         }}
       ></div> */}
-      <Coloricker
+      <ColorPicker
         color={colorTemp}
         setColor={setColorTemp}
         save={true}

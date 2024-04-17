@@ -5,7 +5,7 @@ import styles from "./color-picker.module.css";
 import { CopyToClipboardIcon, PaintBoard } from "@/lib/ui/icons";
 import { toast } from "sonner";
 
-export function Coloricker({
+export function ColorPicker({
   color,
   setColor,
   save,
@@ -16,7 +16,7 @@ export function Coloricker({
   color: string;
   setColor: (value: string) => void;
   save?: boolean | null;
-  handleSave?: () => void | null;
+  handleSave?: () => Promise<void> | null;
   width?: string;
   height?: string;
 }) {

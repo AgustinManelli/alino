@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSubjects } from "@/store/todos";
 import { SubjectSchema } from "@/lib/subject-schema";
 import { LoadingIcon, PlusBoxIcon } from "@/lib/ui/icons";
-import { Coloricker } from "@/components/color-picker";
+import { ColorPicker } from "@/components/color-picker";
 
 type SubjectsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
@@ -95,7 +95,7 @@ export default function SubjectsInput({
             ) : (
               ""
             )}
-            <Coloricker color={color} setColor={setColor} />
+            <ColorPicker color={color} setColor={setColor} />
           </div>
         </>
       ) : (
