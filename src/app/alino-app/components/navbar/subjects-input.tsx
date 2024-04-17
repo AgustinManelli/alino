@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSubjects } from "@/store/todos";
 import { SubjectSchema } from "@/lib/subject-schema";
 import { LoadingIcon, PlusBoxIcon } from "@/lib/ui/icons";
+import { Coloricker } from "@/components/color-picker";
 
 type SubjectsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
@@ -49,6 +50,7 @@ export default function SubjectsInput({
       if (divRef.current !== null) {
         if (!divRef.current.contains(event.target as Node)) {
           setInput(false);
+          setHover(false);
         }
       }
     }
@@ -62,45 +64,40 @@ export default function SubjectsInput({
   return (
     <div ref={divRef}>
       {input ? (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit();
-          }}
-          className={styles.form}
-        >
-          <input
-            type="text"
-            placeholder="ingrese una materia"
-            value={value}
-            ref={inputRef}
-            onChange={(e) => {
-              setValue(e.target.value);
-            }}
-            className={styles.inputText}
-          ></input>
-          <input
-            type="color"
-            onChange={(e) => {
-              setColor(e.target.value);
-            }}
-            value={color}
-            id="colorInput"
-            className={styles.colorInput}
-          ></input>
-          {transition ? (
-            <LoadingIcon
-              style={{
-                width: "20px",
-                height: "auto",
-                stroke: "#000",
-                strokeWidth: "3",
+        <>
+          <div className={styles.form}>
+            <input
+              type="text"
+              placeholder="ingrese una materia"
+              value={value}
+              ref={inputRef}
+              onChange={(e) => {
+                setValue(e.target.value);
               }}
-            />
-          ) : (
-            ""
-          )}
-        </form>
+              className={styles.inputText}
+              onKeyDown={(e) => {
+                if (!inputRef.current) return;
+                if (e.key === "Enter") {
+                  handleSubmit();
+                }
+              }}
+            ></input>
+
+            {transition ? (
+              <LoadingIcon
+                style={{
+                  width: "20px",
+                  height: "auto",
+                  stroke: "#000",
+                  strokeWidth: "3",
+                }}
+              />
+            ) : (
+              ""
+            )}
+            <Coloricker color={color} setColor={setColor} />
+          </div>
+        </>
       ) : (
         <button
           onClick={() => {

@@ -31,6 +31,7 @@ export function SubjectsCards({
       onMouseLeave={() => {
         setHover(false);
       }}
+      style={{ backgroundColor: hover ? "rgb(240, 240, 240)" : "transparent" }}
     >
       <div
         style={{
@@ -55,8 +56,7 @@ export function SubjectsCards({
           borderRadius: "5px",
         }}
       ></div>
-      <p>{subjectName}</p>
-
+      <p className={styles.subjectName}>{subjectName}</p>
       <button
         onClick={handleDelete}
         style={{

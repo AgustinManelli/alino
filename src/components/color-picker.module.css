@@ -1,0 +1,118 @@
+.fit {
+  position: relative;
+  width: fit-content;
+  height: fit-content;
+  padding: 0;
+  margin: 0;
+  width: 20px;
+  height: 20px;
+}
+.container {
+  right: -210px;
+  top: -90px;
+  position: absolute;
+  background-color: rgb(255, 255, 255);
+  border: 1px solid rgb(240, 240, 240);
+  width: 200px;
+  max-width: 200px;
+  min-width: 200px;
+  height: fit-content;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  z-index: 100;
+}
+.mainButton {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 5px;
+}
+.separator {
+  width: 100%;
+  height: 1px;
+  background-color: rgb(240, 240, 240);
+}
+.buttonSection {
+  height: 100%;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.button {
+  width: 25px;
+  height: 25px;
+  border: none;
+  cursor: pointer;
+  background-color: none;
+  border-radius: 7px;
+}
+.customColorContainer {
+  background-color: rgb(240, 240, 240);
+  padding: 5px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.colorInput {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  height: 25px;
+  width: 25px;
+  border: 0;
+  cursor: pointer;
+  background-color: transparent;
+}
+.colorInput::-webkit-color-swatch {
+  border-radius: 7px;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.colorInput::-webkit-color-swatch-wrapper {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.colorInput::-moz-color-swatch-wrapper {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.colorInput::-moz-color-swatch {
+  border-radius: 7px;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.footer {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+  align-items: center;
+}
+.hexContainer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.hexCode {
+  background-color: transparent;
+  width: 100%;
+  height: fit-content;
+  border: none;
+  font-size: 15px;
+  outline-style: none;
+  font-family: inter;
+}
+.copyButton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
