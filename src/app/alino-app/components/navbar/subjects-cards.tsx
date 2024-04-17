@@ -6,6 +6,7 @@ import { useSubjects } from "@/store/todos";
 import { DeleteIcon } from "@/lib/ui/icons";
 import { useState } from "react";
 import { ColorPicker } from "@/components/color-picker";
+import { toast } from "sonner";
 
 export function SubjectsCards({
   subjectName,
@@ -19,12 +20,16 @@ export function SubjectsCards({
   const deleteSubject = useSubjects((state) => state.deleteSubject);
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(color);
+  const [wait, setWait] = useState<boolean>(false);
   const handleDelete = async () => {
     deleteSubject(id);
     await DeleteSubjectToDB(id.toString());
   };
   const handleSave = async () => {
+    setWait(true);
     await UpdateSubjectToDB(id.toString(), colorTemp);
+    toast(`Color de ${subjectName} cambiado correctamente`);
+    setWait(false);
   };
 
   return (
@@ -68,6 +73,7 @@ export function SubjectsCards({
         handleSave={handleSave}
         width={"12px"}
         height={"12px"}
+        wait={wait}
       />
       <p className={styles.subjectName}>{subjectName}</p>
       <button

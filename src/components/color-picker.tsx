@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./color-picker.module.css";
-import { CopyToClipboardIcon, PaintBoard, SquircleIcon } from "@/lib/ui/icons";
+import {
+  CopyToClipboardIcon,
+  LoadingIcon,
+  PaintBoard,
+  SquircleIcon,
+} from "@/lib/ui/icons";
 import { toast } from "sonner";
 
 export function ColorPicker({
@@ -12,6 +17,7 @@ export function ColorPicker({
   handleSave,
   width,
   height,
+  wait,
 }: {
   color: string;
   setColor: (value: string) => void;
@@ -19,6 +25,7 @@ export function ColorPicker({
   handleSave?: () => Promise<void> | null;
   width?: string;
   height?: string;
+  wait?: boolean | null;
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
@@ -137,7 +144,18 @@ export function ColorPicker({
               }}
               onClick={handleSave}
             >
-              save
+              {wait ? (
+                <LoadingIcon
+                  style={{
+                    width: "20px",
+                    height: "auto",
+                    stroke: "#1c1c1c",
+                    strokeWidth: "3",
+                  }}
+                />
+              ) : (
+                "save"
+              )}
             </button>
           ) : (
             ""

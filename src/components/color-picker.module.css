@@ -1,11 +1,8 @@
 .fit {
   position: relative;
-  width: fit-content;
+  display: flex;
   height: fit-content;
-  padding: 0;
-  margin: 0;
-  width: 20px;
-  height: 20px;
+  width: fit-content;
 }
 .container {
   right: -215px;
@@ -124,6 +121,10 @@
   align-items: center;
   gap: 5px;
 }
+.hexText {
+  color: #1c1c1c;
+  font-weight: 500;
+}
 .hexCode {
   background-color: transparent;
   width: 100%;
@@ -132,6 +133,8 @@
   font-size: 15px;
   outline-style: none;
   font-family: inter;
+  color: #1c1c1c;
+  font-weight: 500;
 }
 .copyButton {
   background-color: transparent;
@@ -143,8 +146,12 @@
   border: none;
   font-family: inter;
   font-size: 14px;
+  font-weight: 500;
   color: #1c1c1c;
   height: 30px;
   border-radius: 10px;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
