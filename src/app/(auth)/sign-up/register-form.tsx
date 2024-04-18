@@ -1,6 +1,6 @@
 "use client";
 
-import { CreateUserInput, createUserSchema } from "../../lib/user-schema";
+import { CreateUserInput, createUserSchema } from "@/lib/user-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { signUpWithEmailAndPassword } from "@/lib/auth/actions";

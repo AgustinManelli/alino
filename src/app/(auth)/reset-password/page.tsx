@@ -5,16 +5,16 @@ import { ResetForm } from "./reset-form";
 import { FormContainer } from "@/components/forms/form-container";
 
 export default async function Login() {
-  const { data } = await readUserSession();
-  if (!data.session) {
-    return redirect("/sign-in");
-  }
+  // const { data } = await readUserSession();
+  // if (!data.session) {
+  //   return redirect("/sign-in");
+  // }
 
   return (
     <div className={styles.container}>
-      <FormContainer>
-        <ResetForm />
-      </FormContainer>
+      {/* <FormContainer> */}
+      <ResetForm />
+      {/* </FormContainer> */}
     </div>
   );
 }

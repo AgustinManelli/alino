@@ -6,14 +6,14 @@ import { RegisterForm } from "./register-form";
 import { FormContainer } from "@/components/forms/form-container";
 
 export default async function SignOut() {
-  const { data } = await readUserSession();
-  if (data.session) {
-    return redirect("/alino-app");
-  }
+  // const { data } = await readUserSession();
+  // if (data.session) {
+  //   return redirect("/alino-app");
+  // }
 
   return (
-    <FormContainer>
-      <RegisterForm />
-    </FormContainer>
+    // <FormContainer>
+    <RegisterForm />
+    // </FormContainer>
   );
 }

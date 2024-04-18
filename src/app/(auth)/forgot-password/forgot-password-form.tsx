@@ -1,8 +1,8 @@
 "use client";
 
-import { resetUserSchema, ResetUserInput } from "../../lib/user-schema";
+import { resetUserSchema, ResetUserInput } from "@/lib/user-schema";
 import styles from "../sign-in/login.module.css";
-import { resetPassword } from "../../lib/auth/actions";
+import { resetPassword } from "@/lib/auth/actions";
 import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";

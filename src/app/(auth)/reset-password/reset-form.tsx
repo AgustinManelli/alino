@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  UpdatePasswordInput,
-  updatePasswordScheme,
-} from "../../lib/user-schema";
+import { UpdatePasswordInput, updatePasswordScheme } from "@/lib/user-schema";
 import styles from "../sign-in/login.module.css";
 import { updatePassword, signout } from "@/lib/auth/actions";
 import { toast } from "sonner";
