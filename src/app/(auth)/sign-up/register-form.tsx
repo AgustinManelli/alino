@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateUserInput, createUserSchema } from "@/lib/user-schema";
+import { AnimatePresence, motion } from "framer-motion";
 import styles from "../sign-in/login.module.css";
 
 export const RegisterForm = () => {
@@ -55,11 +56,19 @@ export const RegisterForm = () => {
       </div>
       <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
         <div className={styles.inputContainer}>
-          {errors["email"] && (
-            <p className={styles.errorMsg}>
-              {errors["email"]?.message as string}
-            </p>
-          )}
+          <AnimatePresence>
+            {errors["email"] && (
+              <motion.p
+                className={styles.errorMsg}
+                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, height: "0px" }}
+                animate={{ opacity: 1, height: "initial" }}
+                exit={{ opacity: 0, height: "0px" }}
+              >
+                {errors["email"]?.message as string}
+              </motion.p>
+            )}
+          </AnimatePresence>
           <input
             id="email"
             type="email"
@@ -70,11 +79,19 @@ export const RegisterForm = () => {
           />
         </div>
         <div className={styles.inputContainer}>
-          {errors["password"] && (
-            <p className={styles.errorMsg}>
-              {errors["password"]?.message as string}
-            </p>
-          )}
+          <AnimatePresence>
+            {errors["password"] && (
+              <motion.p
+                className={styles.errorMsg}
+                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, height: "0px" }}
+                animate={{ opacity: 1, height: "initial" }}
+                exit={{ opacity: 0, height: "0px" }}
+              >
+                {errors["password"]?.message as string}
+              </motion.p>
+            )}
+          </AnimatePresence>
           <input
             id="password"
             type="password"
@@ -85,11 +102,19 @@ export const RegisterForm = () => {
           />
         </div>
         <div className={styles.inputContainer}>
-          {errors["passwordConfirm"] && (
-            <p className={styles.errorMsg}>
-              {errors["passwordConfirm"]?.message as string}
-            </p>
-          )}
+          <AnimatePresence>
+            {errors["passwordConfirm"] && (
+              <motion.p
+                className={styles.errorMsg}
+                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, height: "0px" }}
+                animate={{ opacity: 1, height: "initial" }}
+                exit={{ opacity: 0, height: "0px" }}
+              >
+                {errors["passwordConfirm"]?.message as string}
+              </motion.p>
+            )}
+          </AnimatePresence>
           <input
             id="password"
             type="password"
