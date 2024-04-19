@@ -9,7 +9,7 @@ import {
   ResetUserInput,
   UpdatePasswordInput,
 } from "../user-schema";
-import { unstable_noStore as noStore } from "next/cache";
+// import { unstable_noStore as noStore } from "next/cache";
 
 export async function signInWithEmailAndPassword(dataInput: LoginUserInput) {
   const supabase = await createClient();
@@ -78,7 +78,7 @@ export async function updatePasswordLogin(formData: FormData) {
 }
 
 export async function readUserSession() {
-  noStore();
+  // noStore();
   const supabase = await createClient();
   return await supabase.auth.getSession();
 }

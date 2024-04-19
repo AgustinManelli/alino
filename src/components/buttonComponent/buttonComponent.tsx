@@ -1,9 +1,10 @@
 "use client";
-import Link from "next/link";
-import Styles from "./buttonComponent.module.css";
-import { useState } from "react";
 
-interface Props {
+import Link from "next/link";
+import { useState } from "react";
+import Styles from "./buttonComponent.module.css";
+
+type Props = {
   text?: string;
   background: string;
   hover: string;
@@ -12,9 +13,9 @@ interface Props {
   strokeBorder: boolean;
   children?: string | JSX.Element | JSX.Element[] | null;
   style?: React.CSSProperties;
-}
+};
 
-export const ButtonComponent: React.FC<Props> = ({
+export const ButtonComponent = ({
   text,
   background,
   hover,
@@ -23,7 +24,7 @@ export const ButtonComponent: React.FC<Props> = ({
   strokeBorder,
   children,
   style,
-}) => {
+}: Props) => {
   const [state, setState] = useState<boolean>(false);
   const handleState = (inp: boolean): void => {
     setState(inp);
