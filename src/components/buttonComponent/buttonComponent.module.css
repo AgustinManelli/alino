@@ -6,4 +6,15 @@
     background-color 0.2s ease-in-out,
     color 0.2s ease-in-out;
   width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }

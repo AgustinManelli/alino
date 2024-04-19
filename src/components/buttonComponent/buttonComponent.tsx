@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import Styles from "./buttonComponent.module.css";
+import styles from "./buttonComponent.module.css";
 
 type Props = {
   text?: string;
@@ -15,6 +15,17 @@ type Props = {
   style?: React.CSSProperties;
 };
 
+const useHover = () => {
+  const [state, setState] = useState<boolean>(false);
+  const handleState = (hover: boolean): void => {
+    setState(hover);
+  };
+  return {
+    state,
+    handleState,
+  };
+};
+
 export const ButtonComponent = ({
   text,
   background,
@@ -25,10 +36,8 @@ export const ButtonComponent = ({
   children,
   style,
 }: Props) => {
-  const [state, setState] = useState<boolean>(false);
-  const handleState = (inp: boolean): void => {
-    setState(inp);
-  };
+  const { state, handleState } = useHover();
+
   const inlineStyles = {
     backgroundColor: strokeBorder
       ? state === true
@@ -44,15 +53,14 @@ export const ButtonComponent = ({
       : `${letterColor}`,
     border: strokeBorder ? `solid ${background} 2px` : "none",
     fontWeight: strokeBorder ? "600" : "initial",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
   };
+
   const combinedStyles = Object.assign({}, inlineStyles, style);
+
   return (
     <Link
       href={`${to}`}
-      className={Styles.buttonContainer}
+      className={styles.buttonContainer}
       style={combinedStyles}
       onMouseEnter={() => {
         handleState(true);
@@ -61,15 +69,7 @@ export const ButtonComponent = ({
         handleState(false);
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "7px",
-        }}
-      >
+      <div className={styles.container}>
         {children}
         {text}
       </div>
