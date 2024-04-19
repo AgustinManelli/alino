@@ -1,14 +1,14 @@
 "use client";
 
-import { CreateUserInput, createUserSchema } from "@/lib/user-schema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { SubmitHandler, useForm } from "react-hook-form";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 import { signUpWithEmailAndPassword } from "@/lib/auth/actions";
 import { toast } from "sonner";
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CreateUserInput, createUserSchema } from "@/lib/user-schema";
 import styles from "../sign-in/login.module.css";
-import Link from "next/link";
 
 export const RegisterForm = () => {
   const [isPending, startTransition] = useTransition();
@@ -31,6 +31,7 @@ export const RegisterForm = () => {
         dataInput: values,
         emailRedirectTo: `${location.origin}/auth/callback`,
       });
+
       const typeError = JSON.parse(result)[0];
       const error = JSON.parse(result)[1];
       if (error) {
@@ -40,7 +41,7 @@ export const RegisterForm = () => {
       }
 
       toast.success(
-        "Registrado correctamente, verifique su correo para verificar su cuenta"
+        "Registrado correctamente, revise su correo para verificar su cuenta"
       );
       router.push("/sign-in");
     });
@@ -98,7 +99,6 @@ export const RegisterForm = () => {
             required
           />
         </div>
-        {/*//formAction={login}*/}
         <button className={styles.buttom} type="submit" disabled={isPending}>
           Crear cuenta
         </button>

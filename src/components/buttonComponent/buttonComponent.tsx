@@ -10,7 +10,7 @@ type Props = {
   hover: string;
   letterColor: string;
   to: string;
-  strokeBorder: boolean;
+  strokeBorder?: boolean | null;
   children?: string | JSX.Element | JSX.Element[] | null;
   style?: React.CSSProperties;
 };

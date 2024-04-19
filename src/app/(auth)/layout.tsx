@@ -23,7 +23,6 @@ export default async function authLayout({
             hover="rgb(230, 230, 230)"
             letterColor="#000"
             to="/"
-            strokeBorder={false}
           >
             <HomeIcon
               style={{
