@@ -15,9 +15,9 @@ type Subjects = {
 };
 
 export const useSubjectSelected = create<Subjects>()((set) => ({
-  subjectName: "",
-  subjectId: "",
-  subjectColor: "",
+  subjectName: "home",
+  subjectId: "home-tasks-static-alino-app",
+  subjectColor: "#87189d",
   setSubjects: (subject) => set(() => ({ subjectName: subject })),
   setSubjectId: (id) => set(() => ({ subjectId: id })),
   setSubjectColor: (color) => set(() => ({ subjectColor: color })),

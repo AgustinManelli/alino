@@ -65,3 +65,46 @@ export const UpdateSubjectToDB = async (id: string, color: string) => {
   }
   return error;
 };
+
+export const AddTaskToDB = async (
+  task: string,
+  status: boolean,
+  priority: number,
+  subject_id: string
+) => {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getSession();
+  if (!error) {
+    if (data.session) {
+      const user = data.session.user;
+      if (subject_id === "home-tasks-static-alino-app") {
+        const result = await supabase
+          .from("todos-home")
+          .insert({ user_id: user.id, task, status, priority })
+          .select()
+          .single();
+        return result;
+      } else {
+        const result = await supabase
+          .from("todos")
+          .insert({ user_id: user.id, subject_id, task, status, priority })
+          .select()
+          .single();
+        return result;
+      }
+    }
+  }
+  return error;
+};
+
+export async function GetTasks() {
+  const supabase = await createClient();
+  const { data } = await readUserSession();
+
+  const result = await supabase
+    .from("todos")
+    .select("*")
+    .order("inserted_at", { ascending: true })
+    .eq("user_id", data.session?.user.id);
+  return result;
+}

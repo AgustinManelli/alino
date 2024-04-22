@@ -4,11 +4,8 @@ import styles from "./subjects-input.module.css";
 import { AddSubjectToDB, GetSubjects } from "@/lib/todo/actions";
 import { useEffect, useRef, useState } from "react";
 import { useSubjects } from "@/store/subjects";
-import { SubjectSchema } from "@/lib/subject-schema";
 import { LoadingIcon, PlusBoxIcon } from "@/lib/ui/icons";
 import { ColorPicker } from "@/components/color-picker";
-
-type SubjectsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
 export default function SubjectsInput({
   setWaiting,
@@ -21,7 +18,6 @@ export default function SubjectsInput({
   const [hover, setHover] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
   const setSubjects = useSubjects((state) => state.setSubjects);
-  const subjects = useSubjects((state) => state.subjects);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
 

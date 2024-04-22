@@ -18,7 +18,6 @@ export default function Navbar() {
 
   const subjects = useSubjects((state) => state.subjects);
   const setSubjects = useSubjects((state) => state.setSubjects);
-
   const [waiting, setWaiting] = useState<boolean>(false);
   const [fetching, setFetching] = useState<boolean>(true);
 
@@ -57,7 +56,7 @@ export default function Navbar() {
   return (
     <div className={styles.navbarContainer}>
       <nav className={styles.navbar}>
-        <h2 className={styles.navbarTitle}>Materias</h2>
+        {/* <h2 className={styles.navbarTitle}>Materias</h2> */}
         <section className={styles.SubjectsCardsSection}>
           {fetching ? (
             [

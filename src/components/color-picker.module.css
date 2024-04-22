@@ -33,6 +33,10 @@
   border-radius: 5px;
   cursor: pointer;
   background-color: transparent;
+  transition: scale 0.2s ease-in-out;
+}
+.mainButton:hover {
+  scale: 1.2;
 }
 .separator {
   width: 100%;
