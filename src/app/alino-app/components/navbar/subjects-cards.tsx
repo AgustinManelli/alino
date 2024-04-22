@@ -28,13 +28,12 @@ export function SubjectsCards({
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(color);
   const [wait, setWait] = useState<boolean>(false);
-  const handleDelete = async () => {
+  const handleDelete = () => {
     deleteSubject(id);
-    await DeleteSubjectToDB(id.toString());
   };
   const handleSave = async () => {
     setWait(true);
-    await UpdateSubjectToDB(id.toString(), colorTemp);
+    await UpdateSubjectToDB(id, colorTemp);
     toast(`Color de ${subjectName} cambiado correctamente`);
     setWait(false);
   };
