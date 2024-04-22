@@ -95,7 +95,7 @@ export default function Navbar() {
               >
                 <motion.div variants={item}>
                   <SubjectsCards
-                    subjectName={"home"}
+                    subjectName={"inicio"}
                     id={"home-tasks-static-alino-app"}
                     color={"#87189d"}
                     type={"home"}

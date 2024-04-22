@@ -9,6 +9,7 @@ import { useEffect } from "react";
 
 export default function Todo() {
   const subjectName = useSubjectSelected((state) => state.subjectName);
+  const subjectColor = useSubjectSelected((state) => state.subjectColor);
   const setTasks = useTodo((state) => state.setTasks);
   const tasks = useTodo((state) => state.tasks);
   const supabase = createClient();
@@ -23,7 +24,6 @@ export default function Todo() {
   return (
     <div
       style={{
-        backgroundColor: "#fff",
         width: "100%",
         height: "100%",
         borderRadius: "20px",
@@ -34,7 +34,23 @@ export default function Todo() {
         padding: "25px",
       }}
     >
-      <section>
+      <section
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "start",
+          gap: "10px",
+          width: "100%",
+        }}
+      >
+        <div
+          style={{
+            width: "12px",
+            height: "12px",
+            backgroundColor: `${subjectColor}`,
+            borderRadius: "5px",
+          }}
+        ></div>
         <h2>{subjectName}</h2>
       </section>
       <TodoInput />
