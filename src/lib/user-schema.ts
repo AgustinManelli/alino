@@ -1,7 +1,9 @@
 import { object, string, TypeOf } from "zod";
 
 export const createUserSchema = object({
-  email: string({ required_error: "Ingrese el email" })
+  email: string({
+    required_error: "Ingrese el email",
+  })
     .min(1, "Ingrese el email")
     .email("Email incorrecto"),
   password: string({ required_error: "Ingrese una contraseña" })
@@ -17,7 +19,9 @@ export const createUserSchema = object({
 });
 
 export const loginUserSchema = object({
-  email: string({ required_error: "Ingrese el email" })
+  email: string({
+    required_error: "Ingrese el email",
+  })
     .min(1, "Ingrese el email")
     .email("Verifique su email"),
   password: string({ required_error: "Ingrese una contraseña" }).min(
@@ -27,10 +31,9 @@ export const loginUserSchema = object({
 });
 
 export const resetUserSchema = object({
-  email: string({ required_error: "Ingrese el email" }).min(
-    1,
-    "Ingrese el email"
-  ),
+  email: string({ required_error: "Ingrese el email" })
+    .min(1, "Ingrese el email")
+    .email("Email incorrecto"),
 });
 
 export const updatePasswordScheme = object({

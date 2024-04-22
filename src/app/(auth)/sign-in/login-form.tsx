@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { GithubIcon, GoogleIcon, LoadingIcon } from "@/lib/ui/icons";
 import { OauthButton } from "./components/oauthButton";
+import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 
 export const LoginForm = () => {
@@ -56,11 +57,19 @@ export const LoginForm = () => {
       <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
         <section className={styles.inputContainer}>
           <div className={styles.inputDiv}>
-            {errors["email"] && (
-              <p className={styles.errorMsg}>
-                {errors["email"]?.message as string}
-              </p>
-            )}
+            <AnimatePresence>
+              {errors["email"] && (
+                <motion.p
+                  className={styles.errorMsg}
+                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, height: "0px" }}
+                  animate={{ opacity: 1, height: "initial" }}
+                  exit={{ opacity: 0, height: "0px" }}
+                >
+                  {errors["email"]?.message as string}
+                </motion.p>
+              )}
+            </AnimatePresence>
             <input
               id="email"
               type="email"
@@ -68,9 +77,23 @@ export const LoginForm = () => {
               className={styles.input}
               {...register("email")}
               required
+              disabled={isPending}
             />
           </div>
           <div className={styles.inputDiv}>
+            <AnimatePresence>
+              {errors["password"] && (
+                <motion.p
+                  className={styles.errorMsg}
+                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, height: "0px" }}
+                  animate={{ opacity: 1, height: "initial" }}
+                  exit={{ opacity: 0, height: "0px" }}
+                >
+                  {errors["password"]?.message as string}
+                </motion.p>
+              )}
+            </AnimatePresence>
             <input
               id="password"
               type="password"
@@ -78,6 +101,7 @@ export const LoginForm = () => {
               className={styles.input}
               {...register("password")}
               required
+              disabled={isPending}
             />
           </div>
         </section>
@@ -102,6 +126,7 @@ export const LoginForm = () => {
               providerName={"Github"}
               providerType={"github"}
               style={{ backgroundColor: "#1c1c1c", color: "#fff" }}
+              loadColor={"#ffffff"}
             >
               <GithubIcon style={{ width: "25px" }} />
             </OauthButton>
@@ -109,6 +134,7 @@ export const LoginForm = () => {
               providerName={"Google"}
               providerType={"google"}
               style={{ backgroundColor: "#fff", color: "#1c1c1c" }}
+              loadColor={"#1c1c1c"}
             >
               <GoogleIcon style={{ width: "25px" }} />
             </OauthButton>

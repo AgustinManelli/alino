@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateUserInput, createUserSchema } from "@/lib/user-schema";
 import { AnimatePresence, motion } from "framer-motion";
 import styles from "../sign-in/login.module.css";
+import { LoadingIcon } from "@/lib/ui/icons";
 
 export const RegisterForm = () => {
   const [isPending, startTransition] = useTransition();
@@ -125,7 +126,19 @@ export const RegisterForm = () => {
           />
         </div>
         <button className={styles.buttom} type="submit" disabled={isPending}>
-          Crear cuenta
+          {isPending ? (
+            <LoadingIcon
+              style={{
+                width: "20px",
+                height: "auto",
+                stroke: "#fff",
+                strokeWidth: "3",
+              }}
+            />
+          ) : (
+            ""
+          )}
+          <p>{isPending ? "Creando cuenta..." : "Crear cuenta"}</p>
         </button>
       </form>
       <div className={styles.moreInfo}>

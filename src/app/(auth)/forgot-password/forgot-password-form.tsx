@@ -8,6 +8,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 
 export const ForgotPasswordForm = () => {
@@ -52,7 +53,19 @@ export const ForgotPasswordForm = () => {
       </div>
       <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
         <div className={styles.inputContainer}>
-          {error && <p className={styles.errorMsg}>{error}</p>}
+          <AnimatePresence>
+            {errors["email"] && (
+              <motion.p
+                className={styles.errorMsg}
+                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, height: "0px" }}
+                animate={{ opacity: 1, height: "initial" }}
+                exit={{ opacity: 0, height: "0px" }}
+              >
+                {errors["email"]?.message as string}
+              </motion.p>
+            )}
+          </AnimatePresence>
           <input
             id="email"
             type="email"

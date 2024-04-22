@@ -85,6 +85,7 @@
   width: fit-content;
   padding-left: 20px;
   z-index: 10;
+  margin-bottom: 5px;
 }
 
 .buttonsContainer {
