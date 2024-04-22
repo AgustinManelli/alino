@@ -1,6 +1,6 @@
 .navbarContainer {
-  position: absolute;
   width: 25vw;
+  min-width: 25vw;
   height: 100vh;
   display: flex;
   justify-content: center;

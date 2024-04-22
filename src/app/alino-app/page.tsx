@@ -4,6 +4,7 @@ import styles from "./page.module.css";
 import { redirect } from "next/navigation";
 import { signout, readUserSession } from "@/lib/auth/actions";
 import Link from "next/link";
+import Todo from "./components/todo/todo";
 
 export async function generateMetadata() {
   const { data } = await readUserSession();
@@ -26,7 +27,9 @@ export default async function AlinoApp() {
   }
 
   return (
-    <div>
+    <div
+      style={{ width: "100%", height: "100%", padding: "25px 25px 25px 0px" }}
+    >
       <div className={styles.controls}>
         <div className={styles.controlsContainer}>
           <form>
@@ -40,6 +43,7 @@ export default async function AlinoApp() {
           </Link>
         </div>
       </div>
+      <Todo />
     </div>
   );
 }

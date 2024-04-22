@@ -3,7 +3,7 @@
 import { DeleteSubjectToDB, UpdateSubjectToDB } from "@/lib/todo/actions";
 import styles from "./subjects-cards.module.css";
 import { useSubjects } from "@/store/todos";
-import { DeleteIcon } from "@/lib/ui/icons";
+import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
 import { useState } from "react";
 import { ColorPicker } from "@/components/color-picker";
 import { toast } from "sonner";
@@ -13,10 +13,12 @@ export function SubjectsCards({
   subjectName,
   id,
   color,
+  type,
 }: {
   subjectName: string;
   id: number;
   color: string;
+  type?: string;
 }) {
   const deleteSubject = useSubjects((state) => state.deleteSubject);
   const [hover, setHover] = useState<boolean>(false);
@@ -67,33 +69,41 @@ export function SubjectsCards({
           borderRadius: "5px",
         }}
       ></div> */}
-      <ColorPicker
-        color={colorTemp}
-        setColor={setColorTemp}
-        save={true}
-        handleSave={handleSave}
-        width={"12px"}
-        height={"12px"}
-        wait={wait}
-      />
-      <p className={styles.subjectName}>{subjectName}</p>
-      <button
-        onClick={handleDelete}
-        style={{
-          opacity: hover ? "1" : "0",
-          position: "absolute",
-          right: "10px",
-          border: "none",
-          borderRadius: "10px",
-          cursor: "pointer",
-          backgroundColor: "transparent",
-          transition: "opacity 0.2s ease-in-out",
-        }}
-      >
-        <DeleteIcon
-          style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "1.5" }}
+      {type ? (
+        <SquircleIcon style={{ width: "12px", fill: `${colorTemp}` }} />
+      ) : (
+        <ColorPicker
+          color={colorTemp}
+          setColor={setColorTemp}
+          save={true}
+          handleSave={handleSave}
+          width={"12px"}
+          height={"12px"}
+          wait={wait}
         />
-      </button>
+      )}
+      <p className={styles.subjectName}>{subjectName}</p>
+      {type ? (
+        ""
+      ) : (
+        <button
+          onClick={handleDelete}
+          style={{
+            opacity: hover ? "1" : "0",
+            position: "absolute",
+            right: "10px",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+            backgroundColor: "transparent",
+            transition: "opacity 0.2s ease-in-out",
+          }}
+        >
+          <DeleteIcon
+            style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "1.5" }}
+          />
+        </button>
+      )}
     </div>
   );
 }

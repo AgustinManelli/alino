@@ -93,7 +93,14 @@ export default function Navbar() {
                 animate="visible"
                 exit="exit"
               >
-                {" "}
+                <motion.div variants={item}>
+                  <SubjectsCards
+                    subjectName={"home"}
+                    id={1}
+                    color={"#87189d"}
+                    type={"home"}
+                  />
+                </motion.div>
                 {subjects.map((subj) => (
                   <motion.div variants={item} key={subj.id}>
                     <SubjectsCards
