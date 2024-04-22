@@ -32,6 +32,7 @@ export default function Todo() {
         alignItems: "center",
         flexDirection: "column",
         padding: "25px",
+        gap: "20px",
       }}
     >
       <section
@@ -53,8 +54,18 @@ export default function Todo() {
         ></div>
         <h2>{subjectName}</h2>
       </section>
-      <TodoInput />
-      <TodoTasksSection tasks={tasks} />
+      <section
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "start",
+          alignItems: "center",
+          flexDirection: "column",
+        }}
+      >
+        <TodoInput />
+        <TodoTasksSection tasks={tasks} />
+      </section>
     </div>
   );
 }
