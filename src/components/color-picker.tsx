@@ -71,8 +71,8 @@ export function ColorPicker({
       >
         <SquircleIcon style={{ fill: `${color}` }} />
       </button>
-      {open ? (
-        <AnimatePresence>
+      <AnimatePresence>
+        {open ? (
           <motion.section
             transition={{
               type: "spring",
@@ -94,6 +94,9 @@ export function ColorPicker({
                   className={styles.button}
                   onClick={() => {
                     setColor(colorHex);
+                    if (!save) {
+                      setOpen(false);
+                    }
                   }}
                 >
                   <SquircleIcon style={{ fill: `${colorHex}` }} />
@@ -181,10 +184,10 @@ export function ColorPicker({
               ""
             )}
           </motion.section>
-        </AnimatePresence>
-      ) : (
-        ""
-      )}
+        ) : (
+          ""
+        )}
+      </AnimatePresence>
     </div>
   );
 }
