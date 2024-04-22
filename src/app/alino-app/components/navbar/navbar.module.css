@@ -26,6 +26,11 @@
   flex-direction: column;
   gap: 5px;
 }
+.divCardsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
 .navbarTitle {
   margin-left: 0px;

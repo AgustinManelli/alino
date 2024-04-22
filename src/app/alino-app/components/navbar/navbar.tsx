@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { GetSubjects } from "@/lib/todo/actions";
 import { SubjectsCards } from "./subjects-cards";
 import SubjectsInput from "./subjects-input";
-import { useSubjects } from "@/store/todos";
+import { useSubjects } from "@/store/subjects";
 import Skeleton from "@/components/skeleton";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -92,11 +92,12 @@ export default function Navbar() {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
+                className={styles.divCardsContainer}
               >
                 <motion.div variants={item}>
                   <SubjectsCards
                     subjectName={"home"}
-                    id={1}
+                    id={"home-tasks-static-alino-app"}
                     color={"#87189d"}
                     type={"home"}
                   />

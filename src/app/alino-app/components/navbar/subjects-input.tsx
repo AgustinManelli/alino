@@ -3,7 +3,7 @@
 import styles from "./subjects-input.module.css";
 import { AddSubjectToDB, GetSubjects } from "@/lib/todo/actions";
 import { useEffect, useRef, useState } from "react";
-import { useSubjects } from "@/store/todos";
+import { useSubjects } from "@/store/subjects";
 import { SubjectSchema } from "@/lib/subject-schema";
 import { LoadingIcon, PlusBoxIcon } from "@/lib/ui/icons";
 import { ColorPicker } from "@/components/color-picker";

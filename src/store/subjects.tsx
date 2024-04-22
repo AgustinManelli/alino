@@ -8,7 +8,7 @@ type SubjectsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 type Subjects = {
   subjects: SubjectsType[];
   setSubjects: (subject: SubjectsType[]) => void;
-  deleteSubject: (id: number) => void;
+  deleteSubject: (id: string) => void;
 };
 
 export const useSubjects = create<Subjects>()((set, get) => ({

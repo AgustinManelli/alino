@@ -1,28 +1,31 @@
-export type Json = string | string | string | string | string;
+export type Json = number | string | string | string;
 
-export interface SubjectSchema {
+export interface TasksHomeSchema {
   public: {
     Tables: {
-      subjects: {
+      todo: {
         Row: {
-          id: string;
+          id: number;
           user_id: string;
-          subject: string;
-          color: string;
+          task: string;
+          status: boolean;
+          priority: number;
           inserted_at: string;
         };
         Insert: {
-          id?: string;
+          id?: number;
           user_id?: string;
-          subject?: string;
-          color?: string;
+          task?: string;
+          status?: boolean;
+          priority?: number;
           inserted_at?: string;
         };
         Update: {
-          id?: string;
+          id?: number;
           user_id?: string;
-          subject?: string;
-          color?: string;
+          task?: string;
+          status?: boolean;
+          priority?: number;
           inserted_at?: string;
         };
       };

@@ -1,4 +1,9 @@
+"use client";
+import { useSubjectSelected } from "@/store/subject-selected";
+import TodoInput from "./todo-input";
 export default function Todo() {
+  const subjectName = useSubjectSelected((state) => state.subjectName);
+  const subjectColor = useSubjectSelected((state) => state.subjectColor);
   return (
     <div
       style={{
@@ -9,9 +14,13 @@ export default function Todo() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        flexDirection: "column",
       }}
     >
-      <p>holamundo!</p>
+      <section>
+        <h2>{subjectName}</h2>
+      </section>
+      <TodoInput />
     </div>
   );
 }

@@ -2,12 +2,16 @@
 
 import { DeleteSubjectToDB, UpdateSubjectToDB } from "@/lib/todo/actions";
 import styles from "./subjects-cards.module.css";
-import { useSubjects } from "@/store/todos";
+import { useSubjects } from "@/store/subjects";
 import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
 import { useState } from "react";
 import { ColorPicker } from "@/components/color-picker";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useSubjectSelected } from "@/store/subject-selected";
+import { SubjectSchema } from "@/lib/subject-schema";
+
+type SubjectsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
 export function SubjectsCards({
   subjectName,
@@ -16,7 +20,7 @@ export function SubjectsCards({
   type,
 }: {
   subjectName: string;
-  id: number;
+  id: string;
   color: string;
   type?: string;
 }) {
@@ -34,6 +38,10 @@ export function SubjectsCards({
     toast(`Color de ${subjectName} cambiado correctamente`);
     setWait(false);
   };
+  const setSubjects = useSubjectSelected((state) => state.setSubjects);
+  const setSubjectId = useSubjectSelected((state) => state.setSubjectId);
+  const setSubjectColor = useSubjectSelected((state) => state.setSubjectColor);
+  const subjectId = useSubjectSelected((state) => state.subjectId);
 
   return (
     <div
@@ -44,7 +52,15 @@ export function SubjectsCards({
       onMouseLeave={() => {
         setHover(false);
       }}
-      style={{ backgroundColor: hover ? "rgb(240, 240, 240)" : "transparent" }}
+      style={{
+        backgroundColor:
+          hover || subjectId === id ? "rgb(240, 240, 240)" : "transparent",
+      }}
+      onClick={() => {
+        setSubjects(subjectName);
+        setSubjectId(id);
+        setSubjectColor(color);
+      }}
     >
       {/* <div
         style={{
