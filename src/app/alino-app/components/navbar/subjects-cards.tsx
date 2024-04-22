@@ -7,6 +7,7 @@ import { DeleteIcon } from "@/lib/ui/icons";
 import { useState } from "react";
 import { ColorPicker } from "@/components/color-picker";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export function SubjectsCards({
   subjectName,

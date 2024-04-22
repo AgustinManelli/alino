@@ -44,15 +44,24 @@ export const ResetForm = () => {
     });
   };
   return (
-    <>
-      <div>
-        <h2 className={styles.title}>Cambiar contraseña</h2>
-        <p className={styles.paraph}>Ingresa tu nueva contraseña.</p>
-      </div>
-      <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
-        <div className={styles.inputContainer}>
-          <div className={styles.inputDiv}>
-            <AnimatePresence>
+    <AnimatePresence>
+      <motion.div
+        transition={{ duration: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className={styles.form}
+      >
+        <div>
+          <h2 className={styles.title}>Cambiar contraseña</h2>
+          <p className={styles.paraph}>Ingresa tu nueva contraseña.</p>
+        </div>
+        <form
+          className={styles.inputs}
+          onSubmit={handleSubmit(onSubmitHandler)}
+        >
+          <div className={styles.inputContainer}>
+            <div className={styles.inputDiv}>
               {errors["password"] && (
                 <motion.p
                   className={styles.errorMsg}
@@ -64,19 +73,17 @@ export const ResetForm = () => {
                   {errors["password"]?.message as string}
                 </motion.p>
               )}
-            </AnimatePresence>
-            <input
-              id="password"
-              type="password"
-              placeholder="password"
-              className={styles.input}
-              {...register("password")}
-              required
-              disabled={isPending}
-            />
-          </div>
-          <div className={styles.inputDiv}>
-            <AnimatePresence>
+              <input
+                id="password"
+                type="password"
+                placeholder="password"
+                className={styles.input}
+                {...register("password")}
+                required
+                disabled={isPending}
+              />
+            </div>
+            <div className={styles.inputDiv}>
               {errors["passwordConfirm"] && (
                 <motion.p
                   className={styles.errorMsg}
@@ -88,34 +95,36 @@ export const ResetForm = () => {
                   {errors["passwordConfirm"]?.message as string}
                 </motion.p>
               )}
-            </AnimatePresence>
-            <input
-              id="password"
-              type="password"
-              placeholder="Confirm Password"
-              className={styles.input}
-              {...register("passwordConfirm")}
-              required
-              disabled={isPending}
-            />
+              <input
+                id="password"
+                type="password"
+                placeholder="Confirm Password"
+                className={styles.input}
+                {...register("passwordConfirm")}
+                required
+                disabled={isPending}
+              />
+            </div>
           </div>
-        </div>
-        <button className={styles.buttom} type="submit" disabled={isPending}>
-          {isPending ? (
-            <LoadingIcon
-              style={{
-                width: "20px",
-                height: "auto",
-                stroke: "#fff",
-                strokeWidth: "3",
-              }}
-            />
-          ) : (
-            ""
-          )}
-          <p>{isPending ? "Cambiando contraseña..." : "Cambiar contraseña"}</p>
-        </button>
-      </form>
-    </>
+          <button className={styles.buttom} type="submit" disabled={isPending}>
+            {isPending ? (
+              <LoadingIcon
+                style={{
+                  width: "20px",
+                  height: "auto",
+                  stroke: "#fff",
+                  strokeWidth: "3",
+                }}
+              />
+            ) : (
+              ""
+            )}
+            <p>
+              {isPending ? "Cambiando contraseña..." : "Cambiar contraseña"}
+            </p>
+          </button>
+        </form>
+      </motion.div>
+    </AnimatePresence>
   );
 };

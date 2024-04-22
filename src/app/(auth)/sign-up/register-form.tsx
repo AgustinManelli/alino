@@ -50,14 +50,25 @@ export const RegisterForm = () => {
   };
 
   return (
-    <>
-      <div>
-        <h2 className={styles.title}>Registrarte</h2>
-        <p className={styles.paraph}>Crea una cuenta alino, es 100% gratis.</p>
-      </div>
-      <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
-        <div className={styles.inputContainer}>
-          <AnimatePresence>
+    <AnimatePresence>
+      <motion.div
+        transition={{ duration: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className={styles.form}
+      >
+        <div>
+          <h2 className={styles.title}>Registrarte</h2>
+          <p className={styles.paraph}>
+            Crea una cuenta alino, es 100% gratis.
+          </p>
+        </div>
+        <form
+          className={styles.inputs}
+          onSubmit={handleSubmit(onSubmitHandler)}
+        >
+          <div className={styles.inputContainer}>
             {errors["email"] && (
               <motion.p
                 className={styles.errorMsg}
@@ -69,18 +80,16 @@ export const RegisterForm = () => {
                 {errors["email"]?.message as string}
               </motion.p>
             )}
-          </AnimatePresence>
-          <input
-            id="email"
-            type="email"
-            placeholder="email"
-            className={styles.input}
-            {...register("email")}
-            required
-          />
-        </div>
-        <div className={styles.inputContainer}>
-          <AnimatePresence>
+            <input
+              id="email"
+              type="email"
+              placeholder="email"
+              className={styles.input}
+              {...register("email")}
+              required
+            />
+          </div>
+          <div className={styles.inputContainer}>
             {errors["password"] && (
               <motion.p
                 className={styles.errorMsg}
@@ -92,18 +101,16 @@ export const RegisterForm = () => {
                 {errors["password"]?.message as string}
               </motion.p>
             )}
-          </AnimatePresence>
-          <input
-            id="password"
-            type="password"
-            placeholder="password"
-            className={styles.input}
-            {...register("password")}
-            required
-          />
-        </div>
-        <div className={styles.inputContainer}>
-          <AnimatePresence>
+            <input
+              id="password"
+              type="password"
+              placeholder="password"
+              className={styles.input}
+              {...register("password")}
+              required
+            />
+          </div>
+          <div className={styles.inputContainer}>
             {errors["passwordConfirm"] && (
               <motion.p
                 className={styles.errorMsg}
@@ -115,37 +122,37 @@ export const RegisterForm = () => {
                 {errors["passwordConfirm"]?.message as string}
               </motion.p>
             )}
-          </AnimatePresence>
-          <input
-            id="password"
-            type="password"
-            placeholder="Confirm Password"
-            className={styles.input}
-            {...register("passwordConfirm")}
-            required
-          />
-        </div>
-        <button className={styles.buttom} type="submit" disabled={isPending}>
-          {isPending ? (
-            <LoadingIcon
-              style={{
-                width: "20px",
-                height: "auto",
-                stroke: "#fff",
-                strokeWidth: "3",
-              }}
+            <input
+              id="password"
+              type="password"
+              placeholder="Confirm Password"
+              className={styles.input}
+              {...register("passwordConfirm")}
+              required
             />
-          ) : (
-            ""
-          )}
-          <p>{isPending ? "Creando cuenta..." : "Crear cuenta"}</p>
-        </button>
-      </form>
-      <div className={styles.moreInfo}>
-        <Link className={styles.textButton} href="/sign-in">
-          ¿Ya tienes una cuenta?
-        </Link>
-      </div>
-    </>
+          </div>
+          <button className={styles.buttom} type="submit" disabled={isPending}>
+            {isPending ? (
+              <LoadingIcon
+                style={{
+                  width: "20px",
+                  height: "auto",
+                  stroke: "#fff",
+                  strokeWidth: "3",
+                }}
+              />
+            ) : (
+              ""
+            )}
+            <p>{isPending ? "Creando cuenta..." : "Crear cuenta"}</p>
+          </button>
+        </form>
+        <div className={styles.moreInfo}>
+          <Link className={styles.textButton} href="/sign-in">
+            ¿Ya tienes una cuenta?
+          </Link>
+        </div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
