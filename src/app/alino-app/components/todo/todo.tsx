@@ -56,11 +56,13 @@ export default function Todo() {
       </section>
       <section
         style={{
+          position: "relative",
           width: "100%",
           display: "flex",
           justifyContent: "start",
           alignItems: "center",
           flexDirection: "column",
+          gap: "30px",
         }}
       >
         <TodoInput />
