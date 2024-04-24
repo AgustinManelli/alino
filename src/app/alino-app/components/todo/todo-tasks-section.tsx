@@ -1,6 +1,6 @@
 import { TasksSchema } from "@/lib/tasks-schema";
 import styles from "./todo-tasks-section.module.css";
-import { useSubjectSelected } from "@/store/subject-selected";
+import { useListSelected } from "@/store/list-selected";
 type SubjectsType = TasksSchema["public"]["Tables"]["todo"]["Row"];
 
 export default function TodoTasksSection({
@@ -8,11 +8,11 @@ export default function TodoTasksSection({
 }: {
   tasks: Array<SubjectsType>;
 }) {
-  const subjectId = useSubjectSelected((state) => state.subjectId);
+  const listSelected = useListSelected((state) => state.listSelected);
   return (
     <div className={styles.container}>
       {tasks
-        .filter((task) => task.subject_id === subjectId)
+        .filter((task) => task.subject_id === listSelected.id)
         .map((task) => (
           <div className={styles.card}>{task.task}</div>
         ))}

@@ -3,7 +3,7 @@
 import styles from "./subjects-input.module.css";
 import { AddSubjectToDB, GetSubjects } from "@/lib/todo/actions";
 import { useEffect, useRef, useState } from "react";
-import { useSubjects } from "@/store/subjects";
+import { useLists } from "@/store/lists";
 import { LoadingIcon, PlusBoxIcon } from "@/lib/ui/icons";
 import { ColorPicker } from "@/components/color-picker";
 
@@ -17,7 +17,7 @@ export default function SubjectsInput({
   const [color, setColor] = useState<string>("#87189d");
   const [hover, setHover] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
-  const setSubjects = useSubjects((state) => state.setSubjects);
+  const setLists = useLists((state) => state.setLists);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
 
@@ -26,7 +26,7 @@ export default function SubjectsInput({
     setTransition(true);
     await AddSubjectToDB(value, color);
     const { data: getSubjects } = (await GetSubjects()) as any;
-    setSubjects(getSubjects);
+    setLists(getSubjects);
     setValue("");
     setTransition(false);
     setWaiting(false);

@@ -1,5 +1,5 @@
 "use client";
-import { useSubjectSelected } from "@/store/subject-selected";
+import { useListSelected } from "@/store/list-selected";
 import { useTodo } from "@/store/todo";
 import TodoInput from "./todo-input";
 import TodoTasksSection from "./todo-tasks-section";
@@ -8,8 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useEffect } from "react";
 
 export default function Todo() {
-  const subjectName = useSubjectSelected((state) => state.subjectName);
-  const subjectColor = useSubjectSelected((state) => state.subjectColor);
+  const listSelected = useListSelected((state) => state.listSelected);
   const setTasks = useTodo((state) => state.setTasks);
   const tasks = useTodo((state) => state.tasks);
   const supabase = createClient();
@@ -44,7 +43,7 @@ export default function Todo() {
           pointerEvents: "none",
           borderRadius: "100%",
           opacity: "0.15",
-          boxShadow: `${subjectColor} 20px 250px 300px`,
+          boxShadow: `${listSelected.color} 20px 250px 300px`,
           transform: "translateY(-175%) translateZ(0px)",
           transition: "opacity 1.5s cubic-bezier(0.17, 0.17, 0, 1) 0s",
         }}
@@ -62,11 +61,11 @@ export default function Todo() {
           style={{
             width: "12px",
             height: "12px",
-            backgroundColor: `${subjectColor}`,
+            backgroundColor: `${listSelected.color}`,
             borderRadius: "5px",
           }}
         ></div>
-        <h2>{subjectName}</h2>
+        <h2>{listSelected.subject}</h2>
       </section>
       <section
         style={{

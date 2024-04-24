@@ -2,17 +2,17 @@
 import { AddTaskToDB } from "@/lib/todo/actions";
 import styles from "./todo-input.module.css";
 import { useState } from "react";
-import { useSubjectSelected } from "@/store/subject-selected";
+import { useListSelected } from "@/store/list-selected";
 import { useTodo } from "@/store/todo";
 
 export default function TodoInput() {
-  const subject_id = useSubjectSelected((state) => state.subjectId);
+  const listSelectedId = useListSelected((state) => state.listSelectedId);
   const getTasks = useTodo((state) => state.getTasks);
   const [task, setTask] = useState<string>("");
   const [status, setStatus] = useState<boolean>(false);
   const [priority, setPriority] = useState<number>(3);
   const handleAdd = async () => {
-    await AddTaskToDB(task, status, priority, subject_id);
+    await AddTaskToDB(task, status, priority, listSelectedId);
     setTask("");
     getTasks();
   };

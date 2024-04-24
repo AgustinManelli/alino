@@ -101,6 +101,8 @@ export function ColorPicker({
                     setColor(colorHex);
                     if (!save) {
                       setOpen(false);
+                    } else {
+                      setIsSave(false);
                     }
                   }}
                 >
@@ -122,6 +124,7 @@ export function ColorPicker({
                     value={color}
                     onChange={(e) => {
                       setColor(e.target.value);
+                      setIsSave(false);
                     }}
                     className={styles.colorInput}
                   ></input>
@@ -179,6 +182,7 @@ export function ColorPicker({
                     })
                     .finally(() => {
                       setWait(false);
+                      setIsSave(true);
                     });
                 }}
               >

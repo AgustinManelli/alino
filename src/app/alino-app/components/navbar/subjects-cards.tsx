@@ -2,12 +2,12 @@
 
 import styles from "./subjects-cards.module.css";
 import { UpdateSubjectToDB } from "@/lib/todo/actions";
-import { useSubjects } from "@/store/subjects";
+import { useLists } from "@/store/lists";
 import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
 import { useState } from "react";
 import { ColorPicker } from "@/components/color-picker";
 import { toast } from "sonner";
-import { useSubjectSelected } from "@/store/subject-selected";
+import { useListSelected } from "@/store/list-selected";
 import { useTodo } from "@/store/todo";
 import { SubjectSchema } from "@/lib/subject-schema";
 
@@ -15,31 +15,25 @@ type SubjectsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
 export function SubjectsCards({ subject }: { subject: SubjectsType }) {
   const tasks = useTodo((state) => state.tasks);
-  const deleteSubject = useSubjects((state) => state.deleteSubject);
-  const getSubject = useSubjects((state) => state.getSubject);
+  const deleteList = useLists((state) => state.deleteList);
+  const getLists = useLists((state) => state.getLists);
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(subject.color);
-  const [wait, setWait] = useState<boolean>(false);
 
-  const setSubjects = useSubjectSelected((state) => state.setSubjects);
-  const setSubjectId = useSubjectSelected((state) => state.setSubjectId);
-  const setSubjectColor = useSubjectSelected((state) => state.setSubjectColor);
-  const subjectId = useSubjectSelected((state) => state.subjectId);
+  const setListSelected = useListSelected((state) => state.setListSelected);
+  const listSelected = useListSelected((state) => state.listSelected);
 
   const handleDelete = () => {
-    if (subject.id === subjectId) {
-      setSubjects("inicio");
-      setSubjectId("home-tasks-static-alino-app");
-      setSubjectColor("#87189d");
+    if (subject.id === listSelected.id) {
+      setListSelected(subject);
     }
-    deleteSubject(subject.id);
-    getSubject();
+    deleteList(subject.id);
+    getLists();
   };
+
   const handleSave = async () => {
-    setWait(true);
     await UpdateSubjectToDB(subject.id, colorTemp);
     toast(`Color de ${subject.subject} cambiado correctamente`);
-    setWait(false);
   };
 
   return (
@@ -53,15 +47,13 @@ export function SubjectsCards({ subject }: { subject: SubjectsType }) {
       }}
       style={{
         backgroundColor:
-          hover || subjectId === subject.id
+          hover || listSelected.id === subject.id
             ? "rgb(240, 240, 240)"
             : "transparent",
       }}
       onClick={(e) => {
         e.stopPropagation();
-        setSubjects(subject.subject);
-        setSubjectId(subject.id);
-        setSubjectColor(subject.color);
+        setListSelected(subject);
       }}
     >
       {/* <div

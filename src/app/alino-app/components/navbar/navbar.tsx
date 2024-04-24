@@ -1,18 +1,15 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import styles from "./navbar.module.css";
+import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { GetSubjects } from "@/lib/todo/actions";
-import { SubjectsCards } from "./subjects-cards";
-import SubjectsInput from "./subjects-input";
-import { useSubjects } from "@/store/subjects";
-import Skeleton from "@/components/skeleton";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-
-// import { SubjectSchema } from "@/lib/subject-schema";
-// type SubjectType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
+import { GetSubjects } from "@/lib/todo/actions";
+import { useLists } from "@/store/lists";
+import SubjectsInput from "./subjects-input";
+import Skeleton from "@/components/skeleton";
+import { SubjectsCards } from "./subjects-cards";
+import styles from "./navbar.module.css";
 
 const homeSubject = {
   id: "home-tasks-static-alino-app",
@@ -50,14 +47,14 @@ export default function Navbar() {
   const [waiting, setWaiting] = useState<boolean>(false);
   const [initialFetching, setInitialFetching] = useState<boolean>(true);
 
-  const subjects = useSubjects((state) => state.subjects);
-  const setSubjects = useSubjects((state) => state.setSubjects);
+  const lists = useLists((state) => state.lists);
+  const setLists = useLists((state) => state.setLists);
 
   const fetchTodos = async () => {
     setInitialFetching(true);
     const { data: subjects, error } = (await GetSubjects()) as any;
     if (error) toast(error);
-    else setSubjects(subjects);
+    else setLists(subjects);
     setInitialFetching(false);
   };
 
@@ -95,7 +92,7 @@ export default function Navbar() {
                 <motion.div variants={itemFMVariant}>
                   <SubjectsCards subject={homeSubject} />
                 </motion.div>
-                {subjects.map((subj) => (
+                {lists.map((subj) => (
                   <motion.div variants={itemFMVariant} key={subj.id}>
                     <SubjectsCards subject={subj} />
                   </motion.div>
