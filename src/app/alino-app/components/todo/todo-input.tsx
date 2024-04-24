@@ -6,13 +6,13 @@ import { useListSelected } from "@/store/list-selected";
 import { useTodo } from "@/store/todo";
 
 export default function TodoInput() {
-  const listSelectedId = useListSelected((state) => state.listSelectedId);
+  const listSelected = useListSelected((state) => state.listSelected);
   const getTasks = useTodo((state) => state.getTasks);
   const [task, setTask] = useState<string>("");
   const [status, setStatus] = useState<boolean>(false);
   const [priority, setPriority] = useState<number>(3);
   const handleAdd = async () => {
-    await AddTaskToDB(task, status, priority, listSelectedId);
+    await AddTaskToDB(task, status, priority, listSelected.id);
     setTask("");
     getTasks();
   };
