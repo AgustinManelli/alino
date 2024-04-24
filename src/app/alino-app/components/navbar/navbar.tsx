@@ -58,8 +58,8 @@ export default function Navbar() {
   }, [supabase]);
 
   return (
-    <div className={styles.navbarContainer}>
-      <nav className={styles.navbar}>
+    <aside className={styles.navbarContainer}>
+      <div className={styles.navbar}>
         <section className={styles.SubjectsCardsSection}>
           {initialFetching ? (
             Array(4)
@@ -117,7 +117,7 @@ export default function Navbar() {
           )}
           <SubjectsInput setWaiting={setWaiting} />
         </section>
-      </nav>
-    </div>
+      </div>
+    </aside>
   );
 }
