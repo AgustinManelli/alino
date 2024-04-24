@@ -10,6 +10,7 @@ export default function appLayout({ children }: { children: React.ReactNode }) {
         width: "100vw",
         height: "100vh",
         display: "flex",
+        flexDirection: "row",
       }}
     >
       <Navbar />

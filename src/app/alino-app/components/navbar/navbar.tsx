@@ -69,8 +69,6 @@ export default function Navbar() {
     fetchTodos();
   }, []);
 
-  const divScroll = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const objDiv = document.getElementById("listContainer");
     if (objDiv) {
