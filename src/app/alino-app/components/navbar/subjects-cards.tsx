@@ -1,33 +1,24 @@
 "use client";
 
-import { DeleteSubjectToDB, UpdateSubjectToDB } from "@/lib/todo/actions";
 import styles from "./subjects-cards.module.css";
+import { UpdateSubjectToDB } from "@/lib/todo/actions";
 import { useSubjects } from "@/store/subjects";
 import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
 import { useState } from "react";
 import { ColorPicker } from "@/components/color-picker";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { useSubjectSelected } from "@/store/subject-selected";
+import { useTodo } from "@/store/todo";
 import { SubjectSchema } from "@/lib/subject-schema";
 
 type SubjectsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
-export function SubjectsCards({
-  subjectName,
-  id,
-  color,
-  type,
-}: {
-  subjectName: string;
-  id: string;
-  color: string;
-  type?: string;
-}) {
+export function SubjectsCards({ subject }: { subject: SubjectsType }) {
+  const tasks = useTodo((state) => state.tasks);
   const deleteSubject = useSubjects((state) => state.deleteSubject);
   const getSubject = useSubjects((state) => state.getSubject);
   const [hover, setHover] = useState<boolean>(false);
-  const [colorTemp, setColorTemp] = useState<string>(color);
+  const [colorTemp, setColorTemp] = useState<string>(subject.color);
   const [wait, setWait] = useState<boolean>(false);
 
   const setSubjects = useSubjectSelected((state) => state.setSubjects);
@@ -36,18 +27,18 @@ export function SubjectsCards({
   const subjectId = useSubjectSelected((state) => state.subjectId);
 
   const handleDelete = () => {
-    if (id === subjectId) {
+    if (subject.id === subjectId) {
       setSubjects("inicio");
       setSubjectId("home-tasks-static-alino-app");
       setSubjectColor("#87189d");
     }
-    deleteSubject(id);
+    deleteSubject(subject.id);
     getSubject();
   };
   const handleSave = async () => {
     setWait(true);
-    await UpdateSubjectToDB(id, colorTemp);
-    toast(`Color de ${subjectName} cambiado correctamente`);
+    await UpdateSubjectToDB(subject.id, colorTemp);
+    toast(`Color de ${subject.subject} cambiado correctamente`);
     setWait(false);
   };
 
@@ -62,22 +53,24 @@ export function SubjectsCards({
       }}
       style={{
         backgroundColor:
-          hover || subjectId === id ? "rgb(240, 240, 240)" : "transparent",
+          hover || subjectId === subject.id
+            ? "rgb(240, 240, 240)"
+            : "transparent",
       }}
       onClick={(e) => {
         e.stopPropagation();
-        setSubjects(subjectName);
-        setSubjectId(id);
-        setSubjectColor(color);
+        setSubjects(subject.subject);
+        setSubjectId(subject.id);
+        setSubjectColor(subject.color);
       }}
     >
       {/* <div
         style={{
-          opacity: hover ? "1" : "0",
+          opacity: hover || subjectId === subject.id ? "1" : "0",
           transition: "opacity 0.3s ease-in-out",
           width: "20px",
           height: "20px",
-          backgroundColor: `${color}`,
+          backgroundColor: `${subject.color}`,
           position: "absolute",
           left: "6px",
           filter: "blur(30px) saturate(200%)",
@@ -94,7 +87,7 @@ export function SubjectsCards({
           borderRadius: "5px",
         }}
       ></div> */}
-      {type ? (
+      {subject.id === "home-tasks-static-alino-app" ? (
         <SquircleIcon style={{ width: "12px", fill: `${colorTemp}` }} />
       ) : (
         <ColorPicker
@@ -107,8 +100,8 @@ export function SubjectsCards({
           wait={wait}
         />
       )}
-      <p className={styles.subjectName}>{subjectName}</p>
-      {type ? (
+      <p className={styles.subjectName}>{subject.subject}</p>
+      {subject.id === "home-tasks-static-alino-app" ? (
         ""
       ) : (
         <button
@@ -132,6 +125,27 @@ export function SubjectsCards({
           />
         </button>
       )}
+      <p
+        style={{
+          opacity:
+            subject.id === "home-tasks-static-alino-app"
+              ? "1"
+              : hover
+                ? "0"
+                : "1",
+          position: "absolute",
+          right: "10px",
+          backgroundColor: "transparent",
+          transition: "opacity 0.2s ease-in-out",
+          width: "15px",
+          height: "15px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {tasks.filter((element) => element.subject_id === subject.id).length}
+      </p>
     </div>
   );
 }

@@ -14,6 +14,14 @@ import { toast } from "sonner";
 // import { SubjectSchema } from "@/lib/subject-schema";
 // type SubjectType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
+const homeSubject = {
+  id: "home-tasks-static-alino-app",
+  user_id: "null",
+  subject: "inicio",
+  color: "#87189d",
+  inserted_at: "null",
+};
+
 const containerFMVariant = {
   hidden: { opacity: 1, scale: 0 },
   visible: {
@@ -85,35 +93,28 @@ export default function Navbar() {
                 className={styles.divCardsContainer}
               >
                 <motion.div variants={itemFMVariant}>
-                  <SubjectsCards
-                    subjectName={"inicio"}
-                    id={"home-tasks-static-alino-app"}
-                    color={"#87189d"}
-                    type={"home"}
-                  />
+                  <SubjectsCards subject={homeSubject} />
                 </motion.div>
                 {subjects.map((subj) => (
                   <motion.div variants={itemFMVariant} key={subj.id}>
-                    <SubjectsCards
-                      subjectName={subj.subject}
-                      id={subj.id}
-                      color={subj.color}
-                    />
+                    <SubjectsCards subject={subj} />
                   </motion.div>
                 ))}
+                {waiting ? (
+                  <motion.div variants={itemFMVariant}>
+                    <Skeleton
+                      style={{
+                        width: "100%",
+                        height: "45px",
+                        borderRadius: "15px",
+                      }}
+                    />
+                  </motion.div>
+                ) : (
+                  ""
+                )}
               </motion.div>
             </AnimatePresence>
-          )}
-          {waiting ? (
-            <Skeleton
-              style={{
-                width: "100%",
-                height: "45px",
-                borderRadius: "15px",
-              }}
-            />
-          ) : (
-            ""
           )}
           <SubjectsInput setWaiting={setWaiting} />
         </section>
