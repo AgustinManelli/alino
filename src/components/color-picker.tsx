@@ -17,19 +17,19 @@ export function ColorPicker({
   save,
   handleSave,
   width,
-  height,
-  wait,
+  originalColor,
 }: {
   color: string;
   setColor: (value: string) => void;
   save?: boolean | null;
-  handleSave?: () => Promise<void> | null;
+  handleSave?: () => Promise<void>;
   width?: string;
-  height?: string;
-  wait?: boolean | null;
+  originalColor?: string;
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
+  const [isSave, setIsSave] = useState<boolean>(false);
+  const [wait, setWait] = useState<boolean>(false);
 
   const divRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +38,9 @@ export function ColorPicker({
       if (divRef.current !== null) {
         if (!divRef.current.contains(event.target as Node)) {
           setOpen(false);
+          if (save && !isSave && originalColor) {
+            setColor(originalColor);
+          }
         }
       }
     }
@@ -63,7 +66,7 @@ export function ColorPicker({
         className={styles.mainButton}
         style={{
           width: `${width}`,
-          height: `${height}`,
+          height: `${width}`,
         }}
         onClick={(e) => {
           e.stopPropagation();
@@ -93,7 +96,8 @@ export function ColorPicker({
               {colors.map((colorHex) => (
                 <button
                   className={styles.button}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setColor(colorHex);
                     if (!save) {
                       setOpen(false);
@@ -156,7 +160,7 @@ export function ColorPicker({
                 />
               </button>
             </footer>
-            {save ? (
+            {save && handleSave ? (
               <button
                 className={styles.saveButton}
                 style={{ backgroundColor: hover ? "rgb(240,240,240)" : "" }}
@@ -166,7 +170,17 @@ export function ColorPicker({
                 onMouseLeave={() => {
                   setHover(false);
                 }}
-                onClick={handleSave}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setWait(true);
+                  handleSave()
+                    .then(() => {
+                      setOpen(false);
+                    })
+                    .finally(() => {
+                      setWait(false);
+                    });
+                }}
               >
                 {wait ? (
                   <LoadingIcon

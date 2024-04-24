@@ -92,12 +92,11 @@ export function SubjectsCards({ subject }: { subject: SubjectsType }) {
       ) : (
         <ColorPicker
           color={colorTemp}
+          originalColor={subject.color}
           setColor={setColorTemp}
           save={true}
           handleSave={handleSave}
           width={"12px"}
-          height={"12px"}
-          wait={wait}
         />
       )}
       <p className={styles.subjectName}>{subject.subject}</p>
@@ -118,6 +117,7 @@ export function SubjectsCards({ subject }: { subject: SubjectsType }) {
             cursor: "pointer",
             backgroundColor: "transparent",
             transition: "opacity 0.2s ease-in-out",
+            zIndex: "1",
           }}
         >
           <DeleteIcon
@@ -142,6 +142,8 @@ export function SubjectsCards({ subject }: { subject: SubjectsType }) {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          zIndex: "0",
+          color: "rgb(200,200,200)",
         }}
       >
         {tasks.filter((element) => element.subject_id === subject.id).length}
