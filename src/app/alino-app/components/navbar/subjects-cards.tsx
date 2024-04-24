@@ -1,7 +1,7 @@
 "use client";
 
 import { UpdateSubjectToDB } from "@/lib/todo/actions";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { ColorPicker } from "@/components/color-picker";
@@ -24,6 +24,8 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
 
   const setListSelected = useListSelected((state) => state.setListSelected);
   const listSelected = useListSelected((state) => state.listSelected);
+
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const handleDelete = () => {
     if (subject.id === listSelected.id) {
@@ -64,6 +66,7 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
         e.stopPropagation();
         setListSelected(subject);
       }}
+      ref={parentRef}
     >
       {subject.id === "home-tasks-static-alino-app" ? (
         <SquircleIcon style={{ width: "12px", fill: `${colorTemp}` }} />
@@ -75,6 +78,7 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
           save={true}
           handleSave={handleSave}
           width={"12px"}
+          parentRef={parentRef}
         />
       )}
       <p className={styles.subjectName}>{subject.subject}</p>
