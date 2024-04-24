@@ -31,6 +31,7 @@ export default function SubjectsInput({
     setTransition(false);
     setWaiting(false);
     setInput(false);
+    setHover(false);
   };
 
   useEffect(() => {
@@ -41,11 +42,21 @@ export default function SubjectsInput({
     }
   }, [input]);
 
+  useEffect(() => {
+    if (input) {
+      if (inputRef.current !== null) {
+        inputRef.current.focus();
+      }
+    }
+  }, [color]);
+
   useEffect(function mount() {
     function divOnClick(event: MouseEvent | TouchEvent) {
       if (divRef.current !== null) {
         if (!divRef.current.contains(event.target as Node)) {
-          setInput(false);
+          if (value === "") {
+            setInput(false);
+          }
           setHover(false);
         }
       }
@@ -59,7 +70,7 @@ export default function SubjectsInput({
 
   return (
     <div ref={divRef}>
-      {input ? (
+      {input || value !== "" ? (
         <>
           <div className={styles.form}>
             <input

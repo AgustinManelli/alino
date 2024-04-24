@@ -25,11 +25,24 @@ export function SubjectsCards({
   type?: string;
 }) {
   const deleteSubject = useSubjects((state) => state.deleteSubject);
+  const getSubject = useSubjects((state) => state.getSubject);
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(color);
   const [wait, setWait] = useState<boolean>(false);
+
+  const setSubjects = useSubjectSelected((state) => state.setSubjects);
+  const setSubjectId = useSubjectSelected((state) => state.setSubjectId);
+  const setSubjectColor = useSubjectSelected((state) => state.setSubjectColor);
+  const subjectId = useSubjectSelected((state) => state.subjectId);
+
   const handleDelete = () => {
+    if (id === subjectId) {
+      setSubjects("inicio");
+      setSubjectId("home-tasks-static-alino-app");
+      setSubjectColor("#87189d");
+    }
     deleteSubject(id);
+    getSubject();
   };
   const handleSave = async () => {
     setWait(true);
@@ -37,10 +50,6 @@ export function SubjectsCards({
     toast(`Color de ${subjectName} cambiado correctamente`);
     setWait(false);
   };
-  const setSubjects = useSubjectSelected((state) => state.setSubjects);
-  const setSubjectId = useSubjectSelected((state) => state.setSubjectId);
-  const setSubjectColor = useSubjectSelected((state) => state.setSubjectColor);
-  const subjectId = useSubjectSelected((state) => state.subjectId);
 
   return (
     <div
@@ -55,7 +64,8 @@ export function SubjectsCards({
         backgroundColor:
           hover || subjectId === id ? "rgb(240, 240, 240)" : "transparent",
       }}
-      onClick={() => {
+      onClick={(e) => {
+        e.stopPropagation();
         setSubjects(subjectName);
         setSubjectId(id);
         setSubjectColor(color);
@@ -102,7 +112,10 @@ export function SubjectsCards({
         ""
       ) : (
         <button
-          onClick={handleDelete}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete();
+          }}
           style={{
             opacity: hover ? "1" : "0",
             position: "absolute",

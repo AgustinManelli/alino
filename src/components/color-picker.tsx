@@ -65,7 +65,8 @@ export function ColorPicker({
           width: `${width}`,
           height: `${height}`,
         }}
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation();
           setOpen(!open);
         }}
       >
