@@ -19,7 +19,6 @@ export function ColorPicker({
   handleSave,
   width,
   originalColor,
-  parentRef,
 }: {
   color: string;
   setColor: (value: string) => void;
@@ -27,7 +26,6 @@ export function ColorPicker({
   handleSave?: () => Promise<void>;
   width?: string;
   originalColor?: string;
-  parentRef: React.RefObject<HTMLDivElement>;
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);

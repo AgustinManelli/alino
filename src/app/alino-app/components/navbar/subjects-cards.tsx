@@ -1,7 +1,7 @@
 "use client";
 
 import { UpdateSubjectToDB } from "@/lib/todo/actions";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { ColorPicker } from "@/components/color-picker";
@@ -24,8 +24,6 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
 
   const setListSelected = useListSelected((state) => state.setListSelected);
   const listSelected = useListSelected((state) => state.listSelected);
-
-  const parentRef = useRef<HTMLDivElement>(null);
 
   const handleDelete = () => {
     if (subject.id === listSelected.id) {
@@ -78,7 +76,6 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
           save={true}
           handleSave={handleSave}
           width={"12px"}
-          parentRef={parentRef}
         />
       )}
       <p className={styles.subjectName}>{subject.subject}</p>
