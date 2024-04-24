@@ -18,3 +18,27 @@
 .subjectName {
   font-size: 14px;
 }
+.button {
+  position: absolute;
+  right: 10px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background-color: transparent;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 1;
+}
+.counter {
+  position: absolute;
+  right: 10px;
+  background-color: transparent;
+  transition: opacity 0.2s ease-in-out;
+  width: 15px;
+  height: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 0;
+  color: rgb(210, 210, 210);
+  font-size: 12px;
+}

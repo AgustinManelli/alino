@@ -66,6 +66,7 @@ export default function SubjectsInput({
         <>
           <div className={styles.form}>
             <input
+              disabled={transition}
               type="text"
               placeholder="ingrese una materia"
               value={value}

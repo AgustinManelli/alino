@@ -25,7 +25,14 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
+  overflow-x: hidden;
+  overflow-y: scroll;
 }
+
+.SubjectsCardsSection::-webkit-scrollbar {
+  display: none;
+}
+
 .divCardsContainer {
   display: flex;
   flex-direction: column;

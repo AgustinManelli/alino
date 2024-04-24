@@ -1,22 +1,24 @@
 "use client";
 
-import styles from "./subjects-cards.module.css";
 import { UpdateSubjectToDB } from "@/lib/todo/actions";
-import { useLists } from "@/store/lists";
-import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
 import { useState } from "react";
-import { ColorPicker } from "@/components/color-picker";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { ColorPicker } from "@/components/color-picker";
 import { useListSelected } from "@/store/list-selected";
+import { useLists } from "@/store/lists";
 import { useTodo } from "@/store/todo";
 import { SubjectSchema } from "@/lib/subject-schema";
+import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
+import styles from "./subjects-cards.module.css";
 
-type SubjectsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
+type ListsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
-export function SubjectsCards({ subject }: { subject: SubjectsType }) {
+export function SubjectsCards({ subject }: { subject: ListsType }) {
   const tasks = useTodo((state) => state.tasks);
   const deleteList = useLists((state) => state.deleteList);
   const getLists = useLists((state) => state.getLists);
+
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(subject.color);
 
@@ -25,15 +27,22 @@ export function SubjectsCards({ subject }: { subject: SubjectsType }) {
 
   const handleDelete = () => {
     if (subject.id === listSelected.id) {
-      setListSelected(subject);
+      setListSelected({
+        id: "home-tasks-static-alino-app",
+        user_id: "null",
+        subject: "inicio",
+        color: "#87189d",
+        inserted_at: "null",
+      });
     }
     deleteList(subject.id);
     getLists();
+    toast.success(`${subject.subject} eliminado correctamente`);
   };
 
   const handleSave = async () => {
     await UpdateSubjectToDB(subject.id, colorTemp);
-    toast(`Color de ${subject.subject} cambiado correctamente`);
+    toast.success(`Color de ${subject.subject} cambiado correctamente`);
   };
 
   return (
@@ -56,29 +65,6 @@ export function SubjectsCards({ subject }: { subject: SubjectsType }) {
         setListSelected(subject);
       }}
     >
-      {/* <div
-        style={{
-          opacity: hover || subjectId === subject.id ? "1" : "0",
-          transition: "opacity 0.3s ease-in-out",
-          width: "20px",
-          height: "20px",
-          backgroundColor: `${subject.color}`,
-          position: "absolute",
-          left: "6px",
-          filter: "blur(30px) saturate(200%)",
-          zIndex: "0",
-        }}
-      ></div> */}
-      {/* <div
-        style={{
-          width: "12px",
-          height: "12px",
-          backgroundColor: `${color}`,
-          position: "relative",
-          zIndex: "0",
-          borderRadius: "5px",
-        }}
-      ></div> */}
       {subject.id === "home-tasks-static-alino-app" ? (
         <SquircleIcon style={{ width: "12px", fill: `${colorTemp}` }} />
       ) : (
@@ -100,16 +86,9 @@ export function SubjectsCards({ subject }: { subject: SubjectsType }) {
             e.stopPropagation();
             handleDelete();
           }}
+          className={styles.button}
           style={{
             opacity: hover ? "1" : "0",
-            position: "absolute",
-            right: "10px",
-            border: "none",
-            borderRadius: "10px",
-            cursor: "pointer",
-            backgroundColor: "transparent",
-            transition: "opacity 0.2s ease-in-out",
-            zIndex: "1",
           }}
         >
           <DeleteIcon
@@ -118,6 +97,7 @@ export function SubjectsCards({ subject }: { subject: SubjectsType }) {
         </button>
       )}
       <p
+        className={styles.counter}
         style={{
           opacity:
             subject.id === "home-tasks-static-alino-app"
@@ -125,17 +105,6 @@ export function SubjectsCards({ subject }: { subject: SubjectsType }) {
               : hover
                 ? "0"
                 : "1",
-          position: "absolute",
-          right: "10px",
-          backgroundColor: "transparent",
-          transition: "opacity 0.2s ease-in-out",
-          width: "15px",
-          height: "15px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: "0",
-          color: "rgb(200,200,200)",
         }}
       >
         {tasks.filter((element) => element.subject_id === subject.id).length}

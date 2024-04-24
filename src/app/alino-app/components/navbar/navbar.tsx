@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { GetSubjects } from "@/lib/todo/actions";
@@ -20,12 +19,12 @@ const homeSubject = {
 };
 
 const containerFMVariant = {
-  hidden: { opacity: 1, scale: 0 },
+  hidden: { opacity: 1, scale: 1 },
   visible: {
     opacity: 1,
     scale: 1,
     transition: {
-      delayChildren: 0.2,
+      delayChildren: 0,
       staggerChildren: 0.1,
     },
   },
@@ -33,7 +32,7 @@ const containerFMVariant = {
 };
 
 const itemFMVariant = {
-  hidden: { scale: 0.5, opacity: 0 },
+  hidden: { scale: 0, opacity: 0 },
   visible: {
     scale: 1,
     opacity: 1,
@@ -41,9 +40,17 @@ const itemFMVariant = {
   exit: { opacity: 0, scale: 0 },
 };
 
-export default function Navbar() {
-  const supabase = createClient();
+const skeletonFMVariant = {
+  hidden: { scale: 1, opacity: 0, y: 50 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    y: 0,
+  },
+  exit: { opacity: 0, scale: 0 },
+};
 
+export default function Navbar() {
   const [waiting, setWaiting] = useState<boolean>(false);
   const [initialFetching, setInitialFetching] = useState<boolean>(true);
 
@@ -60,12 +67,21 @@ export default function Navbar() {
 
   useEffect(() => {
     fetchTodos();
-  }, [supabase]);
+  }, []);
+
+  const divScroll = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const objDiv = document.getElementById("listContainer");
+    if (objDiv) {
+      objDiv.scrollTop = objDiv.scrollHeight;
+    }
+  }, [lists]);
 
   return (
     <aside className={styles.navbarContainer}>
       <div className={styles.navbar}>
-        <section className={styles.SubjectsCardsSection}>
+        <section className={styles.SubjectsCardsSection} id="listContainer">
           {initialFetching ? (
             Array(4)
               .fill(null)
@@ -81,7 +97,7 @@ export default function Navbar() {
                 />
               ))
           ) : (
-            <AnimatePresence>
+            <AnimatePresence mode={"popLayout"}>
               <motion.div
                 variants={containerFMVariant}
                 initial="hidden"
@@ -92,13 +108,16 @@ export default function Navbar() {
                 <motion.div variants={itemFMVariant}>
                   <SubjectsCards subject={homeSubject} />
                 </motion.div>
-                {lists.map((subj) => (
-                  <motion.div variants={itemFMVariant} key={subj.id}>
-                    <SubjectsCards subject={subj} />
+                {lists.map((list) => (
+                  <motion.div variants={itemFMVariant} key={list.id}>
+                    <SubjectsCards subject={list} />
                   </motion.div>
                 ))}
                 {waiting ? (
-                  <motion.div variants={itemFMVariant}>
+                  <motion.div
+                    variants={skeletonFMVariant}
+                    transition={{ ease: "easeOut", duration: 0.2 }}
+                  >
                     <Skeleton
                       style={{
                         width: "100%",
@@ -110,10 +129,10 @@ export default function Navbar() {
                 ) : (
                   ""
                 )}
+                <SubjectsInput setWaiting={setWaiting} />
               </motion.div>
             </AnimatePresence>
           )}
-          <SubjectsInput setWaiting={setWaiting} />
         </section>
       </div>
     </aside>
