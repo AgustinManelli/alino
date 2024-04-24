@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { readUserSession } from "../auth/actions";
-import { unstable_noStore as noStore } from "next/cache";
+import { unstable_noStore as noStore, revalidatePath } from "next/cache";
 
 export async function GetSubjects() {
   const supabase = await createClient();
@@ -24,17 +24,22 @@ export const AddSubjectToDB = async (subject: string, color: string) => {
   }
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
-  if (!error) {
-    if (data.session) {
-      const user = data.session.user;
-      const result = await supabase
-        .from("subjects")
-        .insert({ subject, user_id: user.id, color: setColor })
-        .select()
-        .single();
-      return result;
+  const { data: result } = await supabase.from("subjects").select("subject");
+  const final = result?.find((element) => element.subject === subject);
+  if (!final) {
+    if (!error) {
+      if (data.session) {
+        const user = data.session.user;
+        const result = await supabase
+          .from("subjects")
+          .insert({ subject, user_id: user.id, color: setColor })
+          .select()
+          .single();
+        return result;
+      }
     }
   }
+  // revalidatePath("/alino-app");
   return error;
 };
 

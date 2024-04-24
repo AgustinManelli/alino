@@ -40,15 +40,7 @@ export default function SubjectsInput({
         inputRef.current.focus();
       }
     }
-  }, [input]);
-
-  useEffect(() => {
-    if (input) {
-      if (inputRef.current !== null) {
-        inputRef.current.focus();
-      }
-    }
-  }, [color]);
+  }, [input, color]);
 
   useEffect(function mount() {
     function divOnClick(event: MouseEvent | TouchEvent) {

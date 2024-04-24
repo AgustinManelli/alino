@@ -17,10 +17,10 @@ export const useSubjects = create<Subjects>()((set, get) => ({
   subjects: [],
   setSubjects: (subject) => set(() => ({ subjects: subject })),
   deleteSubject: async (id) => {
+    await DeleteSubjectToDB(id);
     const { subjects } = get();
     const filtered = subjects.filter((all) => all.id !== id);
     set({ subjects: filtered });
-    await DeleteSubjectToDB(id);
   },
   getSubject: async () => {
     const { data } = (await GetSubjects()) as any;
