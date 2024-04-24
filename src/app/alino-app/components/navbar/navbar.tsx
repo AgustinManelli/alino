@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import styles from "./navbar.module.css";
 import { createClient } from "@/utils/supabase/client";
 import { GetSubjects } from "@/lib/todo/actions";
@@ -9,91 +9,82 @@ import SubjectsInput from "./subjects-input";
 import { useSubjects } from "@/store/subjects";
 import Skeleton from "@/components/skeleton";
 import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "sonner";
 
 // import { SubjectSchema } from "@/lib/subject-schema";
 // type SubjectType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
+const containerFMVariant = {
+  hidden: { opacity: 1, scale: 0 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      delayChildren: 0.2,
+      staggerChildren: 0.1,
+    },
+  },
+  exit: { opacity: 0, scale: 0 },
+};
+
+const itemFMVariant = {
+  hidden: { scale: 0.5, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+  },
+  exit: { opacity: 0, scale: 0 },
+};
+
 export default function Navbar() {
   const supabase = createClient();
 
+  const [waiting, setWaiting] = useState<boolean>(false);
+  const [initialFetching, setInitialFetching] = useState<boolean>(true);
+
   const subjects = useSubjects((state) => state.subjects);
   const setSubjects = useSubjects((state) => state.setSubjects);
-  const [waiting, setWaiting] = useState<boolean>(false);
-  const [fetching, setFetching] = useState<boolean>(true);
+
+  const fetchTodos = async () => {
+    setInitialFetching(true);
+    const { data: subjects, error } = (await GetSubjects()) as any;
+    if (error) toast(error);
+    else setSubjects(subjects);
+    setInitialFetching(false);
+  };
 
   useEffect(() => {
-    const fetchTodos = async () => {
-      setFetching(true);
-      const { data: subjects, error } = (await GetSubjects()) as any;
-      if (error) console.log("error", error);
-      else setSubjects(subjects);
-      setFetching(false);
-    };
     fetchTodos();
   }, [supabase]);
-
-  const container = {
-    hidden: { opacity: 1, scale: 0 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        delayChildren: 0.2,
-        staggerChildren: 0.1,
-      },
-    },
-    exit: { opacity: 0, scale: 0 },
-  };
-  const item = {
-    hidden: { scale: 0.5, opacity: 0 },
-    visible: {
-      scale: 1,
-      opacity: 1,
-    },
-    exit: { opacity: 0, scale: 0 },
-  };
 
   return (
     <div className={styles.navbarContainer}>
       <nav className={styles.navbar}>
-        {/* <h2 className={styles.navbarTitle}>Materias</h2> */}
         <section className={styles.SubjectsCardsSection}>
-          {fetching ? (
-            [
-              <Skeleton
-                style={{
-                  width: "100%",
-                  height: "45px",
-                  borderRadius: "15px",
-                }}
-              />,
-              <Skeleton
-                style={{
-                  width: "100%",
-                  height: "45px",
-                  borderRadius: "15px",
-                }}
-                delay={0.15}
-              />,
-              <Skeleton
-                style={{
-                  width: "100%",
-                  height: "45px",
-                  borderRadius: "15px",
-                }}
-                delay={0.3}
-              />,
-            ]
+          {initialFetching ? (
+            Array(4)
+              .fill(null)
+              .map((_, index) => (
+                <Skeleton
+                  style={{
+                    width: "100%",
+                    height: "45px",
+                    borderRadius: "15px",
+                  }}
+                  delay={index * 0.15}
+                  key={index}
+                />
+              ))
           ) : (
             <AnimatePresence>
               <motion.div
-                variants={container}
+                variants={containerFMVariant}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
                 className={styles.divCardsContainer}
               >
-                <motion.div variants={item}>
+                <motion.div variants={itemFMVariant}>
                   <SubjectsCards
                     subjectName={"inicio"}
                     id={"home-tasks-static-alino-app"}
@@ -102,7 +93,7 @@ export default function Navbar() {
                   />
                 </motion.div>
                 {subjects.map((subj) => (
-                  <motion.div variants={item} key={subj.id}>
+                  <motion.div variants={itemFMVariant} key={subj.id}>
                     <SubjectsCards
                       subjectName={subj.subject}
                       id={subj.id}

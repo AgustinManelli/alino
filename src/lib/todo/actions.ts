@@ -1,32 +1,36 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { readUserSession } from "../auth/actions";
-import { unstable_noStore as noStore, revalidatePath } from "next/cache";
 
 export async function GetSubjects() {
   const supabase = await createClient();
-  const { data } = await readUserSession();
+  const { data, error } = await supabase.auth.getSession();
 
-  const result = await supabase
-    .from("subjects")
-    .select("*")
-    .order("inserted_at", { ascending: true })
-    .eq("user_id", data.session?.user.id);
-  return result;
+  if (!error) {
+    if (data.session) {
+      const result = await supabase
+        .from("subjects")
+        .select("*")
+        .order("inserted_at", { ascending: true })
+        .eq("user_id", data.session?.user.id);
+
+      return result;
+    }
+  }
+
+  return error;
 }
 
 export const AddSubjectToDB = async (subject: string, color: string) => {
-  if (color === "") {
-    var setColor = "#87189d";
-  } else {
-    var setColor = color;
-  }
+  const setColor = color === "" ? "#87189d" : color;
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
-  const { data: result } = await supabase.from("subjects").select("subject");
-  const final = result?.find((element) => element.subject === subject);
-  if (!final) {
+  const { data: result } = await supabase
+    .from("subjects")
+    .select("subject")
+    .eq("subject", subject);
+
+  if (result && result.length === 0) {
     if (!error) {
       if (data.session) {
         const user = data.session.user;
@@ -39,25 +43,28 @@ export const AddSubjectToDB = async (subject: string, color: string) => {
       }
     }
   }
-  // revalidatePath("/alino-app");
+
   return error;
 };
 
 export const DeleteSubjectToDB = async (id: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
+
   if (!error) {
     if (data.session) {
       const result = await supabase.from("subjects").delete().eq("id", id);
       return result;
     }
   }
+
   return error;
 };
 
 export const UpdateSubjectToDB = async (id: string, color: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
+
   if (!error) {
     if (data.session) {
       const result = await supabase
@@ -68,6 +75,7 @@ export const UpdateSubjectToDB = async (id: string, color: string) => {
       return result;
     }
   }
+
   return error;
 };
 
@@ -79,6 +87,7 @@ export const AddTaskToDB = async (
 ) => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
+
   if (!error) {
     if (data.session) {
       const user = data.session.user;
@@ -99,17 +108,24 @@ export const AddTaskToDB = async (
       }
     }
   }
+
   return error;
 };
 
 export async function GetTasks() {
   const supabase = await createClient();
-  const { data } = await readUserSession();
+  const { data, error } = await supabase.auth.getSession();
 
-  const result = await supabase
-    .from("todos")
-    .select("*")
-    .order("inserted_at", { ascending: true })
-    .eq("user_id", data.session?.user.id);
-  return result;
+  if (!error) {
+    if (data.session) {
+      const result = await supabase
+        .from("todos")
+        .select("*")
+        .order("inserted_at", { ascending: true })
+        .eq("user_id", data.session?.user.id);
+      return result;
+    }
+  }
+
+  return error;
 }
