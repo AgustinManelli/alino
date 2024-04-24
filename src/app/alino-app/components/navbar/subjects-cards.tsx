@@ -64,7 +64,6 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
         e.stopPropagation();
         setListSelected(subject);
       }}
-      ref={parentRef}
     >
       {subject.id === "home-tasks-static-alino-app" ? (
         <SquircleIcon style={{ width: "12px", fill: `${colorTemp}` }} />
