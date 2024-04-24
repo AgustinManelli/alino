@@ -35,6 +35,20 @@ export default function Todo() {
         gap: "20px",
       }}
     >
+      <div
+        style={{
+          position: "absolute",
+          width: "60%",
+          height: "260px",
+          top: "0px",
+          pointerEvents: "none",
+          borderRadius: "100%",
+          opacity: "0.15",
+          boxShadow: `${subjectColor} 20px 250px 300px`,
+          transform: "translateY(-175%) translateZ(0px)",
+          transition: "opacity 1.5s cubic-bezier(0.17, 0.17, 0, 1) 0s",
+        }}
+      ></div>
       <section
         style={{
           display: "flex",
