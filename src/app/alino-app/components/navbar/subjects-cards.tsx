@@ -63,7 +63,6 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
           listSelected.id === subject.id
             ? "rgba(12, 20, 66, 0.1) 0px 4px 12px, rgba(12, 20, 66, 0.08) 0px 30px 80px, rgb(230, 233, 237) 0px 0px 0px 0px inset"
             : "",
-        transform: listSelected.id === subject.id ? " translateX(5px)" : "",
       }}
       onClick={(e) => {
         e.stopPropagation();

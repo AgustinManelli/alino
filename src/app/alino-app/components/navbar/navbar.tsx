@@ -42,7 +42,7 @@ const itemFMVariant = {
 };
 
 const skeletonFMVariant = {
-  hidden: { scale: 1, opacity: 0, y: 50 },
+  hidden: { scale: 1, opacity: 0, y: 60 },
   visible: {
     scale: 1,
     opacity: 1,

@@ -64,7 +64,7 @@ export default function SubjectsInput({
   });
 
   return (
-    <div ref={divRef}>
+    <div ref={divRef} className={styles.formContainer}>
       {input || value !== "" ? (
         <div className={styles.form}>
           <input
