@@ -34,3 +34,141 @@
     opacity: 0;
   }
 }
+
+/* DELETE ICON SECTION */
+.deleteIcon {
+  overflow: visible;
+  transform-origin: 50% 50%;
+}
+.deleteIcon:hover .deleteIconCan {
+  animation: temp3 3s linear 1 normal forwards;
+}
+.deleteIcon:hover .deleteIconCanChild {
+  animation: temp4 3s linear 1 normal forwards;
+}
+.deleteIcon:hover .deleteIconLid {
+  animation: temp1 3s linear 1 normal forwards;
+}
+.deleteIcon:hover .deleteIconLidChild {
+  animation: temp2 3s linear 1 normal forwards;
+}
+@keyframes temp1 {
+  0% {
+    transform: translate(12px, 3.75px);
+  }
+  6.666667% {
+    transform: translate(14px, 3px);
+  }
+  10% {
+    transform: translate(12px, 3px);
+  }
+  13.333333% {
+    transform: translate(9.5px, 2.5px);
+  }
+  17% {
+    transform: translate(12px, 0.75px);
+  }
+  21% {
+    transform: translate(13.5px, 2px);
+  }
+  24.333333% {
+    transform: translate(12px, 3px);
+  }
+  27.666667% {
+    transform: translate(11px, 3px);
+  }
+  34.333333% {
+    transform: translate(12px, 3.75px);
+  }
+  100% {
+    transform: translate(12px, 3.75px);
+  }
+}
+@keyframes temp2 {
+  0% {
+    transform: rotate(0deg);
+  }
+  6.666667% {
+    transform: rotate(10deg);
+  }
+  13.333333% {
+    transform: rotate(-15deg);
+  }
+  17% {
+    transform: rotate(0deg);
+  }
+  21% {
+    transform: rotate(10deg);
+  }
+  24.333333% {
+    transform: rotate(0deg);
+  }
+  27.666667% {
+    transform: rotate(-5deg);
+  }
+  34.333333% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+@keyframes temp3 {
+  0% {
+    transform: translate(14.5px, 13.75px);
+  }
+  6.666667% {
+    transform: translate(15.5px, 13.8px);
+  }
+  10% {
+    transform: translate(14.5px, 13.75px);
+  }
+  13.333333% {
+    transform: translate(13.5px, 13.35px);
+  }
+  17% {
+    transform: translate(14.5px, 12.5px);
+  }
+  21% {
+    transform: translate(15.5px, 13.8px);
+  }
+  24.333333% {
+    transform: translate(14.5px, 13.75px);
+  }
+  27.666667% {
+    transform: translate(14px, 13.6px);
+  }
+  34.333333% {
+    transform: translate(14.5px, 13.75px);
+  }
+  100% {
+    transform: translate(14.5px, 13.75px);
+  }
+}
+@keyframes temp4 {
+  0% {
+    transform: rotate(0deg);
+  }
+  6.666667% {
+    transform: rotate(5deg);
+  }
+  13.333333% {
+    transform: rotate(-5deg);
+  }
+  17% {
+    transform: rotate(0deg);
+  }
+  21% {
+    transform: rotate(5deg);
+  }
+  27.666667% {
+    transform: rotate(-2deg);
+  }
+  34.333333% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+/* END DELETE ICON SECTION */

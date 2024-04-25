@@ -92,7 +92,7 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
           }}
         >
           <DeleteIcon
-            style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "1.5" }}
+            style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "2" }}
           />
         </button>
       )}

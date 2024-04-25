@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { signout, readUserSession } from "@/lib/auth/actions";
 import Link from "next/link";
 import Todo from "./components/todo/todo";
+import { DeleteIcon } from "@/lib/ui/icons";
 
 export async function generateMetadata() {
   const { data } = await readUserSession();
