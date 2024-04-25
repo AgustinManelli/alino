@@ -8,7 +8,7 @@ export default function Navbar() {
   return (
     <div className={styles.container}>
       <nav className={styles.navbar}>
-        <AlinoLogo height="35px" />
+        <AlinoLogo style={{ height: "35px" }} />
         <div className={styles.buttonsDiv}>
           <ButtonComponent
             text="iniciar sesión"

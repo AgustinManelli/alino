@@ -14,11 +14,13 @@ import { createPortal } from "react-dom";
 
 const colors = [
   "#87189d",
-  "#ff6900",
+  "#ff00ea",
   "#0693e3",
-  "#ff0004",
-  "#7ed321",
   "#2ccce4",
+  "#7ed321",
+  "#ffdd00",
+  "#ff6900",
+  "#ff0004",
 ];
 
 export function ColorPicker({
@@ -117,9 +119,9 @@ export function ColorPicker({
                 stiffness: 700,
                 damping: 40,
               }}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
+              initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+              animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+              exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
               className={styles.container}
             >
               <section className={styles.titleSection}>

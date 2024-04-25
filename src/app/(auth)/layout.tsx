@@ -35,7 +35,7 @@ export default async function authLayout({
             />
           </ButtonComponent>
         </div>
-        <AlinoLogo height="50px" />
+        <AlinoLogo style={{ height: "50px" }} />
         <div className={styles.form}>{children}</div>
       </section>
     </main>

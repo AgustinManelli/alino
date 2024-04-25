@@ -1,3 +1,15 @@
+/* ALINO LOGO ICON SECTION */
+
+.alinoLogoIcon {
+  fill: #1c1c1c;
+  stroke-width: 0px;
+}
+.alinoLogoIconDeco {
+  fill: #87189d;
+}
+
+/* END ALINO LOGO ICON SECTION */
+
 .path {
   animation: loading 0.8s linear infinite;
 }

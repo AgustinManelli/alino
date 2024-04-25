@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { GetSubjects } from "@/lib/todo/actions";
@@ -9,6 +9,7 @@ import SubjectsInput from "./subjects-input";
 import Skeleton from "@/components/skeleton";
 import { SubjectsCards } from "./subjects-cards";
 import styles from "./navbar.module.css";
+import { AlinoLogo } from "@/lib/ui/icons";
 
 const homeSubject = {
   id: "home-tasks-static-alino-app",
@@ -80,6 +81,10 @@ export default function Navbar() {
     <aside className={styles.navbarContainer}>
       <div className={styles.navbar}>
         <section className={styles.SubjectsCardsSection} id="listContainer">
+          <AlinoLogo
+            style={{ height: "20px", fill: "#1c1c1c", opacity: "0.1" }}
+            decoFill={"#1c1c1c"}
+          />
           {initialFetching ? (
             Array(4)
               .fill(null)

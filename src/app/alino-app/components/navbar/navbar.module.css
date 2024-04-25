@@ -19,12 +19,16 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  box-shadow:
+    rgba(12, 20, 66, 0.02) 0px 4px 12px,
+    rgba(12, 20, 66, 0.08) 0px 30px 80px,
+    rgb(230, 233, 237) 0px 0px 0px 0px inset;
 }
 
 .SubjectsCardsSection {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 20px;
   overflow: auto;
   padding: 0px 25px 0px 25px;
 }

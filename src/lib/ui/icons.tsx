@@ -1,15 +1,23 @@
 import styles from "./icons.module.css";
 
-export const AlinoLogo = ({ height }: { height: string }) => {
+export const AlinoLogo = ({
+  style,
+  decoFill,
+}: {
+  style: React.CSSProperties;
+  decoFill?: string;
+}) => {
   return (
     <svg
-      style={{ fill: "#1c1c1c", strokeWidth: "0px", height: `${height}` }}
+      style={style}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 723.83 308.33"
+      className={styles.alinoLogoIcon}
     >
       <g>
         <path
-          style={{ fill: "#87189d" }}
+          className={styles.alinoLogoIconDeco}
+          style={{ fill: `${decoFill}` }}
           d="M195.99,307.74l19.22-19.22c.78-.78,2.05-.78,2.83,0l19.22,19.22c1.26,1.26,3.41.37,3.41-1.41v-38.26c0-2.76-2.24-5-5-5h-38.09c-2.76,0-5,2.24-5,5v38.26c0,1.78,2.15,2.67,3.41,1.41Z"
         />
         <g>
