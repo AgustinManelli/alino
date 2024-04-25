@@ -39,6 +39,14 @@
   display: none;
 }
 
+.logoContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: fit-content;
+}
+
 .divCardsContainer {
   display: flex;
   flex-direction: column;

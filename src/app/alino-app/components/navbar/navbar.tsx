@@ -81,10 +81,17 @@ export default function Navbar() {
     <aside className={styles.navbarContainer}>
       <div className={styles.navbar}>
         <section className={styles.SubjectsCardsSection} id="listContainer">
-          <AlinoLogo
-            style={{ height: "20px", fill: "#1c1c1c", opacity: "0.1" }}
-            decoFill={"#1c1c1c"}
-          />
+          <div className={styles.logoContainer}>
+            <AlinoLogo
+              style={{
+                height: "20px",
+                width: "auto",
+                fill: "#1c1c1c",
+                opacity: "0.1",
+              }}
+              decoFill={"#1c1c1c"}
+            />
+          </div>
           {initialFetching ? (
             Array(4)
               .fill(null)

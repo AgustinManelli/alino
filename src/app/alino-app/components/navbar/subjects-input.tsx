@@ -48,6 +48,7 @@ export default function SubjectsInput({
       if (divRef.current !== null) {
         if (!divRef.current.contains(event.target as Node)) {
           if (value === "" && !choosingColor) {
+            setColor("#87189d");
             setInput(false);
           }
           setHover(false);
@@ -67,6 +68,12 @@ export default function SubjectsInput({
     <div ref={divRef} className={styles.formContainer}>
       {input || value !== "" ? (
         <div className={styles.form}>
+          <ColorPicker
+            color={color}
+            setColor={setColor}
+            choosingColor={choosingColor}
+            setChoosingColor={setChoosingColor}
+          />
           <input
             disabled={transition}
             type="text"
@@ -99,12 +106,6 @@ export default function SubjectsInput({
           ) : (
             ""
           )}
-          <ColorPicker
-            color={color}
-            setColor={setColor}
-            choosingColor={choosingColor}
-            setChoosingColor={setChoosingColor}
-          />
         </div>
       ) : (
         <button

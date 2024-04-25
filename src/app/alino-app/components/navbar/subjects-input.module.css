@@ -9,6 +9,7 @@
   background-color: rgb(240, 240, 240);
   border-radius: 15px;
   padding: 0px 10px 0px 10px;
+  gap: 10px;
 }
 .inputText {
   width: 100%;
