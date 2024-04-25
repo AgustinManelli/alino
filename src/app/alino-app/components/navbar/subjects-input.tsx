@@ -16,6 +16,7 @@ export default function SubjectsInput({
   const [value, setValue] = useState<string>("");
   const [color, setColor] = useState<string>("#87189d");
   const [hover, setHover] = useState<boolean>(false);
+  const [choosingColor, setChoosingColor] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
   const setLists = useLists((state) => state.setLists);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -46,7 +47,7 @@ export default function SubjectsInput({
     function divOnClick(event: MouseEvent | TouchEvent) {
       if (divRef.current !== null) {
         if (!divRef.current.contains(event.target as Node)) {
-          if (value === "") {
+          if (value === "" && !choosingColor) {
             setInput(false);
           }
           setHover(false);
@@ -54,54 +55,61 @@ export default function SubjectsInput({
       }
     }
     window.addEventListener("mousedown", divOnClick);
+    window.addEventListener("mouseup", divOnClick);
 
     return function unMount() {
       window.removeEventListener("mousedown", divOnClick);
+      window.removeEventListener("mouseup", divOnClick);
     };
   });
 
   return (
     <div ref={divRef}>
       {input || value !== "" ? (
-        <>
-          <div className={styles.form}>
-            <input
-              disabled={transition}
-              type="text"
-              placeholder="ingrese una materia"
-              value={value}
-              ref={inputRef}
-              onChange={(e) => {
-                setValue(e.target.value);
+        <div className={styles.form}>
+          <input
+            disabled={transition}
+            type="text"
+            placeholder="cree una lista nueva"
+            value={value}
+            ref={inputRef}
+            onChange={(e) => {
+              setValue(e.target.value);
+            }}
+            className={styles.inputText}
+            onKeyDown={(e) => {
+              if (!inputRef.current) return;
+              if (e.key === "Enter") {
+                handleSubmit();
+              }
+              if (e.key === "Escape") {
+                setInput(false);
+              }
+            }}
+          ></input>
+          {transition ? (
+            <LoadingIcon
+              style={{
+                width: "20px",
+                height: "auto",
+                stroke: "#000",
+                strokeWidth: "3",
               }}
-              className={styles.inputText}
-              onKeyDown={(e) => {
-                if (!inputRef.current) return;
-                if (e.key === "Enter") {
-                  handleSubmit();
-                }
-              }}
-            ></input>
-
-            {transition ? (
-              <LoadingIcon
-                style={{
-                  width: "20px",
-                  height: "auto",
-                  stroke: "#000",
-                  strokeWidth: "3",
-                }}
-              />
-            ) : (
-              ""
-            )}
-            <ColorPicker color={color} setColor={setColor} />
-          </div>
-        </>
+            />
+          ) : (
+            ""
+          )}
+          <ColorPicker
+            color={color}
+            setColor={setColor}
+            choosingColor={choosingColor}
+            setChoosingColor={setChoosingColor}
+          />
+        </div>
       ) : (
         <button
           onClick={() => {
-            setInput(!input);
+            setInput(true);
           }}
           className={styles.button}
           style={{

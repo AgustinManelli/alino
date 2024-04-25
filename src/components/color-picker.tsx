@@ -12,6 +12,15 @@ import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
 
+const colors = [
+  "#87189d",
+  "#ff6900",
+  "#0693e3",
+  "#ff0004",
+  "#7ed321",
+  "#2ccce4",
+];
+
 export function ColorPicker({
   color,
   setColor,
@@ -19,6 +28,8 @@ export function ColorPicker({
   handleSave,
   width,
   originalColor,
+  choosingColor,
+  setChoosingColor,
 }: {
   color: string;
   setColor: (value: string) => void;
@@ -26,26 +37,40 @@ export function ColorPicker({
   handleSave?: () => Promise<void>;
   width?: string;
   originalColor?: string;
+  choosingColor?: boolean;
+  setChoosingColor?: (value: boolean) => void;
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
   const [isSave, setIsSave] = useState<boolean>(false);
   const [wait, setWait] = useState<boolean>(false);
 
-  const divRef = useRef<HTMLDivElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
   const childRef = useRef<HTMLDivElement>(null);
 
   useEffect(function mount() {
-    if (!divRef.current || !childRef.current) return;
-    const parentRect = divRef.current!.getBoundingClientRect();
+    function ubication() {
+      if (!pickerRef.current || !childRef.current) return;
+      const parentRect = pickerRef.current!.getBoundingClientRect();
 
-    childRef.current.style.top = `${parentRect.top + parentRect.width + 10}px`;
-    childRef.current.style.left = `${parentRect.left}px`;
+      childRef.current.style.top = `${parentRect.top + parentRect.width + 10}px`;
+      childRef.current.style.left = `${parentRect.left}px`;
 
+      if (
+        pickerRef.current.getBoundingClientRect().top >
+        window.innerHeight / 2
+      ) {
+        childRef.current.style.top = `${parentRect.top - childRef.current.offsetHeight - 10}px`;
+      }
+    }
     function divOnClick(event: MouseEvent | TouchEvent) {
-      if (divRef.current !== null) {
-        if (!divRef.current.contains(event.target as Node)) {
+      if (childRef.current !== null && pickerRef.current !== null) {
+        if (
+          !childRef.current.contains(event.target as Node) &&
+          !pickerRef.current.contains(event.target as Node)
+        ) {
           setOpen(false);
+          setChoosingColor ? setChoosingColor(false) : "";
           if (save && !isSave && originalColor) {
             setColor(originalColor);
           }
@@ -53,36 +78,35 @@ export function ColorPicker({
       }
     }
     window.addEventListener("mousedown", divOnClick);
+    window.addEventListener("mouseup", divOnClick);
+    ubication();
 
     return function unMount() {
       window.removeEventListener("mousedown", divOnClick);
+      window.removeEventListener("mouseup", divOnClick);
     };
   });
 
-  const colors = [
-    "#87189d",
-    "#ff6900",
-    "#0693e3",
-    "#ff0004",
-    "#7ed321",
-    "#2ccce4",
-  ];
-
   return (
-    <div className={styles.fit} ref={divRef}>
-      <button
-        className={styles.mainButton}
-        style={{
-          width: `${width}`,
-          height: `${width}`,
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen(!open);
-        }}
-      >
-        <SquircleIcon style={{ fill: `${color}` }} />
-      </button>
+    <>
+      <div className={styles.fit} ref={pickerRef}>
+        <button
+          className={styles.mainButton}
+          style={{
+            width: `${width}`,
+            height: `${width}`,
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setChoosingColor ? setChoosingColor(!choosingColor) : "";
+            setOpen(!open);
+          }}
+        >
+          <SquircleIcon
+            style={{ fill: `${color}`, transition: "fill 0.1s ease-in-out" }}
+          />
+        </button>
+      </div>
       {createPortal(
         <AnimatePresence>
           {open ? (
@@ -109,6 +133,7 @@ export function ColorPicker({
                     onClick={(e) => {
                       e.stopPropagation();
                       setColor(colorHex);
+                      setChoosingColor ? setChoosingColor(false) : "";
                       if (!save) {
                         setOpen(false);
                       } else {
@@ -219,6 +244,6 @@ export function ColorPicker({
         </AnimatePresence>,
         document.body
       )}
-    </div>
+    </>
   );
 }
