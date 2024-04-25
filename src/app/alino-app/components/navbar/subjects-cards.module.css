@@ -10,7 +10,10 @@
   align-items: center;
   padding: 0px 10px 0px 10px;
   gap: 10px;
-  transition: background-color 0.3s ease-in-out;
+  transition:
+    background-color 0.3s ease-in-out,
+    scale 0.1s ease-in-out,
+    transform 0.1s ease-in-out;
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;

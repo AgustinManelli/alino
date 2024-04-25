@@ -31,7 +31,7 @@ export const FormContainer: React.FC<Props> = ({ children }) => {
             />
           </ButtonComponent>
         </div>
-        <AlinoLogo height="50px" />
+        <AlinoLogo style={{ height: "50px" }} />
         <div className={styles.form}>{children}</div>
       </section>
     </main>

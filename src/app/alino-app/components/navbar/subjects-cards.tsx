@@ -3,7 +3,6 @@
 import { UpdateSubjectToDB } from "@/lib/todo/actions";
 import { useState } from "react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { ColorPicker } from "@/components/color-picker";
 import { useListSelected } from "@/store/list-selected";
 import { useLists } from "@/store/lists";
@@ -59,6 +58,12 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
           hover || listSelected.id === subject.id
             ? "rgb(240, 240, 240)"
             : "transparent",
+        scale: listSelected.id === subject.id ? "1.05" : "1",
+        boxShadow:
+          listSelected.id === subject.id
+            ? "rgba(12, 20, 66, 0.1) 0px 4px 12px, rgba(12, 20, 66, 0.08) 0px 30px 80px, rgb(230, 233, 237) 0px 0px 0px 0px inset"
+            : "",
+        transform: listSelected.id === subject.id ? " translateX(5px)" : "",
       }}
       onClick={(e) => {
         e.stopPropagation();
