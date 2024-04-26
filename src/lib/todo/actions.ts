@@ -43,8 +43,6 @@ export const AddSubjectToDB = async (subject: string, color: string) => {
       }
     }
   }
-
-  return error;
 };
 
 export const DeleteSubjectToDB = async (id: string) => {

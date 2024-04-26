@@ -70,6 +70,10 @@ export default function Navbar() {
     fetchTodos();
   }, []);
 
+  const temporal = () => {
+    return JSON.stringify(lists);
+  };
+
   useEffect(() => {
     const objDiv = document.getElementById("listContainer");
     if (objDiv) {
@@ -93,19 +97,21 @@ export default function Navbar() {
             />
           </div>
           {initialFetching ? (
-            Array(4)
-              .fill(null)
-              .map((_, index) => (
-                <Skeleton
-                  style={{
-                    width: "100%",
-                    height: "45px",
-                    borderRadius: "15px",
-                  }}
-                  delay={index * 0.15}
-                  key={index}
-                />
-              ))
+            <div className={styles.divCardsContainer}>
+              {Array(4)
+                .fill(null)
+                .map((_, index) => (
+                  <Skeleton
+                    style={{
+                      width: "100%",
+                      height: "45px",
+                      borderRadius: "15px",
+                    }}
+                    delay={index * 0.15}
+                    key={index}
+                  />
+                ))}
+            </div>
           ) : (
             <AnimatePresence mode={"popLayout"}>
               <motion.div

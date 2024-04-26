@@ -1,6 +1,5 @@
 "use client";
 
-import { UpdateSubjectToDB } from "@/lib/todo/actions";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ColorPicker } from "@/components/color-picker";
@@ -16,7 +15,7 @@ type ListsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 export function SubjectsCards({ subject }: { subject: ListsType }) {
   const tasks = useTodo((state) => state.tasks);
   const deleteList = useLists((state) => state.deleteList);
-  const getLists = useLists((state) => state.getLists);
+  const changeColor = useLists((state) => state.changeColor);
 
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(subject.color);
@@ -35,12 +34,11 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
       });
     }
     deleteList(subject.id);
-    getLists();
     toast.success(`${subject.subject} eliminado correctamente`);
   };
 
   const handleSave = async () => {
-    await UpdateSubjectToDB(subject.id, colorTemp);
+    await changeColor(subject.id, colorTemp);
     toast.success(`Color de ${subject.subject} cambiado correctamente`);
   };
 

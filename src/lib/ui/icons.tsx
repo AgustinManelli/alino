@@ -290,3 +290,20 @@ export const SquircleIcon = ({ style }: { style?: React.CSSProperties }) => {
     </svg>
   );
 };
+
+export const SendIcon = ({ style }: { style?: React.CSSProperties }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      style={style}
+      className={styles.sendIcon}
+    >
+      <path
+        className={styles.sendIconChild}
+        d="M10.55,4.41c4.53,2.23,6.79,3.34,6.79,5.15,0,1.82-2.26,2.93-6.79,5.15l-3.08,1.52c-3.48,1.71-5.21,2.56-6.05,1.94-.22-.17-.41-.39-.54-.64-.49-.95.5-2.7,2.47-6.2.44-.78.66-1.16.7-1.59.01-.12.01-.25,0-.37-.04-.42-.26-.81-.7-1.59C1.37,4.3.38,2.55.87,1.6c.13-.26.32-.48.54-.64.84-.62,2.57.23,6.05,1.94l3.08,1.52Z"
+      />
+    </svg>
+  );
+};

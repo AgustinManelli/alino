@@ -1,10 +1,9 @@
 "use client";
 
 import styles from "./subjects-input.module.css";
-import { AddSubjectToDB, GetSubjects } from "@/lib/todo/actions";
 import { useEffect, useRef, useState } from "react";
 import { useLists } from "@/store/lists";
-import { LoadingIcon, PlusBoxIcon } from "@/lib/ui/icons";
+import { LoadingIcon, PlusBoxIcon, SendIcon } from "@/lib/ui/icons";
 import { ColorPicker } from "@/components/color-picker";
 
 export default function SubjectsInput({
@@ -18,16 +17,14 @@ export default function SubjectsInput({
   const [hover, setHover] = useState<boolean>(false);
   const [choosingColor, setChoosingColor] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
-  const setLists = useLists((state) => state.setLists);
+  const setAddList = useLists((state) => state.setAddList);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = async () => {
     setWaiting(true);
     setTransition(true);
-    await AddSubjectToDB(value, color);
-    const { data: getSubjects } = (await GetSubjects()) as any;
-    setLists(getSubjects);
+    await setAddList(value, color);
     setValue("");
     setTransition(false);
     setWaiting(false);
@@ -101,10 +98,31 @@ export default function SubjectsInput({
                 height: "auto",
                 stroke: "#000",
                 strokeWidth: "3",
+                opacity: "0.5",
               }}
             />
           ) : (
-            ""
+            <button
+              style={{
+                border: "none",
+                backgroundColor: "transparent",
+                cursor: "pointer",
+                display: "flex",
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+            >
+              <SendIcon
+                style={{
+                  width: "20px",
+                  stroke: "#1c1c1c",
+                  strokeWidth: "2",
+                  opacity: "0.5",
+                }}
+              />
+            </button>
           )}
         </div>
       ) : (
