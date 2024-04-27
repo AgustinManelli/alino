@@ -144,9 +144,7 @@ export default function SubjectsInput({
             }}
             className={styles.button}
             style={{
-              backgroundColor: hover
-                ? "rgb(240, 240, 240)"
-                : "rgb(255, 255, 255)",
+              backgroundColor: hover ? "rgb(240, 240, 240)" : "transparent",
             }}
             onMouseEnter={() => {
               setHover(true);

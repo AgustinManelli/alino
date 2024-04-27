@@ -63,7 +63,7 @@
   height: 45px;
   border-radius: 15px;
   border: none;
-  background-color: rgb(255, 255, 255);
+  background-color: transparent;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
   display: flex;
