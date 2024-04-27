@@ -7,28 +7,34 @@
   justify-content: center;
   align-items: center;
 }
-.form {
+.formContainer {
   width: 100%;
   height: fit-content;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.input {
-  height: 50px;
+.form {
   width: 60%;
-  border: none;
+  height: 50px;
+  display: flex;
+  justify-content: start;
+  gap: 15px;
+  align-items: center;
+  border-radius: 15px 15px 15px 15px;
   background-color: #ffffff;
+  padding: 0px 20px 0px 20px;
+}
+.input {
+  width: 100%;
+  border: none;
   font-family: "inter";
   color: #1c1c1c;
-  padding-left: 20px;
-  border-radius: 15px 0px 0px 15px;
   outline: none;
 }
-.button {
-  width: 50px;
-  height: 50px;
-  background-color: #ffffff;
+.statusButton {
+  display: flex;
   border: none;
-  border-radius: 0px 15px 15px 0px;
+  background-color: transparent;
+  cursor: pointer;
 }

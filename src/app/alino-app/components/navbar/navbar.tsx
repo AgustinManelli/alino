@@ -32,15 +32,6 @@ const containerFMVariant = {
   exit: { opacity: 0, scale: 0 },
 };
 
-const itemFMVariant = {
-  hidden: { scale: 0, opacity: 0 },
-  visible: {
-    scale: 1,
-    opacity: 1,
-  },
-  exit: { opacity: 0, scale: 0 },
-};
-
 const skeletonFMVariant = {
   hidden: { scale: 1, opacity: 0, y: 60 },
   visible: {
@@ -58,15 +49,14 @@ export default function Navbar() {
   const lists = useLists((state) => state.lists);
   const setLists = useLists((state) => state.setLists);
 
-  const fetchTodos = async () => {
-    setInitialFetching(true);
-    const { data: subjects, error } = (await GetSubjects()) as any;
-    if (error) toast(error);
-    else setLists(subjects);
-    setInitialFetching(false);
-  };
-
   useEffect(() => {
+    const fetchTodos = async () => {
+      setInitialFetching(true);
+      const { data: subjects, error } = (await GetSubjects()) as any;
+      if (error) toast(error);
+      else setLists(subjects);
+      setInitialFetching(false);
+    };
     fetchTodos();
   }, []);
 

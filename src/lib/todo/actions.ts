@@ -110,8 +110,6 @@ export const AddTaskToDB = async (
       }
     }
   }
-
-  return error;
 };
 
 export async function GetTasks() {

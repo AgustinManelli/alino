@@ -1,19 +1,19 @@
 "use client";
-import { useListSelected } from "@/store/list-selected";
-import { useTodo } from "@/store/todo";
-import TodoInput from "./todo-input";
-import TodoTasksSection from "./todo-tasks-section";
-import { GetTasks } from "@/lib/todo/actions";
-import { createClient } from "@/utils/supabase/client";
+
 import { useEffect } from "react";
-import styles from "./todo.module.css";
+import { useTodo } from "@/store/todo";
+import { GetTasks } from "@/lib/todo/actions";
+import { useListSelected } from "@/store/list-selected";
+import TodoTasksSection from "./todo-tasks-section";
+import TodoInput from "./todo-input";
 import { SquircleIcon } from "@/lib/ui/icons";
+import styles from "./todo.module.css";
 
 export default function Todo() {
   const listSelected = useListSelected((state) => state.listSelected);
   const setTasks = useTodo((state) => state.setTasks);
   const tasks = useTodo((state) => state.tasks);
-  const supabase = createClient();
+
   useEffect(() => {
     const fetchTodos = async () => {
       const { data: tasks, error } = (await GetTasks()) as any;
@@ -21,7 +21,7 @@ export default function Todo() {
       else setTasks(tasks);
     };
     fetchTodos();
-  }, [supabase]);
+  }, []);
 
   return (
     <div className={styles.todoContainerPage}>

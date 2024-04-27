@@ -2,13 +2,19 @@
 
 import { create } from "zustand";
 import { TasksSchema } from "@/lib/tasks-schema";
-import { GetTasks } from "@/lib/todo/actions";
+import { AddTaskToDB, GetTasks } from "@/lib/todo/actions";
 
 type SubjectsType = TasksSchema["public"]["Tables"]["todo"]["Row"];
 
 type Tasks = {
   tasks: SubjectsType[];
   setTasks: (subject: SubjectsType[]) => void;
+  setAddTask: (
+    task: string,
+    status: boolean,
+    priority: number,
+    id: string
+  ) => void;
   deleteTasks: (id: number) => void;
   getTasks: () => void;
 };
@@ -16,6 +22,13 @@ type Tasks = {
 export const useTodo = create<Tasks>()((set, get) => ({
   tasks: [],
   setTasks: (task) => set(() => ({ tasks: task })),
+  setAddTask: async (task, status, priority, id) => {
+    const result = await AddTaskToDB(task, status, priority, id);
+    if (!result?.error) {
+      const data = result?.data;
+      set((state: any) => ({ tasks: [...state.tasks, data] }));
+    }
+  },
   deleteTasks: (id) => {
     const { tasks } = get();
     const filtered = [...tasks].filter((all) => all.id !== id);

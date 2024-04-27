@@ -282,11 +282,8 @@ export const PaintBoard = ({ style }: { style?: React.CSSProperties }) => {
 
 export const SquircleIcon = ({ style }: { style?: React.CSSProperties }) => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 90" style={style}>
-      <path
-        d="M50,5C14,5,5,14,5,50s9,45,45,45,45-9,45-45S86,5,50,5Z"
-        transform="translate(-5 -5)"
-      />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={style}>
+      <path d="M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z" />
     </svg>
   );
 };
@@ -298,11 +295,95 @@ export const SendIcon = ({ style }: { style?: React.CSSProperties }) => {
       viewBox="0 0 24 24"
       fill="none"
       style={style}
-      className={styles.sendIcon}
+    >
+      <path d="M21.0477 3.05293C18.8697 0.707363 2.48648 6.4532 2.50001 8.551C2.51535 10.9299 8.89809 11.6617 10.6672 12.1581C11.7311 12.4565 12.016 12.7625 12.2613 13.8781C13.3723 18.9305 13.9301 21.4435 15.2014 21.4996C17.2278 21.5892 23.1733 5.342 21.0477 3.05293Z" />
+      <path d="M11.5 12.5L15 9" />
+    </svg>
+  );
+};
+
+export const FaceIcon1 = ({ style }: { style?: React.CSSProperties }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      style={style}
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 15C8.91212 16.2144 10.3643 17 12 17C13.6357 17 15.0879 16.2144 16 15"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8.00897 9L8 9M16 9L15.991 9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
+export const FaceIcon2 = ({ style }: { style?: React.CSSProperties }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      style={style}
     >
       <path
-        className={styles.sendIconChild}
-        d="M10.55,4.41c4.53,2.23,6.79,3.34,6.79,5.15,0,1.82-2.26,2.93-6.79,5.15l-3.08,1.52c-3.48,1.71-5.21,2.56-6.05,1.94-.22-.17-.41-.39-.54-.64-.49-.95.5-2.7,2.47-6.2.44-.78.66-1.16.7-1.59.01-.12.01-.25,0-.37-.04-.42-.26-.81-.7-1.59C1.37,4.3.38,2.55.87,1.6c.13-.26.32-.48.54-.64.84-.62,2.57.23,6.05,1.94l3.08,1.52Z"
+        d="M9.5 21.685C10.299 21.8906 11.1368 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 12.3375 2.01672 12.6711 2.04938 13"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5.02108 14L2.8602 16.0826C1.69974 17.2204 1.71976 19.0523 2.88023 20.1707C4.06071 21.2892 5.96146 21.2699 7.12193 20.1515C8.30241 19.0137 8.2824 17.1818 7.12193 16.0633L5.02108 14Z"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8.00897 8.44238H8M16 8.44238H15.991"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M15 16C14.1644 15.3721 13.1256 15 12 15C11.0893 15 10.2354 15.2436 9.5 15.6692"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
+export const FaceIcon3 = ({ style }: { style?: React.CSSProperties }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      style={style}
+    >
+      <path
+        d="M7 9.01067C7 9.01067 8.40944 8.88341 9.19588 9.50798M9.19588 9.50798L8.93275 10.3427C8.82896 10.6719 9.10031 11 9.4764 11C9.87165 11 10.1327 10.6434 9.92918 10.3348C9.74877 10.0612 9.50309 9.75196 9.19588 9.50798ZM17 9.01067C17 9.01067 15.5906 8.88341 14.8041 9.50798M14.8041 9.50798L15.0672 10.3427C15.171 10.6719 14.8997 11 14.5236 11C14.1283 11 13.8673 10.6434 14.0708 10.3348C14.2512 10.0612 14.4969 9.75196 14.8041 9.50798Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 3.93552L2 2L3.68554 7.22508C3.80276 7.58847 3.86138 7.77016 3.85636 7.94233C3.85135 8.1145 3.76983 8.32454 3.60679 8.74461C3.21495 9.75417 3 10.852 3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12C21 10.852 20.7851 9.75417 20.3932 8.74461C20.2302 8.32454 20.1486 8.1145 20.1436 7.94233C20.1386 7.77016 20.1972 7.58847 20.3145 7.22508L22 2L16 3.93552M8 3.93552C7.40756 4.22994 6.85215 4.58772 6.34267 5M8 3.93552C9.20496 3.33671 10.5632 3 12 3C13.4368 3 14.795 3.33671 16 3.93552M16 3.93552C16.5924 4.22994 17.1478 4.58772 17.6573 5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 16C9.83563 16.6278 10.8744 16.9998 12 16.9998C13.1256 16.9998 14.1644 16.6278 15 16"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
