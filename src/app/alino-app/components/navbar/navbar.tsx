@@ -113,19 +113,24 @@ export default function Navbar() {
                 ))}
             </div>
           ) : (
-            <AnimatePresence mode={"popLayout"}>
-              <motion.div
-                variants={containerFMVariant}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                className={styles.divCardsContainer}
-              >
-                <motion.div variants={itemFMVariant}>
+            <motion.div
+              variants={containerFMVariant}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={styles.divCardsContainer}
+            >
+              <AnimatePresence mode={"popLayout"}>
+                <motion.div key={"homeCard"}>
                   <SubjectsCards subject={homeSubject} />
                 </motion.div>
                 {lists.map((list) => (
-                  <motion.div variants={itemFMVariant} key={list.id}>
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    key={list.id}
+                  >
                     <SubjectsCards subject={list} />
                   </motion.div>
                 ))}
@@ -145,9 +150,9 @@ export default function Navbar() {
                 ) : (
                   ""
                 )}
-                <SubjectsInput setWaiting={setWaiting} />
-              </motion.div>
-            </AnimatePresence>
+              </AnimatePresence>
+              <SubjectsInput setWaiting={setWaiting} />
+            </motion.div>
           )}
         </section>
       </div>

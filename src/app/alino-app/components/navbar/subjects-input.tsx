@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLists } from "@/store/lists";
 import { LoadingIcon, PlusBoxIcon, SendIcon } from "@/lib/ui/icons";
 import { ColorPicker } from "@/components/color-picker";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function SubjectsInput({
   setWaiting,
@@ -63,95 +64,115 @@ export default function SubjectsInput({
 
   return (
     <div ref={divRef} className={styles.formContainer}>
-      {input || value !== "" ? (
-        <div className={styles.form}>
-          <ColorPicker
-            color={color}
-            setColor={setColor}
-            choosingColor={choosingColor}
-            setChoosingColor={setChoosingColor}
-          />
-          <input
-            disabled={transition}
-            type="text"
-            placeholder="cree una lista nueva"
-            value={value}
-            ref={inputRef}
-            onChange={(e) => {
-              setValue(e.target.value);
+      <AnimatePresence>
+        {input || value !== "" ? (
+          <motion.div
+            className={styles.form}
+            transition={{
+              type: "spring",
+              stiffness: 700,
+              damping: 40,
             }}
-            className={styles.inputText}
-            onKeyDown={(e) => {
-              if (!inputRef.current) return;
-              if (e.key === "Enter") {
-                handleSubmit();
-              }
-              if (e.key === "Escape") {
-                setInput(false);
-              }
-            }}
-          ></input>
-          {transition ? (
-            <LoadingIcon
-              style={{
-                width: "20px",
-                height: "auto",
-                stroke: "#000",
-                strokeWidth: "3",
-                opacity: "0.5",
-              }}
+            initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+            animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+            exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+          >
+            <ColorPicker
+              color={color}
+              setColor={setColor}
+              choosingColor={choosingColor}
+              setChoosingColor={setChoosingColor}
             />
-          ) : (
-            <button
-              style={{
-                border: "none",
-                backgroundColor: "transparent",
-                cursor: "pointer",
-                display: "flex",
+            <input
+              disabled={transition}
+              type="text"
+              placeholder="cree una lista nueva"
+              value={value}
+              ref={inputRef}
+              onChange={(e) => {
+                setValue(e.target.value);
               }}
-              onClick={(e) => {
-                e.preventDefault();
-                handleSubmit();
+              className={styles.inputText}
+              onKeyDown={(e) => {
+                if (!inputRef.current) return;
+                if (e.key === "Enter") {
+                  handleSubmit();
+                }
+                if (e.key === "Escape") {
+                  setInput(false);
+                }
               }}
-            >
-              <SendIcon
+            ></input>
+            {transition ? (
+              <LoadingIcon
                 style={{
                   width: "20px",
-                  stroke: "#1c1c1c",
-                  strokeWidth: "2",
+                  height: "auto",
+                  stroke: "#000",
+                  strokeWidth: "3",
                   opacity: "0.5",
                 }}
               />
-            </button>
-          )}
-        </div>
-      ) : (
-        <button
-          onClick={() => {
-            setInput(true);
-          }}
-          className={styles.button}
-          style={{
-            backgroundColor: hover
-              ? "rgb(240, 240, 240)"
-              : "rgb(255, 255, 255)",
-          }}
-          onMouseEnter={() => {
-            setHover(true);
-          }}
-          onMouseLeave={() => {
-            setHover(false);
-          }}
-        >
-          <PlusBoxIcon
-            style={{
-              stroke: "#1c1c1c",
-              strokeWidth: "1.5",
-              width: "20px",
+            ) : (
+              <button
+                style={{
+                  border: "none",
+                  backgroundColor: "transparent",
+                  cursor: "pointer",
+                  display: "flex",
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSubmit();
+                }}
+              >
+                <SendIcon
+                  style={{
+                    width: "20px",
+                    stroke: "#1c1c1c",
+                    strokeWidth: "2",
+                    opacity: "0.5",
+                  }}
+                />
+              </button>
+            )}
+          </motion.div>
+        ) : (
+          <motion.button
+            onClick={() => {
+              setInput(true);
             }}
-          />
-        </button>
-      )}
+            className={styles.button}
+            style={{
+              backgroundColor: hover
+                ? "rgb(240, 240, 240)"
+                : "rgb(255, 255, 255)",
+            }}
+            onMouseEnter={() => {
+              setHover(true);
+            }}
+            onMouseLeave={() => {
+              setHover(false);
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 700,
+              damping: 40,
+            }}
+            initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+            animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+            exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+          >
+            <PlusBoxIcon
+              style={{
+                stroke: "#1c1c1c",
+                strokeWidth: "1.5",
+                width: "20px",
+              }}
+            />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
