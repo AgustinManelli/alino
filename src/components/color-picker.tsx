@@ -113,6 +113,7 @@ export function ColorPicker({
         <AnimatePresence>
           {open ? (
             <motion.section
+              key={"color-picker-container"}
               ref={childRef}
               transition={{
                 type: "spring",

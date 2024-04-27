@@ -74,7 +74,12 @@ export default function SubjectsInput({
               damping: 40,
             }}
             initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
-            animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+            animate={{
+              scale: 1,
+              opacity: 1,
+              filter: "blur(0px)",
+              transition: { duration: 0.2 },
+            }}
             exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
           >
             <ColorPicker
@@ -157,9 +162,12 @@ export default function SubjectsInput({
               stiffness: 700,
               damping: 40,
             }}
-            initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
-            animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
-            exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{
+              scale: 1,
+              opacity: 1,
+            }}
+            exit={{ scale: 0, opacity: 0 }}
           >
             <PlusBoxIcon
               style={{

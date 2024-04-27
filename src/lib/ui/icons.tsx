@@ -186,8 +186,8 @@ export const DeleteIcon = ({ style }: { style?: React.CSSProperties }) => {
       fill="none"
       style={style}
       className={styles.deleteIcon}
-      shape-rendering="geometricPrecision"
-      text-rendering="geometricPrecision"
+      shapeRendering="geometricPrecision"
+      textRendering="geometricPrecision"
     >
       <g transform="translate(12,3.75)" className={styles.deleteIconLid}>
         <g transform="rotate(0)" className={styles.deleteIconLidChild}>

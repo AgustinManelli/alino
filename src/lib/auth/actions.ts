@@ -85,5 +85,12 @@ export async function updatePasswordLogin(formData: FormData) {
 
 export async function readUserSession() {
   const supabase = await createClient();
-  return await supabase.auth.getSession();
+  const result = await supabase.auth.getSession();
+  return result;
+}
+
+export async function readUserGetUser() {
+  const supabase = await createClient();
+  const result = await supabase.auth.getUser();
+  return result;
 }

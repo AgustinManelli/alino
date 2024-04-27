@@ -2,14 +2,14 @@
 
 import styles from "./page.module.css";
 import { redirect } from "next/navigation";
-import { signout, readUserSession } from "@/lib/auth/actions";
+import { signout, readUserSession, readUserGetUser } from "@/lib/auth/actions";
 import Link from "next/link";
 import Todo from "./components/todo/todo";
 
 export async function generateMetadata() {
-  const { data } = await readUserSession();
-  if (data.session) {
-    const nameSession = data.session.user.user_metadata.name ?? "user";
+  const { data, error } = await readUserSession();
+  if (!error) {
+    const nameSession = data.session?.user.user_metadata.name ?? "user";
     return {
       title: `alino app | ${nameSession}`,
     };
@@ -20,9 +20,9 @@ export async function generateMetadata() {
 }
 
 export default async function AlinoApp() {
-  const { data } = await readUserSession();
+  const { error } = await readUserGetUser();
 
-  if (!data.session) {
+  if (error) {
     return redirect("/sign-in");
   }
 

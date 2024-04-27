@@ -24,24 +24,28 @@ export async function GetSubjects() {
 export const AddSubjectToDB = async (subject: string, color: string) => {
   const setColor = color === "" ? "#87189d" : color;
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
+  const sessionResult = await supabase.auth.getSession();
   const { data: result } = await supabase
     .from("subjects")
     .select("subject")
     .eq("subject", subject);
 
-  if (result && result.length === 0) {
-    if (!error) {
-      if (data.session) {
-        const user = data.session.user;
+  if (!sessionResult.error) {
+    if (result && result.length === 0) {
+      if (sessionResult.data.session) {
+        const user = sessionResult.data.session.user;
         const result = await supabase
           .from("subjects")
           .insert({ subject, user_id: user.id, color: setColor })
           .select()
           .single();
         return result;
+      } else {
+        return sessionResult;
       }
     }
+  } else {
+    return sessionResult;
   }
 };
 

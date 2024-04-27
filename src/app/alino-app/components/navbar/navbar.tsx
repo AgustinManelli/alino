@@ -70,10 +70,6 @@ export default function Navbar() {
     fetchTodos();
   }, []);
 
-  const temporal = () => {
-    return JSON.stringify(lists);
-  };
-
   useEffect(() => {
     const objDiv = document.getElementById("listContainer");
     if (objDiv) {
@@ -121,13 +117,18 @@ export default function Navbar() {
               className={styles.divCardsContainer}
             >
               <AnimatePresence mode={"popLayout"}>
-                <motion.div key={"homeCard"}>
+                <motion.div
+                  key={"homeCard"}
+                  variants={containerFMVariant}
+                  initial={{ scale: 0, opacity: 0 }}
+                >
                   <SubjectsCards subject={homeSubject} />
                 </motion.div>
                 {lists.map((list) => (
                   <motion.div
+                    variants={containerFMVariant}
                     initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
+                    // animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0, opacity: 0 }}
                     key={list.id}
                   >

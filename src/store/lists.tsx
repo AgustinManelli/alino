@@ -6,6 +6,7 @@ import { DeleteSubjectToDB, GetSubjects } from "@/lib/todo/actions";
 import { UpdateSubjectToDB } from "@/lib/todo/actions";
 import { AddSubjectToDB } from "@/lib/todo/actions";
 import { useListSelected } from "./list-selected";
+import { toast } from "sonner";
 
 type ListsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
@@ -23,8 +24,16 @@ export const useLists = create<Subjects>()((set, get) => ({
   setLists: (list) => set(() => ({ lists: list })),
   setAddList: async (value, color) => {
     const result = await AddSubjectToDB(value, color);
-    const data = result?.data;
-    set((state: any) => ({ lists: [...state.lists, data] }));
+    if (result) {
+      if (!result.error) {
+        const data = result?.data;
+        set((state: any) => ({ lists: [...state.lists, data] }));
+      } else {
+        toast(result.error.toString());
+      }
+    } else {
+      toast("ya hay una lista con ese nombre");
+    }
   },
   deleteList: async (id) => {
     const { lists } = get();

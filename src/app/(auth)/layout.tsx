@@ -2,15 +2,15 @@ import { redirect } from "next/navigation";
 import styles from "./auth.module.css";
 import { ButtonComponent } from "@/components/buttonComponent/buttonComponent";
 import { AlinoLogo, HomeIcon } from "@/lib/ui/icons";
-import { readUserSession } from "@/lib/auth/actions";
+import { readUserGetUser } from "@/lib/auth/actions";
 
 export default async function authLayout({
   children,
 }: {
   children?: React.ReactNode;
 }) {
-  const { data } = await readUserSession();
-  if (data.session) {
+  const { error } = await readUserGetUser();
+  if (!error) {
     return redirect("/alino-app");
   }
 
