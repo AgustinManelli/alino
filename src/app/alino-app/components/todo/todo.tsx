@@ -20,6 +20,7 @@ export default function Todo() {
     };
     fetchTodos();
   }, [supabase]);
+
   return (
     <div
       style={{
@@ -45,7 +46,7 @@ export default function Todo() {
           opacity: "0.15",
           boxShadow: `${listSelected.color} 20px 250px 300px`,
           transform: "translateY(-175%) translateZ(0px)",
-          transition: "opacity 1.5s cubic-bezier(0.17, 0.17, 0, 1) 0s",
+          transition: "box-shadow 0.3s ease-in-out",
         }}
       ></div>
       <section
