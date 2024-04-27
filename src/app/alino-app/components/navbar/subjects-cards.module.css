@@ -8,7 +8,7 @@
   display: flex;
   justify-content: start;
   align-items: center;
-  padding: 0px 10px 0px 10px;
+  padding: 0px 40px 0px 10px;
   gap: 10px;
   transition:
     background-color 0.2s ease-in-out,
@@ -20,6 +20,10 @@
 }
 .subjectName {
   font-size: 14px;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .button {
   position: absolute;
