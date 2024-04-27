@@ -6,6 +6,8 @@ import TodoTasksSection from "./todo-tasks-section";
 import { GetTasks } from "@/lib/todo/actions";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect } from "react";
+import styles from "./todo.module.css";
+import { SquircleIcon } from "@/lib/ui/icons";
 
 export default function Todo() {
   const listSelected = useListSelected((state) => state.listSelected);
@@ -22,63 +24,24 @@ export default function Todo() {
   }, [supabase]);
 
   return (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        borderRadius: "20px",
-        display: "flex",
-        justifyContent: "start",
-        alignItems: "center",
-        flexDirection: "column",
-        padding: "25px",
-        gap: "20px",
-      }}
-    >
+    <div className={styles.todoContainerPage}>
       <div
+        className={styles.blurredReference}
         style={{
-          position: "absolute",
-          width: "60%",
-          height: "260px",
-          top: "0px",
-          pointerEvents: "none",
-          borderRadius: "100%",
-          opacity: "0.15",
           boxShadow: `${listSelected.color} 20px 250px 300px`,
-          transform: "translateY(-175%) translateZ(0px)",
-          transition: "box-shadow 0.3s ease-in-out",
         }}
       ></div>
-      <section
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "start",
-          gap: "10px",
-          width: "100%",
-        }}
-      >
-        <div
+      <section className={styles.todoContainer}>
+        <SquircleIcon
           style={{
             width: "12px",
-            height: "12px",
-            backgroundColor: `${listSelected.color}`,
-            borderRadius: "5px",
+            fill: `${listSelected.color}`,
+            transition: "fill 0.2s ease-in-out",
           }}
-        ></div>
-        <h2>{listSelected.subject}</h2>
+        />
+        <h2 className={styles.referenceText}>{listSelected.subject}</h2>
       </section>
-      <section
-        style={{
-          position: "relative",
-          width: "100%",
-          display: "flex",
-          justifyContent: "start",
-          alignItems: "center",
-          flexDirection: "column",
-          gap: "30px",
-        }}
-      >
+      <section className={styles.todoManagerContainer}>
         <TodoInput />
         <TodoTasksSection tasks={tasks} />
       </section>
