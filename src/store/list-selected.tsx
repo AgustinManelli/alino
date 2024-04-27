@@ -23,7 +23,7 @@ export const useListSelected = create<List>()((set, get) => ({
     set((state: any) => ({ listSelected: { ...state.lists, ...list } })),
   setColorListSelected: (color) => {
     const { listSelected } = get();
-    const flag = listSelected;
+    const flag = { ...listSelected };
     flag.color = color;
 
     set((state: any) => ({ listSelected: { ...state.listSelected, ...flag } }));

@@ -16,7 +16,7 @@ export const useTodoHome = create<Tasks>()((set, get) => ({
   setTasks: (task) => set(() => ({ tasks: task })),
   deleteTasks: (id) => {
     const { tasks } = get();
-    const filtered = tasks.filter((all) => all.id !== id);
-    set({ tasks: filtered });
+    const filtered = [...tasks].filter((all) => all.id !== id);
+    set(() => ({ tasks: filtered }));
   },
 }));

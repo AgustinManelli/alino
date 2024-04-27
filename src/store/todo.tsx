@@ -18,11 +18,11 @@ export const useTodo = create<Tasks>()((set, get) => ({
   setTasks: (task) => set(() => ({ tasks: task })),
   deleteTasks: (id) => {
     const { tasks } = get();
-    const filtered = tasks.filter((all) => all.id !== id);
-    set({ tasks: filtered });
+    const filtered = [...tasks].filter((all) => all.id !== id);
+    set(() => ({ tasks: filtered }));
   },
   getTasks: async () => {
     const { data } = (await GetTasks()) as any;
-    set({ tasks: data });
+    set(() => ({ tasks: data }));
   },
 }));
