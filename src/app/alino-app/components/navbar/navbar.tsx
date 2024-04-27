@@ -80,18 +80,18 @@ export default function Navbar() {
   return (
     <aside className={styles.navbarContainer}>
       <div className={styles.navbar}>
+        <div className={styles.logoContainer}>
+          <AlinoLogo
+            style={{
+              height: "20px",
+              width: "auto",
+              fill: "#1c1c1c",
+              opacity: "0.1",
+            }}
+            decoFill={"#1c1c1c"}
+          />
+        </div>
         <section className={styles.SubjectsCardsSection} id="listContainer">
-          <div className={styles.logoContainer}>
-            <AlinoLogo
-              style={{
-                height: "20px",
-                width: "auto",
-                fill: "#1c1c1c",
-                opacity: "0.1",
-              }}
-              decoFill={"#1c1c1c"}
-            />
-          </div>
           {initialFetching ? (
             <div className={styles.divCardsContainer}>
               {Array(4)
