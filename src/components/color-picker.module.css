@@ -10,7 +10,7 @@
   position: absolute;
   background-color: rgb(255, 255, 255);
   border: 1px solid rgb(240, 240, 240);
-  max-width: 190px;
+  max-width: 180px;
   width: fit-content;
   height: fit-content;
   border-radius: 15px;
@@ -53,7 +53,7 @@
   position: relative;
   height: 100%;
   display: flex;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
@@ -64,8 +64,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border: none;
   cursor: pointer;
   background-color: none;

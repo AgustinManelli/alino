@@ -2,12 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./color-picker.module.css";
-import {
-  CopyToClipboardIcon,
-  LoadingIcon,
-  PaintBoard,
-  SquircleIcon,
-} from "@/lib/ui/icons";
+import { CopyToClipboardIcon, LoadingIcon, SquircleIcon } from "@/lib/ui/icons";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
