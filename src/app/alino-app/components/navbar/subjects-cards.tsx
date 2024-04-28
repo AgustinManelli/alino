@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { ColorPicker } from "@/components/color-picker";
 import { useListSelected } from "@/store/list-selected";
@@ -42,6 +42,8 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
     toast.success(`Color de ${subject.subject} cambiado correctamente`);
   };
 
+  const contRef = useRef<HTMLDivElement>(null);
+
   return (
     <div
       className={styles.subjectsCardsContainer}
@@ -62,9 +64,17 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
             ? "rgba(12, 20, 66, 0.1) 0px 4px 12px, rgba(12, 20, 66, 0.08) 0px 30px 80px, rgb(230, 233, 237) 0px 0px 0px 0px inset"
             : "",
       }}
+      ref={contRef}
       onClick={(e) => {
+        e.preventDefault();
         e.stopPropagation();
-        setListSelected(subject);
+
+        if (
+          contRef.current !== null &&
+          contRef.current.contains(e.target as Node)
+        ) {
+          setListSelected(subject);
+        }
       }}
     >
       {subject.id === "home-tasks-static-alino-app" ? (
