@@ -68,11 +68,14 @@ export function ColorPicker({
       }
     }
     function divOnClick(event: MouseEvent | TouchEvent) {
+      console.log("pase0");
       if (childRef.current !== null && pickerRef.current !== null) {
+        console.log("pase1");
         if (
           !childRef.current.contains(event.target as Node) &&
           !pickerRef.current.contains(event.target as Node)
         ) {
+          console.log("pase2");
           setOpen(false);
           setChoosingColor ? setChoosingColor(false) : "";
           if (save && !isSave && originalColor) {
@@ -102,7 +105,7 @@ export function ColorPicker({
           }}
           onClick={(e) => {
             e.stopPropagation();
-            setChoosingColor ? setChoosingColor(!choosingColor) : "";
+            setChoosingColor && setChoosingColor(!choosingColor);
             setOpen(!open);
           }}
         >
@@ -113,9 +116,8 @@ export function ColorPicker({
       </div>
       {createPortal(
         <AnimatePresence>
-          {open && (
+          {open ? (
             <motion.section
-              key={"color-picker-container"}
               ref={childRef}
               transition={{
                 type: "spring",
@@ -123,7 +125,11 @@ export function ColorPicker({
                 damping: 40,
               }}
               initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
-              animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+              animate={{
+                scale: 1,
+                opacity: 1,
+                filter: "blur(0px)",
+              }}
               exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
               className={styles.container}
             >
@@ -132,7 +138,7 @@ export function ColorPicker({
               </section>
               <div className={styles.separator}></div>
               <section className={styles.buttonSection}>
-                {colors.map((colorHex) => (
+                {colors.map((colorHex, index) => (
                   <button
                     className={styles.button}
                     onClick={(e) => {
@@ -145,6 +151,7 @@ export function ColorPicker({
                         setIsSave(false);
                       }
                     }}
+                    key={index}
                   >
                     <SquircleIcon style={{ fill: `${colorHex}` }} />
                     {color === colorHex && (
@@ -255,6 +262,8 @@ export function ColorPicker({
                 </div>
               )}
             </motion.section>
+          ) : (
+            ""
           )}
         </AnimatePresence>,
         document.body
