@@ -20,6 +20,69 @@ const colors = [
   "#ff0004",
 ];
 
+type SquircleColorButonType = {
+  color: string;
+  setColor: (value: string) => void;
+  colorHex: string;
+  setChoosingColor?: (value: boolean) => void;
+  save?: boolean;
+  setOpen: (value: boolean) => void;
+  setIsSave: (value: boolean) => void;
+  index: number;
+};
+
+export function SquircleColorSelector({
+  color,
+  setColor,
+  colorHex,
+  setChoosingColor,
+  save,
+  setOpen,
+  setIsSave,
+  index,
+}: SquircleColorButonType) {
+  const [hoverColor, setHoverColor] = useState<boolean>(false);
+  return (
+    <button
+      className={styles.button}
+      onClick={(e) => {
+        e.stopPropagation();
+        setColor(colorHex);
+        setChoosingColor && setChoosingColor(false);
+        if (!save) {
+          setOpen(false);
+        } else {
+          setIsSave(false);
+        }
+      }}
+      key={index}
+      onMouseEnter={() => {
+        setHoverColor(true);
+      }}
+      onMouseLeave={() => {
+        setHoverColor(false);
+      }}
+    >
+      <SquircleIcon style={{ fill: `${colorHex}` }} />
+      <SquircleIcon
+        style={{
+          fill: "transparent",
+          position: "absolute",
+          width: "30px",
+          strokeWidth: "1.5",
+          stroke:
+            color === colorHex
+              ? `${colorHex}`
+              : hoverColor
+                ? `${colorHex}`
+                : "rgb(240,240,240)",
+          transition: "stroke 0.3s ease-in-out",
+        }}
+      />
+    </button>
+  );
+}
+
 export function ColorPicker({
   color,
   setColor,
@@ -32,7 +95,7 @@ export function ColorPicker({
 }: {
   color: string;
   setColor: (value: string) => void;
-  save?: boolean | null;
+  save?: boolean;
   handleSave?: () => Promise<void>;
   width?: string;
   originalColor?: string;
@@ -132,33 +195,16 @@ export function ColorPicker({
               <div className={styles.separator}></div>
               <section className={styles.buttonSection}>
                 {colors.map((colorHex, index) => (
-                  <button
-                    className={styles.button}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setColor(colorHex);
-                      setChoosingColor ? setChoosingColor(false) : "";
-                      if (!save) {
-                        setOpen(false);
-                      } else {
-                        setIsSave(false);
-                      }
-                    }}
-                    key={index}
-                  >
-                    <SquircleIcon style={{ fill: `${colorHex}` }} />
-                    {color === colorHex && (
-                      <SquircleIcon
-                        style={{
-                          fill: "transparent",
-                          position: "absolute",
-                          width: "30px",
-                          strokeWidth: "1.5",
-                          stroke: `${colorHex}`,
-                        }}
-                      />
-                    )}
-                  </button>
+                  <SquircleColorSelector
+                    color={color}
+                    setColor={setColor}
+                    colorHex={colorHex}
+                    setChoosingColor={setChoosingColor}
+                    save={save}
+                    setOpen={setOpen}
+                    setIsSave={setIsSave}
+                    index={index}
+                  />
                 ))}
               </section>
               <div className={styles.separator}></div>
@@ -170,11 +216,13 @@ export function ColorPicker({
                       type="color"
                       value={color}
                       onChange={(e) => {
+                        e.stopPropagation();
                         setColor(e.target.value);
                         setIsSave(false);
                       }}
                       className={styles.colorInput}
                     ></input>
+
                     <label htmlFor="colorInput" className={styles.labelColor}>
                       <SquircleIcon style={{ fill: `${color}` }} />
                       {!colors.includes(color) && (

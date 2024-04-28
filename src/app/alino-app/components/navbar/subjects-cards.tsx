@@ -66,7 +66,6 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
       }}
       ref={contRef}
       onClick={(e) => {
-        e.preventDefault();
         e.stopPropagation();
 
         if (
