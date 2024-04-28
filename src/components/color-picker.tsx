@@ -193,76 +193,79 @@ export function ColorPicker({
                 <p className={styles.title}>color</p>
               </section>
               <div className={styles.separator}></div>
-              <section className={styles.buttonSection}>
-                {colors.map((colorHex, index) => (
-                  <SquircleColorSelector
-                    color={color}
-                    setColor={setColor}
-                    colorHex={colorHex}
-                    setChoosingColor={setChoosingColor}
-                    save={save}
-                    setOpen={setOpen}
-                    setIsSave={setIsSave}
-                    index={index}
-                  />
-                ))}
-              </section>
-              <div className={styles.separator}></div>
-              <footer className={styles.footer}>
-                <div className={styles.hexContainer}>
-                  <div className={styles.inputColorContainer}>
-                    <input
-                      id="colorInput"
-                      type="color"
-                      value={color}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        setColor(e.target.value);
-                        setIsSave(false);
-                      }}
-                      className={styles.colorInput}
-                    ></input>
+              <div className={styles.colorSelectorContainer}>
+                <section className={styles.buttonSection}>
+                  {colors.map((colorHex, index) => (
+                    <SquircleColorSelector
+                      color={color}
+                      setColor={setColor}
+                      colorHex={colorHex}
+                      setChoosingColor={setChoosingColor}
+                      save={save}
+                      setOpen={setOpen}
+                      setIsSave={setIsSave}
+                      index={index}
+                    />
+                  ))}
+                </section>
+                {/* <div className={styles.separator}></div> */}
+                <footer className={styles.footer}>
+                  <div className={styles.hexContainer}>
+                    <div className={styles.inputColorContainer}>
+                      <input
+                        id="colorInput"
+                        type="color"
+                        value={color}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          setColor(e.target.value);
+                          setIsSave(false);
+                        }}
+                        className={styles.colorInput}
+                      ></input>
 
-                    <label htmlFor="colorInput" className={styles.labelColor}>
-                      <SquircleIcon style={{ fill: `${color}` }} />
-                      {!colors.includes(color) && (
-                        <SquircleIcon
-                          style={{
-                            fill: "transparent",
-                            position: "absolute",
-                            width: "30px",
-                            strokeWidth: "1.5",
-                            stroke: `${color}`,
-                          }}
-                        />
-                      )}
-                    </label>
+                      <label htmlFor="colorInput" className={styles.labelColor}>
+                        <SquircleIcon style={{ fill: `${color}` }} />
+                        {!colors.includes(color) && (
+                          <SquircleIcon
+                            style={{
+                              fill: "transparent",
+                              position: "absolute",
+                              width: "30px",
+                              strokeWidth: "1.5",
+                              stroke: `${color}`,
+                            }}
+                          />
+                        )}
+                      </label>
+                    </div>
+                    <input
+                      className={styles.hexCode}
+                      type="text"
+                      value={`${color}`}
+                      onChange={(e) => {
+                        setColor(e.target.value);
+                      }}
+                    ></input>
                   </div>
-                  <input
-                    className={styles.hexCode}
-                    type="text"
-                    value={`${color}`}
-                    onChange={(e) => {
-                      setColor(e.target.value);
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(color);
+                      toast("color copiado al portapapeles");
                     }}
-                  ></input>
-                </div>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(color);
-                    toast("color copiado al portapapeles");
-                  }}
-                  className={styles.copyButton}
-                >
-                  <CopyToClipboardIcon
-                    style={{
-                      strokeWidth: "1.5",
-                      stroke: "#1c1c1c",
-                      width: "20px",
-                    }}
-                  />
-                </button>
-              </footer>
+                    className={styles.copyButton}
+                  >
+                    <CopyToClipboardIcon
+                      style={{
+                        strokeWidth: "1.5",
+                        stroke: "#1c1c1c",
+                        width: "20px",
+                      }}
+                    />
+                  </button>
+                </footer>
+              </div>
+              <div className={styles.separator}></div>
               {save && handleSave && (
                 <div className={styles.saveButtonContainer}>
                   <button

@@ -50,6 +50,16 @@
   height: 1px;
   background-color: rgb(240, 240, 240);
 }
+.colorSelectorContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: fit-content;
+  padding: 0px 15px 0px 15px;
+  gap: 15px;
+}
 .buttonSection {
   position: relative;
   height: 100%;
@@ -58,7 +68,6 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  padding: 0px 15px 0px 15px;
 }
 .button {
   position: relative;
@@ -137,7 +146,6 @@
   width: 100%;
   justify-content: space-around;
   align-items: center;
-  padding: 0px 15px 0px 15px;
 }
 
 .hexContainer {
