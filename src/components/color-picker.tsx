@@ -68,14 +68,11 @@ export function ColorPicker({
       }
     }
     function divOnClick(event: MouseEvent | TouchEvent) {
-      console.log("pase0");
       if (childRef.current !== null && pickerRef.current !== null) {
-        console.log("pase1");
         if (
           !childRef.current.contains(event.target as Node) &&
           !pickerRef.current.contains(event.target as Node)
         ) {
-          console.log("pase2");
           setOpen(false);
           setChoosingColor ? setChoosingColor(false) : "";
           if (save && !isSave && originalColor) {
