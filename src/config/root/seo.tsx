@@ -10,7 +10,7 @@ export type SeoType = {
 };
 
 export const seoData: SeoType = {
-  title: "Todo app list and tools for your study time",
+  title: "alino",
   subTitle: "all-in-one, all-in-order, alino",
   absoluteTitle: "alino",
   ogTitle: "alino",
