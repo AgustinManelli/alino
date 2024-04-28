@@ -9,6 +9,7 @@ import { useTodo } from "@/store/todo";
 import { SubjectSchema } from "@/lib/subject-schema";
 import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
 import styles from "./subjects-cards.module.css";
+import Counter from "@/components/counter";
 
 type ListsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 
@@ -118,7 +119,11 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
                 : "1",
         }}
       >
-        {tasks.filter((element) => element.subject_id === subject.id).length}
+        <Counter
+          tasksLength={
+            tasks.filter((element) => element.subject_id === subject.id).length
+          }
+        />
       </p>
     </div>
   );
