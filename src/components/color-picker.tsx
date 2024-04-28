@@ -265,45 +265,49 @@ export function ColorPicker({
                   </button>
                 </footer>
               </div>
-              <div className={styles.separator}></div>
               {save && handleSave && (
-                <div className={styles.saveButtonContainer}>
-                  <button
-                    className={styles.saveButton}
-                    style={{ backgroundColor: hover ? "rgb(240,240,240)" : "" }}
-                    onMouseEnter={() => {
-                      setHover(true);
-                    }}
-                    onMouseLeave={() => {
-                      setHover(false);
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setWait(true);
-                      handleSave()
-                        .then(() => {
-                          setOpen(false);
-                        })
-                        .finally(() => {
-                          setWait(false);
-                          setIsSave(true);
-                        });
-                    }}
-                  >
-                    {wait ? (
-                      <LoadingIcon
-                        style={{
-                          width: "20px",
-                          height: "auto",
-                          stroke: "#1c1c1c",
-                          strokeWidth: "3",
-                        }}
-                      />
-                    ) : (
-                      "guardar"
-                    )}
-                  </button>
-                </div>
+                <>
+                  <div className={styles.separator}></div>
+                  <div className={styles.saveButtonContainer}>
+                    <button
+                      className={styles.saveButton}
+                      style={{
+                        backgroundColor: hover ? "rgb(240,240,240)" : "",
+                      }}
+                      onMouseEnter={() => {
+                        setHover(true);
+                      }}
+                      onMouseLeave={() => {
+                        setHover(false);
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setWait(true);
+                        handleSave()
+                          .then(() => {
+                            setOpen(false);
+                          })
+                          .finally(() => {
+                            setWait(false);
+                            setIsSave(true);
+                          });
+                      }}
+                    >
+                      {wait ? (
+                        <LoadingIcon
+                          style={{
+                            width: "20px",
+                            height: "auto",
+                            stroke: "#1c1c1c",
+                            strokeWidth: "3",
+                          }}
+                        />
+                      ) : (
+                        "guardar"
+                      )}
+                    </button>
+                  </div>
+                </>
               )}
             </motion.section>
           ) : (
