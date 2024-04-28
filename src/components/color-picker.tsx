@@ -75,7 +75,7 @@ export function SquircleColorSelector({
               ? `${colorHex}`
               : hoverColor
                 ? `${colorHex}`
-                : "rgb(240,240,240)",
+                : "rgb(245,245,245)",
           transition: "stroke 0.3s ease-in-out",
         }}
       />
