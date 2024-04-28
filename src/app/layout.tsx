@@ -23,15 +23,20 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   icons: {
-    shortcut: { url: "/favicon.ico", type: "image/x-icon" },
     icon: [
       { url: "/favicon.ico", type: "image/x-icon" },
       { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
       { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      {
+        url: "/android-icon-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
     ],
+    shortcut: ["/favicon-32x32.png"],
     apple: [
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/apple-icon.png" },
+      { url: "/apple-icon-180x180.png", sizes: "180x180", type: "image/png" },
     ],
   },
   appleWebApp: {
@@ -39,6 +44,7 @@ export const metadata: Metadata = {
     title: seoData.title,
     statusBarStyle: "black-translucent",
   },
+  manifest: `${getUrl()}/favicons/manifest.json`,
 };
 
 export default function RootLayout({
