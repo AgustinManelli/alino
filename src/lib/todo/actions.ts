@@ -90,20 +90,36 @@ export const AddTaskToDB = async (
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
 
-  if (!error) {
-    if (data.session) {
-      const user = data.session.user;
-      if (subject_id === "home-tasks-static-alino-app") {
+  if (subject_id === "home-tasks-static-alino-app") {
+    if (!error) {
+      if (data.session) {
+        const user = data.session.user;
         const result = await supabase
-          .from("todos-home")
-          .insert({ user_id: user.id, task, status, priority })
+          .from("todos")
+          .insert({
+            user_id: user.id,
+            task,
+            status,
+            priority,
+          })
           .select()
           .single();
         return result;
-      } else {
+      }
+    }
+  } else {
+    if (!error) {
+      if (data.session) {
+        const user = data.session.user;
         const result = await supabase
           .from("todos")
-          .insert({ user_id: user.id, subject_id, task, status, priority })
+          .insert({
+            user_id: user.id,
+            subject_id,
+            task,
+            status,
+            priority,
+          })
           .select()
           .single();
         return result;
@@ -120,6 +136,45 @@ export async function GetTasks() {
     if (data.session) {
       const result = await supabase
         .from("todos")
+        .select("*")
+        .order("inserted_at", { ascending: true })
+        .eq("user_id", data.session?.user.id);
+      return result;
+    }
+  }
+
+  return error;
+}
+
+export const AddTaskHomeToDB = async (
+  task: string,
+  status: boolean,
+  priority: number
+) => {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getSession();
+
+  if (!error) {
+    if (data.session) {
+      const user = data.session.user;
+      const result = await supabase
+        .from("todos-home")
+        .insert({ user_id: user.id, task, status, priority })
+        .select()
+        .single();
+      return result;
+    }
+  }
+};
+
+export async function GetTasksHome() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getSession();
+
+  if (!error) {
+    if (data.session) {
+      const result = await supabase
+        .from("todos-home")
         .select("*")
         .order("inserted_at", { ascending: true })
         .eq("user_id", data.session?.user.id);

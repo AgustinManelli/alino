@@ -5,7 +5,7 @@ export interface TasksHomeSchema {
     Tables: {
       todo: {
         Row: {
-          id: number;
+          id: string;
           user_id: string;
           task: string;
           status: boolean;
@@ -13,7 +13,7 @@ export interface TasksHomeSchema {
           inserted_at: string;
         };
         Insert: {
-          id?: number;
+          id?: string;
           user_id?: string;
           task?: string;
           status?: boolean;
@@ -21,7 +21,7 @@ export interface TasksHomeSchema {
           inserted_at?: string;
         };
         Update: {
-          id?: number;
+          id?: string;
           user_id?: string;
           task?: string;
           status?: boolean;

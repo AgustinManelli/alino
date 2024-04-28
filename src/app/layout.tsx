@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     title: seoData.title,
     statusBarStyle: "black-translucent",
   },
-  manifest: `${getUrl()}/favicons/manifest.json`,
+  manifest: `${getUrl()}/manifest.json`,
 };
 
 export default function RootLayout({

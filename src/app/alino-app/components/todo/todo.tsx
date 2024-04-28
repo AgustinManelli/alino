@@ -1,8 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-import { useTodo } from "@/store/todo";
-import { GetTasks } from "@/lib/todo/actions";
 import { useListSelected } from "@/store/list-selected";
 import TodoTasksSection from "./todo-tasks-section";
 import TodoInput from "./todo-input";
@@ -11,17 +8,6 @@ import styles from "./todo.module.css";
 
 export default function Todo() {
   const listSelected = useListSelected((state) => state.listSelected);
-  const setTasks = useTodo((state) => state.setTasks);
-  const tasks = useTodo((state) => state.tasks);
-
-  useEffect(() => {
-    const fetchTodos = async () => {
-      const { data: tasks, error } = (await GetTasks()) as any;
-      if (error) console.log("error", error);
-      else setTasks(tasks);
-    };
-    fetchTodos();
-  }, []);
 
   return (
     <div className={styles.todoContainerPage}>
@@ -43,7 +29,7 @@ export default function Todo() {
       </section>
       <section className={styles.todoManagerContainer}>
         <TodoInput />
-        <TodoTasksSection tasks={tasks} />
+        <TodoTasksSection />
       </section>
     </div>
   );

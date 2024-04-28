@@ -121,7 +121,10 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
       >
         <Counter
           tasksLength={
-            tasks.filter((element) => element.subject_id === subject.id).length
+            subject.id === "home-tasks-static-alino-app"
+              ? tasks.filter((element) => !element.subject_id).length
+              : tasks.filter((element) => element.subject_id === subject.id)
+                  .length
           }
         />
       </p>
