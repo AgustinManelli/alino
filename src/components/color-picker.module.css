@@ -10,20 +10,22 @@
   position: absolute;
   background-color: rgb(255, 255, 255);
   border: 1px solid rgb(240, 240, 240);
-  width: 200px;
-  max-width: 200px;
-  min-width: 200px;
+  max-width: 190px;
+  width: fit-content;
   height: fit-content;
   border-radius: 15px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 15px;
+  padding: 15px 0px 15px 0px;
   z-index: 100;
   box-shadow:
     rgba(12, 20, 66, 0.02) 0px 4px 12px,
     rgba(12, 20, 66, 0.08) 0px 30px 80px,
     rgb(230, 233, 237) 0px 0px 0px 0px inset;
+}
+.titleSection {
+  padding: 0px 15px 0px 15px;
 }
 .title {
   font-size: 12px;
@@ -48,15 +50,22 @@
   background-color: rgb(240, 240, 240);
 }
 .buttonSection {
+  position: relative;
   height: 100%;
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
+  padding: 0px 15px 0px 15px;
 }
 .button {
-  width: 25px;
-  height: 25px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 22px;
+  height: 22px;
   border: none;
   cursor: pointer;
   background-color: none;
@@ -90,10 +99,13 @@
 }
 .labelColor {
   position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   top: 0;
   left: 0;
-  width: 25px;
-  height: 25px;
+  width: 22px;
+  height: 22px;
   cursor: pointer;
 }
 .colorInput::-webkit-color-swatch {
@@ -123,15 +135,13 @@
   width: 100%;
   justify-content: space-around;
   align-items: center;
+  padding: 0px 15px 0px 15px;
 }
+
 .hexContainer {
   display: flex;
   align-items: center;
   gap: 5px;
-}
-.hexText {
-  color: #1c1c1c;
-  font-weight: 500;
 }
 .hexCode {
   background-color: transparent;
@@ -149,7 +159,16 @@
   border: none;
   cursor: pointer;
 }
+.saveButtonContainer {
+  position: relative;
+  width: 100%;
+  padding: 0px 15px 0px 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .saveButton {
+  width: 100%;
   background-color: #fff;
   border: none;
   font-family: inter;

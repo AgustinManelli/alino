@@ -13,11 +13,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
 
 const colors = [
-  "#87189d",
+  "#f54275",
   "#ff00ea",
+  "#87189d",
   "#0693e3",
   "#2ccce4",
   "#7ed321",
+  "#a6ff00",
   "#ffdd00",
   "#ff6900",
   "#ff0004",
@@ -111,7 +113,7 @@ export function ColorPicker({
       </div>
       {createPortal(
         <AnimatePresence>
-          {open ? (
+          {open && (
             <motion.section
               key={"color-picker-container"}
               ref={childRef}
@@ -145,16 +147,23 @@ export function ColorPicker({
                     }}
                   >
                     <SquircleIcon style={{ fill: `${colorHex}` }} />
+                    {color === colorHex && (
+                      <SquircleIcon
+                        style={{
+                          fill: "transparent",
+                          position: "absolute",
+                          width: "30px",
+                          strokeWidth: "1.5",
+                          stroke: `${colorHex}`,
+                        }}
+                      />
+                    )}
                   </button>
                 ))}
-                <div className={styles.customColorContainer}>
-                  <PaintBoard
-                    style={{
-                      strokeWidth: "1.5",
-                      stroke: "#1c1c1c",
-                      width: "20px",
-                    }}
-                  />
+              </section>
+              <div className={styles.separator}></div>
+              <footer className={styles.footer}>
+                <div className={styles.hexContainer}>
                   <div className={styles.inputColorContainer}>
                     <input
                       id="colorInput"
@@ -168,14 +177,19 @@ export function ColorPicker({
                     ></input>
                     <label htmlFor="colorInput" className={styles.labelColor}>
                       <SquircleIcon style={{ fill: `${color}` }} />
+                      {!colors.includes(color) && (
+                        <SquircleIcon
+                          style={{
+                            fill: "transparent",
+                            position: "absolute",
+                            width: "30px",
+                            strokeWidth: "1.5",
+                            stroke: `${color}`,
+                          }}
+                        />
+                      )}
                     </label>
                   </div>
-                </div>
-              </section>
-              <div className={styles.separator}></div>
-              <footer className={styles.footer}>
-                <div className={styles.hexContainer}>
-                  <p className={styles.hexText}>hex: </p>
                   <input
                     className={styles.hexCode}
                     type="text"
@@ -201,48 +215,46 @@ export function ColorPicker({
                   />
                 </button>
               </footer>
-              {save && handleSave ? (
-                <button
-                  className={styles.saveButton}
-                  style={{ backgroundColor: hover ? "rgb(240,240,240)" : "" }}
-                  onMouseEnter={() => {
-                    setHover(true);
-                  }}
-                  onMouseLeave={() => {
-                    setHover(false);
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setWait(true);
-                    handleSave()
-                      .then(() => {
-                        setOpen(false);
-                      })
-                      .finally(() => {
-                        setWait(false);
-                        setIsSave(true);
-                      });
-                  }}
-                >
-                  {wait ? (
-                    <LoadingIcon
-                      style={{
-                        width: "20px",
-                        height: "auto",
-                        stroke: "#1c1c1c",
-                        strokeWidth: "3",
-                      }}
-                    />
-                  ) : (
-                    "save"
-                  )}
-                </button>
-              ) : (
-                ""
+              {save && handleSave && (
+                <div className={styles.saveButtonContainer}>
+                  <button
+                    className={styles.saveButton}
+                    style={{ backgroundColor: hover ? "rgb(240,240,240)" : "" }}
+                    onMouseEnter={() => {
+                      setHover(true);
+                    }}
+                    onMouseLeave={() => {
+                      setHover(false);
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setWait(true);
+                      handleSave()
+                        .then(() => {
+                          setOpen(false);
+                        })
+                        .finally(() => {
+                          setWait(false);
+                          setIsSave(true);
+                        });
+                    }}
+                  >
+                    {wait ? (
+                      <LoadingIcon
+                        style={{
+                          width: "20px",
+                          height: "auto",
+                          stroke: "#1c1c1c",
+                          strokeWidth: "3",
+                        }}
+                      />
+                    ) : (
+                      "guardar"
+                    )}
+                  </button>
+                </div>
               )}
             </motion.section>
-          ) : (
-            ""
           )}
         </AnimatePresence>,
         document.body

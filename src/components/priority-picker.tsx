@@ -29,7 +29,7 @@ export default function () {
           }}
         />
       </button>
-      {open ? (
+      {open && (
         <section className={styles.boxContainer}>
           <p className={styles.title}>prioridad</p>
           <div className={styles.separator}></div>
@@ -60,8 +60,6 @@ export default function () {
             />
           </div>
         </section>
-      ) : (
-        ""
       )}
     </div>
   );
