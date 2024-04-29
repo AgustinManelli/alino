@@ -7,6 +7,11 @@
   justify-content: center;
   align-items: center;
 }
+.statusButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .formContainer {
   width: 100%;
   height: fit-content;
@@ -31,10 +36,4 @@
   font-family: "inter";
   color: #1c1c1c;
   outline: none;
-}
-.statusButton {
-  display: flex;
-  border: none;
-  background-color: transparent;
-  cursor: pointer;
 }

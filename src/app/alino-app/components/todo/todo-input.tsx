@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useListSelected } from "@/store/list-selected";
 import { useTodo } from "@/store/todo";
 import styles from "./todo-input.module.css";
-import { SquircleIcon } from "@/lib/ui/icons";
 import PriorityPicker from "@/components/priority-picker";
+import { Checkbox } from "@/components/inputs/checkbox/checkbox";
 
 export default function TodoInput() {
   const listSelected = useListSelected((state) => state.listSelected);
@@ -21,32 +21,10 @@ export default function TodoInput() {
   };
 
   return (
-    <section
-      className={styles.container}
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleAdd();
-      }}
-    >
+    <section className={styles.container}>
       <div className={styles.formContainer}>
-        <form className={styles.form}>
-          <button
-            className={styles.statusButton}
-            onClick={() => {
-              setStatus(!status);
-            }}
-          >
-            <SquircleIcon
-              style={{
-                width: "15px",
-                fill: status ? "#1c1c1c" : "transparent",
-                stroke: "#1c1c1c",
-                strokeWidth: "2",
-                overflow: "visible",
-                transition: "fill 0.2s ease",
-              }}
-            />
-          </button>
+        <div className={styles.form}>
+          <Checkbox status={status} setStatus={setStatus} />
           <input
             className={styles.input}
             type="text"
@@ -55,9 +33,14 @@ export default function TodoInput() {
             onChange={(e) => {
               setTask(e.target.value);
             }}
+            onKeyUp={(e) => {
+              if (e.key === "enter") {
+                handleAdd();
+              }
+            }}
           ></input>
           <PriorityPicker />
-        </form>
+        </div>
       </div>
     </section>
   );

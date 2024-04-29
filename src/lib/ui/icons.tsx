@@ -288,6 +288,23 @@ export const SquircleIcon = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
+export const SquircleIconSquish = ({
+  style,
+}: {
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      id="Capa_1"
+      data-name="Capa 1"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+    >
+      <path d="M12,5.13c-4.5,0-6.47-1.85-7.6-.73-1.13,1.13.73,3.1.73,7.6,0,4.5-1.85,6.47-.72,7.6,1.13,1.13,3.1-.72,7.6-.72s6.47,1.85,7.6.72c1.13-1.13-.72-3.1-.73-7.6,0-4.5,1.85-6.47.73-7.6s-3.1.73-7.6.73Z" />
+    </svg>
+  );
+};
+
 export const SendIcon = ({ style }: { style?: React.CSSProperties }) => {
   return (
     <svg
