@@ -19,7 +19,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
   const origin = window.location.origin;
 
   const [hover, setHover] = useState<boolean>(false);
-  const [colorTemp, setColorTemp] = useState<string | null>(list.color);
+  const [colorTemp, setColorTemp] = useState<string>(list.color);
 
   const setListSelected = useListSelected((state) => state.setListSelected);
   const listSelected = useListSelected((state) => state.listSelected);

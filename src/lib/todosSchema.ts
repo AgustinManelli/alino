@@ -11,7 +11,7 @@ export type Database = {
     Tables: {
       todos_data: {
         Row: {
-          color: string | null;
+          color: string;
           data: Json | null;
           id: string;
           index: number | null;
