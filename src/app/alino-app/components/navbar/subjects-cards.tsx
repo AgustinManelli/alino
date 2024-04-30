@@ -10,6 +10,7 @@ import styles from "./subjects-cards.module.css";
 import Counter from "@/components/counter";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -18,16 +19,16 @@ export function SubjectsCards({ list }: { list: ListsType }) {
   const changeColor = useLists((state) => state.changeColor);
 
   const pathname = usePathname();
-
-  // const totalTasks = list.tasks?.length();
-
-  // console.log(list);
+  const router = useRouter();
 
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(list.data.color);
 
-  const handleDelete = () => {
-    deleteList(list.id);
+  const handleDelete = async () => {
+    if (pathname === `/alino-app/${list.name}`) {
+      router.push(`${location.origin}/alino-app/home`);
+    }
+    await deleteList(list.id);
     toast.success(`${list.name} eliminado correctamente`);
   };
 
@@ -36,7 +37,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
     toast.success(`Color de ${list.name} cambiado correctamente`);
   };
 
-  const contRef = useRef<HTMLDivElement>(null);
+  // const contRef = useRef<HTMLDivElement>(null);
 
   return (
     <Link

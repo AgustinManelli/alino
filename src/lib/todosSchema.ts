@@ -13,6 +13,16 @@ export type dataList = {
   color: string;
 };
 
+export type tasks = {
+  id: string;
+  category_id: string;
+  description: string;
+  created_at: string;
+  completed: boolean;
+  index: number;
+  name: string;
+};
+
 export type Database = {
   public: {
     Tables: {
