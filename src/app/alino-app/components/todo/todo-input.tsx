@@ -1,22 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { useListSelected } from "@/store/list-selected";
-import { useTodo } from "@/store/todo";
+import { useLists } from "@/store/lists";
 import styles from "./todo-input.module.css";
 import PriorityPicker from "@/components/priority-picker";
 import { Checkbox } from "@/components/inputs/checkbox/checkbox";
 
 export default function TodoInput() {
-  const listSelected = useListSelected((state) => state.listSelected);
-  const setAddTask = useTodo((state) => state.setAddTask);
+  // const setAddTask = useLists((state) => state.setAddList);
 
   const [task, setTask] = useState<string>("");
   const [status, setStatus] = useState<boolean>(false);
   const [priority, setPriority] = useState<number>(3);
 
   const handleAdd = async () => {
-    await setAddTask(task, status, priority, listSelected.id);
+    // await setAddTask(task, status, priority, listSelected.id);
     setTask("");
   };
 

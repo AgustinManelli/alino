@@ -1,27 +1,33 @@
 "use client";
 
-import { useListSelected } from "@/store/list-selected";
 import TodoTasksSection from "./todo-tasks-section";
 import TodoInput from "./todo-input";
 import { SquircleIcon } from "@/lib/ui/icons";
 import styles from "./todo.module.css";
+import { useLists } from "@/store/lists";
+import { Database } from "@/lib/todosSchema";
+
+type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 export default function Todo({ params }: { params: { list: string } }) {
-  const listSelected = useListSelected((state) => state.listSelected);
+  const lists = useLists((state) => state.lists);
+  const setList = lists.find(
+    (elemento) => elemento.name === params.list
+  ) as ListsType;
 
   return (
     <div className={styles.todoContainerPage}>
       <div
         className={styles.blurredReference}
         style={{
-          boxShadow: `${listSelected.color} 20px 200px 240px`,
+          boxShadow: `${setList?.color} 20px 200px 240px`,
         }}
       ></div>
       <section className={styles.todoContainer}>
         <SquircleIcon
           style={{
             width: "12px",
-            fill: `${listSelected.color}`,
+            fill: `${setList?.color}`,
             transition: "fill 0.2s ease-in-out",
           }}
         />
@@ -29,7 +35,7 @@ export default function Todo({ params }: { params: { list: string } }) {
       </section>
       <section className={styles.todoManagerContainer}>
         <TodoInput />
-        <TodoTasksSection />
+        <TodoTasksSection setList={setList} />
       </section>
     </div>
   );

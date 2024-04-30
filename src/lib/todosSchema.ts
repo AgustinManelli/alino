@@ -17,7 +17,7 @@ export type Database = {
           index: number | null;
           inserted_at: string;
           name: string | null;
-          tasks: Json | null;
+          tasks: Json[] | null;
           updated_at: string | null;
           user_id: string;
         };

@@ -208,7 +208,6 @@ export function ColorPicker({
                     />
                   ))}
                 </section>
-                {/* <div className={styles.separator}></div> */}
                 <footer className={styles.footer}>
                   <div className={styles.hexContainer}>
                     <div className={styles.inputColorContainer}>

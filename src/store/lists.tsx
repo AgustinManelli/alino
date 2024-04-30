@@ -5,7 +5,6 @@ import { Database } from "@/lib/todosSchema";
 import { DeleteSubjectToDB, GetSubjects } from "@/lib/todo/actions";
 import { UpdateSubjectToDB } from "@/lib/todo/actions";
 import { AddListToDB } from "@/lib/todo/actions";
-import { useListSelected } from "./list-selected";
 import { toast } from "sonner";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
@@ -47,9 +46,6 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
   changeColor: async (id, newColor) => {
     await UpdateSubjectToDB(id, newColor);
-    const setColorListSelected =
-      useListSelected.getState().setColorListSelected;
-    setColorListSelected(newColor);
     const { lists } = get();
     const flag = lists;
     for (const object of flag) {

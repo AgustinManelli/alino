@@ -1,15 +1,16 @@
 "use client";
 
 import styles from "./todo-tasks-section.module.css";
-import { useListSelected } from "@/store/list-selected";
 import { useEffect } from "react";
-import { useTodo } from "@/store/todo";
+import { useLists } from "@/store/lists";
 import { GetTasks } from "@/lib/todo/actions";
+import { Database } from "@/lib/todosSchema";
 
-export default function TodoTasksSection() {
-  const setTasks = useTodo((state) => state.setTasks);
-  const tasks = useTodo((state) => state.tasks);
-  const listSelected = useListSelected((state) => state.listSelected);
+type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+
+export default function TodoTasksSection({ setList }: { setList: ListsType }) {
+  const setLists = useLists((state) => state.setLists);
+  const lists = useLists((state) => state.lists);
 
   // useEffect(() => {
   //   const fetchTodos = async () => {
@@ -22,13 +23,7 @@ export default function TodoTasksSection() {
 
   return (
     <div className={styles.container}>
-      {listSelected.id === "home-tasks-static-alino-app"
-        ? tasks
-            .filter((task) => !task.subject_id)
-            .map((task) => <div className={styles.card}>{task.task}</div>)
-        : tasks
-            .filter((task) => task.subject_id === listSelected.id)
-            .map((task) => <div className={styles.card}>{task.task}</div>)}
+      {setList.tasks?.map((task) => <div></div>)}
     </div>
   );
 }

@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { ColorPicker } from "@/components/color-picker";
-import { useListSelected } from "@/store/list-selected";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
 import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
@@ -20,9 +19,6 @@ export function SubjectsCards({ list }: { list: ListsType }) {
 
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(list.color);
-
-  const setListSelected = useListSelected((state) => state.setListSelected);
-  const listSelected = useListSelected((state) => state.listSelected);
 
   const handleDelete = () => {
     deleteList(list.id);
@@ -44,17 +40,17 @@ export function SubjectsCards({ list }: { list: ListsType }) {
       onMouseLeave={() => {
         setHover(false);
       }}
-      style={{
-        backgroundColor:
-          hover || listSelected.id === list.id
-            ? "rgb(240, 240, 240)"
-            : "transparent",
-        scale: listSelected.id === list.id ? "1.05" : "1",
-        boxShadow:
-          listSelected.id === list.id
-            ? "rgba(12, 20, 66, 0.1) 0px 4px 12px, rgba(12, 20, 66, 0.08) 0px 30px 80px, rgb(230, 233, 237) 0px 0px 0px 0px inset"
-            : "",
-      }}
+      // style={{
+      //   backgroundColor:
+      //     hover || listSelected.id === list.id
+      //       ? "rgb(240, 240, 240)"
+      //       : "transparent",
+      //   scale: listSelected.id === list.id ? "1.05" : "1",
+      //   boxShadow:
+      //     listSelected.id === list.id
+      //       ? "rgba(12, 20, 66, 0.1) 0px 4px 12px, rgba(12, 20, 66, 0.08) 0px 30px 80px, rgb(230, 233, 237) 0px 0px 0px 0px inset"
+      //       : "",
+      // }}
       // ref={contRef}
       href={`${list.name}`}
       as={`${list.name}`}

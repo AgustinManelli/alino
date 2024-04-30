@@ -35,7 +35,6 @@ export default async function AlinoApp() {
           </Link>
         </div>
       </div>
-      {/* <Todo /> */}
     </div>
   );
 }
