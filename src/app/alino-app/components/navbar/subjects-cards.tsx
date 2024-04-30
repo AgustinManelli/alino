@@ -15,7 +15,10 @@ type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 export function SubjectsCards({ list }: { list: ListsType }) {
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
-  const origin = window.location.origin;
+
+  // const totalTasks = list.tasks?.length();
+
+  // console.log(list);
 
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(list.color);
@@ -101,7 +104,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
             list.id === "home-tasks-static-alino-app" ? "1" : hover ? "0" : "1",
         }}
       >
-        <Counter tasksLength={30} />
+        <Counter tasksLength={10} />
       </p>
     </Link>
   );

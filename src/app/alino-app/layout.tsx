@@ -1,15 +1,15 @@
 import Navbar from "./components/navbar/navbar";
 import { redirect } from "next/navigation";
-import { readUserGetUser } from "@/lib/auth/actions";
+import { readUserSession } from "@/lib/auth/actions";
 
 export default async function appLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { error } = await readUserGetUser();
+  const { data } = await readUserSession();
 
-  if (error) {
+  if (!data.session) {
     return redirect("/sign-in");
   }
   return (

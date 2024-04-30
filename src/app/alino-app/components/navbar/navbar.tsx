@@ -44,9 +44,10 @@ export default function Navbar() {
   useEffect(() => {
     const fetchTodos = async () => {
       setInitialFetching(true);
-      const { data: subjects, error } = (await GetSubjects()) as any;
+      const { data: lists, error } = (await GetSubjects()) as any;
       if (error) toast(error);
-      else setLists(subjects);
+      else setLists(lists);
+      console.log(lists);
       setInitialFetching(false);
     };
     fetchTodos();
