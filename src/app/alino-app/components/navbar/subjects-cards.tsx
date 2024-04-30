@@ -5,48 +5,38 @@ import { toast } from "sonner";
 import { ColorPicker } from "@/components/color-picker";
 import { useListSelected } from "@/store/list-selected";
 import { useLists } from "@/store/lists";
-import { useTodo } from "@/store/todo";
-import { SubjectSchema } from "@/lib/subject-schema";
+import { Database } from "@/lib/todosSchema";
 import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
 import styles from "./subjects-cards.module.css";
 import Counter from "@/components/counter";
+import Link from "next/link";
 
-type ListsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
+type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
-export function SubjectsCards({ subject }: { subject: ListsType }) {
-  const tasks = useTodo((state) => state.tasks);
+export function SubjectsCards({ list }: { list: ListsType }) {
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
+  const origin = window.location.origin;
 
   const [hover, setHover] = useState<boolean>(false);
-  const [colorTemp, setColorTemp] = useState<string>(subject.color);
+  const [colorTemp, setColorTemp] = useState<string | null>(list.color);
 
   const setListSelected = useListSelected((state) => state.setListSelected);
   const listSelected = useListSelected((state) => state.listSelected);
 
   const handleDelete = () => {
-    if (subject.id === listSelected.id) {
-      setListSelected({
-        id: "home-tasks-static-alino-app",
-        user_id: "null",
-        subject: "inicio",
-        color: "#87189d",
-        inserted_at: "null",
-      });
-    }
-    deleteList(subject.id);
-    toast.success(`${subject.subject} eliminado correctamente`);
+    deleteList(list.id);
+    toast.success(`${list.name} eliminado correctamente`);
   };
 
   const handleSave = async () => {
-    await changeColor(subject.id, colorTemp);
-    toast.success(`Color de ${subject.subject} cambiado correctamente`);
+    toast.success(`Color de ${list.name} cambiado correctamente`);
   };
 
   const contRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div
+    <Link
       className={styles.subjectsCardsContainer}
       onMouseEnter={() => {
         setHover(true);
@@ -56,43 +46,43 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
       }}
       style={{
         backgroundColor:
-          hover || listSelected.id === subject.id
+          hover || listSelected.id === list.id
             ? "rgb(240, 240, 240)"
             : "transparent",
-        scale: listSelected.id === subject.id ? "1.05" : "1",
+        scale: listSelected.id === list.id ? "1.05" : "1",
         boxShadow:
-          listSelected.id === subject.id
+          listSelected.id === list.id
             ? "rgba(12, 20, 66, 0.1) 0px 4px 12px, rgba(12, 20, 66, 0.08) 0px 30px 80px, rgb(230, 233, 237) 0px 0px 0px 0px inset"
             : "",
       }}
-      ref={contRef}
-      onClick={(e) => {
-        e.stopPropagation();
+      // ref={contRef}
+      href={`${list.name}`}
+      as={`${list.name}`}
+      // onClick={(e) => {
+      //   e.stopPropagation();
 
-        if (
-          contRef.current !== null &&
-          contRef.current.contains(e.target as Node)
-        ) {
-          setListSelected(subject);
-        }
-      }}
+      //   if (
+      //     contRef.current !== null &&
+      //     contRef.current.contains(e.target as Node)
+      //   ) {
+      //     setListSelected(list);
+      //   }
+      // }}
     >
-      {subject.id === "home-tasks-static-alino-app" ? (
+      {list.name === "home" ? (
         <SquircleIcon style={{ width: "12px", fill: `${colorTemp}` }} />
       ) : (
         <ColorPicker
           color={colorTemp}
-          originalColor={subject.color}
+          originalColor={list.color}
           setColor={setColorTemp}
           save={true}
           handleSave={handleSave}
           width={"12px"}
         />
       )}
-      <p className={styles.subjectName}>{subject.subject}</p>
-      {subject.id === "home-tasks-static-alino-app" ? (
-        ""
-      ) : (
+      <p className={styles.subjectName}>{list.name}</p>
+      {list.name !== "home" && (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -112,22 +102,11 @@ export function SubjectsCards({ subject }: { subject: ListsType }) {
         className={styles.counter}
         style={{
           opacity:
-            subject.id === "home-tasks-static-alino-app"
-              ? "1"
-              : hover
-                ? "0"
-                : "1",
+            list.id === "home-tasks-static-alino-app" ? "1" : hover ? "0" : "1",
         }}
       >
-        <Counter
-          tasksLength={
-            subject.id === "home-tasks-static-alino-app"
-              ? tasks.filter((element) => !element.subject_id).length
-              : tasks.filter((element) => element.subject_id === subject.id)
-                  .length
-          }
-        />
+        <Counter tasksLength={30} />
       </p>
-    </div>
+    </Link>
   );
 }

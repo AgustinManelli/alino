@@ -11,14 +11,6 @@ import { SubjectsCards } from "./subjects-cards";
 import styles from "./navbar.module.css";
 import { AlinoLogo } from "@/lib/ui/icons";
 
-const homeSubject = {
-  id: "home-tasks-static-alino-app",
-  user_id: "null",
-  subject: "inicio",
-  color: "#87189d",
-  inserted_at: "null",
-};
-
 const containerFMVariant = {
   hidden: { opacity: 1, scale: 1 },
   visible: {
@@ -107,22 +99,14 @@ export default function Navbar() {
               className={styles.divCardsContainer}
             >
               <AnimatePresence mode={"popLayout"}>
-                <motion.div
-                  key={"homeCard"}
-                  variants={containerFMVariant}
-                  initial={{ scale: 0, opacity: 0 }}
-                >
-                  <SubjectsCards subject={homeSubject} />
-                </motion.div>
                 {lists.map((list) => (
                   <motion.div
                     variants={containerFMVariant}
                     initial={{ scale: 0, opacity: 0 }}
-                    // animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0, opacity: 0 }}
                     key={list.id}
                   >
-                    <SubjectsCards subject={list} />
+                    <SubjectsCards list={list} />
                   </motion.div>
                 ))}
                 {waiting ? (

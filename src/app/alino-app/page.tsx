@@ -3,7 +3,6 @@
 import styles from "./page.module.css";
 import { signout, readUserSession } from "@/lib/auth/actions";
 import Link from "next/link";
-import Todo from "./components/todo/todo";
 
 export async function generateMetadata() {
   const { data, error } = await readUserSession();
@@ -36,7 +35,7 @@ export default async function AlinoApp() {
           </Link>
         </div>
       </div>
-      <Todo />
+      {/* <Todo /> */}
     </div>
   );
 }

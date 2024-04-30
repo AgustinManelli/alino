@@ -9,7 +9,7 @@ export async function GetSubjects() {
   if (!error) {
     if (data.session) {
       const result = await supabase
-        .from("subjects")
+        .from("todos_data")
         .select("*")
         .order("inserted_at", { ascending: true })
         .eq("user_id", data.session?.user.id);
@@ -21,22 +21,26 @@ export async function GetSubjects() {
   return error;
 }
 
-export const AddSubjectToDB = async (subject: string, color: string) => {
+export const AddListToDB = async (
+  color: string | null,
+  index: number | null,
+  name: string | null
+) => {
   const setColor = color === "" ? "#87189d" : color;
   const supabase = await createClient();
   const sessionResult = await supabase.auth.getSession();
   const { data: result } = await supabase
-    .from("subjects")
-    .select("subject")
-    .eq("subject", subject);
+    .from("todos_data")
+    .select("name")
+    .eq("name", name);
 
   if (!sessionResult.error) {
     if (result && result.length === 0) {
       if (sessionResult.data.session) {
         const user = sessionResult.data.session.user;
         const result = await supabase
-          .from("subjects")
-          .insert({ subject, user_id: user.id, color: setColor })
+          .from("todos_data")
+          .insert({ name, user_id: user.id, color: setColor, index })
           .select()
           .single();
         return result;
@@ -55,7 +59,7 @@ export const DeleteSubjectToDB = async (id: string) => {
 
   if (!error) {
     if (data.session) {
-      const result = await supabase.from("subjects").delete().eq("id", id);
+      const result = await supabase.from("todos_data").delete().eq("id", id);
       return result;
     }
   }

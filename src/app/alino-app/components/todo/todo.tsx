@@ -6,7 +6,7 @@ import TodoInput from "./todo-input";
 import { SquircleIcon } from "@/lib/ui/icons";
 import styles from "./todo.module.css";
 
-export default function Todo() {
+export default function Todo({ params }: { params: { list: string } }) {
   const listSelected = useListSelected((state) => state.listSelected);
 
   return (
@@ -14,7 +14,7 @@ export default function Todo() {
       <div
         className={styles.blurredReference}
         style={{
-          boxShadow: `${listSelected.color} 20px 250px 300px`,
+          boxShadow: `${listSelected.color} 20px 200px 240px`,
         }}
       ></div>
       <section className={styles.todoContainer}>
@@ -25,7 +25,7 @@ export default function Todo() {
             transition: "fill 0.2s ease-in-out",
           }}
         />
-        <h2 className={styles.referenceText}>{listSelected.subject}</h2>
+        <h2 className={styles.referenceText}>{params.list}</h2>
       </section>
       <section className={styles.todoManagerContainer}>
         <TodoInput />

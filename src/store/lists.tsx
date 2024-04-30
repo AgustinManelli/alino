@@ -1,29 +1,29 @@
 "use client";
 
 import { create } from "zustand";
-import { SubjectSchema } from "@/lib/subject-schema";
+import { Database } from "@/lib/todosSchema";
 import { DeleteSubjectToDB, GetSubjects } from "@/lib/todo/actions";
 import { UpdateSubjectToDB } from "@/lib/todo/actions";
-import { AddSubjectToDB } from "@/lib/todo/actions";
+import { AddListToDB } from "@/lib/todo/actions";
 import { useListSelected } from "./list-selected";
 import { toast } from "sonner";
 
-type ListsType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
+type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
-type Subjects = {
+type todo_list = {
   lists: ListsType[];
   setLists: (list: ListsType[]) => void;
-  setAddList: (value: string, color: string) => void;
+  setAddList: (color: string, index: number, name: string) => void;
   deleteList: (id: string) => void;
   getLists: () => void;
   changeColor: (id: string, newColor: string) => void;
 };
 
-export const useLists = create<Subjects>()((set, get) => ({
+export const useLists = create<todo_list>()((set, get) => ({
   lists: [],
   setLists: (list) => set(() => ({ lists: list })),
-  setAddList: async (value, color) => {
-    const result = await AddSubjectToDB(value, color);
+  setAddList: async (color, index, name) => {
+    const result = await AddListToDB(color, index, name);
     if (result) {
       if (!result.error) {
         const data = result?.data;

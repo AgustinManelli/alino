@@ -11,14 +11,14 @@ export default function TodoTasksSection() {
   const tasks = useTodo((state) => state.tasks);
   const listSelected = useListSelected((state) => state.listSelected);
 
-  useEffect(() => {
-    const fetchTodos = async () => {
-      const { data: tasks, error } = (await GetTasks()) as any;
-      if (error) console.log("error", error);
-      else setTasks(tasks);
-    };
-    fetchTodos();
-  }, []);
+  // useEffect(() => {
+  //   const fetchTodos = async () => {
+  //     const { data: tasks, error } = (await GetTasks()) as any;
+  //     if (error) console.log("error", error);
+  //     else setTasks(tasks);
+  //   };
+  //   fetchTodos();
+  // }, []);
 
   return (
     <div className={styles.container}>

@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { SubjectSchema } from "@/lib/subject-schema";
+import { SubjectSchema } from "@/lib/todosSchema";
 
 type listType = SubjectSchema["public"]["Tables"]["subjects"]["Row"];
 

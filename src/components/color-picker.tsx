@@ -93,12 +93,12 @@ export function ColorPicker({
   choosingColor,
   setChoosingColor,
 }: {
-  color: string;
+  color: string | null;
   setColor: (value: string) => void;
   save?: boolean;
   handleSave?: () => Promise<void>;
   width?: string;
-  originalColor?: string;
+  originalColor?: string | null;
   choosingColor?: boolean;
   setChoosingColor?: (value: boolean) => void;
 }) {

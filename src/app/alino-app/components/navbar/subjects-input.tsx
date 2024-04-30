@@ -22,10 +22,12 @@ export default function SubjectsInput({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
 
+  const index = 0;
+
   const handleSubmit = async () => {
     setWaiting(true);
     setTransition(true);
-    await setAddList(value, color);
+    await setAddList(color, index, value);
     setValue("");
     setTransition(false);
     setWaiting(false);
