@@ -46,6 +46,7 @@ export function SquircleColorSelector({
     <button
       className={styles.button}
       onClick={(e) => {
+        e.preventDefault();
         e.stopPropagation();
         setColor(colorHex);
         setChoosingColor && setChoosingColor(false);
@@ -159,6 +160,7 @@ export function ColorPicker({
             height: `${width}`,
           }}
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             setChoosingColor && setChoosingColor(!choosingColor);
             setOpen(!open);
@@ -216,6 +218,7 @@ export function ColorPicker({
                         type="color"
                         value={color}
                         onChange={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           setColor(e.target.value);
                           setIsSave(false);
@@ -280,6 +283,7 @@ export function ColorPicker({
                         setHover(false);
                       }}
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         setWait(true);
                         handleSave()

@@ -47,7 +47,6 @@ export default function Navbar() {
       const { data: lists, error } = (await GetSubjects()) as any;
       if (error) toast(error);
       else setLists(lists);
-      console.log(lists);
       setInitialFetching(false);
     };
     fetchTodos();

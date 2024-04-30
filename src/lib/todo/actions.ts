@@ -21,18 +21,34 @@ export async function GetSubjects() {
   return error;
 }
 
+type dataList = {
+  url: string;
+  icon: string;
+  type: string;
+  color: string;
+};
+
 export const AddListToDB = async (
-  color: string | null,
+  color: string,
   index: number | null,
-  name: string | null
+  name: string
 ) => {
   const setColor = color === "" ? "#87189d" : color;
   const supabase = await createClient();
+  const dataParse = { color: setColor };
   const sessionResult = await supabase.auth.getSession();
   const { data: result } = await supabase
     .from("todos_data")
     .select("name")
     .eq("name", name);
+  function stringParse(name: string) {
+    const low = name.toLowerCase();
+    const textws = low.replace(" ", "-");
+    const validChar = /[a-z0-9-_.]/g;
+    const parsed = textws.replace(/[^validChar]/g, "");
+    return parsed;
+  }
+  const parsedData = { name: stringParse(name), color: color };
 
   if (!sessionResult.error) {
     if (result && result.length === 0) {
@@ -40,7 +56,7 @@ export const AddListToDB = async (
         const user = sessionResult.data.session.user;
         const result = await supabase
           .from("todos_data")
-          .insert({ name, user_id: user.id, color: setColor, index })
+          .insert({ name, user_id: user.id, data: parsedData, index })
           .select()
           .single();
         return result;
@@ -53,7 +69,7 @@ export const AddListToDB = async (
   }
 };
 
-export const DeleteSubjectToDB = async (id: string) => {
+export const DeleteListToDB = async (id: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
 
@@ -67,15 +83,22 @@ export const DeleteSubjectToDB = async (id: string) => {
   return error;
 };
 
-export const UpdateSubjectToDB = async (id: string, color: string) => {
+export const UpdateDataListToDB = async (
+  dataList: dataList,
+  color: string,
+  id: string
+) => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
+
+  const dataParse = { ...dataList };
+  dataParse.color = color;
 
   if (!error) {
     if (data.session) {
       const result = await supabase
-        .from("subjects")
-        .update({ color: color })
+        .from("todos_data")
+        .update({ data: dataParse })
         .eq("id", id)
         .select();
       return result;

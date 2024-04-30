@@ -9,6 +9,7 @@ import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
 import styles from "./subjects-cards.module.css";
 import Counter from "@/components/counter";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -16,12 +17,14 @@ export function SubjectsCards({ list }: { list: ListsType }) {
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
 
+  const pathname = usePathname();
+
   // const totalTasks = list.tasks?.length();
 
   // console.log(list);
 
   const [hover, setHover] = useState<boolean>(false);
-  const [colorTemp, setColorTemp] = useState<string>(list.color);
+  const [colorTemp, setColorTemp] = useState<string>(list.data.color);
 
   const handleDelete = () => {
     deleteList(list.id);
@@ -29,6 +32,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
   };
 
   const handleSave = async () => {
+    await changeColor(list.data, colorTemp, list.id);
     toast.success(`Color de ${list.name} cambiado correctamente`);
   };
 
@@ -43,20 +47,20 @@ export function SubjectsCards({ list }: { list: ListsType }) {
       onMouseLeave={() => {
         setHover(false);
       }}
-      // style={{
-      //   backgroundColor:
-      //     hover || listSelected.id === list.id
-      //       ? "rgb(240, 240, 240)"
-      //       : "transparent",
-      //   scale: listSelected.id === list.id ? "1.05" : "1",
-      //   boxShadow:
-      //     listSelected.id === list.id
-      //       ? "rgba(12, 20, 66, 0.1) 0px 4px 12px, rgba(12, 20, 66, 0.08) 0px 30px 80px, rgb(230, 233, 237) 0px 0px 0px 0px inset"
-      //       : "",
-      // }}
+      style={{
+        backgroundColor:
+          hover || pathname === `/alino-app/${list.name}`
+            ? "rgb(240, 240, 240)"
+            : "transparent",
+        scale: pathname === `/alino-app/${list.name}` ? "1.05" : "1",
+        boxShadow:
+          pathname === `/alino-app/${list.name}`
+            ? "rgba(12, 20, 66, 0.1) 0px 4px 12px, rgba(12, 20, 66, 0.08) 0px 30px 80px, rgb(230, 233, 237) 0px 0px 0px 0px inset"
+            : "",
+      }}
       // ref={contRef}
-      href={`${list.name}`}
-      as={`${list.name}`}
+      href={`${location.origin}/alino-app/${list.name}`}
+      as={`${location.origin}/alino-app/${list.name}`}
       // onClick={(e) => {
       //   e.stopPropagation();
 
@@ -84,6 +88,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
       {list.name !== "home" && (
         <button
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             handleDelete();
           }}

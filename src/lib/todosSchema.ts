@@ -6,17 +6,24 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
+export type dataList = {
+  url: string;
+  icon: string;
+  type: string;
+  color: string;
+};
+
 export type Database = {
   public: {
     Tables: {
       todos_data: {
         Row: {
           color: string;
-          data: Json | null;
+          data: dataList;
           id: string;
           index: number | null;
           inserted_at: string;
-          name: string | null;
+          name: string;
           tasks: Json | null;
           updated_at: string | null;
           user_id: string;

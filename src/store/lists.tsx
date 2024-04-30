@@ -2,12 +2,22 @@
 
 import { create } from "zustand";
 import { Database } from "@/lib/todosSchema";
-import { DeleteSubjectToDB, GetSubjects } from "@/lib/todo/actions";
-import { UpdateSubjectToDB } from "@/lib/todo/actions";
+import {
+  DeleteListToDB,
+  GetSubjects,
+  UpdateDataListToDB,
+} from "@/lib/todo/actions";
 import { AddListToDB } from "@/lib/todo/actions";
 import { toast } from "sonner";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+
+type dataList = {
+  url: string;
+  icon: string;
+  type: string;
+  color: string;
+};
 
 type todo_list = {
   lists: ListsType[];
@@ -15,7 +25,7 @@ type todo_list = {
   setAddList: (color: string, index: number, name: string) => void;
   deleteList: (id: string) => void;
   getLists: () => void;
-  changeColor: (id: string, newColor: string) => void;
+  changeColor: (data: dataList, color: string, id: string) => void;
 };
 
 export const useLists = create<todo_list>()((set, get) => ({
@@ -38,21 +48,14 @@ export const useLists = create<todo_list>()((set, get) => ({
     const { lists } = get();
     const filtered = lists.filter((all) => all.id !== id);
     set(() => ({ lists: filtered }));
-    await DeleteSubjectToDB(id);
+    await DeleteListToDB(id);
   },
   getLists: async () => {
     const { data } = (await GetSubjects()) as any;
     set(() => ({ lists: data }));
   },
-  changeColor: async (id, newColor) => {
-    await UpdateSubjectToDB(id, newColor);
+  changeColor: async (data, color, id) => {
+    await UpdateDataListToDB(data, color, id);
     const { lists } = get();
-    const flag = lists;
-    for (const object of flag) {
-      if (object.id === id) {
-        object.color = newColor;
-      }
-    }
-    set(() => ({ lists: flag }));
   },
 }));
