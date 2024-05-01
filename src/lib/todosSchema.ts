@@ -17,10 +17,11 @@ export type tasks = {
   id: string;
   category_id: string;
   description: string;
-  created_at: string;
   completed: boolean;
   index: number;
   name: string;
+  created_at: string;
+  updated_at: string;
 };
 
 export type Database = {
@@ -34,29 +35,29 @@ export type Database = {
           index: number | null;
           inserted_at: string;
           name: string;
-          tasks: Json | null;
+          tasks: tasks[] | null;
           updated_at: string | null;
           user_id: string;
         };
         Insert: {
           color?: string | null;
-          data?: Json | null;
+          data?: dataList | null;
           id?: string;
           index?: number | null;
           inserted_at?: string;
           name?: string | null;
-          tasks?: Json | null;
+          tasks?: tasks[] | null;
           updated_at?: string | null;
           user_id: string;
         };
         Update: {
           color?: string | null;
-          data?: Json | null;
+          data?: dataList | null;
           id?: string;
           index?: number | null;
           inserted_at?: string;
           name?: string | null;
-          tasks?: Json | null;
+          tasks?: tasks[] | null;
           updated_at?: string | null;
           user_id?: string;
         };

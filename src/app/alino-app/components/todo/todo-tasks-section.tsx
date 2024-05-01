@@ -23,6 +23,7 @@ export default function TodoTasksSection({ setList }: { setList: ListsType }) {
 
   return (
     <div className={styles.container}>
+      {setList?.tasks?.map((task) => <div> {task.name} </div>)}
       {/* {setList?.tasks?.map((task) => <div></div>)} */}
     </div>
   );

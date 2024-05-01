@@ -1,5 +1,3 @@
-"use server";
-
 import styles from "./page.module.css";
 import { signout, readUserSession } from "@/lib/auth/actions";
 import Link from "next/link";
