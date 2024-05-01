@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useInView, useMotionValue, useSpring } from "framer-motion";
 
-export default function Counter({ tasksLength = 0 }: { tasksLength: number }) {
+export default function Counter({
+  tasksLength = 0,
+}: {
+  tasksLength: number | undefined;
+}) {
   const [cant, setCant] = useState<number>(0);
   const ref = useRef<HTMLSpanElement>(null);
   const motionValue = useMotionValue(0);

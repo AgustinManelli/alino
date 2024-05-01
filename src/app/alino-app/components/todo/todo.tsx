@@ -6,6 +6,7 @@ import { SquircleIcon } from "@/lib/ui/icons";
 import styles from "./todo.module.css";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
+import { redirect, useRouter } from "next/navigation";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -14,6 +15,9 @@ export default function Todo({ params }: { params: { list: string } }) {
   const setList = lists.find(
     (elemento) => elemento.name === params.list
   ) as ListsType;
+  if (!setList) {
+    return redirect("/alino-app");
+  }
 
   return (
     <div className={styles.todoContainerPage}>
@@ -31,7 +35,7 @@ export default function Todo({ params }: { params: { list: string } }) {
             transition: "fill 0.2s ease-in-out",
           }}
         />
-        <h2 className={styles.referenceText}>{params.list}</h2>
+        <h2 className={styles.referenceText}>{setList?.data?.type}</h2>
       </section>
       <section className={styles.todoManagerContainer}>
         <TodoInput />

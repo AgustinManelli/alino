@@ -1,7 +1,7 @@
 .subjectsCardsContainer {
   position: relative;
   overflow: hidden;
-  background-color: rgb(240, 240, 240);
+  background-color: rgb(250, 250, 250);
   border-radius: 15px;
   height: 45px;
   width: 100%;
@@ -17,6 +17,15 @@
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+.cardFx {
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  left: -100px;
+  filter: blur(45px);
+  opacity: 0.1;
+  transition: background-color 0.2s ease-in-out;
 }
 .subjectName {
   font-size: 14px;

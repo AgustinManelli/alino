@@ -57,5 +57,12 @@ export const useLists = create<todo_list>()((set, get) => ({
   changeColor: async (data, color, id) => {
     await UpdateDataListToDB(data, color, id);
     const { lists } = get();
+    const tempLists = [...lists];
+    for (const element of tempLists) {
+      if (element.id === id) {
+        element.data.color = color;
+      }
+    }
+    set(() => ({ lists: tempLists }));
   },
 }));

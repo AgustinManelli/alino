@@ -1,6 +1,8 @@
 import { readUserSession } from "@/lib/auth/actions";
 import Navbar from "../components/navbar/navbar";
 import Todo from "../components/todo/todo";
+import { useLists } from "@/store/lists";
+import { useRouter } from "next/navigation";
 
 export async function generateMetadata() {
   const { data, error } = await readUserSession();

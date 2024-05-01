@@ -51,13 +51,8 @@ export function SubjectsCards({ list }: { list: ListsType }) {
       style={{
         backgroundColor:
           hover || pathname === `/alino-app/${list.name}`
-            ? "rgb(240, 240, 240)"
+            ? "rgb(250, 250, 250)"
             : "transparent",
-        scale: pathname === `/alino-app/${list.name}` ? "1.05" : "1",
-        boxShadow:
-          pathname === `/alino-app/${list.name}`
-            ? "rgba(12, 20, 66, 0.1) 0px 4px 12px, rgba(12, 20, 66, 0.08) 0px 30px 80px, rgb(230, 233, 237) 0px 0px 0px 0px inset"
-            : "",
       }}
       // ref={contRef}
       href={`${location.origin}/alino-app/${list.name}`}
@@ -73,19 +68,28 @@ export function SubjectsCards({ list }: { list: ListsType }) {
       //   }
       // }}
     >
+      <div
+        className={styles.cardFx}
+        style={{
+          backgroundColor:
+            hover || pathname === `/alino-app/${list.name}` || hover
+              ? `${list.data.color}`
+              : "transparent",
+        }}
+      ></div>
       {list.name === "home" ? (
         <SquircleIcon style={{ width: "12px", fill: `${colorTemp}` }} />
       ) : (
         <ColorPicker
           color={colorTemp}
-          originalColor={list.color}
+          originalColor={list.data.color}
           setColor={setColorTemp}
           save={true}
           handleSave={handleSave}
           width={"12px"}
         />
       )}
-      <p className={styles.subjectName}>{list.name}</p>
+      <p className={styles.subjectName}>{list.data.type}</p>
       {list.name !== "home" && (
         <button
           onClick={(e) => {
@@ -106,11 +110,10 @@ export function SubjectsCards({ list }: { list: ListsType }) {
       <p
         className={styles.counter}
         style={{
-          opacity:
-            list.id === "home-tasks-static-alino-app" ? "1" : hover ? "0" : "1",
+          opacity: list.data.url === "home" ? "1" : hover ? "0" : "1",
         }}
       >
-        <Counter tasksLength={10} />
+        <Counter tasksLength={list.tasks?.length} />
       </p>
     </Link>
   );
