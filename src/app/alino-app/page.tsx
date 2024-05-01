@@ -16,6 +16,7 @@ export async function generateMetadata() {
 }
 
 export default async function AlinoApp() {
+  const { data, error } = await readUserSession();
   return (
     <div
       style={{ width: "100%", height: "100%", padding: "25px 25px 25px 0px" }}
@@ -33,6 +34,7 @@ export default async function AlinoApp() {
           </Link>
         </div>
       </div>
+      <p>hola {data.session?.user.user_metadata?.name} bienvenido a alino</p>
     </div>
   );
 }
