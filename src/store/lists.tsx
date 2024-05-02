@@ -22,12 +22,7 @@ type dataList = {
 type todo_list = {
   lists: ListsType[];
   setLists: (list: ListsType[]) => void;
-  setAddList: (
-    color: string,
-    index: number,
-    name: string,
-    lists: ListsType[]
-  ) => void;
+  setAddList: (color: string, index: number, name: string) => void;
   deleteList: (id: string) => void;
   getLists: () => void;
   changeColor: (data: dataList, color: string, id: string) => void;
