@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { Database } from "@/lib/todosSchema";
 
 export async function GetSubjects() {
   const supabase = await createClient();
@@ -30,41 +31,39 @@ type dataList = {
   color: string;
 };
 
+type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+
 export const AddListToDB = async (
   color: string,
   index: number | null,
-  name: string
+  name: string,
+  list: ListsType[]
 ) => {
   const setColor = color === "" ? "#87189d" : color;
   const supabase = await createClient();
-  const dataParse = { color: setColor };
   const sessionResult = await supabase.auth.getSession();
+
   function stringParseURL(name: string) {
     const low = name.toLowerCase();
     const textws = low.replace(" ", "");
-    const validChar = /[a-z0-9-_.]/g;
     const parsed = textws.replace(/[^a-z0-9-_.]/g, "");
     return parsed;
   }
 
   function stringParseName(name: string) {
-    const validChar = /[A-Za-z0-9-\s_.]/g;
     const parsed = name.replace(/[^A-Za-z0-9-\s_.]/g, "");
     return parsed;
   }
 
-  const { data: result } = await supabase
-    .from("todos_data")
-    .select("name")
-    .eq("name", stringParseURL(name));
+  const detectName = list.some((object) => object.name === name);
   const parsedData = {
     type: stringParseName(name),
-    color: color,
+    color: setColor,
     url: stringParseURL(name),
   };
 
   if (!sessionResult.error) {
-    if (result && result.length === 0) {
+    if (!detectName) {
       if (sessionResult.data.session) {
         const user = sessionResult.data.session.user;
         const result = await supabase

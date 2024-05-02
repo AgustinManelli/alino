@@ -109,7 +109,7 @@ export default function Navbar() {
                     <SubjectsCards list={list} />
                   </motion.div>
                 ))}
-                {waiting ? (
+                {waiting && (
                   <motion.div
                     variants={skeletonFMVariant}
                     transition={{ ease: "easeOut", duration: 0.2 }}
@@ -122,8 +122,6 @@ export default function Navbar() {
                       }}
                     />
                   </motion.div>
-                ) : (
-                  ""
                 )}
               </AnimatePresence>
               <SubjectsInput setWaiting={setWaiting} />

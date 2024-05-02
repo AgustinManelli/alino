@@ -27,6 +27,12 @@
   opacity: 0.1;
   transition: background-color 0.2s ease-in-out;
 }
+.identifierContainer {
+  width: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .subjectName {
   font-size: 14px;
   width: 100%;

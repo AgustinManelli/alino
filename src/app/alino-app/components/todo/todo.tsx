@@ -6,7 +6,7 @@ import { SquircleIcon } from "@/lib/ui/icons";
 import styles from "./todo.module.css";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -15,8 +15,10 @@ export default function Todo({ params }: { params: { list: string } }) {
   const setList = lists.find(
     (elemento) => elemento.name === params.list
   ) as ListsType;
+
+  const router = useRouter();
   if (!setList) {
-    return redirect("/alino-app");
+    router.push(`${location.origin}/alino-app/home`);
   }
 
   return (

@@ -22,7 +22,12 @@ type dataList = {
 type todo_list = {
   lists: ListsType[];
   setLists: (list: ListsType[]) => void;
-  setAddList: (color: string, index: number, name: string) => void;
+  setAddList: (
+    color: string,
+    index: number,
+    name: string,
+    lists: ListsType[]
+  ) => void;
   deleteList: (id: string) => void;
   getLists: () => void;
   changeColor: (data: dataList, color: string, id: string) => void;
@@ -32,7 +37,8 @@ export const useLists = create<todo_list>()((set, get) => ({
   lists: [],
   setLists: (list) => set(() => ({ lists: list })),
   setAddList: async (color, index, name) => {
-    const result = await AddListToDB(color, index, name);
+    const { lists } = get();
+    const result = await AddListToDB(color, index, name, lists);
     if (result) {
       if (!result.error) {
         const data = result?.data;

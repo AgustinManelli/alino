@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ColorPicker } from "@/components/color-picker";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
-import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
+import { DeleteIcon, HomeIcon2 } from "@/lib/ui/icons";
 import styles from "./subjects-cards.module.css";
 import Counter from "@/components/counter";
 import Link from "next/link";
@@ -25,10 +25,10 @@ export function SubjectsCards({ list }: { list: ListsType }) {
   const [colorTemp, setColorTemp] = useState<string>(list.data.color);
 
   const handleDelete = async () => {
+    await deleteList(list.id);
     if (pathname === `/alino-app/${list.name}`) {
       router.push(`${location.origin}/alino-app/home`);
     }
-    await deleteList(list.id);
     toast.success(`${list.name} eliminado correctamente`);
   };
 
@@ -77,18 +77,28 @@ export function SubjectsCards({ list }: { list: ListsType }) {
               : "transparent",
         }}
       ></div>
-      {list.name === "home" ? (
-        <SquircleIcon style={{ width: "12px", fill: `${colorTemp}` }} />
-      ) : (
-        <ColorPicker
-          color={colorTemp}
-          originalColor={list.data.color}
-          setColor={setColorTemp}
-          save={true}
-          handleSave={handleSave}
-          width={"12px"}
-        />
-      )}
+      <div className={styles.identifierContainer}>
+        {list.name === "home" ? (
+          // <SquircleIcon style={{ width: "12px", fill: `${colorTemp}` }} />
+          <HomeIcon2
+            style={{
+              width: "14px",
+              height: "14px",
+              strokeWidth: "2",
+              stroke: "#1c1c1c",
+            }}
+          />
+        ) : (
+          <ColorPicker
+            color={colorTemp}
+            originalColor={list.data.color}
+            setColor={setColorTemp}
+            save={true}
+            handleSave={handleSave}
+            width={"12px"}
+          />
+        )}
+      </div>
       <p className={styles.subjectName}>{list.data.type}</p>
       {list.name !== "home" && (
         <button
