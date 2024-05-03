@@ -6,9 +6,8 @@ import { CopyToClipboardIcon, LoadingIcon, SquircleIcon } from "@/lib/ui/icons";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
-// import data from "@emoji-mart/data";
-import data from "@emoji-mart/data/sets/15/apple.json";
 import EmojiPicker from "./emoji-mart";
+import EmojiComponent from "./emoji-mart-component";
 
 const colors = [
   "#f54275",
@@ -32,6 +31,7 @@ type SquircleColorButonType = {
   setOpen: (value: boolean) => void;
   setIsSave: (value: boolean) => void;
   index: number;
+  setEmoji: (value: string) => void;
 };
 
 export function SquircleColorSelector({
@@ -43,6 +43,7 @@ export function SquircleColorSelector({
   setOpen,
   setIsSave,
   index,
+  setEmoji,
 }: SquircleColorButonType) {
   const [hoverColor, setHoverColor] = useState<boolean>(false);
   return (
@@ -53,6 +54,7 @@ export function SquircleColorSelector({
           e.preventDefault();
           e.stopPropagation();
           setColor(colorHex);
+          setEmoji("");
           setChoosingColor && setChoosingColor(false);
           if (!save) {
             setOpen(false);
@@ -89,6 +91,15 @@ export function SquircleColorSelector({
   );
 }
 
+interface emoji {
+  id: string;
+  keywords: string[];
+  name: string;
+  native: string;
+  shortcodes: string;
+  unified: string;
+}
+
 export function ColorPicker({
   color,
   setColor,
@@ -98,6 +109,9 @@ export function ColorPicker({
   originalColor,
   choosingColor,
   setChoosingColor,
+  setEmoji,
+  emoji,
+  originalEmoji,
 }: {
   color: string;
   setColor: (value: string) => void;
@@ -107,6 +121,9 @@ export function ColorPicker({
   originalColor?: string | null;
   choosingColor?: boolean;
   setChoosingColor?: (value: boolean) => void;
+  setEmoji: (value: string) => void;
+  emoji: string;
+  originalEmoji?: string;
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
@@ -116,6 +133,11 @@ export function ColorPicker({
 
   const pickerRef = useRef<HTMLDivElement>(null);
   const childRef = useRef<HTMLDivElement>(null);
+
+  const onEmojiSelect = (selectedEmoji: emoji) => {
+    setEmoji(selectedEmoji.shortcodes as string);
+    setColor("");
+  };
 
   useEffect(function mount() {
     function ubication() {
@@ -140,8 +162,12 @@ export function ColorPicker({
         ) {
           setOpen(false);
           setChoosingColor ? setChoosingColor(false) : "";
+          setType(true);
           if (save && !isSave && originalColor) {
             setColor(originalColor);
+            if (originalEmoji) {
+              setEmoji(originalEmoji);
+            }
           }
         }
       }
@@ -164,17 +190,31 @@ export function ColorPicker({
           style={{
             width: `${width}`,
             height: `${width}`,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
           }}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             setChoosingColor && setChoosingColor(!choosingColor);
             setOpen(!open);
+            setType(true);
           }}
         >
-          <SquircleIcon
-            style={{ fill: `${color}`, transition: "fill 0.1s ease-in-out" }}
-          />
+          {emoji === "" ? (
+            <SquircleIcon
+              style={{
+                fill: `${color}`,
+                transition: "fill 0.1s ease-in-out",
+                width: "12px",
+              }}
+            />
+          ) : (
+            <div style={{ width: "16px", height: "16px" }}>
+              <EmojiComponent shortcodes={emoji} size="16px" />
+            </div>
+          )}
         </button>
       </div>
       {createPortal(
@@ -196,12 +236,20 @@ export function ColorPicker({
               }}
               exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
               className={styles.container}
+              style={{
+                maxHeight: type ? "249px" : "358px",
+                minHeight: type ? "249px" : "358px",
+              }}
             >
               <section className={styles.titleSection}>
                 <button
                   className={styles.title}
                   style={{
-                    border: type ? "1px solid rgb(240, 240, 240)" : "none",
+                    boxShadow: type
+                      ? "0px 1px 1px 0px rgb(0,0,0, 0.1), inset 0 -1px 0 0 rgb(0,0,0,0.05), inset 0 1px 1px 0 rgb(255,255,255, 0.05), 0 1px 2px 0 rgb(0,0,0,0.03)"
+                      : "none",
+                    backgroundColor: type ? "rgb(245,245,245)" : "transparent",
+                    color: type ? "rgb(130,130,130)" : "rgb(200,200,200)",
                   }}
                   onClick={(e) => {
                     e.preventDefault();
@@ -213,7 +261,11 @@ export function ColorPicker({
                 <button
                   className={styles.title}
                   style={{
-                    border: type ? "none" : "1px solid rgb(240, 240, 240)",
+                    boxShadow: type
+                      ? "none"
+                      : "0px 1px 1px 0px rgb(0,0,0, 0.1), inset 0 -1px 0 0 rgb(0,0,0,0.05), inset 0 1px 1px 0 rgb(255,255,255, 0.05), 0 1px 2px 0 rgb(0,0,0,0.03)",
+                    backgroundColor: type ? "transparent" : "rgb(245,245,245)",
+                    color: type ? "rgb(200,200,200)" : "rgb(130,130,130)",
                   }}
                   onClick={(e) => {
                     e.preventDefault();
@@ -237,6 +289,7 @@ export function ColorPicker({
                         setOpen={setOpen}
                         setIsSave={setIsSave}
                         index={index}
+                        setEmoji={setEmoji}
                       />
                     ))}
                   </section>
@@ -306,19 +359,18 @@ export function ColorPicker({
                   id="emoji-picker-parent"
                 >
                   <EmojiPicker
-                    data={data}
-                    locale={"es"}
+                    // locale={"es"}
                     theme={"light"}
-                    onEmojiSelect={console.log}
+                    onEmojiSelect={onEmojiSelect}
                     emojiButtonRadius={"5px"}
                     maxFrequentRows={0}
-                    perLine={9}
+                    perLine={7}
                     previewPosition={"none"}
                     searchPosition={"sticky"}
-                    skinTonePosition={"none"}
+                    skin={1}
                     emojiSize={24}
                     set={"apple"}
-                    parent={document.querySelector("#emoji-picker-parent")}
+                    // parent={document.querySelector("#emoji-picker-parent")}
                   />
                 </div>
               )}

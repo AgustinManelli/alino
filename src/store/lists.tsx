@@ -22,18 +22,28 @@ type dataList = {
 type todo_list = {
   lists: ListsType[];
   setLists: (list: ListsType[]) => void;
-  setAddList: (color: string, index: number, name: string) => void;
+  setAddList: (
+    color: string,
+    index: number,
+    name: string,
+    shortcodeemoji: string
+  ) => void;
   deleteList: (id: string) => void;
   getLists: () => void;
-  changeColor: (data: dataList, color: string, id: string) => void;
+  changeColor: (
+    data: dataList,
+    color: string,
+    id: string,
+    shortcodeemoji: string
+  ) => void;
 };
 
 export const useLists = create<todo_list>()((set, get) => ({
   lists: [],
   setLists: (list) => set(() => ({ lists: list })),
-  setAddList: async (color, index, name) => {
+  setAddList: async (color, index, name, shortcodeemoji) => {
     const { lists } = get();
-    const result = await AddListToDB(color, index, name, lists);
+    const result = await AddListToDB(color, index, name, lists, shortcodeemoji);
     if (result) {
       if (!result.error) {
         const data = result?.data;
@@ -55,8 +65,8 @@ export const useLists = create<todo_list>()((set, get) => ({
     const { data } = (await GetSubjects()) as any;
     set(() => ({ lists: data }));
   },
-  changeColor: async (data, color, id) => {
-    await UpdateDataListToDB(data, color, id);
+  changeColor: async (data, color, id, shortcodeemoji) => {
+    await UpdateDataListToDB(data, color, id, shortcodeemoji);
     const { lists } = get();
     const tempLists = [...lists];
     for (const element of tempLists) {

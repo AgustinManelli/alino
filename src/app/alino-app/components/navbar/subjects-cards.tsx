@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ColorPicker } from "@/components/color-picker";
 import { useLists } from "@/store/lists";
@@ -14,6 +14,15 @@ import { useRouter } from "next/navigation";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
+interface emoji {
+  id: string;
+  keywords: string[];
+  name: string;
+  native: string;
+  shortcodes: string;
+  unified: string;
+}
+
 export function SubjectsCards({ list }: { list: ListsType }) {
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
@@ -23,6 +32,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
 
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(list.data.color);
+  const [emoji, setEmoji] = useState<string>(list.data.icon);
 
   const handleDelete = async () => {
     await deleteList(list.id);
@@ -33,11 +43,9 @@ export function SubjectsCards({ list }: { list: ListsType }) {
   };
 
   const handleSave = async () => {
-    await changeColor(list.data, colorTemp, list.id);
+    await changeColor(list.data, colorTemp, list.id, emoji);
     toast.success(`Color de ${list.name} cambiado correctamente`);
   };
-
-  // const contRef = useRef<HTMLDivElement>(null);
 
   return (
     <Link
@@ -53,20 +61,10 @@ export function SubjectsCards({ list }: { list: ListsType }) {
           hover || pathname === `/alino-app/${list.name}`
             ? "rgb(250, 250, 250)"
             : "transparent",
+        pointerEvents: "auto",
       }}
-      // ref={contRef}
       href={`${location.origin}/alino-app/${list.name}`}
       as={`${location.origin}/alino-app/${list.name}`}
-      // onClick={(e) => {
-      //   e.stopPropagation();
-
-      //   if (
-      //     contRef.current !== null &&
-      //     contRef.current.contains(e.target as Node)
-      //   ) {
-      //     setListSelected(list);
-      //   }
-      // }}
     >
       <div
         className={styles.cardFx}
@@ -79,7 +77,6 @@ export function SubjectsCards({ list }: { list: ListsType }) {
       ></div>
       <div className={styles.identifierContainer}>
         {list.name === "home" ? (
-          // <SquircleIcon style={{ width: "12px", fill: `${colorTemp}` }} />
           <HomeIcon2
             style={{
               width: "14px",
@@ -95,7 +92,10 @@ export function SubjectsCards({ list }: { list: ListsType }) {
             setColor={setColorTemp}
             save={true}
             handleSave={handleSave}
-            width={"12px"}
+            width={"20px"}
+            setEmoji={setEmoji}
+            emoji={emoji}
+            originalEmoji={list.data.icon}
           />
         )}
       </div>

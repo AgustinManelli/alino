@@ -37,7 +37,8 @@ export const AddListToDB = async (
   color: string,
   index: number | null,
   name: string,
-  list: ListsType[]
+  list: ListsType[],
+  shortcodeemoji: string
 ) => {
   const setColor = color === "" ? "#87189d" : color;
   const supabase = await createClient();
@@ -60,6 +61,7 @@ export const AddListToDB = async (
     type: stringParseName(name),
     color: setColor,
     url: stringParseURL(name),
+    icon: shortcodeemoji,
   };
 
   if (!sessionResult.error) {
@@ -103,13 +105,15 @@ export const DeleteListToDB = async (id: string) => {
 export const UpdateDataListToDB = async (
   dataList: dataList,
   color: string,
-  id: string
+  id: string,
+  shortcodeemoji: string
 ) => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
 
   const dataParse = { ...dataList };
   dataParse.color = color;
+  dataParse.icon = shortcodeemoji;
 
   if (!error) {
     if (data.session) {

@@ -12,6 +12,7 @@ export default async function appLayout({
   if (error) {
     return redirect("/sign-in");
   }
+
   return (
     <section
       style={{

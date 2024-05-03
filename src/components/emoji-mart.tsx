@@ -1,8 +1,9 @@
 // @ts-nocheck
+"use client";
+import data from "@emoji-mart/data/sets/15/apple.json";
 
 import React, { useEffect, useRef } from "react";
 import { Picker } from "emoji-mart";
-
 export default function EmojiPicker(props) {
   const ref = useRef(null);
   const instance = useRef(null);
@@ -23,6 +24,6 @@ export default function EmojiPicker(props) {
       instance.current = null;
     };
   }, []);
-
-  return React.createElement("div", { ref });
+  return <div ref={ref} />;
+  // return React.createElement("div", { ref });
 }

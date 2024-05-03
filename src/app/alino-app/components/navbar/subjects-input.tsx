@@ -21,13 +21,14 @@ export default function SubjectsInput({
   const setAddList = useLists((state) => state.setAddList);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
+  const [emoji, setEmoji] = useState<string>("");
 
   const index = 0;
 
   const handleSubmit = async () => {
     setWaiting(true);
     setTransition(true);
-    await setAddList(color, index, value);
+    await setAddList(color, index, value, emoji as string);
     setValue("");
     setTransition(false);
     setWaiting(false);
@@ -89,6 +90,8 @@ export default function SubjectsInput({
               setColor={setColor}
               choosingColor={choosingColor}
               setChoosingColor={setChoosingColor}
+              emoji={emoji}
+              setEmoji={setEmoji}
             />
             <input
               disabled={transition}
