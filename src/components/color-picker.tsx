@@ -6,6 +6,9 @@ import { CopyToClipboardIcon, LoadingIcon, SquircleIcon } from "@/lib/ui/icons";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
+// import data from "@emoji-mart/data";
+import data from "@emoji-mart/data/sets/15/apple.json";
+import EmojiPicker from "./emoji-mart";
 
 const colors = [
   "#f54275",
@@ -43,44 +46,46 @@ export function SquircleColorSelector({
 }: SquircleColorButonType) {
   const [hoverColor, setHoverColor] = useState<boolean>(false);
   return (
-    <button
-      className={styles.button}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setColor(colorHex);
-        setChoosingColor && setChoosingColor(false);
-        if (!save) {
-          setOpen(false);
-        } else {
-          setIsSave(false);
-        }
-      }}
-      key={index}
-      onMouseEnter={() => {
-        setHoverColor(true);
-      }}
-      onMouseLeave={() => {
-        setHoverColor(false);
-      }}
-    >
-      <SquircleIcon style={{ fill: `${colorHex}` }} />
-      <SquircleIcon
-        style={{
-          fill: "transparent",
-          position: "absolute",
-          width: "30px",
-          strokeWidth: "1.5",
-          stroke:
-            color === colorHex
-              ? `${colorHex}`
-              : hoverColor
-                ? `${colorHex}`
-                : "rgb(245,245,245)",
-          transition: "stroke 0.3s ease-in-out",
+    <div className={styles.buttonContainer}>
+      <button
+        className={styles.button}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setColor(colorHex);
+          setChoosingColor && setChoosingColor(false);
+          if (!save) {
+            setOpen(false);
+          } else {
+            setIsSave(false);
+          }
         }}
-      />
-    </button>
+        key={index}
+        onMouseEnter={() => {
+          setHoverColor(true);
+        }}
+        onMouseLeave={() => {
+          setHoverColor(false);
+        }}
+      >
+        <SquircleIcon style={{ fill: `${colorHex}` }} />
+        <SquircleIcon
+          style={{
+            fill: "transparent",
+            position: "absolute",
+            width: "30px",
+            strokeWidth: "1.5",
+            stroke:
+              color === colorHex
+                ? `${colorHex}`
+                : hoverColor
+                  ? `${colorHex}`
+                  : "rgb(245,245,245)",
+            transition: "stroke 0.3s ease-in-out",
+          }}
+        />
+      </button>
+    </div>
   );
 }
 
@@ -107,6 +112,7 @@ export function ColorPicker({
   const [hover, setHover] = useState<boolean>(false);
   const [isSave, setIsSave] = useState<boolean>(false);
   const [wait, setWait] = useState<boolean>(false);
+  const [type, setType] = useState<boolean>(true);
 
   const pickerRef = useRef<HTMLDivElement>(null);
   const childRef = useRef<HTMLDivElement>(null);
@@ -192,81 +198,130 @@ export function ColorPicker({
               className={styles.container}
             >
               <section className={styles.titleSection}>
-                <p className={styles.title}>color</p>
+                <button
+                  className={styles.title}
+                  style={{
+                    border: type ? "1px solid rgb(240, 240, 240)" : "none",
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setType(true);
+                  }}
+                >
+                  color
+                </button>
+                <button
+                  className={styles.title}
+                  style={{
+                    border: type ? "none" : "1px solid rgb(240, 240, 240)",
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setType(false);
+                  }}
+                >
+                  emoji
+                </button>
               </section>
               <div className={styles.separator}></div>
-              <div className={styles.colorSelectorContainer}>
-                <section className={styles.buttonSection}>
-                  {colors.map((colorHex, index) => (
-                    <SquircleColorSelector
-                      color={color}
-                      setColor={setColor}
-                      colorHex={colorHex}
-                      setChoosingColor={setChoosingColor}
-                      save={save}
-                      setOpen={setOpen}
-                      setIsSave={setIsSave}
-                      index={index}
-                    />
-                  ))}
-                </section>
-                <footer className={styles.footer}>
-                  <div className={styles.hexContainer}>
-                    <div className={styles.inputColorContainer}>
-                      <input
-                        id="colorInput"
-                        type="color"
-                        value={color}
-                        onChange={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setColor(e.target.value);
-                          setIsSave(false);
-                        }}
-                        className={styles.colorInput}
-                      ></input>
+              {type ? (
+                <div className={styles.colorSelectorContainer}>
+                  <section className={styles.buttonSection}>
+                    {colors.map((colorHex, index) => (
+                      <SquircleColorSelector
+                        color={color}
+                        setColor={setColor}
+                        colorHex={colorHex}
+                        setChoosingColor={setChoosingColor}
+                        save={save}
+                        setOpen={setOpen}
+                        setIsSave={setIsSave}
+                        index={index}
+                      />
+                    ))}
+                  </section>
+                  <footer className={styles.footer}>
+                    <div className={styles.hexContainer}>
+                      <div className={styles.inputColorContainer}>
+                        <input
+                          id="colorInput"
+                          type="color"
+                          value={color}
+                          onChange={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setColor(e.target.value);
+                            setIsSave(false);
+                          }}
+                          className={styles.colorInput}
+                        ></input>
 
-                      <label htmlFor="colorInput" className={styles.labelColor}>
-                        <SquircleIcon style={{ fill: `${color}` }} />
-                        {!colors.includes(color) && (
-                          <SquircleIcon
-                            style={{
-                              fill: "transparent",
-                              position: "absolute",
-                              width: "30px",
-                              strokeWidth: "1.5",
-                              stroke: `${color}`,
-                            }}
-                          />
-                        )}
-                      </label>
+                        <label
+                          htmlFor="colorInput"
+                          className={styles.labelColor}
+                        >
+                          <SquircleIcon style={{ fill: `${color}` }} />
+                          {!colors.includes(color) && (
+                            <SquircleIcon
+                              style={{
+                                fill: "transparent",
+                                position: "absolute",
+                                width: "30px",
+                                strokeWidth: "1.5",
+                                stroke: `${color}`,
+                              }}
+                            />
+                          )}
+                        </label>
+                      </div>
+                      <input
+                        className={styles.hexCode}
+                        type="text"
+                        value={`${color}`}
+                        onChange={(e) => {
+                          setColor(e.target.value);
+                        }}
+                      ></input>
                     </div>
-                    <input
-                      className={styles.hexCode}
-                      type="text"
-                      value={`${color}`}
-                      onChange={(e) => {
-                        setColor(e.target.value);
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(color);
+                        toast("color copiado al portapapeles");
                       }}
-                    ></input>
-                  </div>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(color);
-                      toast("color copiado al portapapeles");
-                    }}
-                    className={styles.copyButton}
-                  >
-                    <CopyToClipboardIcon
-                      style={{
-                        strokeWidth: "1.5",
-                        stroke: "#1c1c1c",
-                        width: "20px",
-                      }}
-                    />
-                  </button>
-                </footer>
-              </div>
+                      className={styles.copyButton}
+                    >
+                      <CopyToClipboardIcon
+                        style={{
+                          strokeWidth: "1.5",
+                          stroke: "#1c1c1c",
+                          width: "20px",
+                        }}
+                      />
+                    </button>
+                  </footer>
+                </div>
+              ) : (
+                <div
+                  className={styles.pickerEmojiContainer}
+                  id="emoji-picker-parent"
+                >
+                  <EmojiPicker
+                    data={data}
+                    locale={"es"}
+                    theme={"light"}
+                    onEmojiSelect={console.log}
+                    emojiButtonRadius={"5px"}
+                    maxFrequentRows={0}
+                    perLine={9}
+                    previewPosition={"none"}
+                    searchPosition={"sticky"}
+                    skinTonePosition={"none"}
+                    emojiSize={24}
+                    set={"apple"}
+                    parent={document.querySelector("#emoji-picker-parent")}
+                  />
+                </div>
+              )}
               {save && handleSave && (
                 <>
                   <div className={styles.separator}></div>

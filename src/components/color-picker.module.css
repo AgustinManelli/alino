@@ -11,7 +11,7 @@
   background-color: rgb(255, 255, 255, 0.7);
   backdrop-filter: blur(5px);
   border: 1px solid rgb(240, 240, 240);
-  max-width: 190px;
+  max-width: 300px;
   width: fit-content;
   height: fit-content;
   border-radius: 15px;
@@ -27,11 +27,19 @@
 }
 .titleSection {
   padding: 0px 15px 0px 15px;
+  display: flex;
+  gap: 10px;
 }
 .title {
   font-size: 12px;
   font-weight: 500;
   color: rgb(200, 200, 200);
+  border: none;
+  background-color: transparent;
+  background: none;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
 }
 .mainButton {
   width: 20px;
@@ -59,15 +67,27 @@
   height: fit-content;
   padding: 0px 15px 0px 15px;
   gap: 15px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(1, minmax(0px, 1fr));
 }
 .buttonSection {
   position: relative;
   height: 100%;
-  display: flex;
+  /* display: flex;
   gap: 14px;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center; */
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0px, 1fr));
+}
+.buttonContainer {
+  display: flex;
   justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
 }
 .button {
   position: relative;
@@ -192,3 +212,20 @@
   justify-content: center;
   align-items: center;
 }
+/* .pickerEmojiContainer em-emoji-picker {
+  --rgb-background: 0, 0, 0;
+  --rgb-background: none;
+  background-rgb;
+  filter: none;
+
+  height: 200px;
+  min-height: 200px;
+  width: 300px;
+  --font-family: "inter";
+  --rgb-accent: transparent;
+  --rgb-color: #1c1c1c;
+}
+
+.pickerEmojiContainer em-emoji-picker:host {
+  --shadow: none;
+} */
