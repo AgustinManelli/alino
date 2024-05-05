@@ -171,6 +171,8 @@ export function ColorPicker({
             setColor(originalColor);
             if (originalEmoji) {
               setEmoji(originalEmoji);
+            } else {
+              setEmoji("");
             }
           }
         }

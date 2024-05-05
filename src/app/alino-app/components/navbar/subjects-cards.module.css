@@ -23,7 +23,7 @@
   height: 200px;
   position: absolute;
   left: -100px;
-  filter: blur(45px);
+  filter: blur(45px) saturate(200%);
   opacity: 0.1;
   transition: background-color 0.2s ease-in-out;
 }
