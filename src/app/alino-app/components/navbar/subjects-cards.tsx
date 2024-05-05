@@ -71,7 +71,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
         style={{
           backgroundColor:
             hover || pathname === `/alino-app/${list.name}` || hover
-              ? `${list.data.color}`
+              ? `${colorTemp}`
               : "transparent",
         }}
       ></div>

@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import EmojiPicker from "./emoji-mart";
 import EmojiComponent from "./emoji-mart-component";
+import { generatePalette } from "emoji-palette";
 
 const colors = [
   "#f54275",
@@ -136,7 +137,10 @@ export function ColorPicker({
 
   const onEmojiSelect = (selectedEmoji: emoji) => {
     setEmoji(selectedEmoji.shortcodes as string);
-    setColor("");
+    const palette: string[] = generatePalette(selectedEmoji.native);
+    // const dominantColor: string = palette[Math.floor(palette.length / 2)];
+    const dominantColor: string = palette[0];
+    setColor(dominantColor);
   };
 
   useEffect(function mount() {
