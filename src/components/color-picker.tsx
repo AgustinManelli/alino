@@ -376,6 +376,7 @@ export function ColorPicker({
                     skin={1}
                     emojiSize={24}
                     set={"apple"}
+                    noCountryFlags={true}
                     // parent={document.querySelector("#emoji-picker-parent")}
                   />
                 </div>
