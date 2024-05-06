@@ -52,7 +52,7 @@ export const AddListToDB = async (
   }
 
   function stringParseName(name: string) {
-    const parsed = name.replace(/[^A-Za-z0-9-\s_.]/g, "");
+    const parsed = name.replace(/[^A-Za-z0-9-\s_ÁáÉéÍíÓóÚú.]/g, "");
     return parsed;
   }
 
