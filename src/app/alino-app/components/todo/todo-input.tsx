@@ -1,17 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLists } from "@/store/lists";
 import styles from "./todo-input.module.css";
 import PriorityPicker from "@/components/priority-picker";
 import { Checkbox } from "@/components/inputs/checkbox/checkbox";
+import { motion } from "framer-motion";
+
+const priorityFocus = {
+  hidden: { scale: 1, opacity: 0, x: 60 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    x: 0,
+  },
+  exit: { opacity: 0, scale: 0 },
+};
 
 export default function TodoInput() {
   // const setAddTask = useLists((state) => state.setAddList);
 
+  const [isFocus, setIsFocus] = useState<boolean>(false);
   const [task, setTask] = useState<string>("");
   const [status, setStatus] = useState<boolean>(false);
   const [priority, setPriority] = useState<number>(3);
+
+  const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(function mount() {
+    function formOnClick(event: MouseEvent | TouchEvent) {
+      if (formRef.current !== null) {
+        if (!formRef.current.contains(event.target as Node)) {
+          setIsFocus(false);
+        } else {
+          setIsFocus(true);
+        }
+      }
+    }
+
+    window.addEventListener("mousedown", formOnClick);
+    window.addEventListener("mouseup", formOnClick);
+
+    return function unMount() {
+      window.removeEventListener("mousedown", formOnClick);
+      window.removeEventListener("mouseup", formOnClick);
+    };
+  });
 
   const handleAdd = async () => {
     // await setAddTask(task, status, priority, listSelected.id);
@@ -21,8 +55,8 @@ export default function TodoInput() {
   return (
     <section className={styles.container}>
       <div className={styles.formContainer}>
-        <div className={styles.form}>
-          <Checkbox status={status} setStatus={setStatus} />
+        <div className={styles.form} ref={formRef}>
+          {/* <Checkbox status={status} setStatus={setStatus} /> */}
           <input
             className={styles.input}
             type="text"
@@ -37,7 +71,19 @@ export default function TodoInput() {
               }
             }}
           ></input>
-          <PriorityPicker />
+          {isFocus ? (
+            <motion.div
+              variants={priorityFocus}
+              transition={{ ease: "easeOut", duration: 0.2 }}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <PriorityPicker />
+            </motion.div>
+          ) : (
+            ""
+          )}
         </div>
       </div>
     </section>

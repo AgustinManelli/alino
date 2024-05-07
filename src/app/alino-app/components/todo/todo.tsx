@@ -7,6 +7,7 @@ import styles from "./todo.module.css";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
 import { useRouter } from "next/navigation";
+import EmojiComponent from "@/components/emoji-mart-component";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -17,6 +18,7 @@ export default function Todo({ params }: { params: { list: string } }) {
   ) as ListsType;
 
   const router = useRouter();
+
   if (!setList) {
     router.push(`${location.origin}/alino-app/home`);
   }
@@ -26,18 +28,22 @@ export default function Todo({ params }: { params: { list: string } }) {
       <div
         className={styles.blurredReference}
         style={{
-          boxShadow: `${setList?.color} 20px 200px 240px`,
+          boxShadow: `${setList?.data.color} 20px 200px 240px`,
         }}
       ></div>
       <section className={styles.todoContainer}>
-        <SquircleIcon
-          style={{
-            width: "12px",
-            fill: `${setList?.color}`,
-            transition: "fill 0.2s ease-in-out",
-          }}
-        />
-        <h2 className={styles.referenceText}>{setList?.data?.type}</h2>
+        {setList && setList?.data.icon !== "" ? (
+          <EmojiComponent shortcodes={setList?.data.icon} size="16px" />
+        ) : (
+          <SquircleIcon
+            style={{
+              width: "12px",
+              fill: `${setList?.data.color}`,
+              transition: "fill 0.2s ease-in-out",
+            }}
+          />
+        )}
+        <h2 className={styles.referenceText}>{setList?.data.type}</h2>
       </section>
       <section className={styles.todoManagerContainer}>
         <TodoInput />

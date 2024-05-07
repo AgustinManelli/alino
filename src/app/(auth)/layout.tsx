@@ -11,7 +11,7 @@ export default async function authLayout({
 }) {
   const { error } = await readUserGetUser();
   if (!error) {
-    return redirect("/alino-app");
+    return redirect("/alino-app/home");
   }
 
   return (

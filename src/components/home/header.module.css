@@ -33,8 +33,20 @@
 
 .heroLeft {
   display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  /* gap: 25px; */
+}
+
+.ctaContainer {
+  display: flex;
+  justify-content: center;
+  align-items: start;
   flex-direction: column;
-  gap: 25px;
+  gap: 15px;
+  margin-top: 50px;
+  width: 100%;
 }
 
 .hero::before {
@@ -131,6 +143,23 @@
   }
   100% {
     margin-top: 0;
+  }
+}
+.img {
+  width: 45vw;
+}
+
+@media only screen and (max-width: 900px) {
+  .heroLeft {
+    flex-direction: column-reverse;
+  }
+  .ctaContainer {
+    margin-top: 0px;
+  }
+  .img {
+    margin-top: 0px;
+    width: 60vw;
+    min-width: 370px;
   }
 }
 
