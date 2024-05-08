@@ -16,7 +16,6 @@ export async function GetSubjects() {
         )
         .order("inserted_at", { ascending: true })
         .eq("user_id", data.session?.user.id);
-
       return result;
     }
   }
@@ -43,6 +42,8 @@ export const AddListToDB = async (
   const setColor = color === "" ? "#87189d" : color;
   const supabase = await createClient();
   const sessionResult = await supabase.auth.getSession();
+
+  console.log(supabase);
 
   function stringParseURL(name: string) {
     const low = name.toLowerCase();
@@ -129,49 +130,24 @@ export const UpdateDataListToDB = async (
   return error;
 };
 
-export const AddTaskToDB = async (
-  task: string,
-  status: boolean,
-  priority: number,
-  subject_id: string
-) => {
+export const AddTaskToDB = async (category_id: string, name: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
 
-  if (subject_id === "home-tasks-static-alino-app") {
-    if (!error) {
-      if (data.session) {
-        const user = data.session.user;
-        const result = await supabase
-          .from("todos")
-          .insert({
-            user_id: user.id,
-            task,
-            status,
-            priority,
-          })
-          .select()
-          .single();
-        return result;
-      }
-    }
-  } else {
-    if (!error) {
-      if (data.session) {
-        const user = data.session.user;
-        const result = await supabase
-          .from("todos")
-          .insert({
-            user_id: user.id,
-            subject_id,
-            task,
-            status,
-            priority,
-          })
-          .select()
-          .single();
-        return result;
-      }
+  if (!error) {
+    if (data.session) {
+      const user = data.session.user;
+      const result = await supabase
+        .from("tasks")
+        .insert({
+          category_id,
+          user_id: user.id,
+          name,
+          description: "",
+        })
+        .select()
+        .single();
+      return result;
     }
   }
 };

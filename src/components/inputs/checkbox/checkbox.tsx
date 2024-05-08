@@ -20,21 +20,23 @@ export function Checkbox({
   status,
   setStatus,
   style,
+  id,
 }: {
   status: boolean;
   setStatus: (value: boolean) => void;
   style?: React.CSSProperties;
+  id: string;
 }) {
-  async function togglePath() {
-    const path = document.getElementById("path");
-    const svg = document.getElementById("svg");
+  function togglePath() {
+    const path = document.getElementById(`path-${id}`);
+    const svg = document.getElementById(`svg-${id}`);
     const currentPath = paths.clicked;
     const mixPaths = interpolate(path?.getAttribute("d"), currentPath.d, {
       maxSegmentLength: 1.5,
     });
     animate(
       svg ? svg : "",
-      { transform: "scale(0.75)", fill: status ? "#1c1c1c" : "transparent" },
+      { transform: "scale(0.75)", fill: !status ? "#1c1c1c" : "transparent" },
       {
         transform: { easing: spring(), duration: 0.2 },
         fill: { easing: "ease-in-out", duration: 0.1 },
@@ -44,13 +46,13 @@ export function Checkbox({
       duration: 0.2,
       easing: "ease-in-out",
     }).finished.then(() => {
-      if (status) {
+      if (!status) {
         const mixPaths = interpolate(path?.getAttribute("d"), paths.finish.d, {
           maxSegmentLength: 1.5,
         });
         animate(
           svg ? svg : "",
-          { transform: "scale(1)", fill: status ? "#1c1c1c" : "transparent" },
+          { transform: "scale(1)", fill: !status ? "#1c1c1c" : "transparent" },
           {
             transform: { easing: spring(), duration: 0.2 },
             fill: { easing: "ease-in-out", duration: 0.1 },
@@ -60,7 +62,7 @@ export function Checkbox({
           duration: 0.1,
           easing: "ease-in-out",
         }).finished.then(() => {
-          if (status) {
+          if (!status) {
             const mixPaths = interpolate(
               path?.getAttribute("d"),
               paths.normal.d,
@@ -80,7 +82,7 @@ export function Checkbox({
         });
         animate(
           svg ? svg : "",
-          { transform: "scale(1)", fill: status ? "#1c1c1c" : "transparent" },
+          { transform: "scale(1)", fill: !status ? "#1c1c1c" : "transparent" },
           {
             transform: { easing: spring(), duration: 0.2 },
             fill: { easing: "ease-in-out", duration: 0.1 },
@@ -98,8 +100,8 @@ export function Checkbox({
       className={styles.statusButton}
       onClick={(e) => {
         e.stopPropagation();
-        setStatus(!status);
         togglePath();
+        setStatus(!status);
       }}
     >
       <svg
@@ -110,11 +112,12 @@ export function Checkbox({
           stroke: "#1c1c1c",
           strokeWidth: "2",
           overflow: "visible",
+          fill: status ? "#1c1c1c" : "transparent",
         }}
-        id="svg"
+        id={`svg-${id}`}
       >
         <path
-          id="path"
+          id={`path-${id}`}
           d="M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z"
         />
       </svg>

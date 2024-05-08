@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { Database } from "@/lib/todosSchema";
 import {
+  AddTaskToDB,
   DeleteListToDB,
   GetSubjects,
   UpdateDataListToDB,
@@ -36,6 +37,7 @@ type todo_list = {
     id: string,
     shortcodeemoji: string
   ) => void;
+  addTask: (list_id: string, task: string) => void;
 };
 
 export const useLists = create<todo_list>()((set, get) => ({
@@ -74,6 +76,18 @@ export const useLists = create<todo_list>()((set, get) => ({
         element.data.color = color;
       }
     }
+    set(() => ({ lists: tempLists }));
+  },
+  addTask: async (list_id, task) => {
+    const result = await AddTaskToDB(list_id, task);
+    const { lists } = get();
+
+    const tempLists = [...lists];
+    const indexList = tempLists.findIndex((list) => list.id === list_id);
+    if (indexList !== -1) {
+      tempLists[indexList].tasks?.push(result?.data);
+    }
+
     set(() => ({ lists: tempLists }));
   },
 }));

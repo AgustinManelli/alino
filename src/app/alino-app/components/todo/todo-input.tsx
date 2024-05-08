@@ -6,18 +6,21 @@ import styles from "./todo-input.module.css";
 import PriorityPicker from "@/components/priority-picker";
 import { Checkbox } from "@/components/inputs/checkbox/checkbox";
 import { motion } from "framer-motion";
+import { AddTaskToDB } from "@/lib/todo/actions";
+import { Database } from "@/lib/todosSchema";
+
+type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 const priorityFocus = {
-  hidden: { scale: 1, opacity: 0, x: 60 },
+  hidden: { scale: 0, opacity: 0 },
   visible: {
     scale: 1,
     opacity: 1,
-    x: 0,
   },
   exit: { opacity: 0, scale: 0 },
 };
 
-export default function TodoInput() {
+export default function TodoInput({ setList }: { setList: ListsType }) {
   // const setAddTask = useLists((state) => state.setAddList);
 
   const [isFocus, setIsFocus] = useState<boolean>(false);
@@ -32,6 +35,7 @@ export default function TodoInput() {
       if (formRef.current !== null) {
         if (!formRef.current.contains(event.target as Node)) {
           setIsFocus(false);
+          setPriority(0);
         } else {
           setIsFocus(true);
         }
@@ -47,8 +51,13 @@ export default function TodoInput() {
     };
   });
 
+  const addTask = useLists((state) => state.addTask);
+
   const handleAdd = async () => {
     // await setAddTask(task, status, priority, listSelected.id);
+    // await AddTaskToDB(setList.id, task);
+    await addTask(setList.id, task);
+
     setTask("");
   };
 
@@ -66,7 +75,7 @@ export default function TodoInput() {
               setTask(e.target.value);
             }}
             onKeyUp={(e) => {
-              if (e.key === "enter") {
+              if (e.key === "Enter") {
                 handleAdd();
               }
             }}

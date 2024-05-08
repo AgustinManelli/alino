@@ -60,12 +60,12 @@ export default function Navbar() {
     fetchTodos();
   }, []);
 
-  useEffect(() => {
-    const objDiv = document.getElementById("listContainer");
-    if (objDiv) {
-      objDiv.scrollTop = objDiv.scrollHeight;
-    }
-  }, [lists]);
+  // useEffect(() => {
+  //   const objDiv = document.getElementById("listContainer");
+  //   if (objDiv) {
+  //     objDiv.scrollTop = objDiv.scrollHeight;
+  //   }
+  // }, [lists]);
 
   return (
     <aside className={styles.navbarContainer}>
