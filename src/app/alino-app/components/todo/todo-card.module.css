@@ -4,8 +4,22 @@
   height: 50px;
   border-radius: 15px;
   display: flex;
-  justify-content: start;
+  justify-content: space-between;
   align-items: center;
   padding: 0px 20px 0px 20px;
+}
+.leftContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 10px;
+}
+.deleteButton {
+  display: flex;
+  width: fit-content;
+  height: fit-content;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease-in-out;
 }

@@ -152,59 +152,15 @@ export const AddTaskToDB = async (category_id: string, name: string) => {
   }
 };
 
-export async function GetTasks() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
-
-  if (!error) {
-    if (data.session) {
-      const result = await supabase
-        .from("todos")
-        .select("*")
-        .order("inserted_at", { ascending: true })
-        .eq("user_id", data.session?.user.id);
-      return result;
-    }
-  }
-
-  return error;
-}
-
-export const AddTaskHomeToDB = async (
-  task: string,
-  status: boolean,
-  priority: number
-) => {
+export const DeleteTaskToDB = async (id: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
 
   if (!error) {
     if (data.session) {
       const user = data.session.user;
-      const result = await supabase
-        .from("todos-home")
-        .insert({ user_id: user.id, task, status, priority })
-        .select()
-        .single();
+      const result = await supabase.from("tasks").delete().eq("id", id);
       return result;
     }
   }
 };
-
-export async function GetTasksHome() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
-
-  if (!error) {
-    if (data.session) {
-      const result = await supabase
-        .from("todos-home")
-        .select("*")
-        .order("inserted_at", { ascending: true })
-        .eq("user_id", data.session?.user.id);
-      return result;
-    }
-  }
-
-  return error;
-}

@@ -1,10 +1,11 @@
 "use client";
 
 import { create } from "zustand";
-import { Database } from "@/lib/todosSchema";
+import { Database, tasks } from "@/lib/todosSchema";
 import {
   AddTaskToDB,
   DeleteListToDB,
+  DeleteTaskToDB,
   GetSubjects,
   UpdateDataListToDB,
 } from "@/lib/todo/actions";
@@ -38,6 +39,7 @@ type todo_list = {
     shortcodeemoji: string
   ) => void;
   addTask: (list_id: string, task: string) => void;
+  deleteTask: (id: string, category_id: string) => void;
 };
 
 export const useLists = create<todo_list>()((set, get) => ({
@@ -86,6 +88,21 @@ export const useLists = create<todo_list>()((set, get) => ({
     const indexList = tempLists.findIndex((list) => list.id === list_id);
     if (indexList !== -1) {
       tempLists[indexList].tasks?.push(result?.data);
+    }
+
+    set(() => ({ lists: tempLists }));
+  },
+  deleteTask: async (id, category_id) => {
+    await DeleteTaskToDB(id);
+    const { lists } = get();
+
+    const tempLists = [...lists];
+    const indexList = tempLists.findIndex((list) => list.id === category_id);
+    if (indexList !== -1) {
+      const filtered = tempLists[indexList].tasks?.filter(
+        (task) => task.id !== id
+      );
+      tempLists[indexList].tasks = filtered as tasks[];
     }
 
     set(() => ({ lists: tempLists }));
