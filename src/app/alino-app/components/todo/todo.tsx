@@ -19,7 +19,7 @@ export default function Todo({ params }: { params: { list: string } }) {
 
   const router = useRouter();
 
-  if (!setList) {
+  if (lists && !setList) {
     router.push(`${location.origin}/alino-app/home`);
   }
 

@@ -1,6 +1,7 @@
 import styles from "./page.module.css";
 import { signout, readUserSession } from "@/lib/auth/actions";
 import Link from "next/link";
+import { redirect, useRouter } from "next/navigation";
 
 export async function generateMetadata() {
   const { data, error } = await readUserSession();
@@ -17,6 +18,7 @@ export async function generateMetadata() {
 
 export default async function AlinoApp() {
   const { data, error } = await readUserSession();
+  redirect("/alino-app/home");
   return (
     <div
       style={{ width: "100%", height: "100%", padding: "25px 25px 25px 0px" }}
