@@ -8,6 +8,7 @@ import {
   DeleteTaskToDB,
   GetSubjects,
   UpdateDataListToDB,
+  UpdateTasksCompleted,
 } from "@/lib/todo/actions";
 import { AddListToDB } from "@/lib/todo/actions";
 import { toast } from "sonner";
@@ -40,6 +41,11 @@ type todo_list = {
   ) => void;
   addTask: (list_id: string, task: string) => void;
   deleteTask: (id: string, category_id: string) => void;
+  updateTaskCompleted: (
+    id: string,
+    category_id: string,
+    status: boolean
+  ) => void;
 };
 
 export const useLists = create<todo_list>()((set, get) => ({
@@ -106,5 +112,8 @@ export const useLists = create<todo_list>()((set, get) => ({
     }
 
     set(() => ({ lists: tempLists }));
+  },
+  updateTaskCompleted: async (id, category_id, status) => {
+    //work
   },
 }));

@@ -158,8 +158,22 @@ export const DeleteTaskToDB = async (id: string) => {
 
   if (!error) {
     if (data.session) {
-      const user = data.session.user;
       const result = await supabase.from("tasks").delete().eq("id", id);
+      return result;
+    }
+  }
+};
+
+export const UpdateTasksCompleted = async (id: string, status: boolean) => {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getSession();
+
+  if (!error) {
+    if (data.session) {
+      const result = await supabase
+        .from("tasks")
+        .update({ completed: status })
+        .eq("id", id);
       return result;
     }
   }
