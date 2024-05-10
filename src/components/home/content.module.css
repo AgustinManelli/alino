@@ -8,17 +8,16 @@
 }
 .maxWidthContainer {
   height: fit-content;
-  width: 100%;
+  width: 80%;
   max-width: 1366px;
-  padding-left: 100px;
-  padding-right: 100px;
+  margin-bottom: 100px;
   gap: 30px;
   flex-direction: row;
   display: flex;
 }
 .leftGrid {
   width: 100%;
-  height: 768px;
+  height: 500px;
   display: flex;
   gap: 30px;
   flex-direction: column;
@@ -31,7 +30,7 @@
 }
 .rightGrid {
   width: 100%;
-  height: 768px;
+  height: 500px;
   background-color: rgb(250, 250, 250);
   border-radius: 20px;
 }

@@ -1,0 +1,10 @@
+.footerContainer {
+  width: 100vw;
+  height: fit-content;
+  background-color: #1c1c1c;
+}
+.footerContent {
+  padding: 10px 100px 10px 100px;
+  width: 100%;
+  max-width: 1366px;
+}
