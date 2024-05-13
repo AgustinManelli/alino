@@ -1,10 +1,18 @@
 .footerContainer {
   width: 100vw;
   height: fit-content;
-  background-color: #1c1c1c;
+  background: linear-gradient(0deg, rgb(245, 245, 245) 50%, #fff);
 }
 .footerContent {
-  padding: 10px 100px 10px 100px;
+  padding: 30px 120px 30px 120px;
   width: 100%;
   max-width: 1366px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.img {
+  width: 300px;
 }

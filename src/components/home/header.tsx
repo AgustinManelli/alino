@@ -19,10 +19,10 @@ export default function Header() {
             </section>
           </div> */}
           <div className={styles.ctaContainer}>
+            <h1 className={styles.h1Text}>Tu organizador en linea</h1>
             <p className={styles.paraph}>
-              Organizá tus clases, tareas, trabajos u horarios en un mismo
-              lugar. <br />
-              Es <span className={styles.paraphSpan}>100% gratis</span>.
+              Organizá tus clases, tareas o trabajos en un mismo lugar. <br />
+              Es <span className={styles.paraphSpan}>100% gratis.</span>
             </p>
             <ButtonComponent
               text="Pruebalo ya mismo"
