@@ -151,12 +151,12 @@ export function ColorPicker({
       childRef.current.style.top = `${parentRect.top + parentRect.width + 10}px`;
       childRef.current.style.left = `${parentRect.left}px`;
 
-      if (
-        pickerRef.current.getBoundingClientRect().top >
-        window.innerHeight / 2
-      ) {
-        childRef.current.style.top = `${parentRect.top - childRef.current.offsetHeight - 10}px`;
-      }
+      // if (
+      //   pickerRef.current.getBoundingClientRect().top >
+      //   window.innerHeight / 2
+      // ) {
+      //   childRef.current.style.top = `${parentRect.top - childRef.current.offsetHeight - 10}px`;
+      // }
     }
     function divOnClick(event: MouseEvent | TouchEvent) {
       if (childRef.current !== null && pickerRef.current !== null) {
