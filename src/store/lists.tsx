@@ -50,7 +50,10 @@ type todo_list = {
 
 export const useLists = create<todo_list>()((set, get) => ({
   lists: [],
-  setLists: (list) => set(() => ({ lists: list })),
+  tasks: [],
+  setLists: (list) => {
+    set(() => ({ lists: list }));
+  },
   setAddList: async (color, index, name, shortcodeemoji) => {
     const { lists } = get();
     const result = await AddListToDB(color, index, name, lists, shortcodeemoji);

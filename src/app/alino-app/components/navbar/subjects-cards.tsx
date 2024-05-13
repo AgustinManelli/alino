@@ -11,6 +11,7 @@ import Counter from "@/components/counter";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
+import ConfirmationModal from "@/components/confirmationModal/confirmation-modal";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -33,6 +34,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(list.data.color);
   const [emoji, setEmoji] = useState<string>(list.data.icon);
+  const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
 
   const handleDelete = async () => {
     await deleteList(list.id);
@@ -48,83 +50,94 @@ export function SubjectsCards({ list }: { list: ListsType }) {
   };
 
   return (
-    <Link
-      className={styles.subjectsCardsContainer}
-      onMouseEnter={() => {
-        setHover(true);
-      }}
-      onMouseLeave={() => {
-        setHover(false);
-      }}
-      style={{
-        backgroundColor:
-          hover || pathname === `/alino-app/${list.name}`
-            ? "rgb(250, 250, 250)"
-            : "transparent",
-        pointerEvents: "auto",
-      }}
-      href={`${location.origin}/alino-app/${list.name}`}
-      as={`${location.origin}/alino-app/${list.name}`}
-    >
-      <div
-        className={styles.cardFx}
+    <div>
+      {deleteConfirm && (
+        <ConfirmationModal
+          text={`¿Desea eliminar la lista "${list.data.type}"?`}
+          aditionalText="Esta acción es irreversible y eliminará todas las tareas de la lista."
+          isDeleteConfirm={isDeleteConfirm}
+          handleDelete={handleDelete}
+        />
+      )}
+      <Link
+        className={styles.subjectsCardsContainer}
+        onMouseEnter={() => {
+          setHover(true);
+        }}
+        onMouseLeave={() => {
+          setHover(false);
+        }}
         style={{
           backgroundColor:
-            hover || pathname === `/alino-app/${list.name}` || hover
-              ? `${colorTemp}`
+            hover || pathname === `/alino-app/${list.name}`
+              ? "rgb(250, 250, 250)"
               : "transparent",
+          pointerEvents: "auto",
         }}
-      ></div>
-      <div className={styles.identifierContainer}>
-        {list.name === "home" ? (
-          <HomeIcon2
-            style={{
-              width: "14px",
-              height: "14px",
-              strokeWidth: "2",
-              stroke: "#1c1c1c",
-            }}
-          />
-        ) : (
-          <ColorPicker
-            color={colorTemp}
-            originalColor={list.data.color}
-            setColor={setColorTemp}
-            save={true}
-            handleSave={handleSave}
-            width={"20px"}
-            setEmoji={setEmoji}
-            emoji={emoji}
-            originalEmoji={list.data.icon}
-          />
-        )}
-      </div>
-      <p className={styles.subjectName}>{list.data.type}</p>
-      {list.name !== "home" && (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleDelete();
-          }}
-          className={styles.button}
+        href={`${location.origin}/alino-app/${list.name}`}
+        as={`${location.origin}/alino-app/${list.name}`}
+      >
+        <div
+          className={styles.cardFx}
           style={{
-            opacity: hover ? "1" : "0",
+            backgroundColor:
+              hover || pathname === `/alino-app/${list.name}` || hover
+                ? `${colorTemp}`
+                : "transparent",
+          }}
+        ></div>
+        <div className={styles.identifierContainer}>
+          {list.name === "home" ? (
+            <HomeIcon2
+              style={{
+                width: "14px",
+                height: "14px",
+                strokeWidth: "2",
+                stroke: "#1c1c1c",
+              }}
+            />
+          ) : (
+            <ColorPicker
+              color={colorTemp}
+              originalColor={list.data.color}
+              setColor={setColorTemp}
+              save={true}
+              handleSave={handleSave}
+              width={"20px"}
+              setEmoji={setEmoji}
+              emoji={emoji}
+              originalEmoji={list.data.icon}
+            />
+          )}
+        </div>
+        <p className={styles.subjectName}>{list.data.type}</p>
+        {list.name !== "home" && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // handleDelete();
+              isDeleteConfirm(true);
+            }}
+            className={styles.button}
+            style={{
+              opacity: hover ? "1" : "0",
+            }}
+          >
+            <DeleteIcon
+              style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "2" }}
+            />
+          </button>
+        )}
+        <p
+          className={styles.counter}
+          style={{
+            opacity: list.data.url === "home" ? "1" : hover ? "0" : "1",
           }}
         >
-          <DeleteIcon
-            style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "2" }}
-          />
-        </button>
-      )}
-      <p
-        className={styles.counter}
-        style={{
-          opacity: list.data.url === "home" ? "1" : hover ? "0" : "1",
-        }}
-      >
-        <Counter tasksLength={list.tasks?.length} />
-      </p>
-    </Link>
+          <Counter tasksLength={list.tasks?.length} />
+        </p>
+      </Link>
+    </div>
   );
 }

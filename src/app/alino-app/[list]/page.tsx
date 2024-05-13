@@ -20,7 +20,7 @@ export async function generateMetadata() {
 export default function listTodoPage({ params }: { params: { list: string } }) {
   return (
     <>
-      <Todo params={params} />;
+      <Todo params={params} />
     </>
   );
 }

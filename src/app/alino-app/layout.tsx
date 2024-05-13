@@ -1,15 +1,16 @@
 import Navbar from "./components/navbar/navbar";
 import { redirect } from "next/navigation";
 import { readUserGetUser } from "@/lib/auth/actions";
+import ConfigSection from "./components/config-section/config-section";
 
 export default async function appLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { error } = await readUserGetUser();
+  const result = await readUserGetUser();
 
-  if (error) {
+  if (result.error) {
     return redirect("/sign-in");
   }
 
@@ -25,6 +26,7 @@ export default async function appLayout({
       }}
     >
       <Navbar />
+      <ConfigSection user_data={result.data.user} />
       {children}
     </section>
   );
