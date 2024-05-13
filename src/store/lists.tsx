@@ -114,6 +114,17 @@ export const useLists = create<todo_list>()((set, get) => ({
     set(() => ({ lists: tempLists }));
   },
   updateTaskCompleted: async (id, category_id, status) => {
-    //work
+    const { lists } = get();
+
+    UpdateTasksCompleted(id, status);
+
+    const tempLists = [...lists];
+    const element = tempLists
+      .find((list) => list.id === category_id)
+      ?.tasks.find((task) => task.id === id);
+    if (element) {
+      element.completed = status;
+    }
+    set(() => ({ lists: tempLists }));
   },
 }));

@@ -12,6 +12,11 @@ export default function TodoCard({ task }: { task: tasks }) {
   const handleDelete = () => {
     deleteTask(task.id, task.category_id);
   };
+  const updateTaskCompleted = useLists((status) => status.updateTaskCompleted);
+  const handleUpdateStatus = () => {
+    setStatus(!status);
+    updateTaskCompleted(task.id, task.category_id, !status);
+  };
   return (
     <div
       className={styles.cardContainer}
@@ -23,7 +28,11 @@ export default function TodoCard({ task }: { task: tasks }) {
       }}
     >
       <div className={styles.leftContainer}>
-        <Checkbox status={status} setStatus={setStatus} id={task.id} />
+        <Checkbox
+          status={status}
+          handleUpdateStatus={handleUpdateStatus}
+          id={task.id}
+        />
         {task.name}
       </div>
       <button

@@ -18,12 +18,12 @@ const paths = {
 
 export function Checkbox({
   status,
-  setStatus,
+  handleUpdateStatus,
   style,
   id,
 }: {
   status: boolean;
-  setStatus: (value: boolean) => void;
+  handleUpdateStatus: () => void;
   style?: React.CSSProperties;
   id: string;
 }) {
@@ -101,7 +101,7 @@ export function Checkbox({
       onClick={(e) => {
         e.stopPropagation();
         togglePath();
-        setStatus(!status);
+        handleUpdateStatus();
       }}
     >
       <svg

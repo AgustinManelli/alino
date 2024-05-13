@@ -35,7 +35,7 @@ export type Database = {
           index: number | null;
           inserted_at: string;
           name: string;
-          tasks: tasks[] | null;
+          tasks: tasks[];
           updated_at: string | null;
           user_id: string;
         };
