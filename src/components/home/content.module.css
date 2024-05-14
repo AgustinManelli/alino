@@ -7,15 +7,14 @@
   height: fit-content;
 }
 .maxWidthContainer {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
   height: fit-content;
   width: 100%;
   max-width: 1366px;
-  margin-bottom: 100px;
-  gap: 30px;
-  flex-direction: row;
-  display: flex;
-  margin-left: 120px;
-  margin-right: 120px;
+  margin: 0px 120px 100px 120px;
 }
 .leftGrid {
   width: 100%;
@@ -35,4 +34,12 @@
   height: 500px;
   background-color: rgb(250, 250, 250);
   border-radius: 20px;
+}
+@media only screen and (max-width: 700px) {
+  .maxWidthContainer {
+    margin: 0px 20px 100px 20px;
+  }
+  .maxWidthContainer {
+    flex-direction: column;
+  }
 }

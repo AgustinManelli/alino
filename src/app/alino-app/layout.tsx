@@ -16,6 +16,7 @@ export default async function appLayout({
 
   return (
     <section
+      id="app"
       style={{
         position: "relative",
         backgroundColor: "rgb(240, 240, 240)",
@@ -23,6 +24,7 @@ export default async function appLayout({
         height: "100vh",
         display: "flex",
         flexDirection: "row",
+        overflow: "hidden",
       }}
     >
       <Navbar />

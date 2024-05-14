@@ -20,7 +20,7 @@
 
 .paraph {
   color: #1c1c1c;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .inputDiv {
@@ -44,6 +44,7 @@
   border-radius: 15px;
   padding-left: 20px;
   font-weight: 500;
+  font-size: 16px;
 }
 
 .input:focus {
@@ -56,13 +57,17 @@
   height: 50px;
   border: none;
   background-color: #87189d;
-  font-weight: 600;
   color: #fff;
   border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 5px;
+}
+
+.buttom p {
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .moreInfo {
@@ -78,7 +83,7 @@
   border: none;
   background: none;
   font-weight: 500;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .textButton:hover {

@@ -431,7 +431,8 @@ export function ColorPicker({
             ""
           )}
         </AnimatePresence>,
-        document.body
+        // document.body
+        document.getElementById("app") as HTMLElement
       )}
     </>
   );

@@ -1,10 +1,10 @@
 .container {
   position: relative;
+  width: 100vw;
+  height: 100lvh;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100vw;
-  height: 100lvh;
 }
 
 .hero {
@@ -16,16 +16,40 @@
   padding-right: 120px;
   display: flex;
   justify-content: center;
-  align-items: left;
-  flex-direction: column;
 }
 
-.heroLeft {
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  right: 0px;
+  opacity: 0.3;
+  filter: blur(100px);
+  transform: translate(-30%, -50%) translateZ(0px);
+  height: 300px;
+  width: 300px;
+  background-color: #87189d;
+  border-radius: 75%;
+  pointer-events: none;
+}
+
+.heroContainer {
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: row;
-  /* gap: 25px; */
+}
+
+.ctaContainer {
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 50px;
+  width: 100%;
 }
 
 .h1Text {
@@ -44,32 +68,6 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   opacity: 0.7;
-}
-
-.ctaContainer {
-  display: flex;
-  justify-content: center;
-  align-items: start;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 50px;
-  width: 100%;
-}
-
-.hero::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0%;
-  right: 0px;
-  opacity: 0.3;
-  filter: blur(100px);
-  transform: translate(-30%, -50%) translateZ(0px);
-  height: 300px;
-  width: 300px;
-  background-color: #87189d;
-  border-radius: 75%;
-  pointer-events: none;
 }
 
 .paraph {
@@ -162,7 +160,7 @@
     padding-left: 20px;
     padding-right: 20px;
   }
-  .heroLeft {
+  .heroContainer {
     flex-direction: column-reverse;
   }
   .ctaContainer {
@@ -183,6 +181,10 @@
 
   .paraph {
     font-size: 25px;
+  }
+
+  .h1Text {
+    font-size: 35px;
   }
 
   .ctaContainer {

@@ -8,16 +8,7 @@ export default function Header() {
   return (
     <div className={styles.container}>
       <header className={styles.hero}>
-        {/* <div className={styles.blurredFx}></div> */}
-        <section className={styles.heroLeft}>
-          {/* <div className={styles.textSloganHeader}>
-            <p>It's</p>
-            <section className={styles.animation}>
-              <div>all in one</div>
-              <div>all in order</div>
-              <div>alino</div>
-            </section>
-          </div> */}
+        <section className={styles.heroContainer}>
           <div className={styles.ctaContainer}>
             <h1 className={styles.h1Text}>Tu organizador en linea</h1>
             <p className={styles.paraph}>
