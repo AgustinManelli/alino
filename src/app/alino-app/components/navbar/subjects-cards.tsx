@@ -49,10 +49,6 @@ export function SubjectsCards({ list }: { list: ListsType }) {
     toast.success(`Color de ${list.name} cambiado correctamente`);
   };
 
-  const handleNavigate = () => {
-    router.push(`${location.origin}/alino-app/${list.name}`);
-  };
-
   return (
     <div>
       {deleteConfirm && (
@@ -63,7 +59,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
           handleDelete={handleDelete}
         />
       )}
-      <button
+      <Link
         className={styles.subjectsCardsContainer}
         onMouseEnter={() => {
           setHover(true);
@@ -77,10 +73,12 @@ export function SubjectsCards({ list }: { list: ListsType }) {
               ? "rgb(250, 250, 250)"
               : "transparent",
           pointerEvents: "auto",
-          border: "none",
-          cursor: "pointer",
         }}
-        onClick={handleNavigate}
+        href={`/alino-app/${list.name}`}
+        // href={{
+        //   pathname: "/alino-app/[slug]",
+        //   query: { slug: `${list.name}` },
+        // }}
       >
         <div
           className={styles.cardFx}
@@ -142,7 +140,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
         >
           <Counter tasksLength={list.tasks?.length} />
         </p>
-      </button>
+      </Link>
     </div>
   );
 }

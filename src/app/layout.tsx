@@ -33,7 +33,7 @@ export const metadata: Metadata = {
         type: "image/png",
       },
     ],
-    shortcut: ["/favicon-32x32.png"],
+    // shortcut: ["/favicon-32x32.png"],
     apple: [
       { url: "/apple-icon.png" },
       { url: "/apple-icon-180x180.png", sizes: "180x180", type: "image/png" },
@@ -44,7 +44,6 @@ export const metadata: Metadata = {
     title: seoData.title,
     statusBarStyle: "black-translucent",
   },
-  manifest: `${getUrl()}/manifest.json`,
 };
 
 export default function RootLayout({
