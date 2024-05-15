@@ -1,7 +1,7 @@
 .navbarContainer {
   width: 25vw;
   min-width: 400px;
-  height: 100vh;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -56,4 +56,10 @@
 .navbarTitle {
   margin-left: 0px;
   color: #1c1c1c;
+}
+
+@media (max-width: 900px) {
+  .navbarContainer {
+    display: none;
+  }
 }

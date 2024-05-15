@@ -21,7 +21,7 @@ export default async function appLayout({
         position: "relative",
         backgroundColor: "rgb(240, 240, 240)",
         width: "100vw",
-        height: "100vh",
+        height: "100svh",
         display: "flex",
         flexDirection: "row",
         overflow: "hidden",

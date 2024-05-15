@@ -15,10 +15,6 @@ import { init } from "emoji-mart";
 import data from "@emoji-mart/data/sets/15/apple.json";
 init({ data });
 
-// import data from "@emoji-mart/data";
-// import { init } from "emoji-mart";
-// init({ data });
-
 const containerFMVariant = {
   hidden: { opacity: 1, scale: 1 },
   visible: {
