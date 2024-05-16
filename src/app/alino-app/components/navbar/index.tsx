@@ -36,7 +36,10 @@ export default function NavbarComponent() {
   return (
     <>
       {isMobile ? (
-        <NavbarMobile />
+        <NavbarMobile
+          initialFetching={initialFetching}
+          setInitialFetching={setInitialFetching}
+        />
       ) : (
         <Navbar
           initialFetching={initialFetching}
