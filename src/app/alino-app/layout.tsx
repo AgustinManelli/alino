@@ -1,4 +1,4 @@
-import Navbar from "./components/navbar/navbar";
+import Navbar from "./components/navbar";
 import { redirect } from "next/navigation";
 import { readUserGetUser } from "@/lib/auth/actions";
 import ConfigSection from "./components/config-section/config-section";

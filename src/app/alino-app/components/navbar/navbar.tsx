@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { toast } from "sonner";
-import { GetSubjects } from "@/lib/todo/actions";
 import { useLists } from "@/store/lists";
 import SubjectsInput from "./subjects-input";
 import Skeleton from "@/components/skeleton";
 import { SubjectsCards } from "./subjects-cards";
-import styles from "./navbar.module.css";
 import { AlinoLogo } from "@/lib/ui/icons";
+import styles from "./navbar.module.css";
 
+//INIT EMOJI-MART
 import { init } from "emoji-mart";
 import data from "@emoji-mart/data/sets/15/apple.json";
 init({ data });
@@ -38,30 +37,16 @@ const skeletonFMVariant = {
   exit: { opacity: 0, scale: 0 },
 };
 
-export default function Navbar() {
+export default function Navbar({
+  initialFetching,
+  setInitialFetching,
+}: {
+  initialFetching: boolean;
+  setInitialFetching: (value: boolean) => void;
+}) {
   const [waiting, setWaiting] = useState<boolean>(false);
-  const [initialFetching, setInitialFetching] = useState<boolean>(true);
 
   const lists = useLists((state) => state.lists);
-  const setLists = useLists((state) => state.setLists);
-
-  useEffect(() => {
-    const fetchTodos = async () => {
-      setInitialFetching(true);
-      const { data: lists, error } = (await GetSubjects()) as any;
-      if (error) toast(error);
-      else setLists(lists);
-      setInitialFetching(false);
-    };
-    fetchTodos();
-  }, []);
-
-  // useEffect(() => {
-  //   const objDiv = document.getElementById("listContainer");
-  //   if (objDiv) {
-  //     objDiv.scrollTop = objDiv.scrollHeight;
-  //   }
-  // }, [lists]);
 
   return (
     <aside className={styles.navbarContainer}>

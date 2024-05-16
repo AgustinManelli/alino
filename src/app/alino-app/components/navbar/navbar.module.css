@@ -58,8 +58,8 @@
   color: #1c1c1c;
 }
 
-@media (max-width: 900px) {
+/* @media (max-width: 900px) {
   .navbarContainer {
     display: none;
   }
-}
+} */

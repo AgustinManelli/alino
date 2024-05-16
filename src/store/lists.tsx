@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { Database, tasks } from "@/lib/todosSchema";
+import { Database } from "@/lib/todosSchema";
 import {
   AddTaskToDB,
   DeleteListToDB,
@@ -40,12 +40,8 @@ type todo_list = {
     shortcodeemoji: string
   ) => void;
   addTask: (list_id: string, task: string) => void;
-  deleteTask: (id: string, category_id: string) => void;
-  updateTaskCompleted: (
-    id: string,
-    category_id: string,
-    status: boolean
-  ) => void;
+  deleteTask: (id: string, list_id: string) => void;
+  updateTaskCompleted: (id: string, list_id: string, status: boolean) => void;
 };
 
 export const useLists = create<todo_list>()((set, get) => ({
@@ -80,54 +76,67 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
   changeColor: async (data, color, id, shortcodeemoji) => {
     await UpdateDataListToDB(data, color, id, shortcodeemoji);
-    const { lists } = get();
-    const tempLists = [...lists];
-    for (const element of tempLists) {
-      if (element.id === id) {
-        element.data.color = color;
-      }
-    }
-    set(() => ({ lists: tempLists }));
+    set((state) => ({
+      lists: state.lists.map((list) => {
+        if (list.id === id) {
+          return {
+            ...list,
+            data: { ...list.data, color: color, icon: shortcodeemoji },
+          };
+        }
+        return list;
+      }),
+    }));
   },
   addTask: async (list_id, task) => {
     const result = await AddTaskToDB(list_id, task);
-    const { lists } = get();
-
-    const tempLists = [...lists];
-    const indexList = tempLists.findIndex((list) => list.id === list_id);
-    if (indexList !== -1) {
-      tempLists[indexList].tasks?.push(result?.data);
-    }
-
-    set(() => ({ lists: tempLists }));
+    const data = result?.data;
+    set((state) => ({
+      lists: state.lists.map((list) => {
+        if (list.id === list_id) {
+          return {
+            ...list,
+            tasks: [...list.tasks, data],
+          };
+        }
+        return list;
+      }),
+    }));
   },
-  deleteTask: async (id, category_id) => {
+  deleteTask: async (id, list_id) => {
     await DeleteTaskToDB(id);
-    const { lists } = get();
-
-    const tempLists = [...lists];
-    const indexList = tempLists.findIndex((list) => list.id === category_id);
-    if (indexList !== -1) {
-      const filtered = tempLists[indexList].tasks?.filter(
-        (task) => task.id !== id
-      );
-      tempLists[indexList].tasks = filtered as tasks[];
-    }
-
-    set(() => ({ lists: tempLists }));
+    set((state) => ({
+      lists: state.lists.map((list) => {
+        if (list.id === list_id) {
+          return {
+            ...list,
+            tasks: list.tasks.filter((task) => task.id !== id),
+          };
+        }
+        return list;
+      }),
+    }));
   },
-  updateTaskCompleted: async (id, category_id, status) => {
-    const { lists } = get();
-
+  updateTaskCompleted: async (id, list_id, status) => {
     UpdateTasksCompleted(id, status);
-
-    const tempLists = [...lists];
-    const element = tempLists
-      .find((list) => list.id === category_id)
-      ?.tasks.find((task) => task.id === id);
-    if (element) {
-      element.completed = status;
-    }
-    set(() => ({ lists: tempLists }));
+    set((state) => ({
+      lists: state.lists.map((list) => {
+        if (list.id === list_id) {
+          return {
+            ...list,
+            tasks: list.tasks.map((task) => {
+              if (task.id === id) {
+                return {
+                  ...task,
+                  completed: status,
+                };
+              }
+              return task;
+            }),
+          };
+        }
+        return list;
+      }),
+    }));
   },
 }));
