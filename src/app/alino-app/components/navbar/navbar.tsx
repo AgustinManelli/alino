@@ -39,17 +39,15 @@ const skeletonFMVariant = {
 
 export default function Navbar({
   initialFetching,
-  setInitialFetching,
 }: {
   initialFetching: boolean;
-  setInitialFetching: (value: boolean) => void;
 }) {
   const [waiting, setWaiting] = useState<boolean>(false);
 
   const lists = useLists((state) => state.lists);
 
   return (
-    <aside className={styles.navbarContainer}>
+    <div className={styles.navbarContainer}>
       <div className={styles.navbar}>
         <div className={styles.logoContainer}>
           <AlinoLogo
@@ -118,6 +116,6 @@ export default function Navbar({
           )}
         </section>
       </div>
-    </aside>
+    </div>
   );
 }

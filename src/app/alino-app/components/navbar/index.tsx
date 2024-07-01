@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Navbar from "./navbar";
 import { useLists } from "@/store/lists";
 import { toast } from "sonner";
 import { GetSubjects } from "@/lib/todo/actions";
+import Navbar from "./navbar";
 import NavbarMobile from "./navbar-mobile";
 
 export default function NavbarComponent() {
@@ -41,10 +41,7 @@ export default function NavbarComponent() {
           setInitialFetching={setInitialFetching}
         />
       ) : (
-        <Navbar
-          initialFetching={initialFetching}
-          setInitialFetching={setInitialFetching}
-        />
+        <Navbar initialFetching={initialFetching} />
       )}
     </>
   );
