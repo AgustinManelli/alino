@@ -1,6 +1,8 @@
 import styles from "./content.module.css";
 import Tiles from "./tiles";
 import img1 from "../../../public/tile-resource.webp";
+import img2 from "../../../public/cloud-save.webp";
+import img3 from "../../../public/multiplatform.webp";
 
 export default function Content() {
   return (
@@ -10,13 +12,13 @@ export default function Content() {
           <Tiles
             title="Guardado en la nube"
             subtitle="Tu información se encuentra guardada y protegida en la nube"
-            resource={img1}
+            resource={img2}
             tileType={true}
           />
           <Tiles
             title="Multiplataforma"
             subtitle="Diseño amigable con todo tipo de dispositivos"
-            resource={img1}
+            resource={img3}
             tileType={true}
           />
         </section>

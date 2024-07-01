@@ -23,12 +23,19 @@
   display: flex;
   gap: 30px;
   flex-direction: column;
+  max-width: 50%;
 }
-@media only screen and (max-width: 700px) {
+@media only screen and (max-width: 900px) {
   .maxWidthContainer {
-    margin: 0px 20px 100px 20px;
+    width: 90%;
+    margin: 30px 20px 100px 20px;
+    height: fit-content;
   }
   .maxWidthContainer {
     flex-direction: column;
+  }
+  .leftGrid {
+    max-width: 100%;
+    height: 300px;
   }
 }
