@@ -6,7 +6,7 @@ export default function Footer() {
     <div className={styles.footerContainer}>
       <div className={styles.footerContent}>
         <img src={logo.src} className={styles.img} />
-        <section>footer content section</section>
+        {/*<section>footer content section</section>*/}
       </div>
     </div>
   );
