@@ -16,3 +16,28 @@
 .img {
   width: 300px;
 }
+
+.footerStripeContainer {
+  width: 100vw;
+  height: 20px;
+  background-color: rgb(28, 28, 28);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.footerStripe {
+  max-width: 1366px;
+  width: 100vw;
+  padding-left: 120px;
+  padding-right: 120px;
+}
+.footerStripe p {
+  color: #fff;
+  font-size: 8px;
+}
+@media only screen and (max-width: 900px) {
+  .footerStripe {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
