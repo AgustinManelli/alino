@@ -22,7 +22,7 @@
 .backButton {
   position: absolute;
   top: 20px;
-  left: 20px;
+  left: 120px;
   display: flex;
   width: fit-content;
   height: fit-content;
@@ -39,7 +39,7 @@
   flex-direction: column;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 640px) {
   .container {
     padding: 0px 20px 0px 20px;
   }
@@ -47,5 +47,8 @@
     min-width: initial;
     max-width: initial;
     width: 100%;
+  }
+  .backButton {
+    left: 20px;
   }
 }

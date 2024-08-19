@@ -5,7 +5,7 @@ import { LoginUserInput, loginUserSchema } from "@/lib/user-schema";
 import { signInWithEmailAndPassword } from "@/lib/auth/actions";
 import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { GithubIcon, GoogleIcon, LoadingIcon } from "@/lib/ui/icons";
