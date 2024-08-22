@@ -18,7 +18,7 @@ export async function generateMetadata() {
 
 export default async function AlinoApp() {
   const { data, error } = await readUserSession();
-  redirect("/alino-app/home");
+  //redirect("/alino-app/home");
   return (
     <div
       style={{ width: "100%", height: "100%", padding: "25px 25px 25px 0px" }}

@@ -18,11 +18,11 @@ export default function Todo({ params }: { params: { list: string } }) {
     (elemento) => elemento.name === params.list
   ) as ListsType;
 
-  const router = useRouter();
+  /*const router = useRouter();
 
   if (lists && !setList) {
     router.push(`${location.origin}/alino-app/home`);
-  }
+  }*/
 
   return (
     <div className={styles.todoContainerPage}>

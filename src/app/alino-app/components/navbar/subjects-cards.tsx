@@ -75,10 +75,6 @@ export function SubjectsCards({ list }: { list: ListsType }) {
           pointerEvents: "auto",
         }}
         href={`/alino-app/${list.name}`}
-        // href={{
-        //   pathname: "/alino-app/[slug]",
-        //   query: { slug: `${list.name}` },
-        // }}
       >
         <div
           className={styles.cardFx}
@@ -90,48 +86,35 @@ export function SubjectsCards({ list }: { list: ListsType }) {
           }}
         ></div>
         <div className={styles.identifierContainer}>
-          {list.name === "home" ? (
-            <HomeIcon2
-              style={{
-                width: "14px",
-                height: "14px",
-                strokeWidth: "2",
-                stroke: "#1c1c1c",
-              }}
-            />
-          ) : (
-            <ColorPicker
-              color={colorTemp}
-              originalColor={list.data.color}
-              setColor={setColorTemp}
-              save={true}
-              handleSave={handleSave}
-              width={"20px"}
-              setEmoji={setEmoji}
-              emoji={emoji}
-              originalEmoji={list.data.icon}
-            />
-          )}
+          <ColorPicker
+            color={colorTemp}
+            originalColor={list.data.color}
+            setColor={setColorTemp}
+            save={true}
+            handleSave={handleSave}
+            width={"20px"}
+            setEmoji={setEmoji}
+            emoji={emoji}
+            originalEmoji={list.data.icon}
+          />
         </div>
         <p className={styles.subjectName}>{list.data.type}</p>
-        {list.name !== "home" && (
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // handleDelete();
-              isDeleteConfirm(true);
-            }}
-            className={styles.button}
-            style={{
-              opacity: hover ? "1" : "0",
-            }}
-          >
-            <DeleteIcon
-              style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "2" }}
-            />
-          </button>
-        )}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // handleDelete();
+            isDeleteConfirm(true);
+          }}
+          className={styles.button}
+          style={{
+            opacity: hover ? "1" : "0",
+          }}
+        >
+          <DeleteIcon
+            style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "2" }}
+          />
+        </button>
         <p
           className={styles.counter}
           style={{
