@@ -13,6 +13,9 @@ export default function ConfigSection({ user_data }: { user_data: User }) {
   const logout = () => {
     signout();
   };
+  const handleClose = () => {
+    setActive(false);
+  };
   return (
     <div className={styles.configSection}>
       <div className={styles.configButton} onClick={() => setActive(!active)}>
@@ -26,7 +29,11 @@ export default function ConfigSection({ user_data }: { user_data: User }) {
         />
       </div>
       {active && (
-        <ModalBox title={"configuration"} footer={"alino"}>
+        <ModalBox
+          title={"configuration"}
+          footer={"alino"}
+          onClose={handleClose}
+        >
           <div
             style={{
               width: "fit-content",

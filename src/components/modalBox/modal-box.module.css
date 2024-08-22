@@ -28,6 +28,8 @@
   color: rgb(200, 200, 200);
   font-size: 12px;
   font-weight: 500;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 .separator {
   width: 100%;
