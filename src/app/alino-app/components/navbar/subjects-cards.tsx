@@ -39,7 +39,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
   const handleDelete = async () => {
     await deleteList(list.id);
     if (pathname === `/alino-app/${list.name}`) {
-      router.push(`${location.origin}/alino-app/home`);
+      router.push(`${location.origin}/alino-app`);
     }
     toast.success(`${list.name} eliminado correctamente`);
   };

@@ -16,9 +16,14 @@ export default function ConfigSection({ user_data }: { user_data: User }) {
   const handleClose = () => {
     setActive(false);
   };
+  const handleToggle = (event: React.MouseEvent<HTMLDivElement>) => {
+    // Previene que el clic en el botón que activa el modal cierre el modal
+    event.stopPropagation();
+    setActive(!active);
+  };
   return (
     <div className={styles.configSection}>
-      <div className={styles.configButton} onClick={() => setActive(!active)}>
+      <div className={styles.configButton} onClick={handleToggle}>
         <ConfigIcon
           style={{
             width: "25px",
