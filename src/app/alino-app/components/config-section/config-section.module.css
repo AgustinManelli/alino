@@ -2,10 +2,21 @@
   position: absolute;
   top: 25px;
   right: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.configButton {
   width: 45px;
   height: 45px;
   border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  background-color: rgb(235, 235, 235);
+}
+.configButton:hover {
+  background-color: #e6e6e6;
 }
