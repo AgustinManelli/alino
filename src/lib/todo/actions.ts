@@ -3,6 +3,17 @@
 import { createClient } from "@/utils/supabase/server";
 import { Database } from "@/lib/todosSchema";
 
+type Task = {
+  id: number;
+  category_id: number;
+  description: string;
+  completed: boolean;
+  index: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export async function GetSubjects() {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getSession();
@@ -14,12 +25,22 @@ export async function GetSubjects() {
         .select(
           "*, tasks: tasks(id, category_id, description, completed, index, name, created_at, updated_at)"
         )
-        .order("inserted_at", { ascending: true })
-        .eq("user_id", data.session?.user.id);
+        .order("index", { ascending: true })
+        .eq("user_id", data.session?.user.id)
+        .then(({ data }) => {
+          // Ordenar las tasks dentro de cada todos_data por index
+          if (data) {
+            data.forEach((todo) => {
+              todo.tasks = todo.tasks.sort(
+                (a: Task, b: Task) => a.index - b.index
+              );
+            });
+          }
+          return { data };
+        });
       return result;
     }
   }
-
   return error;
 }
 
