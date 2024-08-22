@@ -44,7 +44,7 @@ export const LoginForm = () => {
         return;
       }
       toast.success("Sesión iniciada correctamente");
-      router.push("/alino-app/home");
+      router.push("/alino-app");
     });
   };
 

@@ -23,19 +23,21 @@ export default async function AlinoApp() {
     <div
       style={{ width: "100%", height: "100%", padding: "25px 25px 25px 0px" }}
     >
-      <div className={styles.controls}>
-        <div className={styles.controlsContainer}>
-          <form>
-            <button formAction={signout} className={styles.controlsButton}>
-              {" "}
-              <p>salir</p>{" "}
-            </button>
-          </form>
-          <Link href={"/"} className={styles.controlsButton}>
-            <p>home</p>
-          </Link>
+      {(!process.env.NODE_ENV || process.env.NODE_ENV === "development") && (
+        <div className={styles.controls}>
+          <div className={styles.controlsContainer}>
+            <form>
+              <button formAction={signout} className={styles.controlsButton}>
+                {" "}
+                <p>salir</p>{" "}
+              </button>
+            </form>
+            <Link href={"/"} className={styles.controlsButton}>
+              <p>home</p>
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
       <p>hola {data.session?.user.user_metadata?.name} bienvenido a alino</p>
     </div>
   );
