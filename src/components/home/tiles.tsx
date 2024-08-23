@@ -20,7 +20,12 @@ export default function Tiles({
             <p>{subtitle}</p>
           </section>
           {resource && (
-            <img className={Styles.tilesImgLeft} src={resource.src} />
+            <img
+              className={Styles.tilesImgLeft}
+              src={resource.src}
+              alt={`alino - ${title}`}
+              loading="lazy"
+            />
           )}
         </div>
       ) : (

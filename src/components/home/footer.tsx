@@ -6,7 +6,12 @@ export default function Footer() {
   return (
     <div className={styles.footerContainer}>
       <div className={styles.footerContent}>
-        <img src={logo.src} className={styles.img} />
+        <img
+          src={logo.src}
+          className={styles.img}
+          alt="alino-footer"
+          loading="lazy"
+        />
         {/*<section>footer content section</section>*/}
       </div>
       <div className={styles.footerStripeContainer}>

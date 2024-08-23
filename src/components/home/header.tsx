@@ -33,7 +33,12 @@ export default function Header() {
               withLoader={true}
             />
           </div>
-          <img src={imgHero.src} className={styles.img} />
+          <img
+            src={imgHero.src}
+            className={styles.img}
+            alt="alino logo"
+            loading="lazy"
+          />
         </section>
       </header>
     </div>
