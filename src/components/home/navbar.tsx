@@ -3,13 +3,21 @@
 import { AlinoLogo, UserIcon } from "../../lib/ui/icons";
 import { ButtonComponent } from "../../components/buttonComponent/buttonComponent";
 import styles from "./navbar.module.css";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 export default function Navbar() {
+  const setLoading = useLoaderStore((state) => state.setLoading);
+
   return (
     <div className={styles.container}>
       <nav className={styles.navbar}>
         <AlinoLogo style={{ height: "35px" }} />
-        <div className={styles.buttonsDiv}>
+        <div
+          className={styles.buttonsDiv}
+          onClick={() => {
+            setLoading(true);
+          }}
+        >
           <ButtonComponent
             text="iniciar sesión"
             background="rgb(240, 240, 240)"

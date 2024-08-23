@@ -6,12 +6,14 @@ import { toast } from "sonner";
 import { GetSubjects } from "@/lib/todo/actions";
 import Navbar from "./navbar";
 import NavbarMobile from "./navbar-mobile";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 export default function NavbarComponent() {
   const [isMobile, setIsMobile] = useState(false);
 
   const setLists = useLists((state) => state.setLists);
   const [initialFetching, setInitialFetching] = useState<boolean>(true);
+  const setLoading = useLoaderStore((state) => state.setLoading);
 
   useEffect(() => {
     const fetchTodos = async () => {
@@ -22,6 +24,7 @@ export default function NavbarComponent() {
       setInitialFetching(false);
     };
     fetchTodos();
+    setLoading(false);
   }, []);
 
   useEffect(() => {

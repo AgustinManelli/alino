@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { seoData } from "@/config/root/seo";
 import { getUrl } from "@/lib/utils";
+import Loader from "@/components/Loader/loader";
 
 export const metadata: Metadata = {
   title: "alino | home",
@@ -55,6 +56,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
         {children} <Toaster richColors />
+        <Loader />
       </body>
     </html>
   );

@@ -7,10 +7,13 @@ import { useState } from "react";
 import ModalBox from "@/components/modalBox/modal-box";
 import OptionBox from "@/components/modalBox/option-box";
 import { signout } from "@/lib/auth/actions";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 export default function ConfigSection({ user_data }: { user_data: User }) {
   const [active, setActive] = useState<boolean>(false);
+  const setLoading = useLoaderStore((state) => state.setLoading);
   const logout = () => {
+    setLoading(true);
     signout();
   };
   const handleClose = () => {

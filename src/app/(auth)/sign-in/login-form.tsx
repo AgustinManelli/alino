@@ -12,6 +12,7 @@ import { GithubIcon, GoogleIcon, LoadingIcon } from "@/lib/ui/icons";
 import { OauthButton } from "./components/oauthButton";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 export const LoginForm = () => {
   const [isPending, startTransition] = useTransition();
@@ -20,6 +21,12 @@ export const LoginForm = () => {
   const methods = useForm<LoginUserInput>({
     resolver: zodResolver(loginUserSchema),
   });
+
+  const setLoading = useLoaderStore((state) => state.setLoading);
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   const {
     reset,
