@@ -28,7 +28,7 @@ export default async function appLayout({
       }}
     >
       <Navbar />
-      <ConfigSection user_data={result.data.user} />
+      <ConfigSection />
       {children}
     </section>
   );

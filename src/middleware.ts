@@ -14,5 +14,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
+    //"/alino-app",
   ],
 };

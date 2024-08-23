@@ -1,6 +1,5 @@
 "use client";
 
-import { User } from "@supabase/supabase-js";
 import styles from "./config-section.module.css";
 import { ConfigIcon } from "@/lib/ui/icons";
 import { useState } from "react";
@@ -9,7 +8,7 @@ import OptionBox from "@/components/modalBox/option-box";
 import { signout } from "@/lib/auth/actions";
 import { useLoaderStore } from "@/store/useLoaderStore";
 
-export default function ConfigSection({ user_data }: { user_data: User }) {
+export default function ConfigSection() {
   const [active, setActive] = useState<boolean>(false);
   const setLoading = useLoaderStore((state) => state.setLoading);
   const logout = () => {

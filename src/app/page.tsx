@@ -12,7 +12,8 @@ export default function Home() {
   const setLoading = useLoaderStore((state) => state.setLoading);
   useEffect(() => {
     setLoading(false);
-  });
+  }, []);
+
   return (
     <main className={styles.main}>
       <Navbar />

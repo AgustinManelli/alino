@@ -5,6 +5,7 @@
   align-items: center;
   width: 100vw;
   height: fit-content;
+  margin-top: 70px;
 }
 .maxWidthContainer {
   position: relative;

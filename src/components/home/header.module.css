@@ -1,10 +1,11 @@
 .container {
   position: relative;
   width: 100vw;
-  height: 100svh;
+  /* height: 100lvh; */
   display: flex;
   justify-content: center;
   align-items: center;
+  /* margin-top: 60px; */
 }
 
 .hero {
