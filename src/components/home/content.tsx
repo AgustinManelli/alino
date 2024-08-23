@@ -1,8 +1,8 @@
 import styles from "./content.module.css";
 import Tiles from "./tiles";
 import img1 from "../../../public/tile-resource.webp";
-import img2 from "../../../public/cloud-save.webp";
-import img3 from "../../../public/multiplatform.webp";
+import img2 from "../../../public/cloud-saveOpt.webp";
+import img3 from "../../../public/multiplatformOpt.webp";
 
 export default function Content() {
   return (

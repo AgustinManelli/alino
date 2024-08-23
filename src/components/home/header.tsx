@@ -2,7 +2,7 @@
 
 import { ButtonComponent } from "../../components/buttonComponent/buttonComponent";
 import styles from "./header.module.css";
-import imgHero from "../../../public/headerAlino3D.webp";
+import imgHero from "../../../public/headerAlino3DOpt.webp";
 import { useLoaderStore } from "@/store/useLoaderStore";
 import { useEffect } from "react";
 
