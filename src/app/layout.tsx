@@ -7,7 +7,7 @@ import { getUrl } from "@/lib/utils";
 import Loader from "@/components/Loader/loader";
 
 export const metadata: Metadata = {
-  title: "alino | home",
+  title: "Alino | Tu organizador en linea",
   generator: seoData.author.name,
   description: seoData.description,
   referrer: "origin-when-cross-origin",
@@ -34,7 +34,6 @@ export const metadata: Metadata = {
         type: "image/png",
       },
     ],
-    // shortcut: ["/favicon-32x32.png"],
     apple: [
       { url: "/apple-icon.png" },
       { url: "/apple-icon-180x180.png", sizes: "180x180", type: "image/png" },
@@ -55,8 +54,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
-        {children} <Toaster richColors />
         <Loader />
+        <Toaster richColors />
+        {children}
       </body>
     </html>
   );

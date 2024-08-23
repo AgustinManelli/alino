@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import styles from "./buttonComponent.module.css";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 type Props = {
   text?: string;
@@ -13,6 +14,7 @@ type Props = {
   strokeBorder?: boolean | null;
   children?: string | JSX.Element | JSX.Element[] | null;
   style?: React.CSSProperties;
+  withLoader?: boolean;
 };
 
 const useHover = () => {
@@ -35,8 +37,15 @@ export const ButtonComponent = ({
   strokeBorder,
   children,
   style,
+  withLoader,
 }: Props) => {
   const { state, handleState } = useHover();
+  const setLoading = useLoaderStore((state) => state.setLoading);
+
+  const loaderFunctions = () => {
+    document.body.style.overflow = "hidden";
+    setLoading(true);
+  };
 
   const inlineStyles = {
     backgroundColor: strokeBorder
@@ -68,6 +77,7 @@ export const ButtonComponent = ({
       onMouseLeave={() => {
         handleState(false);
       }}
+      onClick={withLoader ? loaderFunctions : () => {}}
     >
       <div className={styles.container}>
         {children}

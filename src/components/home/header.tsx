@@ -3,8 +3,16 @@
 import { ButtonComponent } from "../../components/buttonComponent/buttonComponent";
 import styles from "./header.module.css";
 import imgHero from "../../../public/headerAlino3D.webp";
+import { useLoaderStore } from "@/store/useLoaderStore";
+import { useEffect } from "react";
 
 export default function Header() {
+  const setLoading = useLoaderStore((state) => state.setLoading);
+  useEffect(() => {
+    document.body.style.overflow = "";
+    setLoading(false);
+  }, []);
+
   return (
     <div className={styles.container}>
       <header className={styles.hero}>
@@ -22,6 +30,7 @@ export default function Header() {
               letterColor="#fff"
               to="sign-in"
               strokeBorder={true}
+              withLoader={true}
             />
           </div>
           <img src={imgHero.src} className={styles.img} />
