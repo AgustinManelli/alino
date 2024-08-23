@@ -25,6 +25,7 @@ export default function NavbarComponent() {
     };
     fetchTodos();
     setLoading(false);
+    document.body.style.overflow = "";
   }, []);
 
   useEffect(() => {

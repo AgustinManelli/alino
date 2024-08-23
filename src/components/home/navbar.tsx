@@ -15,6 +15,7 @@ export default function Navbar() {
         <div
           className={styles.buttonsDiv}
           onClick={() => {
+            document.body.style.overflow = "hidden";
             setLoading(true);
           }}
         >

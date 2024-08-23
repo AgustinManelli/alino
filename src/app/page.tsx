@@ -11,6 +11,7 @@ import { useLoaderStore } from "@/store/useLoaderStore";
 export default function Home() {
   const setLoading = useLoaderStore((state) => state.setLoading);
   useEffect(() => {
+    document.body.style.overflow = "";
     setLoading(false);
   }, []);
 
