@@ -14,19 +14,24 @@ export default function Faq() {
               content: "Si, Alino es completamente gratis.",
             },
             {
-              title: "¿De que se trata alino?",
+              title: "¿De qué se trata Alino?",
               content:
-                "Alino, como proyecto, es una aplicación donde podrás guardar tareas, estas distribuídas en distintas listas, es decir, es una aplicación orientada a organizar tu trabajo del tipo TO-DO app. Aún se encuentra en una fase muy temprana de su desarrollo.",
+                "Alino es una aplicación que te permite guardar tareas organizadas en distintas listas. Está diseñada para ayudarte a gestionar tu trabajo en formato to-do. Aún está en una fase temprana de desarrollo.",
             },
             {
               title: "¿Aún se encuentra en fase de desarrollo?",
               content:
-                "Sí, si bien puedes probar la aplicación, aún se encuentra en una fase muy temprana de su desarrollo. Estamos convencidos que es un buen proyecto y esperamos dejarlo completamente funcional lo antes posible.",
+                "Sí, aunque puedes probar la aplicación, todavía está en una fase temprana de desarrollo. Creemos en nuestro proyecto y trabajamos para hacerlo completamente funcional lo antes posible.",
             },
             {
               title: "¿Puedo enviar feedback sobre bugs o cambios?",
               content:
-                "Estaríamos muy agradecidos si nos envías feedback sobre nuestra app, no solo nos ayudaría en cuanto a su funcionamiento si no también a conocer las necesidades de los usuarios. <br />Puedes dejarnos un mensaje en <u>alino.cba@gmail.com</u>",
+                "Agradeceríamos mucho que nos enviaras feedback sobre la aplicación. Tu opinión no solo nos ayudará a mejorar el funcionamiento, sino también a entender mejor las necesidades de los usuarios. <br />Puedes dejarnos un mensaje en <u>alino.cba@gmail.com</u>.",
+            },
+            {
+              title: "¿Cómo notificar un bug o error?",
+              content:
+                'Para notificar un bug o error, por favor, especifica el tipo de error, su ubicación y cómo replicarlo, es decir, las acciones necesarias para reproducir el error. Envía esta información a <u>alino.cba@gmail.com</u> con el asunto <b>"Alino bug incident report</b>"',
             },
           ]}
         />
