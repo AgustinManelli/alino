@@ -1,3 +1,4 @@
+import { style } from "motion";
 import styles from "./icons.module.css";
 
 export const AlinoLogo = ({
@@ -451,6 +452,25 @@ export const MenuIcon = ({ style }: { style?: React.CSSProperties }) => {
       <path d="M4 5L20 5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M4 12L20 12" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M4 19L20 19" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+};
+
+export const ArrowThin = ({ style }: { style?: React.CSSProperties }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="24"
+      height="24"
+      fill="none"
+      style={style}
+    >
+      <path
+        d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
     </svg>
   );
 };

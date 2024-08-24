@@ -17,7 +17,7 @@ export default function Footer() {
       <div className={styles.footerStripeContainer}>
         <div className={styles.footerStripe}>
           <p>
-            alino - <span>{year}</span>
+            <span>{year}</span> Alino.
           </p>
         </div>
       </div>

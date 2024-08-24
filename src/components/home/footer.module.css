@@ -3,8 +3,9 @@
   height: fit-content;
   background: linear-gradient(0deg, rgb(245, 245, 245) 50%, #fff);
 }
+
 .footerContent {
-  padding: 30px 120px 30px 120px;
+  padding: 0px 120px 0px 120px;
   width: 100%;
   max-width: 1366px;
   display: flex;
@@ -24,17 +25,19 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 30px 120px 30px 120px;
 }
+
 .footerStripe {
   max-width: 1366px;
   width: 100vw;
-  padding-left: 120px;
-  padding-right: 120px;
 }
+
 .footerStripe p {
   color: #fff;
-  font-size: 8px;
+  font-size: 16px;
 }
+
 @media only screen and (max-width: 900px) {
   .footerStripe {
     padding-left: 20px;

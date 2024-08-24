@@ -28,7 +28,7 @@
 }
 @media only screen and (max-width: 900px) {
   .maxWidthContainer {
-    width: 90%;
+    /* width: 90%; */
     margin: 30px 20px 100px 20px;
     height: fit-content;
   }

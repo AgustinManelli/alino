@@ -1,0 +1,39 @@
+.section {
+  width: 100vw;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  background-color: rgb(250, 250, 250);
+  padding: 30px 30px 30px 30px;
+  margin: 0px 120px 0px 120px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 30px;
+  max-width: 1366px;
+}
+
+.title {
+  font-size: 45px;
+  font-weight: 900;
+  background: -webkit-linear-gradient(45deg, rgb(245, 245, 245), #00d9ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  display: inline-block;
+}
+
+@media only screen and (max-width: 900px) {
+  .container {
+    margin: 0px 20px 0px 20px;
+  }
+}
