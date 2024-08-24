@@ -7,14 +7,12 @@ import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { LoadingIcon } from "@/lib/ui/icons";
 
 export const ResetForm = () => {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
-  const router = useRouter();
   const methods = useForm<UpdatePasswordInput>({
     resolver: zodResolver(updatePasswordScheme),
   });
