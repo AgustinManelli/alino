@@ -3,6 +3,7 @@ import styles from "../(auth)/auth.module.css";
 import { ButtonComponent } from "@/components/buttonComponent/buttonComponent";
 import { AlinoLogo, HomeIcon } from "@/lib/ui/icons";
 import { readUserSession } from "@/lib/auth/actions";
+import pattern from "../../../public/pattern.svg";
 
 export default async function UserUpdateDataLayout({
   children,
@@ -15,7 +16,15 @@ export default async function UserUpdateDataLayout({
   }
 
   return (
-    <main className={styles.main}>
+    <main
+      className={styles.main}
+      style={{
+        backgroundImage: `url(${pattern.src})`,
+        backgroundRepeat: "repeat",
+        backgroundPosition: "top left",
+        backgroundSize: "200px",
+      }}
+    >
       <section className={styles.container}>
         <div className={styles.backButton}>
           <ButtonComponent
