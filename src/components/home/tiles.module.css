@@ -47,10 +47,10 @@
   border-radius: 15px;
   overflow: hidden;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   flex-direction: row;
-  gap: 10px;
+  /* gap: 10px; */
 }
 
 .textSectionLeft {
@@ -59,13 +59,16 @@
   justify-content: center;
   align-items: start;
   flex-direction: column;
-  width: 50%;
+  width: 100%;
 }
 
-.textSectionLeft h2 {
+.textSectionLeft h2,
+.textSection h2 {
   font-size: 22px;
 }
-.textSectionLeft p {
+
+.textSectionLeft p,
+.textSection p {
   font-size: 16px;
 }
 
@@ -112,10 +115,10 @@
     border-radius: 15px;
     overflow: hidden;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     flex-direction: row;
-    gap: 10px;
+    /* gap: 10px; */
   }
 
   .textSectionLeft {
@@ -132,5 +135,17 @@
     height: 100%;
     object-fit: contain;
     min-width: 130px;
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  .textSectionLeft h2,
+  .textSection h2 {
+    font-size: 16px;
+  }
+
+  .textSectionLeft p,
+  .textSection p {
+    font-size: 14px;
   }
 }

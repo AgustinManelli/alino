@@ -64,7 +64,7 @@
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  background: -webkit-linear-gradient(30deg, #87189d, #e5e5e5);
+  background: -webkit-linear-gradient(30deg, #87189d, rgb(230, 230, 230));
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -153,7 +153,7 @@
 }
 .img {
   width: 35vw;
-  max-width: 600px;
+  max-width: 500px;
 }
 
 @media only screen and (max-width: 900px) {

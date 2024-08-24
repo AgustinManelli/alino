@@ -19,9 +19,13 @@
 }
 
 .title {
-  font-size: 45px;
-  font-weight: 900;
-  background: -webkit-linear-gradient(45deg, rgb(245, 245, 245), #00d9ff);
+  font-size: 50px;
+  font-weight: 700;
+  background: -webkit-linear-gradient(
+    45deg,
+    rgb(0, 217, 255) 0%,
+    rgb(245, 245, 245)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -30,10 +34,18 @@
   -webkit-user-select: none;
   -moz-user-select: none;
   display: inline-block;
+  width: fit-content;
 }
 
 @media only screen and (max-width: 900px) {
   .container {
     margin: 0px 20px 0px 20px;
+    padding: 30px 20px 30px 20px;
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  .title {
+    font-size: 30px;
   }
 }
