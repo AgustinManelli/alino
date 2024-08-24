@@ -62,6 +62,13 @@
   width: 50%;
 }
 
+.textSectionLeft h2 {
+  font-size: 22px;
+}
+.textSectionLeft p {
+  font-size: 16px;
+}
+
 .tilesImgLeft {
   /*height: 100%;*/
   width: 40%;

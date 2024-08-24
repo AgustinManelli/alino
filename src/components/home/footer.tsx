@@ -1,17 +1,17 @@
 import styles from "./footer.module.css";
-import logo from "../../../public/alinologo.webp";
+// import logo from "../../../public/alinologo.webp";
 
 export default function Footer() {
   var year = new Date().getFullYear();
   return (
     <div className={styles.footerContainer}>
       <div className={styles.footerContent}>
-        <img
+        {/* <img
           src={logo.src}
           className={styles.img}
           alt="alino-footer"
           loading="lazy"
-        />
+        /> */}
         {/*<section>footer content section</section>*/}
       </div>
       <div className={styles.footerStripeContainer}>
