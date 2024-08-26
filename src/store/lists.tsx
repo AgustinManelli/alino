@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { Database } from "@/lib/todosSchema";
+import { Database, tasks } from "@/lib/todosSchema";
 import {
   AddTaskToDB,
   DeleteListToDB,
@@ -14,6 +14,7 @@ import { AddListToDB } from "@/lib/todo/actions";
 import { toast } from "sonner";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+type TaskType = tasks;
 
 type dataList = {
   url: string;
@@ -24,6 +25,7 @@ type dataList = {
 
 type todo_list = {
   lists: ListsType[];
+  tasks: tasks[];
   setLists: (list: ListsType[]) => void;
   setAddList: (
     color: string,

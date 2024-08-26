@@ -1,12 +1,13 @@
 .cardContainer {
   width: 100%;
   background-color: #fff;
-  height: 50px;
+  /* min-height: 50px; */
+  height: fit-content;
   border-radius: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0px 20px 0px 20px;
+  padding: 10px 20px 10px 20px;
 }
 .leftContainer {
   display: flex;

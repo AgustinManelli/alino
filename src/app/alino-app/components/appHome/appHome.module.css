@@ -1,0 +1,114 @@
+.homeContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  gap: 40px;
+}
+.containerText {
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  justify-content: start;
+  padding: 50px 0 0 10%;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  flex-direction: column;
+  height: fit-content;
+}
+
+.container2 {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow-y: scroll;
+  max-width: 600px;
+}
+
+.container2 {
+  --sb-track-color: rgb(230, 230, 230);
+  --sb-thumb-color: #cecece;
+  --sb-size: 10px;
+}
+
+.container2::-webkit-scrollbar {
+  width: var(--sb-size);
+}
+
+.container2::-webkit-scrollbar-track {
+  background: var(--sb-track-color);
+  border-radius: 10px;
+}
+
+.container2::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 10px;
+  border: 2px solid rgb(230, 230, 230);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .container2 {
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  }
+}
+
+.title {
+  font-size: 35px;
+  font-weight: 900;
+  background: -webkit-linear-gradient(
+    45deg,
+    rgb(173, 243, 255) 0%,
+    rgb(106, 195, 255)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  display: inline-block;
+  width: fit-content;
+  user-select: none;
+}
+
+.timeContainer {
+  font-size: 14px;
+  color: rgb(200, 200, 200);
+  user-select: none;
+}
+
+.tasksContainer {
+  position: relative;
+
+  height: 100%;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+  border-radius: 20px;
+}
+
+@media only screen and (max-width: 850px) {
+  .containerText {
+    padding: 0 0 0 0;
+  }
+  .homeContainer {
+    padding: 100px 20px 20px 20px;
+  }
+  .tasksContainer {
+    width: 100%;
+  }
+}
