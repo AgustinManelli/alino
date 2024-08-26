@@ -9,7 +9,9 @@ import NavbarMobile from "./navbar-mobile";
 import { useLoaderStore } from "@/store/useLoaderStore";
 
 export default function NavbarComponent() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(
+    window.innerWidth < 850 ? true : false
+  );
 
   const setLists = useLists((state) => state.setLists);
   const [initialFetching, setInitialFetching] = useState<boolean>(true);

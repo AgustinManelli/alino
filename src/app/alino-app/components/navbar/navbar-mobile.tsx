@@ -6,7 +6,7 @@ import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
 import Skeleton from "@/components/skeleton";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLists } from "@/store/lists";
-import { SubjectsCards } from "./subjects-cards";
+import { SubjectsCardsMobile } from "./subjects-cards-mobile";
 import SubjectsInput from "./subjects-input";
 
 const containerFMVariant = {
@@ -44,12 +44,13 @@ export default function NavbarMobile({
 
   const lists = useLists((state) => state.lists);
 
+  const closeNav = () => {
+    setIsActive(false);
+  };
+
   return (
-    <div
-      className={styles.container}
-      style={{ height: isActive ? "100svh" : "70px" }}
-    >
-      <nav className={styles.navbar}>
+    <div className={styles.container}>
+      <nav className={`${styles.navbar} ${isActive && styles.active}`}>
         <div className={styles.top}>
           <AlinoLogo
             style={{
@@ -72,6 +73,7 @@ export default function NavbarMobile({
                 width: "auto",
                 stroke: "#1c1c1c",
                 strokeWidth: "2",
+                userSelect: "none",
               }}
             />
           </button>
@@ -79,7 +81,7 @@ export default function NavbarMobile({
         <section
           className={styles.navbarContent}
           id="listContainer"
-          style={{ display: isActive ? "initial" : "none" }}
+          style={{ display: isActive ? "initial" : "initial" }}
         >
           {initialFetching ? (
             <div className={styles.divCardsContainer}>
@@ -113,7 +115,7 @@ export default function NavbarMobile({
                     exit={{ scale: 0, opacity: 0 }}
                     key={list.id}
                   >
-                    <SubjectsCards list={list} />
+                    <SubjectsCardsMobile list={list} action={closeNav} />
                   </motion.div>
                 ))}
                 {waiting && (
