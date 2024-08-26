@@ -19,9 +19,9 @@
 .container {
   display: flex;
   justify-content: center;
-  align-items: end;
   flex-direction: column;
   height: fit-content;
+  gap: 5px;
 }
 
 .container2 {
@@ -86,6 +86,7 @@
   font-size: 14px;
   color: rgb(200, 200, 200);
   user-select: none;
+  text-align: end;
 }
 
 .tasksContainer {
