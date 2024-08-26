@@ -31,8 +31,9 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  overflow-y: scroll;
+  overflow-y: auto;
   max-width: 600px;
+  scrollbar-gutter: stable;
 }
 
 .container2 {
@@ -80,6 +81,10 @@
   display: inline-block;
   width: fit-content;
   user-select: none;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-wrap: nowrap;
 }
 
 .timeContainer {
