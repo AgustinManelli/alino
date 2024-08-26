@@ -1,28 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { ColorPicker } from "@/components/color-picker";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
-import { DeleteIcon, HomeIcon2 } from "@/lib/ui/icons";
+import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
 import styles from "./subjects-cards.module.css";
 import Counter from "@/components/counter";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import ConfirmationModal from "@/components/confirmationModal/confirmation-modal";
+import EmojiComponent from "@/components/emoji-mart-component";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
-
-interface emoji {
-  id: string;
-  keywords: string[];
-  name: string;
-  native: string;
-  shortcodes: string;
-  unified: string;
-}
 
 export function SubjectsCardsMobile({
   list,
@@ -81,47 +72,24 @@ export function SubjectsCardsMobile({
           className={styles.cardFx}
           style={{
             backgroundColor:
-              pathname === `/alino-app/${list.name}` || hover
+              pathname === `/alino-app/${list.name}`
                 ? `${colorTemp}`
                 : "transparent",
           }}
         ></div>
-        <div className={styles.identifierContainer}>
-          <ColorPicker
-            color={colorTemp}
-            originalColor={list.data.color}
-            setColor={setColorTemp}
-            save={true}
-            handleSave={handleSave}
-            width={"20px"}
-            setEmoji={setEmoji}
-            emoji={emoji}
-            originalEmoji={list.data.icon}
+        {list?.data.icon !== "" ? (
+          <EmojiComponent shortcodes={list.data.icon} size="16px" />
+        ) : (
+          <SquircleIcon
+            style={{
+              width: "16px",
+              fill: `${list?.data.color}`,
+              transition: "fill 0.2s ease-in-out",
+            }}
           />
-        </div>
+        )}
         <p className={styles.subjectName}>{list.data.type}</p>
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // handleDelete();
-            isDeleteConfirm(true);
-          }}
-          className={styles.button}
-          style={{
-            opacity: hover ? "1" : "0",
-          }}
-        >
-          <DeleteIcon
-            style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "2" }}
-          />
-        </button>
-        <p
-          className={styles.counter}
-          style={{
-            opacity: list.data.url === "home" ? "1" : hover ? "0" : "1",
-          }}
-        >
+        <p className={styles.counter}>
           <Counter tasksLength={list.tasks?.length} />
         </p>
       </Link>

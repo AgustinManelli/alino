@@ -118,7 +118,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
         <p
           className={styles.counter}
           style={{
-            opacity: list.data.url === "home" ? "1" : hover ? "0" : "1",
+            opacity: hover ? "0" : "1",
           }}
         >
           <Counter tasksLength={list.tasks?.length} />

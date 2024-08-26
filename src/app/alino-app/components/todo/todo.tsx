@@ -29,7 +29,7 @@ export default function Todo({ params }: { params: { list: string } }) {
       <div
         className={styles.blurredReference}
         style={{
-          boxShadow: `${setList ? setList?.data.color : "#87189d"} 20px 200px 240px`,
+          boxShadow: `${setList ? setList?.data.color : "transparent"} 20px 200px 240px`,
         }}
       ></div>
       <div className={styles.container}>
