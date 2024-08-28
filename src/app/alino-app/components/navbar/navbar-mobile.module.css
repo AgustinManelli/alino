@@ -4,7 +4,7 @@
   padding: 20px;
   top: 0;
   left: 0;
-  z-index: 9999;
+  z-index: 1000;
 }
 .navbar {
   position: relative;
@@ -42,10 +42,17 @@
   overflow: hidden;
 }
 .button {
+  width: 45px;
+  height: 45px;
   background-color: transparent;
   border: none;
   cursor: pointer;
   position: absolute;
-  right: 20px;
+  left: 12.5px;
   user-select: none;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  -webkit-tap-highlight-color: transparent;
 }

@@ -25,6 +25,7 @@ export default async function appLayout({
         display: "flex",
         flexDirection: "row",
         overflow: "hidden",
+        overflowY: "hidden",
       }}
     >
       <Navbar />

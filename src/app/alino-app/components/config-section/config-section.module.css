@@ -18,7 +18,21 @@
   cursor: pointer;
   transition: background-color 0.2s;
   background-color: rgb(235, 235, 235);
+  -webkit-tap-highlight-color: transparent;
 }
 .configButton:hover {
   background-color: #e6e6e6;
+}
+
+@media only screen and (max-width: 850px) {
+  .configSection {
+    top: 32.5px;
+    right: 32.5px;
+  }
+  .configButton {
+    background-color: transparent;
+  }
+  .configButton:hover {
+    background-color: initial;
+  }
 }

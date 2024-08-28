@@ -69,11 +69,10 @@ export default function NavbarMobile({
           >
             <MenuIcon
               style={{
-                height: "20px",
+                height: "25px",
                 width: "auto",
                 stroke: "#1c1c1c",
                 strokeWidth: "2",
-                userSelect: "none",
               }}
             />
           </button>
