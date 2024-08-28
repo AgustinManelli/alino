@@ -45,8 +45,8 @@ export default function AppHome({ userName }: { userName: string }) {
       </div>
       <div className={styles.container2}>
         <div className={styles.tasksContainer}>
-          {lists.map((list) =>
-            list.tasks.map((task) => <TodoCard task={task} />)
+          {lists?.map((list) =>
+            list?.tasks?.map((task) => <TodoCard task={task} />)
           )}
         </div>
       </div>
