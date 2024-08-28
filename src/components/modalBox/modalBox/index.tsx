@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import styles from "./modalBox.module.css";
+import useOnClickOutside from "@/hooks/useOnClickOutside";
 
 interface ModalBoxProps {
   title: string;
   footer: string;
   children: React.ReactNode;
   onClose: () => void;
+  iconRef: React.RefObject<HTMLDivElement>;
 }
 
 export default function ModalBox({
@@ -15,28 +17,13 @@ export default function ModalBox({
   footer,
   children,
   onClose,
+  iconRef,
 }: ModalBoxProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Función para manejar clics fuera del modal
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        modalRef.current &&
-        !modalRef.current.contains(event.target as Node)
-      ) {
-        onClose();
-      }
-    };
-
-    // Añade el event listener al montar el componente
-    document.addEventListener("mousedown", handleClickOutside);
-
-    // Limpia el event listener al desmontar el componente
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [onClose]);
+  useOnClickOutside(modalRef, iconRef, () => {
+    onClose();
+  });
 
   return (
     <div className={styles.container} ref={modalRef}>

@@ -2,29 +2,31 @@
 
 import styles from "./config-section.module.css";
 import { ConfigIcon } from "@/lib/ui/icons";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ModalBox, OptionBox } from "@/components";
 import { signout } from "@/lib/auth/actions";
 import { useLoaderStore } from "@/store/useLoaderStore";
 
 export default function ConfigSection() {
+  const iconRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<boolean>(false);
   const setLoading = useLoaderStore((state) => state.setLoading);
   const logout = () => {
     setLoading(true);
     signout();
   };
+
   const handleClose = () => {
     setActive(false);
   };
-  const handleToggle = (event: React.MouseEvent<HTMLDivElement>) => {
-    // Previene que el clic en el botón que activa el modal cierre el modal
-    event.stopPropagation();
+
+  const handleToggle = () => {
     setActive(!active);
   };
+
   return (
     <div className={styles.configSection}>
-      <div className={styles.configButton} onClick={handleToggle}>
+      <div className={styles.configButton} onClick={handleToggle} ref={iconRef}>
         <ConfigIcon
           style={{
             width: "25px",
@@ -39,6 +41,7 @@ export default function ConfigSection() {
           title={"configuration"}
           footer={"alino"}
           onClose={handleClose}
+          iconRef={iconRef}
         >
           <div
             style={{
