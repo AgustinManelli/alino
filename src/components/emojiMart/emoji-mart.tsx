@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+
 import data from "@emoji-mart/data/sets/15/apple.json";
 
 import React, { useEffect, useRef } from "react";

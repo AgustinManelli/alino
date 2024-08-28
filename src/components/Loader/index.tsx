@@ -5,7 +5,7 @@ import { useLoaderStore } from "@/store/useLoaderStore";
 import { useEffect, useState } from "react";
 import styles from "./loader.module.css";
 
-const Loader = () => {
+export default function Loader() {
   const loading = useLoaderStore((state) => state.loading);
 
   const texts = [
@@ -54,6 +54,4 @@ const Loader = () => {
       </div>
     </div>
   );
-};
-
-export default Loader;
+}
