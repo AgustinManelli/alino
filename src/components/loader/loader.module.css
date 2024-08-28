@@ -1,0 +1,47 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.icon {
+  width: 20px;
+  height: auto;
+  stroke: #1c1c1c;
+  stroke-width: 3;
+}
+
+.tooltip {
+  background-color: rgb(250, 250, 250);
+  border: 1px solid rgb(240, 240, 240);
+  width: fit-content;
+  height: fit-content;
+  position: absolute;
+  padding: 15px 20px 10px 20px;
+  bottom: 10%;
+  max-width: 300px;
+  border-radius: 10px;
+}
+
+.tooltipHeader {
+  font-size: 14px;
+  position: absolute;
+  top: -16px;
+  left: 10px;
+  background-color: rgb(240, 240, 240);
+  border: 1px solid rgb(240, 240, 240);
+  padding: 3px 6px;
+  border-radius: 10px;
+}
+
+.text {
+  color: #1c1c1c;
+  font-size: 16px;
+}
