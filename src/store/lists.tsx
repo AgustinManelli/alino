@@ -56,9 +56,11 @@ export const useLists = create<todo_list>()((set, get) => ({
     const { lists } = get();
     const result = await AddListToDB(color, index, name, lists, shortcodeemoji);
     if (result) {
+      console.log(result.error);
       if (!result.error) {
         const data = result?.data;
-        set((state: any) => ({ lists: [...state.lists, data] }));
+        const final = { ...data, tasks: [] };
+        set((state: any) => ({ lists: [...state.lists, final] }));
       } else {
         toast(result.error.toString());
       }
