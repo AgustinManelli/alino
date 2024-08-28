@@ -1,8 +1,10 @@
+"use client";
+
 import { FaceIcon1, FaceIcon2, FaceIcon3 } from "@/lib/ui/icons";
-import styles from "./priority-picker.module.css";
+import styles from "./priorityPicker.module.css";
 import { useState } from "react";
 
-export default function () {
+export default function PriorityPicker() {
   const [open, setOpen] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
   return (

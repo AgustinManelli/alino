@@ -1,5 +1,7 @@
+"use client";
+
 import { createPortal } from "react-dom";
-import styles from "./confirmation-modal.module.css";
+import styles from "./confirmationModal.module.css";
 import { motion } from "framer-motion";
 
 export default function ConfirmationModal({

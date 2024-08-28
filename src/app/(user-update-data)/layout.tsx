@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import styles from "../(auth)/auth.module.css";
-import { ButtonComponent } from "@/components/buttonComponent/buttonComponent";
+import { ButtonComp } from "@/components";
 import { AlinoLogo, HomeIcon } from "@/lib/ui/icons";
 import { readUserSession } from "@/lib/auth/actions";
 import pattern from "../../../public/pattern.svg";
@@ -27,7 +27,7 @@ export default async function UserUpdateDataLayout({
     >
       <section className={styles.container}>
         <div className={styles.backButton}>
-          <ButtonComponent
+          <ButtonComp
             background="rgb(240, 240, 240)"
             hover="rgb(230, 230, 230)"
             letterColor="#000"
@@ -42,7 +42,7 @@ export default async function UserUpdateDataLayout({
                 fill: "none",
               }}
             />
-          </ButtonComponent>
+          </ButtonComp>
         </div>
         <AlinoLogo style={{ height: "50px" }} />
         <div className={styles.form}>{children}</div>

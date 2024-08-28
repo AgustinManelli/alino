@@ -6,12 +6,12 @@ import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
 import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
 import styles from "./subjects-cards.module.css";
-import Counter from "@/components/counter";
+import { CounterAnimation } from "@/components";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import ConfirmationModal from "@/components/confirmationModal/confirmation-modal";
-import EmojiComponent from "@/components/emoji-mart-component";
+import { ConfirmationModal } from "@/components";
+import { EmojiComponent } from "@/components";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -90,7 +90,7 @@ export function SubjectsCardsMobile({
         )}
         <p className={styles.subjectName}>{list.data.type}</p>
         <p className={styles.counter}>
-          <Counter tasksLength={list.tasks?.length} />
+          <CounterAnimation tasksLength={list.tasks?.length} />
         </p>
       </Link>
     </div>

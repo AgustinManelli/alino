@@ -3,7 +3,7 @@
 import { useState } from "react";
 import styles from "./navbar-mobile.module.css";
 import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
-import Skeleton from "@/components/skeleton";
+import { Skeleton } from "@/components";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLists } from "@/store/lists";
 import { SubjectsCardsMobile } from "./subjects-cards-mobile";

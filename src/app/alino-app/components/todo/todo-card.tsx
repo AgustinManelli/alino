@@ -1,6 +1,6 @@
 import { tasks } from "@/lib/todosSchema";
 import styles from "./todo-card.module.css";
-import { Checkbox } from "@/components/inputs/checkbox/checkbox";
+import { Checkbox } from "@/components";
 import { useState } from "react";
 import { DeleteIcon } from "@/lib/ui/icons";
 import { useLists } from "@/store/lists";

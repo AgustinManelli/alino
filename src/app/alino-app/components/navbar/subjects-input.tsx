@@ -4,7 +4,7 @@ import styles from "./subjects-input.module.css";
 import { useEffect, useRef, useState } from "react";
 import { useLists } from "@/store/lists";
 import { LoadingIcon, PlusBoxIcon, SendIcon } from "@/lib/ui/icons";
-import { ColorPicker } from "@/components/color-picker";
+import { ColorPicker } from "@/components";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function SubjectsInput({

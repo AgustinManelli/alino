@@ -16,7 +16,7 @@ const paths = {
   },
 };
 
-export function Checkbox({
+export default function Checkbox({
   status,
   handleUpdateStatus,
   style,

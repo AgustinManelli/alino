@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import styles from "./accordion.module.css";
 import { ArrowThin } from "@/lib/ui/icons";

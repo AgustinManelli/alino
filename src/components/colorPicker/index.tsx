@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import styles from "./color-picker.module.css";
+import styles from "./colorPicker.module.css";
 import { CopyToClipboardIcon, LoadingIcon, SquircleIcon } from "@/lib/ui/icons";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
-import EmojiPicker from "./emoji-mart";
-import EmojiComponent from "./emoji-mart-component";
+import { EmojiPicker } from "@/components";
+import { EmojiComponent } from "@/components";
 import { generatePalette } from "emoji-palette";
 
 const colors = [
@@ -437,3 +437,5 @@ export function ColorPicker({
     </>
   );
 }
+
+export default ColorPicker;

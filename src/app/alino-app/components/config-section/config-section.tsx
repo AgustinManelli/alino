@@ -3,8 +3,7 @@
 import styles from "./config-section.module.css";
 import { ConfigIcon } from "@/lib/ui/icons";
 import { useState } from "react";
-import ModalBox from "@/components/modalBox/modal-box";
-import OptionBox from "@/components/modalBox/option-box";
+import { ModalBox, OptionBox } from "@/components";
 import { signout } from "@/lib/auth/actions";
 import { useLoaderStore } from "@/store/useLoaderStore";
 

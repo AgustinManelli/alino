@@ -6,9 +6,8 @@ import { SquircleIcon } from "@/lib/ui/icons";
 import styles from "./todo.module.css";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
-import { useRouter } from "next/navigation";
-import EmojiComponent from "@/components/emoji-mart-component";
-import Skeleton from "@/components/skeleton";
+import { EmojiComponent } from "@/components";
+import { Skeleton } from "@/components";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 

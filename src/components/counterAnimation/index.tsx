@@ -1,7 +1,9 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { useInView, useMotionValue, useSpring } from "framer-motion";
 
-export default function Counter({
+export default function CounterAnimation({
   tasksLength = 0,
 }: {
   tasksLength: number | undefined;

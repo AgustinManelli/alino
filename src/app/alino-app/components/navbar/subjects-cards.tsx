@@ -2,16 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ColorPicker } from "@/components/color-picker";
+import { ColorPicker } from "@/components";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
 import { DeleteIcon, HomeIcon2 } from "@/lib/ui/icons";
 import styles from "./subjects-cards.module.css";
-import Counter from "@/components/counter";
+import { CounterAnimation } from "@/components";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import ConfirmationModal from "@/components/confirmationModal/confirmation-modal";
+import { ConfirmationModal } from "@/components";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -121,7 +121,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
             opacity: hover ? "0" : "1",
           }}
         >
-          <Counter tasksLength={list.tasks?.length} />
+          <CounterAnimation tasksLength={list.tasks?.length} />
         </p>
       </Link>
     </div>

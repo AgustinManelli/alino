@@ -1,7 +1,7 @@
-"use cliente";
+"use client";
 
 import { useState } from "react";
-import styles from "./option-box.module.css";
+import styles from "./optionBox.module.css";
 
 interface OptionBoxProps {
   text: string;

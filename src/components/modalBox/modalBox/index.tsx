@@ -1,5 +1,7 @@
+"use client";
+
 import { useEffect, useRef } from "react";
-import styles from "./modal-box.module.css";
+import styles from "./modalBox.module.css";
 
 interface ModalBoxProps {
   title: string;

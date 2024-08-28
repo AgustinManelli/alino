@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLists } from "@/store/lists";
 import styles from "./todo-input.module.css";
-import PriorityPicker from "@/components/priority-picker";
-import { Checkbox } from "@/components/inputs/checkbox/checkbox";
+import { PriorityPicker } from "@/components";
 import { motion } from "framer-motion";
 import { AddTaskToDB } from "@/lib/todo/actions";
 import { Database } from "@/lib/todosSchema";

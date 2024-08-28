@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import styles from "./buttonComponent.module.css";
+import styles from "./buttonComp.module.css";
 import { useLoaderStore } from "@/store/useLoaderStore";
 
-type Props = {
+interface Props {
   text?: string;
   background: string;
   hover: string;
@@ -15,7 +15,7 @@ type Props = {
   children?: string | JSX.Element | JSX.Element[] | null;
   style?: React.CSSProperties;
   withLoader?: boolean;
-};
+}
 
 const useHover = () => {
   const [state, setState] = useState<boolean>(false);
@@ -28,7 +28,7 @@ const useHover = () => {
   };
 };
 
-export const ButtonComponent = ({
+const ButtonComp: React.FC<Props> = ({
   text,
   background,
   hover,
@@ -38,7 +38,7 @@ export const ButtonComponent = ({
   children,
   style,
   withLoader,
-}: Props) => {
+}) => {
   const { state, handleState } = useHover();
   const setLoading = useLoaderStore((state) => state.setLoading);
 
@@ -86,3 +86,5 @@ export const ButtonComponent = ({
     </Link>
   );
 };
+
+export default ButtonComp;

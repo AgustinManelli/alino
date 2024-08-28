@@ -1,6 +1,6 @@
 "use client";
 
-import { ButtonComponent } from "../../components/buttonComponent/buttonComponent";
+import { ButtonComp } from "@/components";
 import styles from "./header.module.css";
 import imgHero from "../../../public/headerAlino3DOpt.webp";
 import { useLoaderStore } from "@/store/useLoaderStore";
@@ -23,7 +23,7 @@ export default function Header() {
               Organizá tus clases, tareas o trabajos en un mismo lugar. <br />
               Es <span className={styles.paraphSpan}>100% gratis.</span>
             </p>
-            <ButtonComponent
+            <ButtonComp
               text="Pruebalo ya mismo"
               background="#1c1c1c"
               hover="rgb(230, 230, 230)"

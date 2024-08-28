@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLists } from "@/store/lists";
 import SubjectsInput from "./subjects-input";
-import Skeleton from "@/components/skeleton";
+import { Skeleton } from "@/components";
 import { SubjectsCards } from "./subjects-cards";
 import { AlinoLogo } from "@/lib/ui/icons";
 import styles from "./navbar.module.css";
