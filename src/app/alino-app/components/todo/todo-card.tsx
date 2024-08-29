@@ -33,7 +33,7 @@ export default function TodoCard({ task }: { task: tasks }) {
           handleUpdateStatus={handleUpdateStatus}
           id={task.id}
         />
-        {task.name}
+        <p>{task.name}</p>
       </div>
       <button
         className={styles.deleteButton}
