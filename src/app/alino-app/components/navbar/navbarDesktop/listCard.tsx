@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { ColorPicker } from "@/components";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
-import { DeleteIcon, HomeIcon2 } from "@/lib/ui/icons";
-import styles from "./subjects-cards.module.css";
+import { DeleteIcon } from "@/lib/ui/icons";
+import styles from "./listCard.module.css";
 import { CounterAnimation } from "@/components";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,16 +15,7 @@ import { ConfirmationModal } from "@/components";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
-interface emoji {
-  id: string;
-  keywords: string[];
-  name: string;
-  native: string;
-  shortcodes: string;
-  unified: string;
-}
-
-export function SubjectsCards({ list }: { list: ListsType }) {
+export default function ListCard({ list }: { list: ListsType }) {
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
 
@@ -60,7 +51,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
         />
       )}
       <Link
-        className={styles.subjectsCardsContainer}
+        className={styles.container}
         onMouseEnter={() => {
           setHover(true);
         }}
@@ -79,10 +70,10 @@ export function SubjectsCards({ list }: { list: ListsType }) {
         <div
           className={styles.cardFx}
           style={{
-            backgroundColor:
-              hover || pathname === `/alino-app/${list.name}` || hover
-                ? `${colorTemp}`
-                : "transparent",
+            boxShadow:
+              hover || pathname === `/alino-app/${list.name}`
+                ? `${colorTemp} 100px 50px 50px`
+                : `initial`,
           }}
         ></div>
         <div className={styles.identifierContainer}>
@@ -98,7 +89,7 @@ export function SubjectsCards({ list }: { list: ListsType }) {
             originalEmoji={list.data.icon}
           />
         </div>
-        <p className={styles.subjectName}>{list.data.type}</p>
+        <p className={styles.listName}>{list.data.type}</p>
         <button
           onClick={(e) => {
             e.preventDefault();

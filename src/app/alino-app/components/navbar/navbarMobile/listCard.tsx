@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
 import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
-import styles from "./subjects-cards.module.css";
+import styles from "../navbarDesktop/listCard.module.css";
 import { CounterAnimation } from "@/components";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,7 +15,7 @@ import { EmojiComponent } from "@/components";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
-export function SubjectsCardsMobile({
+export default function ListCard({
   list,
   action,
 }: {
@@ -23,14 +23,10 @@ export function SubjectsCardsMobile({
   action: () => void;
 }) {
   const deleteList = useLists((state) => state.deleteList);
-  const changeColor = useLists((state) => state.changeColor);
 
   const pathname = usePathname();
   const router = useRouter();
-
-  const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(list.data.color);
-  const [emoji, setEmoji] = useState<string>(list.data.icon);
   const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
 
   const handleDelete = async () => {
@@ -39,11 +35,6 @@ export function SubjectsCardsMobile({
       router.push(`${location.origin}/alino-app`);
     }
     toast.success(`${list.name} eliminado correctamente`);
-  };
-
-  const handleSave = async () => {
-    await changeColor(list.data, colorTemp, list.id, emoji);
-    toast.success(`Color de ${list.name} cambiado correctamente`);
   };
 
   return (
@@ -57,7 +48,7 @@ export function SubjectsCardsMobile({
         />
       )}
       <Link
-        className={styles.subjectsCardsContainer}
+        className={styles.container}
         style={{
           backgroundColor:
             pathname === `/alino-app/${list.name}`
@@ -71,10 +62,10 @@ export function SubjectsCardsMobile({
         <div
           className={styles.cardFx}
           style={{
-            backgroundColor:
+            boxShadow:
               pathname === `/alino-app/${list.name}`
-                ? `${colorTemp}`
-                : "transparent",
+                ? `${colorTemp} 100px 50px 50px`
+                : `initial`,
           }}
         ></div>
         {list?.data.icon !== "" ? (
@@ -88,7 +79,7 @@ export function SubjectsCardsMobile({
             }}
           />
         )}
-        <p className={styles.subjectName}>{list.data.type}</p>
+        <p className={styles.listName}>{list.data.type}</p>
         <p className={styles.counter}>
           <CounterAnimation tasksLength={list.tasks?.length} />
         </p>

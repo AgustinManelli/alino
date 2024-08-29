@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useLists } from "@/store/lists";
 import { toast } from "sonner";
 import { GetSubjects } from "@/lib/todo/actions";
-import Navbar from "./navbar";
-import NavbarMobile from "./navbar-mobile";
+import Navbar from "./navbarDesktop";
+import NavbarMobile from "./navbarMobile";
 import { useLoaderStore } from "@/store/useLoaderStore";
 
 export default function NavbarComponent() {

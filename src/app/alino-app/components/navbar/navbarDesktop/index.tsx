@@ -1,13 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import styles from "./navbar-mobile.module.css";
-import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
-import { Skeleton } from "@/components";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLists } from "@/store/lists";
-import { SubjectsCardsMobile } from "./subjects-cards-mobile";
-import SubjectsInput from "./subjects-input";
+import { AlinoLogo } from "@/lib/ui/icons";
+import { Skeleton } from "@/components";
+import ListInput from "../listInput";
+import ListCard from "./listCard";
+import styles from "./navbar.module.css";
+import HomeCard from "../homeCard/homeCard";
+
+//INIT EMOJI-MART
+import { init } from "emoji-mart";
+import data from "@emoji-mart/data/sets/15/apple.json";
+init({ data });
 
 const containerFMVariant = {
   hidden: { opacity: 1, scale: 1 },
@@ -32,26 +38,19 @@ const skeletonFMVariant = {
   exit: { opacity: 0, scale: 0 },
 };
 
-export default function NavbarMobile({
+export default function Navbar({
   initialFetching,
-  setInitialFetching,
 }: {
   initialFetching: boolean;
-  setInitialFetching: (value: boolean) => void;
 }) {
-  const [isActive, setIsActive] = useState<boolean>(false);
   const [waiting, setWaiting] = useState<boolean>(false);
 
   const lists = useLists((state) => state.lists);
 
-  const closeNav = () => {
-    setIsActive(false);
-  };
-
   return (
     <div className={styles.container}>
-      <nav className={`${styles.navbar} ${isActive && styles.active}`}>
-        <div className={styles.top}>
+      <div className={styles.navbar}>
+        <div className={styles.logoContainer}>
           <AlinoLogo
             style={{
               height: "20px",
@@ -61,29 +60,10 @@ export default function NavbarMobile({
             }}
             decoFill={"#1c1c1c"}
           />
-          <button
-            onClick={() => {
-              setIsActive(!isActive);
-            }}
-            className={styles.button}
-          >
-            <MenuIcon
-              style={{
-                height: "25px",
-                width: "auto",
-                stroke: "#1c1c1c",
-                strokeWidth: "2",
-              }}
-            />
-          </button>
         </div>
-        <section
-          className={styles.navbarContent}
-          id="listContainer"
-          style={{ display: isActive ? "initial" : "initial" }}
-        >
+        <section className={styles.cardsSection} id="listContainer">
           {initialFetching ? (
-            <div className={styles.divCardsContainer}>
+            <div className={styles.cardsContainer}>
               {Array(4)
                 .fill(null)
                 .map((_, index) => (
@@ -104,9 +84,10 @@ export default function NavbarMobile({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className={styles.divCardsContainer}
+              className={styles.cardsContainer}
             >
               <AnimatePresence mode={"popLayout"}>
+                <HomeCard />
                 {lists.map((list) => (
                   <motion.div
                     variants={containerFMVariant}
@@ -114,7 +95,7 @@ export default function NavbarMobile({
                     exit={{ scale: 0, opacity: 0 }}
                     key={list.id}
                   >
-                    <SubjectsCardsMobile list={list} action={closeNav} />
+                    <ListCard list={list} />
                   </motion.div>
                 ))}
                 {waiting && (
@@ -132,11 +113,11 @@ export default function NavbarMobile({
                   </motion.div>
                 )}
               </AnimatePresence>
-              <SubjectsInput setWaiting={setWaiting} />
+              <ListInput setWaiting={setWaiting} />
             </motion.div>
           )}
         </section>
-      </nav>
+      </div>
     </div>
   );
 }

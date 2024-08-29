@@ -1,5 +1,5 @@
 import { readUserSession } from "@/lib/auth/actions";
-import Navbar from "../components/navbar/navbar";
+import Navbar from "../components/navbar/navbarDesktop";
 import Todo from "../components/todo/todo";
 import { useLists } from "@/store/lists";
 import { useRouter } from "next/navigation";

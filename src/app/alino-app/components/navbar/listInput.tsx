@@ -1,13 +1,13 @@
 "use client";
 
-import styles from "./subjects-input.module.css";
+import styles from "./listInput.module.css";
 import { useEffect, useRef, useState } from "react";
 import { useLists } from "@/store/lists";
 import { LoadingIcon, PlusBoxIcon, SendIcon } from "@/lib/ui/icons";
 import { ColorPicker } from "@/components";
 import { AnimatePresence, motion } from "framer-motion";
 
-export default function SubjectsInput({
+export default function ListInput({
   setWaiting,
 }: {
   setWaiting: (value: boolean) => void;

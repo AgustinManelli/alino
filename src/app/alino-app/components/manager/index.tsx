@@ -24,8 +24,6 @@ export default function Manager({
     if (setList?.data.color !== undefined) setBlurredFx(setList?.data?.color);
   });
 
-  console.log(setList?.data.color);
-
   return (
     <div className={styles.container}>
       <section className={styles.section1}>{children}</section>

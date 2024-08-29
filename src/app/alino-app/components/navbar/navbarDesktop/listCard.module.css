@@ -1,4 +1,5 @@
-.subjectsCardsContainer {
+.container {
+  /* ex subjectsCardsContainer*/
   position: relative;
   overflow: hidden;
   background-color: rgb(250, 250, 250);
@@ -18,22 +19,25 @@
   -ms-user-select: none;
   user-select: none;
 }
+
 .cardFx {
   width: 200px;
   height: 200px;
   position: absolute;
-  left: -100px;
-  filter: blur(45px) saturate(200%);
+  left: -200px;
   opacity: 0.1;
-  transition: background-color 0.2s ease-in-out;
+  transition: box-shadow 0.2s ease-in-out;
 }
+
 .identifierContainer {
   width: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.subjectName {
+
+.listName {
+  /* ex subjectName */
   font-size: 14px;
   width: 100%;
   overflow: hidden;
