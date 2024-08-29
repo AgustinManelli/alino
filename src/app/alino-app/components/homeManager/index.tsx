@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import styles from "./appHome.module.css";
-import { useLists } from "@/store/lists";
-import TodoCard from "../todo/todo-card";
+import Manager from "../manager";
+import styles from "./homeManager.module.css";
+import { useBlurredFxStore } from "@/store/useBlurredFx";
 
-export default function AppHome({ userName }: { userName: string }) {
+export default function ({ userName }: { userName: string }) {
   const [currentTime, setCurrentTime] = useState(new Date());
-
-  const lists = useLists((state) => state.lists);
-
+  const setBlurredFx = useBlurredFxStore((state) => state.setColor);
   useEffect(() => {
+    setBlurredFx("rgb(106, 195, 255)");
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -19,6 +18,7 @@ export default function AppHome({ userName }: { userName: string }) {
       clearInterval(timer);
     };
   }, []);
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("es-ES", {
       weekday: "long",
@@ -28,9 +28,9 @@ export default function AppHome({ userName }: { userName: string }) {
     });
   };
   return (
-    <div className={styles.homeContainer}>
-      <div className={styles.containerText}>
-        <div className={styles.container}>
+    <Manager h={true}>
+      <section className={styles.container}>
+        <div className={styles.subContainer}>
           <h1 className={styles.title}>
             <span>Hola,</span> <br />
             <span>{userName}</span>
@@ -42,14 +42,7 @@ export default function AppHome({ userName }: { userName: string }) {
             </p>
           </div>
         </div>
-      </div>
-      <div className={styles.container2}>
-        <div className={styles.tasksContainer}>
-          {lists?.map((list) =>
-            list?.tasks?.map((task) => <TodoCard task={task} />)
-          )}
-        </div>
-      </div>
-    </div>
+      </section>
+    </Manager>
   );
 }

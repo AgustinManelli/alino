@@ -8,6 +8,7 @@ import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
 import { EmojiComponent } from "@/components";
 import { Skeleton } from "@/components";
+import Manager from "../manager";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -17,58 +18,58 @@ export default function Todo({ params }: { params: { list: string } }) {
     (elemento) => elemento.name === params.list
   ) as ListsType;
 
-  /*const router = useRouter();
-
-  if (lists && !setList) {
-    router.push(`${location.origin}/alino-app/home`);
-  }*/
-
   return (
     <div className={styles.todoContainerPage}>
-      <div
-        className={styles.blurredReference}
-        style={{
-          boxShadow: `${setList ? setList?.data.color : "transparent"} 20px 200px 240px`,
-        }}
-      ></div>
-      <div className={styles.container}>
+      <Manager setList={setList}>
         <section className={styles.todoContainer}>
-          {setList ? (
-            setList?.data.icon !== "" ? (
-              <EmojiComponent shortcodes={setList?.data.icon} size="16px" />
+          <div className={styles.titleContainer}>
+            {setList ? (
+              setList?.data.icon !== "" ? (
+                <EmojiComponent shortcodes={setList?.data.icon} size="16px" />
+              ) : (
+                <SquircleIcon
+                  style={{
+                    width: "12px",
+                    fill: `${setList?.data.color}`,
+                    transition: "fill 0.2s ease-in-out",
+                  }}
+                />
+              )
             ) : (
-              <SquircleIcon
+              <div
                 style={{
-                  width: "12px",
-                  fill: `${setList?.data.color}`,
-                  transition: "fill 0.2s ease-in-out",
+                  display: "flex",
+                  gap: "10px",
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
-              />
-            )
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Skeleton
-                style={{ width: "16px", height: "16px", borderRadius: "5px" }}
-              />
-              <Skeleton
-                style={{ width: "100px", height: "28px", borderRadius: "5px" }}
-              />
-            </div>
-          )}
-          <h2 className={styles.referenceText}>{setList?.data.type}</h2>
-        </section>
-        <section className={styles.todoManagerContainer}>
+              >
+                <Skeleton
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "5px",
+                    backgroundColor: "rgb(230,230,230)",
+                  }}
+                />
+                <Skeleton
+                  style={{
+                    width: "100px",
+                    height: "28px",
+                    borderRadius: "5px",
+                    backgroundColor: "rgb(230,230,230)",
+                  }}
+                />
+              </div>
+            )}
+            <h2 className={styles.referenceText}>{setList?.data.type}</h2>
+          </div>
           <TodoInput setList={setList} />
-          <TodoTasksSection setList={setList} />
         </section>
-      </div>
+      </Manager>
+      {/* <section className={styles.todoManagerContainer}>
+          <TodoTasksSection setList={setList} />
+        </section> */}
     </div>
   );
 }

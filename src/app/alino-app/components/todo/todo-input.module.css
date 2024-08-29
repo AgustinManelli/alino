@@ -2,7 +2,7 @@
   position: relative;
   background-color: transparent;
   width: 100%;
-  height: fit-content;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -20,7 +20,7 @@
   align-items: center;
 }
 .form {
-  width: 90%;
+  width: 100%;
   height: 50px;
   display: flex;
   justify-content: start;
@@ -33,7 +33,12 @@
 .input {
   width: 100%;
   border: none;
-  font-family: "inter";
   color: #1c1c1c;
   outline: none;
+}
+
+@media (max-width: 850px) {
+  .form {
+    width: 100%;
+  }
 }

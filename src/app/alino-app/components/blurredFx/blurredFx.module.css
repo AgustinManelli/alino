@@ -1,0 +1,18 @@
+.blurred {
+  position: absolute;
+  width: calc(100% - 25vw);
+  height: 260px;
+  top: 0px;
+  right: 0px;
+  pointer-events: none;
+  border-radius: 100%;
+  opacity: 0.35;
+  transform: translateY(-175%) translateZ(0px);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+@media only screen and (max-width: 850px) {
+  .blurred {
+    width: 100%;
+  }
+}

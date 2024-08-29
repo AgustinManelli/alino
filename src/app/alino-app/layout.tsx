@@ -2,6 +2,7 @@ import Navbar from "./components/navbar";
 import { redirect } from "next/navigation";
 import { readUserGetUser } from "@/lib/auth/actions";
 import ConfigSection from "./components/config-section/config-section";
+import BlurredFx from "./components/blurredFx";
 
 export default async function appLayout({
   children,
@@ -28,6 +29,7 @@ export default async function appLayout({
         overflowY: "hidden",
       }}
     >
+      <BlurredFx />
       <Navbar />
       <ConfigSection />
       {children}

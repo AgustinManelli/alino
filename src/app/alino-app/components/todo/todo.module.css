@@ -1,36 +1,23 @@
 .todoContainerPage {
   width: 100%;
   height: 100%;
-  border-radius: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 25px;
-}
-.container {
-  width: 100%;
-  max-width: 600px;
-  height: 100%;
-  padding: 50px 0px 50px 0px;
-  display: flex;
-  flex-direction: column;
-  justify-content: start;
-  align-items: center;
-  gap: 30px;
-}
-.blurredReference {
-  position: absolute;
-  width: 100%;
-  height: 260px;
-  top: 0px;
-  pointer-events: none;
-  border-radius: 100%;
-  opacity: 0.35;
-  transform: translateY(-175%) translateZ(0px);
-  transition: box-shadow 0.2s ease-in-out;
+  padding: 25px 25px 25px 0px;
 }
 .todoContainer {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 20px;
+  width: 100%;
+  height: fit-content;
+  flex-direction: column;
+  max-width: 600px;
+}
+.titleContainer {
   display: flex;
   align-items: center;
   justify-content: start;
@@ -54,6 +41,6 @@
 
 @media (max-width: 850px) {
   .todoContainerPage {
-    margin-top: 70px;
+    padding: 0px;
   }
 }
