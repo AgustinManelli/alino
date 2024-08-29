@@ -7,11 +7,10 @@ import { GetSubjects } from "@/lib/todo/actions";
 import Navbar from "./navbarDesktop";
 import NavbarMobile from "./navbarMobile";
 import { useLoaderStore } from "@/store/useLoaderStore";
+import useMobileStore from "@/store/useMobileStore";
 
 export default function NavbarComponent() {
-  const [isMobile, setIsMobile] = useState<boolean>(
-    window.innerWidth < 850 ? true : false
-  );
+  const { isMobile, setIsMobile } = useMobileStore();
 
   const setLists = useLists((state) => state.setLists);
   const [initialFetching, setInitialFetching] = useState<boolean>(true);
@@ -34,6 +33,7 @@ export default function NavbarComponent() {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 850);
     };
+
     window.addEventListener("resize", handleResize);
     handleResize();
     return () => window.removeEventListener("resize", handleResize);

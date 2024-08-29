@@ -4,6 +4,7 @@ import { Checkbox } from "@/components";
 import { useState } from "react";
 import { DeleteIcon } from "@/lib/ui/icons";
 import { useLists } from "@/store/lists";
+import useMobileStore from "@/store/useMobileStore";
 
 export default function TodoCard({ task }: { task: tasks }) {
   const [status, setStatus] = useState<boolean>(task.completed);
@@ -17,6 +18,9 @@ export default function TodoCard({ task }: { task: tasks }) {
     setStatus(!status);
     updateTaskCompleted(task.id, task.category_id, !status);
   };
+
+  const { isMobile } = useMobileStore();
+
   return (
     <div
       className={styles.cardContainer}
@@ -37,7 +41,7 @@ export default function TodoCard({ task }: { task: tasks }) {
       </div>
       <button
         className={styles.deleteButton}
-        style={{ opacity: hover ? "1" : "0" }}
+        style={{ opacity: hover || isMobile ? "1" : "0" }}
         onClick={handleDelete}
       >
         <DeleteIcon

@@ -7,13 +7,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px 10px 20px;
+  padding: 10px 15px 10px 15px;
+  gap: 15px;
 }
 .leftContainer {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   overflow: hidden;
   word-break: break-word;
 }
