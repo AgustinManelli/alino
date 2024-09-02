@@ -21,7 +21,7 @@ export default function Manager({
   const setBlurredFx = useBlurredFxStore((state) => state.setColor);
 
   useEffect(() => {
-    if (setList?.data.color !== undefined) setBlurredFx(setList?.data?.color);
+    if (setList?.color !== undefined) setBlurredFx(setList?.color);
   });
 
   return (

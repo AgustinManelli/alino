@@ -23,12 +23,10 @@ export default function ListInput({
   const divRef = useRef<HTMLDivElement>(null);
   const [emoji, setEmoji] = useState<string>("");
 
-  const index = 0;
-
   const handleSubmit = async () => {
     setWaiting(true);
     setTransition(true);
-    await setAddList(color, index, value, emoji as string);
+    await setAddList(color, value, emoji as string);
     setValue("");
     setTransition(false);
     setWaiting(false);

@@ -23,20 +23,20 @@ export default function ListCard({ list }: { list: ListsType }) {
   const router = useRouter();
 
   const [hover, setHover] = useState<boolean>(false);
-  const [colorTemp, setColorTemp] = useState<string>(list.data.color);
-  const [emoji, setEmoji] = useState<string>(list.data.icon);
+  const [colorTemp, setColorTemp] = useState<string>(list.color);
+  const [emoji, setEmoji] = useState<string>(list.icon);
   const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
 
   const handleDelete = async () => {
     await deleteList(list.id);
-    if (pathname === `/alino-app/${list.name}`) {
+    if (pathname === `/alino-app/${list.id}`) {
       router.push(`${location.origin}/alino-app`);
     }
     toast.success(`${list.name} eliminado correctamente`);
   };
 
   const handleSave = async () => {
-    await changeColor(list.data, colorTemp, list.id, emoji);
+    await changeColor(colorTemp, list.id, emoji);
     toast.success(`Color de ${list.name} cambiado correctamente`);
   };
 
@@ -44,7 +44,7 @@ export default function ListCard({ list }: { list: ListsType }) {
     <div>
       {deleteConfirm && (
         <ConfirmationModal
-          text={`¿Desea eliminar la lista "${list.data.type}"?`}
+          text={`¿Desea eliminar la lista "${list.name}"?`}
           aditionalText="Esta acción es irreversible y eliminará todas las tareas de la lista."
           isDeleteConfirm={isDeleteConfirm}
           handleDelete={handleDelete}
@@ -60,18 +60,18 @@ export default function ListCard({ list }: { list: ListsType }) {
         }}
         style={{
           backgroundColor:
-            hover || pathname === `/alino-app/${list.name}`
+            hover || pathname === `/alino-app/${list.id}`
               ? "rgb(250, 250, 250)"
               : "transparent",
           pointerEvents: "auto",
         }}
-        href={`/alino-app/${list.name}`}
+        href={`/alino-app/${list.id}`}
       >
         <div
           className={styles.cardFx}
           style={{
             boxShadow:
-              hover || pathname === `/alino-app/${list.name}`
+              hover || pathname === `/alino-app/${list.id}`
                 ? `${colorTemp} 100px 50px 50px`
                 : `initial`,
           }}
@@ -79,17 +79,17 @@ export default function ListCard({ list }: { list: ListsType }) {
         <div className={styles.identifierContainer}>
           <ColorPicker
             color={colorTemp}
-            originalColor={list.data.color}
+            originalColor={list.color}
             setColor={setColorTemp}
             save={true}
             handleSave={handleSave}
             width={"20px"}
             setEmoji={setEmoji}
             emoji={emoji}
-            originalEmoji={list.data.icon}
+            originalEmoji={list.icon}
           />
         </div>
-        <p className={styles.listName}>{list.data.type}</p>
+        <p className={styles.listName}>{list.name}</p>
         <button
           onClick={(e) => {
             e.preventDefault();

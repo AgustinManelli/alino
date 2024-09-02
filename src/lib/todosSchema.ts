@@ -6,12 +6,12 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type dataList = {
-  url: string;
-  icon: string;
-  type: string;
-  color: string;
-};
+// export type dataList = {
+//   url: string;
+//   icon: string;
+//   type: string;
+//   color: string;
+// };
 
 export type tasks = {
   id: string;
@@ -30,7 +30,7 @@ export type Database = {
       todos_data: {
         Row: {
           color: string;
-          data: dataList;
+          icon: string;
           id: string;
           index: number | null;
           inserted_at: string;
@@ -41,7 +41,7 @@ export type Database = {
         };
         Insert: {
           color?: string | null;
-          data?: dataList | null;
+          icon?: string | null;
           id?: string;
           index?: number | null;
           inserted_at?: string;
@@ -52,7 +52,7 @@ export type Database = {
         };
         Update: {
           color?: string | null;
-          data?: dataList | null;
+          icon?: string | null;
           id?: string;
           index?: number | null;
           inserted_at?: string;

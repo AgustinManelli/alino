@@ -26,7 +26,7 @@ export default function ListCard({
 
   const pathname = usePathname();
   const router = useRouter();
-  const [colorTemp, setColorTemp] = useState<string>(list.data.color);
+  const [colorTemp, setColorTemp] = useState<string>(list.color);
   const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
 
   const handleDelete = async () => {
@@ -41,7 +41,7 @@ export default function ListCard({
     <div>
       {deleteConfirm && (
         <ConfirmationModal
-          text={`¿Desea eliminar la lista "${list.data.type}"?`}
+          text={`¿Desea eliminar la lista "${list.name}"?`}
           aditionalText="Esta acción es irreversible y eliminará todas las tareas de la lista."
           isDeleteConfirm={isDeleteConfirm}
           handleDelete={handleDelete}
@@ -51,35 +51,35 @@ export default function ListCard({
         className={styles.container}
         style={{
           backgroundColor:
-            pathname === `/alino-app/${list.name}`
+            pathname === `/alino-app/${list.id}`
               ? "rgb(250, 250, 250)"
               : "transparent",
           pointerEvents: "auto",
         }}
-        href={`/alino-app/${list.name}`}
+        href={`/alino-app/${list.id}`}
         onClick={action}
       >
         <div
           className={styles.cardFx}
           style={{
             boxShadow:
-              pathname === `/alino-app/${list.name}`
+              pathname === `/alino-app/${list.id}`
                 ? `${colorTemp} 100px 50px 50px`
                 : `initial`,
           }}
         ></div>
-        {list?.data.icon !== "" ? (
-          <EmojiComponent shortcodes={list.data.icon} size="16px" />
+        {list?.icon !== "" ? (
+          <EmojiComponent shortcodes={list.icon} size="16px" />
         ) : (
           <SquircleIcon
             style={{
               width: "16px",
-              fill: `${list?.data.color}`,
+              fill: `${list?.color}`,
               transition: "fill 0.2s ease-in-out",
             }}
           />
         )}
-        <p className={styles.listName}>{list.data.type}</p>
+        <p className={styles.listName}>{list.name}</p>
         <p className={styles.counter}>
           <CounterAnimation tasksLength={list.tasks?.length} />
         </p>

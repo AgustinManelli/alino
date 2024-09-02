@@ -15,7 +15,7 @@ type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 export default function Todo({ params }: { params: { list: string } }) {
   const lists = useLists((state) => state.lists);
   const setList = lists.find(
-    (elemento) => elemento.name === params.list
+    (elemento) => elemento.id === params.list
   ) as ListsType;
 
   return (
@@ -24,13 +24,13 @@ export default function Todo({ params }: { params: { list: string } }) {
         <section className={styles.todoContainer}>
           <div className={styles.titleContainer}>
             {setList ? (
-              setList?.data.icon !== "" ? (
-                <EmojiComponent shortcodes={setList?.data.icon} size="16px" />
+              setList?.icon !== "" ? (
+                <EmojiComponent shortcodes={setList?.icon} size="16px" />
               ) : (
                 <SquircleIcon
                   style={{
                     width: "12px",
-                    fill: `${setList?.data.color}`,
+                    fill: `${setList?.color}`,
                     transition: "fill 0.2s ease-in-out",
                   }}
                 />
@@ -62,7 +62,7 @@ export default function Todo({ params }: { params: { list: string } }) {
                 />
               </div>
             )}
-            <h2 className={styles.referenceText}>{setList?.data.type}</h2>
+            <h2 className={styles.referenceText}>{setList?.name}</h2>
           </div>
           <TodoInput setList={setList} />
         </section>
