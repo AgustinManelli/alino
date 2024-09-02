@@ -31,7 +31,7 @@ export default function ListCard({
 
   const handleDelete = async () => {
     await deleteList(list.id);
-    if (pathname === `/alino-app/${list.name}`) {
+    if (pathname === `/alino-app/${list.id}`) {
       router.push(`${location.origin}/alino-app`);
     }
     toast.success(`${list.name} eliminado correctamente`);
