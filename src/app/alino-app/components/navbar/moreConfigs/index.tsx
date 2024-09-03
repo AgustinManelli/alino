@@ -91,19 +91,6 @@ export function MoreConfigs({
             <section ref={sRef} className={styles.container}>
               <section className={styles.optionsContainer}>
                 <OptionCard
-                  name={"Eliminar"}
-                  icon={
-                    <DeleteIcon
-                      style={{
-                        width: "14px",
-                        stroke: "#1c1c1c",
-                        strokeWidth: "2",
-                      }}
-                    />
-                  }
-                  action={handleDelete}
-                />
-                <OptionCard
                   name={"Cambiar nombre"}
                   icon={
                     <Edit
@@ -115,6 +102,20 @@ export function MoreConfigs({
                     />
                   }
                   action={handleNameChange}
+                />
+                <OptionCard
+                  name={"Eliminar"}
+                  icon={
+                    <DeleteIcon
+                      style={{
+                        width: "14px",
+                        stroke: "#1c1c1c",
+                        strokeWidth: "2",
+                      }}
+                    />
+                  }
+                  action={handleDelete}
+                  hoverColor={"#ffe7e6"}
                 />
               </section>
             </section>
