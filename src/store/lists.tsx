@@ -44,7 +44,7 @@ export const useLists = create<todo_list>()((set, get) => ({
       const data = result?.data;
       const final = { ...data, tasks: [] };
       set((state: any) => ({ lists: [...state.lists, final] }));
-      toast.success(`Lista "${name}" agregada correctamente correctamente`);
+      toast.success(`Lista "${name}" agregada correctamente`);
     } else {
       toast.error(result.error.message);
     }
