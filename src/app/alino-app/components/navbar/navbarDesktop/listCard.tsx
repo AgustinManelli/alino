@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { ColorPicker } from "@/components";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
-import { Check, DeleteIcon, MoreVertical } from "@/lib/ui/icons";
+import { Check } from "@/lib/ui/icons";
 import styles from "./listCard.module.css";
 import { CounterAnimation } from "@/components";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/components";
@@ -165,6 +163,17 @@ export default function ListCard({ list }: { list: ListsType }) {
               ref={inputRef}
               onChange={(e) => {
                 setInputName(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (!inputRef.current) return;
+                if (e.key === "Enter") {
+                  handleSaveName();
+                }
+                if (e.key === "Escape") {
+                  setIsNameChange(false);
+                  setInput(false);
+                  setInputName(list.name);
+                }
               }}
             />
           </div>
