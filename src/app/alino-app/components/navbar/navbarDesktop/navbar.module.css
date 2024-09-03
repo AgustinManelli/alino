@@ -52,3 +52,20 @@
   flex-direction: column;
   gap: 5px;
 }
+
+@media only screen and (max-width: 850px) {
+  .container {
+    position: absolute;
+    width: 70%;
+    min-width: inherit;
+    left: -100%;
+    transition: left 0.2s ease-in-out;
+    padding: 25px 0 25px 5px;
+  }
+  .active {
+    left: initial;
+  }
+  .cardsSection {
+    padding: 30px 15px 0px 15px;
+  }
+}

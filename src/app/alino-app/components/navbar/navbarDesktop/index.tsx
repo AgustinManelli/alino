@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLists } from "@/store/lists";
-import { AlinoLogo } from "@/lib/ui/icons";
+import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
 import { Skeleton } from "@/components";
 import ListInput from "../listInput";
 import ListCard from "./listCard";
 import styles from "./navbar.module.css";
 import HomeCard from "../homeCard/homeCard";
+import useMobileStore from "@/store/useMobileStore";
+import useOnClickOutside from "@/hooks/useOnClickOutside";
 
 //INIT EMOJI-MART
 import { init } from "emoji-mart";
@@ -47,77 +49,133 @@ export default function Navbar({
 
   const lists = useLists((state) => state.lists);
 
+  const { isMobile, setIsMobile } = useMobileStore();
+
+  const [isActive, setIsActive] = useState<boolean>(false);
+
+  const Ref = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 850);
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleCloseNavbar = () => {
+    setIsActive(false);
+  };
+
+  useOnClickOutside(Ref, () => {
+    handleCloseNavbar();
+  });
+
   return (
-    <div className={styles.container}>
-      <div className={styles.navbar}>
-        <div className={styles.logoContainer}>
-          <AlinoLogo
+    <>
+      {isMobile && (
+        <button
+          onClick={() => {
+            setIsActive(!isActive);
+          }}
+          style={{
+            position: "absolute",
+            width: "45px",
+            height: "45px",
+            top: "25px",
+            left: "25px",
+            zIndex: "100",
+            border: "none",
+            backgroundColor: "transparent",
+          }}
+        >
+          <MenuIcon
             style={{
-              height: "20px",
-              width: "auto",
-              fill: "#1c1c1c",
-              opacity: "0.1",
+              width: "25px",
+              height: "auto",
+              stroke: "#1c1c1c",
+              strokeWidth: "2",
             }}
-            decoFill={"#1c1c1c"}
           />
-        </div>
-        <section className={styles.cardsSection} id="listContainer">
-          {initialFetching ? (
-            <div className={styles.cardsContainer}>
-              {Array(4)
-                .fill(null)
-                .map((_, index) => (
-                  <Skeleton
-                    style={{
-                      width: "100%",
-                      height: "45px",
-                      borderRadius: "15px",
-                    }}
-                    delay={index * 0.15}
-                    key={index}
-                  />
-                ))}
-            </div>
-          ) : (
-            <motion.div
-              variants={containerFMVariant}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className={styles.cardsContainer}
-            >
-              <AnimatePresence mode={"popLayout"}>
-                <HomeCard />
-                {lists.map((list) => (
-                  <motion.div
-                    variants={containerFMVariant}
-                    initial={{ scale: 0, opacity: 0 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    key={list.id}
-                  >
-                    <ListCard list={list} />
-                  </motion.div>
-                ))}
-                {waiting && (
-                  <motion.div
-                    variants={skeletonFMVariant}
-                    transition={{ ease: "easeOut", duration: 0.2 }}
-                  >
+        </button>
+      )}
+      <div
+        className={styles.container}
+        style={{ left: isActive ? "0" : "-100%" }}
+        ref={Ref}
+      >
+        <div className={styles.navbar}>
+          <div className={styles.logoContainer}>
+            <AlinoLogo
+              style={{
+                height: "20px",
+                width: "auto",
+                fill: "#1c1c1c",
+                opacity: "0.1",
+              }}
+              decoFill={"#1c1c1c"}
+            />
+          </div>
+          <section className={styles.cardsSection} id="listContainer">
+            {initialFetching ? (
+              <div className={styles.cardsContainer}>
+                {Array(4)
+                  .fill(null)
+                  .map((_, index) => (
                     <Skeleton
                       style={{
                         width: "100%",
                         height: "45px",
                         borderRadius: "15px",
                       }}
+                      delay={index * 0.15}
+                      key={index}
                     />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <ListInput setWaiting={setWaiting} />
-            </motion.div>
-          )}
-        </section>
+                  ))}
+              </div>
+            ) : (
+              <motion.div
+                variants={containerFMVariant}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className={styles.cardsContainer}
+              >
+                <AnimatePresence mode={"popLayout"}>
+                  <HomeCard />
+                  {lists.map((list) => (
+                    <motion.div
+                      variants={containerFMVariant}
+                      initial={{ scale: 0, opacity: 0 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      key={list.id}
+                    >
+                      <ListCard list={list} />
+                    </motion.div>
+                  ))}
+                  {waiting && (
+                    <motion.div
+                      variants={skeletonFMVariant}
+                      transition={{ ease: "easeOut", duration: 0.2 }}
+                    >
+                      <Skeleton
+                        style={{
+                          width: "100%",
+                          height: "45px",
+                          borderRadius: "15px",
+                        }}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <ListInput setWaiting={setWaiting} />
+              </motion.div>
+            )}
+          </section>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

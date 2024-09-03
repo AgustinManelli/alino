@@ -25,10 +25,6 @@
 }
 
 @media only screen and (max-width: 850px) {
-  .configSection {
-    top: 32.5px;
-    right: 32.5px;
-  }
   .configButton {
     background-color: transparent;
   }

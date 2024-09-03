@@ -38,6 +38,11 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   setAddList: async (color, name, shortcodeemoji) => {
+    if (name.length < 1) {
+      toast.error("El nombre de tu lista debe tener un carácter como mínimo");
+      return;
+    }
+
     const result = await AddListToDB(color, name, shortcodeemoji);
 
     if (!result.error) {
@@ -106,6 +111,10 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   updateListName: async (id, newName) => {
+    if (newName.length < 1) {
+      toast.error("El nombre de tu lista debe tener un carácter como mínimo");
+      return;
+    }
     const result = await UpdateListNameToDB(id, newName);
 
     if (result.error) {

@@ -4,23 +4,22 @@ import React, { useEffect } from "react";
 
 function useOnClickOutside(
   ref: React.RefObject<HTMLElement>,
-  parentRef: React.RefObject<HTMLElement>,
-  handler: (e: MouseEvent | TouchEvent) => void
+  handler: (e: MouseEvent | TouchEvent) => void,
+  parentRef?: React.RefObject<HTMLElement>
 ) {
   useEffect(() => {
     const listener = (e: MouseEvent | TouchEvent) => {
       if (!ref.current || ref.current.contains(e.target as Node)) {
-        console.log(parentRef);
         return;
       }
-      if (parentRef.current !== null) {
-        console.log(parentRef.current);
-        if (
-          !parentRef.current ||
-          parentRef.current.contains(e.target as Node)
-        ) {
-          console.log(parentRef);
-          return;
+      if (parentRef) {
+        if (parentRef.current !== null) {
+          if (
+            !parentRef.current ||
+            parentRef.current.contains(e.target as Node)
+          ) {
+            return;
+          }
         }
       }
       handler(e);
