@@ -1,11 +1,10 @@
 import HomeManager from "./components/homeManager";
-import Manager from "./components/manager";
 import styles from "./page.module.css";
 import { readUserSession } from "@/lib/auth/actions";
 
 export async function generateMetadata() {
   return {
-    title: "Alino | home",
+    title: "Alino | Home",
   };
 }
 

@@ -5,13 +5,14 @@ import { toast } from "sonner";
 import { ColorPicker } from "@/components";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
-import { DeleteIcon } from "@/lib/ui/icons";
+import { DeleteIcon, MoreVertical } from "@/lib/ui/icons";
 import styles from "./listCard.module.css";
 import { CounterAnimation } from "@/components";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/components";
+import MoreConfigs from "../moreConfigs";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -27,7 +28,13 @@ export default function ListCard({ list }: { list: ListsType }) {
   const [emoji, setEmoji] = useState<string>(list.icon);
   const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
 
+  const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
+  const handleChangeMoreOptions = (prop: boolean) => {
+    setIsMoreOptions(prop);
+  };
+
   const handleDelete = async () => {
+    setIsMoreOptions(false);
     await deleteList(list.id);
     if (pathname === `/alino-app/${list.id}`) {
       router.push(`${location.origin}/alino-app`);
@@ -60,7 +67,7 @@ export default function ListCard({ list }: { list: ListsType }) {
         }}
         style={{
           backgroundColor:
-            hover || pathname === `/alino-app/${list.id}`
+            hover || pathname === `/alino-app/${list.id}` || isMoreOptions
               ? "rgb(250, 250, 250)"
               : "transparent",
           pointerEvents: "auto",
@@ -71,7 +78,7 @@ export default function ListCard({ list }: { list: ListsType }) {
           className={styles.cardFx}
           style={{
             boxShadow:
-              hover || pathname === `/alino-app/${list.id}`
+              hover || pathname === `/alino-app/${list.id}` || isMoreOptions
                 ? `${colorTemp} 100px 50px 50px`
                 : `initial`,
           }}
@@ -91,25 +98,22 @@ export default function ListCard({ list }: { list: ListsType }) {
         </div>
         <p className={styles.listName}>{list.name}</p>
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // handleDelete();
-            isDeleteConfirm(true);
-          }}
           className={styles.button}
           style={{
-            opacity: hover ? "1" : "0",
+            opacity: hover || isMoreOptions ? "1" : "0",
           }}
         >
-          <DeleteIcon
-            style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "2" }}
+          <MoreConfigs
+            width={"25px"}
+            open={isMoreOptions}
+            setOpen={handleChangeMoreOptions}
+            handleDelete={handleDelete}
           />
         </button>
         <p
           className={styles.counter}
           style={{
-            opacity: hover ? "0" : "1",
+            opacity: hover || isMoreOptions ? "0" : "1",
           }}
         >
           <CounterAnimation tasksLength={list.tasks?.length} />

@@ -242,10 +242,6 @@ export function ColorPicker({
               }}
               exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
               className={styles.container}
-              style={{
-                maxHeight: type ? "256px" : "365px",
-                minHeight: type ? "256px" : "365px",
-              }}
             >
               <section className={styles.titleSection}>
                 <button

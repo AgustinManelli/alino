@@ -8,6 +8,7 @@ import { useBlurredFxStore } from "@/store/useBlurredFx";
 export default function ({ userName }: { userName: string }) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const setBlurredFx = useBlurredFxStore((state) => state.setColor);
+
   useEffect(() => {
     setBlurredFx("rgb(106, 195, 255)");
     const timer = setInterval(() => {
@@ -27,6 +28,7 @@ export default function ({ userName }: { userName: string }) {
       day: "numeric",
     });
   };
+
   return (
     <Manager h={true}>
       <section className={styles.container}>

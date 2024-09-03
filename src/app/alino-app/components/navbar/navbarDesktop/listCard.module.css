@@ -53,14 +53,18 @@
   background-color: transparent;
   transition: opacity 0.2s ease-in-out;
   z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
 .counter {
   position: absolute;
   right: 10px;
   background-color: transparent;
   transition: opacity 0.2s ease-in-out;
-  width: 15px;
-  height: 15px;
+  width: 25px;
+  height: 25px;
   display: flex;
   justify-content: center;
   align-items: center;
