@@ -47,11 +47,11 @@ export default function Navbar({
 }) {
   const [waiting, setWaiting] = useState<boolean>(false);
 
+  const [isActive, setIsActive] = useState<boolean>(false);
+
   const lists = useLists((state) => state.lists);
 
   const { isMobile, setIsMobile } = useMobileStore();
-
-  const [isActive, setIsActive] = useState<boolean>(false);
 
   const Ref = useRef<HTMLInputElement | null>(null);
 
@@ -80,16 +80,7 @@ export default function Navbar({
           onClick={() => {
             setIsActive(!isActive);
           }}
-          style={{
-            position: "absolute",
-            width: "45px",
-            height: "45px",
-            top: "25px",
-            left: "25px",
-            zIndex: "100",
-            border: "none",
-            backgroundColor: "transparent",
-          }}
+          className={styles.mobileButton}
         >
           <MenuIcon
             style={{
