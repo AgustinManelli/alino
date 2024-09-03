@@ -11,7 +11,7 @@ import {
 } from "../user-schema";
 
 export async function signInWithEmailAndPassword(dataInput: LoginUserInput) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { error } = await supabase.auth.signInWithPassword({
     email: dataInput.email,
@@ -28,7 +28,7 @@ export async function signUpWithEmailAndPassword({
   dataInput: CreateUserInput;
   emailRedirectTo?: string;
 }) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { error } = await supabase.auth.signUp({
     email: dataInput.email,
@@ -42,7 +42,7 @@ export async function signUpWithEmailAndPassword({
 }
 
 export async function signout() {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   await supabase.auth.signOut();
 
@@ -50,7 +50,7 @@ export async function signout() {
 }
 
 export async function resetPassword(data: ResetUserInput, href: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const result = await supabase.auth.resetPasswordForEmail(data.email, {
     redirectTo: `${href}/auth/update-password`,
@@ -60,7 +60,7 @@ export async function resetPassword(data: ResetUserInput, href: string) {
 }
 
 export async function updatePassword(data: UpdatePasswordInput) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const result = await supabase.auth.updateUser({
     password: data.password,
@@ -70,7 +70,7 @@ export async function updatePassword(data: UpdatePasswordInput) {
 }
 
 export async function updatePasswordLogin(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const data = {
     password: formData.get("password") as string,
   };
@@ -84,13 +84,13 @@ export async function updatePasswordLogin(formData: FormData) {
 }
 
 export async function readUserSession() {
-  const supabase = await createClient();
+  const supabase = createClient();
   const result = await supabase.auth.getSession();
   return result;
 }
 
 export async function readUserGetUser() {
-  const supabase = await createClient();
+  const supabase = createClient();
   const result = await supabase.auth.getUser();
   return result;
 }

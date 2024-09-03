@@ -18,6 +18,7 @@
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  cursor: pointer;
 }
 
 .cardFx {
@@ -27,6 +28,7 @@
   left: -200px;
   opacity: 0.1;
   transition: box-shadow 0.2s ease-in-out;
+  z-index: 0;
 }
 
 .identifierContainer {
@@ -44,6 +46,24 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+.nameChangerContainer {
+  display: flex;
+}
+
+.nameChangerInput {
+  width: 100%;
+  border: none;
+  color: #1c1c1c;
+  outline: none;
+  font-size: 14px;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background-color: transparent;
+}
+
 .button {
   position: absolute;
   right: 10px;
@@ -71,4 +91,19 @@
   z-index: 0;
   color: rgb(210, 210, 210);
   font-size: 12px;
+}
+
+.checkButton {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  right: 10px;
+  border: none;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.2s ease-in-out;
 }

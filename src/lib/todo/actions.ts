@@ -41,7 +41,7 @@ export async function GetLists() {
   // Ordenar las tareas dentro de cada lista
   if (data) {
     data.forEach((todo) => {
-      todo.tasks = todo.tasks.sort((a: Task, b: Task) => a.index - b.index);
+      todo.tasks = todo.tasks.sort((a: Task, b: Task) => b.index - a.index);
     });
   }
 
@@ -118,68 +118,137 @@ export const UpdateDataListToDB = async (
   id: string,
   shortcodeemoji: string
 ) => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
+  const supabase = createClient();
 
-  if (!error) {
-    if (data.session) {
-      const result = await supabase
-        .from("todos_data")
-        .update({ color: color, icon: shortcodeemoji })
-        .eq("id", id)
-        .select();
-      return result;
-    }
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError) {
+    return { error: sessionError };
   }
 
-  return error;
+  if (!sessionData.session) {
+    return { error: new Error("No active session found") };
+  }
+
+  const { data, error } = await supabase
+    .from("todos_data")
+    .update({ color: color, icon: shortcodeemoji })
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    return { error };
+  }
+
+  return { data };
+};
+
+export const UpdateListNameToDB = async (id: string, newName: string) => {
+  const supabase = createClient();
+
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError) {
+    return { error: sessionError };
+  }
+
+  if (!sessionData.session) {
+    return { error: new Error("No active session found") };
+  }
+
+  const { data, error } = await supabase
+    .from("todos_data")
+    .update({ name: newName })
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    return { error };
+  }
+
+  return { data };
 };
 
 export const AddTaskToDB = async (category_id: string, name: string) => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
+  const supabase = createClient();
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
 
-  if (!error) {
-    if (data.session) {
-      const user = data.session.user;
-      const result = await supabase
-        .from("tasks")
-        .insert({
-          category_id,
-          user_id: user.id,
-          name,
-          description: "",
-        })
-        .select()
-        .single();
-      return result;
-    }
+  if (sessionError) {
+    return { error: sessionError };
   }
+
+  if (!sessionData.session) {
+    return { error: new Error("No active session found") };
+  }
+
+  const user = sessionData.session.user;
+  const { data, error } = await supabase
+    .from("tasks")
+    .insert({
+      category_id,
+      user_id: user.id,
+      name,
+      description: "",
+    })
+    .select()
+    .single();
+
+  if (error) {
+    return { error };
+  }
+
+  return { data };
 };
 
 export const DeleteTaskToDB = async (id: string) => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
+  const supabase = createClient();
 
-  if (!error) {
-    if (data.session) {
-      const result = await supabase.from("tasks").delete().eq("id", id);
-      return result;
-    }
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError) {
+    return { error: sessionError };
   }
+
+  if (!sessionData.session) {
+    return { error: new Error("No active session found") };
+  }
+
+  const { data, error } = await supabase.from("tasks").delete().eq("id", id);
+
+  if (error) {
+    return { error };
+  }
+
+  return { data };
 };
 
 export const UpdateTasksCompleted = async (id: string, status: boolean) => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
+  const supabase = createClient();
+  const { data, error: sessionError } = await supabase.auth.getSession();
 
-  if (!error) {
-    if (data.session) {
-      const result = await supabase
-        .from("tasks")
-        .update({ completed: status })
-        .eq("id", id);
-      return result;
-    }
+  if (sessionError) {
+    return { error: sessionError };
   }
+
+  if (!data.session) {
+    const error = new Error("No active session found");
+    return { error };
+  }
+
+  const { error: updateError, data: updateData } = await supabase
+    .from("tasks")
+    .update({ completed: status })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (updateError) {
+    return { error: updateError };
+  }
+
+  return { data: updateData };
 };

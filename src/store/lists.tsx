@@ -8,6 +8,7 @@ import {
   DeleteTaskToDB,
   GetLists,
   UpdateDataListToDB,
+  UpdateListNameToDB,
   UpdateTasksCompleted,
 } from "@/lib/todo/actions";
 import { AddListToDB } from "@/lib/todo/actions";
@@ -23,6 +24,7 @@ type todo_list = {
   deleteList: (id: string, name: string) => void;
   getLists: () => void;
   changeColor: (color: string, id: string, shortcodeemoji: string) => void;
+  updateListName: (id: string, newName: string) => void;
   addTask: (list_id: string, task: string) => void;
   deleteTask: (id: string, list_id: string) => void;
   updateTaskCompleted: (id: string, list_id: string, status: boolean) => void;
@@ -37,21 +39,23 @@ export const useLists = create<todo_list>()((set, get) => ({
 
   setAddList: async (color, name, shortcodeemoji) => {
     const result = await AddListToDB(color, name, shortcodeemoji);
+
     if (!result.error) {
       const data = result?.data;
       const final = { ...data, tasks: [] };
       set((state: any) => ({ lists: [...state.lists, final] }));
-      toast.success(`list "${name}" agregada correctamente correctamente`);
+      toast.success(`Lista "${name}" agregada correctamente correctamente`);
     } else {
       toast.error(result.error.message);
     }
   },
 
   deleteList: async (id, name) => {
+    const result = await DeleteListToDB(id);
+
     const { lists } = get();
     const filtered = lists.filter((all) => all.id !== id);
     set(() => ({ lists: filtered }));
-    const result = await DeleteListToDB(id);
 
     if (result.error) {
       // Revertir los cambios en la UI si la eliminación falla
@@ -63,20 +67,28 @@ export const useLists = create<todo_list>()((set, get) => ({
       return;
     }
 
-    toast.success(`lista "${name}" eliminada correctamente`);
+    toast.success(`Lista "${name}" eliminada correctamente`);
   },
 
   getLists: async () => {
     const result = (await GetLists()) as any;
+
     if (result.error) {
       toast.error(`Error al cargar las listas: ${result.error.message}`);
       return;
     }
+
     set(() => ({ lists: result.data || [] }));
   },
 
   changeColor: async (color, id, shortcodeemoji) => {
-    await UpdateDataListToDB(color, id, shortcodeemoji);
+    const result = await UpdateDataListToDB(color, id, shortcodeemoji);
+
+    if (result.error) {
+      toast.error(`Error al modificar lista: ${result.error.message}`);
+      return;
+    }
+
     set((state) => ({
       lists: state.lists.map((list) => {
         if (list.id === id) {
@@ -89,17 +101,49 @@ export const useLists = create<todo_list>()((set, get) => ({
         return list;
       }),
     }));
+
+    toast.success(`Lista modificada correctamente`);
+  },
+
+  updateListName: async (id, newName) => {
+    const result = await UpdateListNameToDB(id, newName);
+
+    if (result.error) {
+      toast.error(`Error al modificar lista: ${result.error.message}`);
+      return;
+    }
+
+    set((state) => ({
+      lists: state.lists.map((list) => {
+        if (list.id === id) {
+          return {
+            ...list,
+            name: newName,
+          };
+        }
+        return list;
+      }),
+    }));
+
+    toast.success(`Nombre de lista modificado correctamente`);
   },
 
   addTask: async (list_id, task) => {
     const result = await AddTaskToDB(list_id, task);
+
+    if (result?.error) {
+      toast.error(`Error al agregar tarea: ${result.error.message}`);
+      return;
+    }
+
     const data = result?.data;
+
     set((state) => ({
       lists: state.lists.map((list) => {
         if (list.id === list_id) {
           return {
             ...list,
-            tasks: [...list.tasks, data],
+            tasks: [data, ...list.tasks],
           };
         }
         return list;
@@ -108,7 +152,13 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   deleteTask: async (id, list_id) => {
-    await DeleteTaskToDB(id);
+    const result = await DeleteTaskToDB(id);
+
+    if (result?.error) {
+      toast.error(`Error al eliminar tarea: ${result.error.message}`);
+      return;
+    }
+
     set((state) => ({
       lists: state.lists.map((list) => {
         if (list.id === list_id) {
@@ -123,7 +173,13 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   updateTaskCompleted: async (id, list_id, status) => {
-    UpdateTasksCompleted(id, status);
+    const result = await UpdateTasksCompleted(id, status);
+
+    if (result.error) {
+      toast.error(`Error al actualizar tarea: ${result.error.message}`);
+      return;
+    }
+
     set((state) => ({
       lists: state.lists.map((list) => {
         if (list.id === list_id) {

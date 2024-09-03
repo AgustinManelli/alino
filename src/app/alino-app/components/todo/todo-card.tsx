@@ -10,13 +10,14 @@ export default function TodoCard({ task }: { task: tasks }) {
   const [status, setStatus] = useState<boolean>(task.completed);
   const [hover, setHover] = useState<boolean>(false);
   const deleteTask = useLists((state) => state.deleteTask);
-  const handleDelete = () => {
-    deleteTask(task.id, task.category_id);
+  const handleDelete = async () => {
+    await deleteTask(task.id, task.category_id);
   };
   const updateTaskCompleted = useLists((status) => status.updateTaskCompleted);
-  const handleUpdateStatus = () => {
+
+  const handleUpdateStatus = async () => {
+    await updateTaskCompleted(task.id, task.category_id, !status);
     setStatus(!status);
-    updateTaskCompleted(task.id, task.category_id, !status);
   };
 
   const { isMobile } = useMobileStore();

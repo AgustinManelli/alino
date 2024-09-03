@@ -11,11 +11,13 @@ export function MoreConfigs({
   open,
   setOpen,
   handleDelete,
+  handleNameChange,
 }: {
   width: string;
   open: boolean;
   setOpen: (prop: boolean) => void;
-  handleDelete: () => {};
+  handleDelete: () => void;
+  handleNameChange: () => void;
 }) {
   const [hover, setHover] = useState<boolean>(false);
 
@@ -101,7 +103,7 @@ export function MoreConfigs({
                   }
                   action={handleDelete}
                 />
-                {/* <OptionCard
+                <OptionCard
                   name={"Cambiar nombre"}
                   icon={
                     <Edit
@@ -112,7 +114,8 @@ export function MoreConfigs({
                       }}
                     />
                   }
-                /> */}
+                  action={handleNameChange}
+                />
               </section>
             </section>
           ) : (

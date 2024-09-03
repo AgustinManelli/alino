@@ -24,7 +24,6 @@ const OptionCard: React.FC<ChildComponentProps> = ({ name, icon, action }) => {
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("pase");
         action();
       }}
     >
