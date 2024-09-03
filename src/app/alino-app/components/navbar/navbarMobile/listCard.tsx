@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
-import { DeleteIcon, SquircleIcon } from "@/lib/ui/icons";
+import { SquircleIcon } from "@/lib/ui/icons";
 import styles from "../navbarDesktop/listCard.module.css";
 import { CounterAnimation } from "@/components";
 import Link from "next/link";
@@ -30,11 +29,10 @@ export default function ListCard({
   const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
 
   const handleDelete = async () => {
-    await deleteList(list.id);
+    await deleteList(list.id, list.name);
     if (pathname === `/alino-app/${list.id}`) {
       router.push(`${location.origin}/alino-app`);
     }
-    toast.success(`${list.name} eliminado correctamente`);
   };
 
   return (
