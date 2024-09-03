@@ -4,7 +4,7 @@ import styles from "./optionCard.module.css";
 type ChildComponentProps = {
   name: string;
   icon: React.ReactNode;
-  action?: () => void;
+  action: () => void;
 };
 
 const OptionCard: React.FC<ChildComponentProps> = ({ name, icon, action }) => {
@@ -21,7 +21,12 @@ const OptionCard: React.FC<ChildComponentProps> = ({ name, icon, action }) => {
       onMouseLeave={() => {
         setOptionHover(false);
       }}
-      onClick={action}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("pase");
+        action();
+      }}
     >
       {icon}
       <p>{name}</p>

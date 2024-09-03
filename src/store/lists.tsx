@@ -6,7 +6,7 @@ import {
   AddTaskToDB,
   DeleteListToDB,
   DeleteTaskToDB,
-  GetSubjects,
+  GetLists,
   UpdateDataListToDB,
   UpdateTasksCompleted,
 } from "@/lib/todo/actions";
@@ -20,7 +20,7 @@ type todo_list = {
   tasks: tasks[];
   setLists: (list: ListsType[]) => void;
   setAddList: (color: string, name: string, shortcodeemoji: string) => void;
-  deleteList: (id: string) => void;
+  deleteList: (id: string, name: string) => void;
   getLists: () => void;
   changeColor: (color: string, id: string, shortcodeemoji: string) => void;
   addTask: (list_id: string, task: string) => void;
@@ -41,21 +41,38 @@ export const useLists = create<todo_list>()((set, get) => ({
       const data = result?.data;
       const final = { ...data, tasks: [] };
       set((state: any) => ({ lists: [...state.lists, final] }));
+      toast.success(`list "${name}" agregada correctamente correctamente`);
     } else {
-      toast(result.error.toString());
+      toast.error(result.error.message);
     }
   },
 
-  deleteList: async (id) => {
+  deleteList: async (id, name) => {
     const { lists } = get();
     const filtered = lists.filter((all) => all.id !== id);
     set(() => ({ lists: filtered }));
-    await DeleteListToDB(id);
+    const result = await DeleteListToDB(id);
+
+    if (result.error) {
+      // Revertir los cambios en la UI si la eliminación falla
+      set(() => ({ lists }));
+    }
+
+    if (result.error) {
+      toast.error(`Error al eliminar la lista: ${result.error.message}`);
+      return;
+    }
+
+    toast.success(`lista "${name}" eliminada correctamente`);
   },
 
   getLists: async () => {
-    const { data } = (await GetSubjects()) as any;
-    set(() => ({ lists: data }));
+    const result = (await GetLists()) as any;
+    if (result.error) {
+      toast.error(`Error al cargar las listas: ${result.error.message}`);
+      return;
+    }
+    set(() => ({ lists: result.data || [] }));
   },
 
   changeColor: async (color, id, shortcodeemoji) => {

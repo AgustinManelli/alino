@@ -13,33 +13,39 @@ type Task = {
   updated_at: string;
 };
 
-export async function GetSubjects() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
+export async function GetLists() {
+  const supabase = createClient();
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
 
-  if (!error) {
-    if (data.session) {
-      const result = await supabase
-        .from("todos_data")
-        .select(
-          "*, tasks: tasks(id, category_id, description, completed, index, name, created_at, updated_at)"
-        )
-        .order("index", { ascending: true })
-        .eq("user_id", data.session?.user.id)
-        .then(({ data }) => {
-          if (data) {
-            data.forEach((todo) => {
-              todo.tasks = todo.tasks.sort(
-                (a: Task, b: Task) => a.index - b.index
-              );
-            });
-          }
-          return { data };
-        });
-      return result;
-    }
+  if (sessionError) {
+    return { error: sessionError };
   }
-  return error;
+  if (!sessionData.session) {
+    return { error: new Error("No active session found") };
+  }
+
+  const { data, error } = await supabase
+    .from("todos_data")
+    .select(
+      "*, tasks: tasks(id, category_id, description, completed, index, name, created_at, updated_at)"
+    )
+    .order("index", { ascending: true })
+    .eq("user_id", sessionData.session.user.id);
+
+  if (error) {
+    console.error("Error fetching data:", error);
+    return { error };
+  }
+
+  // Ordenar las tareas dentro de cada lista
+  if (data) {
+    data.forEach((todo) => {
+      todo.tasks = todo.tasks.sort((a: Task, b: Task) => a.index - b.index);
+    });
+  }
+
+  return { data };
 }
 
 export const AddListToDB = async (
@@ -47,44 +53,64 @@ export const AddListToDB = async (
   name: string,
   shortcodeemoji: string
 ) => {
-  const setColor = color === "" ? "#87189d" : color;
-  const supabase = await createClient();
-  const sessionResult = await supabase.auth.getSession();
+  const setColor = color === "" ? "#87189d" : color; // Establece el color predeterminado si está vacío
 
-  if (!sessionResult.error) {
-    if (sessionResult.data.session) {
-      const user = sessionResult.data.session.user;
-      const result = await supabase
-        .from("todos_data")
-        .insert({
-          color: setColor,
-          icon: shortcodeemoji,
-          name: name,
-          user_id: user.id,
-        })
-        .select()
-        .single();
-      return result;
-    } else {
-      return sessionResult;
-    }
-  } else {
-    return sessionResult;
+  const supabase = createClient();
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError) {
+    return { error: sessionError };
   }
+
+  if (!sessionData.session) {
+    return { error: new Error("No active session found") };
+  }
+
+  const user = sessionData.session.user;
+
+  const { data, error } = await supabase
+    .from("todos_data")
+    .insert({
+      color: setColor,
+      icon: shortcodeemoji,
+      name: name,
+      user_id: user.id,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    return { error };
+  }
+
+  return { data };
 };
 
 export const DeleteListToDB = async (id: string) => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
+  const supabase = createClient();
 
-  if (!error) {
-    if (data.session) {
-      const result = await supabase.from("todos_data").delete().eq("id", id);
-      return result;
-    }
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError) {
+    return { error: sessionError };
   }
 
-  return error;
+  if (!sessionData.session) {
+    return { error: new Error("No active session found") };
+  }
+
+  const { data, error } = await supabase
+    .from("todos_data")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    return { error };
+  }
+
+  return { data };
 };
 
 export const UpdateDataListToDB = async (

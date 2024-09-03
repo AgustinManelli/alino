@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useLists } from "@/store/lists";
 import { toast } from "sonner";
-import { GetSubjects } from "@/lib/todo/actions";
+import { GetLists } from "@/lib/todo/actions";
 import Navbar from "./navbarDesktop";
 import NavbarMobile from "./navbarMobile";
 import { useLoaderStore } from "@/store/useLoaderStore";
@@ -12,16 +12,14 @@ import useMobileStore from "@/store/useMobileStore";
 export default function NavbarComponent() {
   const { isMobile, setIsMobile } = useMobileStore();
 
-  const setLists = useLists((state) => state.setLists);
+  const getLists = useLists((state) => state.getLists);
   const [initialFetching, setInitialFetching] = useState<boolean>(true);
   const setLoading = useLoaderStore((state) => state.setLoading);
 
   useEffect(() => {
     const fetchTodos = async () => {
       setInitialFetching(true);
-      const { data: lists, error } = (await GetSubjects()) as any;
-      if (error) toast(error);
-      else setLists(lists);
+      getLists();
       setInitialFetching(false);
     };
     fetchTodos();
