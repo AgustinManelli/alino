@@ -416,7 +416,7 @@ export function ColorPicker({
                           }}
                         />
                       ) : (
-                        "guardar"
+                        <p>guardar</p>
                       )}
                     </button>
                   </div>
