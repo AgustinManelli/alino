@@ -15,14 +15,11 @@ type Task = {
 
 export async function GetLists() {
   const supabase = createClient();
-  const { data: sessionData, error: sessionError } =
-    await supabase.auth.getSession();
 
-  if (sessionError) {
-    return { error: sessionError };
-  }
-  if (!sessionData.session) {
-    return { error: new Error("No active session found") };
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error("User is not logged in")
   }
 
   const { data, error } = await supabase
@@ -30,8 +27,7 @@ export async function GetLists() {
     .select(
       "*, tasks: tasks(id, category_id, description, completed, index, name, created_at, updated_at)"
     )
-    .order("index", { ascending: true })
-    .eq("user_id", sessionData.session.user.id);
+    .order("index", { ascending: true });
 
   if (error) {
     console.error("Error fetching data:", error);
@@ -56,15 +52,9 @@ export const AddListToDB = async (
   const setColor = color === "" ? "#87189d" : color; // Establece el color predeterminado si está vacío
 
   const supabase = createClient();
-  const { data: sessionData, error: sessionError } =
-    await supabase.auth.getSession();
-
-  if (sessionError) {
-    return { error: sessionError };
-  }
-
-  if (!sessionData.session) {
-    return { error: new Error("No active session found") };
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !sessionData?.session) {
+    return { error: sessionError || new Error("No active session found") };
   }
 
   const user = sessionData.session.user;
@@ -81,7 +71,7 @@ export const AddListToDB = async (
     .single();
 
   if (error) {
-    return { error };
+    return { error: new Error("Failed to insert the list into the database") };
   }
 
   return { data };
