@@ -28,6 +28,7 @@ export async function GetLists() {
       "*, tasks: tasks(id, category_id, description, completed, index, name, created_at, updated_at)"
     )
     .order("index", { ascending: true });
+    //.eq("user_id", user.id); Is not necessary
 
   if (error) {
     console.error("Error fetching data:", error);
