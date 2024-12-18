@@ -26,6 +26,7 @@
   flex-direction: column;
   max-width: 50%;
 }
+
 @media only screen and (max-width: 900px) {
   .contentContainer {
     margin-top: 0px;

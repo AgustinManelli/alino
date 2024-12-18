@@ -92,6 +92,7 @@
   .tilesImg {
     height: 100%;
     min-width: initial;
+    width: fit-content;
   }
 
   .tilesImgLeft {
