@@ -5,6 +5,7 @@ import styles from "./header.module.css";
 import imgHero from "../../../public/headerAlino3DOpt.webp";
 import { useLoaderStore } from "@/store/useLoaderStore";
 import { useEffect } from "react";
+import { SquircleIcon } from "@/lib/ui/icons";
 
 export default function Header() {
   const setLoading = useLoaderStore((state) => state.setLoading);
@@ -19,6 +20,48 @@ export default function Header() {
       <header className={styles.header}>
         <section className={styles.content}>
           <div className={styles.textContainer}>
+            <div className={styles.fxContainer}>
+              <SquircleIcon
+                style={{
+                  position: "absolute",
+                  left: "0px",
+                  fill: "none",
+                  stroke: "rgb(240,240,240)",
+                  strokeWidth: "0.2px",
+                  width: "100%",
+                }}
+              />
+              <SquircleIcon
+                style={{
+                  position: "absolute",
+                  left: "0px",
+                  fill: "none",
+                  stroke: "rgb(240,240,240)",
+                  strokeWidth: "0.2px",
+                  width: "95%",
+                }}
+              />
+              <SquircleIcon
+                style={{
+                  position: "absolute",
+                  left: "0px",
+                  fill: "none",
+                  stroke: "rgb(240,240,240)",
+                  strokeWidth: "0.2px",
+                  width: "90%",
+                }}
+              />
+              <SquircleIcon
+                style={{
+                  position: "absolute",
+                  left: "0px",
+                  fill: "none",
+                  stroke: "rgb(240,240,240)",
+                  strokeWidth: "0.2px",
+                  width: "85%",
+                }}
+              />
+            </div>
             <h1 className={styles.title}>Tu organizador en línea</h1>
             <p className={styles.subtitle}>
               Organizá tus clases, tareas o trabajos
