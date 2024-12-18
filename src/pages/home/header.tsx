@@ -6,6 +6,7 @@ import imgHero from "../../../public/headerAlino3DOpt.webp";
 import { useLoaderStore } from "@/store/useLoaderStore";
 import { useEffect } from "react";
 import { SquircleIcon } from "@/lib/ui/icons";
+import Image from "next/image";
 
 export default function Header() {
   const setLoading = useLoaderStore((state) => state.setLoading);
@@ -78,11 +79,13 @@ export default function Header() {
               aria-label="Prueba Alino"
             />
           </div>
-          <img
-            src={imgHero.src}
+          <Image
+            src={imgHero}
+            alt="Alino, organizador en linea"
             className={styles.image}
-            alt="Vista previa de Alino"
-            loading="lazy"
+            priority
+            width={800}
+            height={600}
           />
         </section>
       </header>

@@ -1,42 +1,39 @@
+import Image from "next/image";
 import Styles from "./tiles.module.css";
 
 export default function Tiles({
   title,
   subtitle,
   resource,
-  tileType,
+  tileType = false,
 }: {
   title: string;
   subtitle: string;
-  resource?: any;
+  resource?: { src: string };
   tileType?: boolean;
 }) {
   return (
     <div className={Styles.tilesBox}>
-      {tileType && tileType === true ? (
-        <div className={Styles.tilesContainerLeft}>
-          <section className={Styles.textSectionLeft}>
-            <h2>{title}</h2>
-            <p>{subtitle}</p>
-          </section>
-          {resource && (
-            <img
-              className={Styles.tilesImgLeft}
-              src={resource.src}
-              alt={`alino - ${title}`}
-              loading="lazy"
-            />
-          )}
-        </div>
-      ) : (
-        <div className={Styles.tilesContainer}>
-          <section className={Styles.textSection}>
-            <h2>{title}</h2>
-            <p>{subtitle}</p>
-          </section>
-          {resource && <img className={Styles.tilesImg} src={resource.src} />}
-        </div>
-      )}
+      <div
+        className={tileType ? Styles.tilesContainerLeft : Styles.tilesContainer}
+      >
+        <section
+          className={tileType ? Styles.textSectionLeft : Styles.textSection}
+        >
+          <h2>{title}</h2>
+          <p>{subtitle}</p>
+        </section>
+        {resource && (
+          <Image
+            src={resource.src}
+            alt={`Tile image - ${title}`}
+            className={tileType ? Styles.tilesImgLeft : Styles.tilesImg}
+            priority
+            width={500}
+            height={500}
+          />
+        )}
+      </div>
     </div>
   );
 }
