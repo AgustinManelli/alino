@@ -23,7 +23,7 @@ export default function Navbar() {
             <Crown
               style={{
                 strokeWidth: "1.5",
-                stroke: "#1c1c1c",
+                stroke: "#87189d",
                 width: "20px",
                 height: "auto",
               }}
