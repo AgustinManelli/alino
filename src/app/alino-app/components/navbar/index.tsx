@@ -13,7 +13,7 @@ export default function NavbarComponent() {
   useEffect(() => {
     const fetchTodos = async () => {
       setInitialFetching(true);
-      getLists();
+      await getLists();
       setInitialFetching(false);
     };
     fetchTodos();

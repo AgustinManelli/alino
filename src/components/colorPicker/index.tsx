@@ -366,13 +366,14 @@ export function ColorPicker({
                     onEmojiSelect={onEmojiSelect}
                     emojiButtonRadius={"5px"}
                     maxFrequentRows={0}
-                    perLine={7}
+                    perLine={6}
                     previewPosition={"none"}
                     searchPosition={"sticky"}
                     skin={1}
                     emojiSize={24}
                     set={"apple"}
-                    noCountryFlags={true}
+                    noCountryFlags={false}
+                    navPosition={"none"}
                     // parent={document.querySelector("#emoji-picker-parent")}
                   />
                 </div>

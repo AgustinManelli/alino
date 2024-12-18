@@ -235,3 +235,8 @@
 .pickerEmojiContainer em-emoji-picker:host {
   --shadow: none;
 } */
+
+.pickerEmojiContainer {
+  width: 100%;
+  padding: 0px 15px 0px 15px;
+}
