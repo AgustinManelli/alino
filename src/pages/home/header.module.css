@@ -1,65 +1,41 @@
-.container {
-  position: relative;
-  width: 100vw;
-  /* height: 100lvh; */
+/* General styles */
+.headerWrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* margin-top: 60px; */
+  width: 100vw;
+  box-sizing: border-box;
 }
 
-.hero {
-  position: relative;
+.header {
   width: 100%;
   max-width: 1366px;
-  padding-left: 120px;
-  padding-right: 120px;
-  display: flex;
-  justify-content: center;
-}
-
-.hero::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0%;
-  right: 0px;
-  opacity: 0.3;
-  filter: blur(100px);
-  transform: translate(-30%, -50%) translateZ(0px);
-  height: 300px;
-  width: 300px;
-  background-color: #87189d;
-  border-radius: 75%;
-  pointer-events: none;
-}
-
-.heroContainer {
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: row;
+  margin: 0px 120px 0px 120px;
 }
 
-.ctaContainer {
+.content {
   display: flex;
-  justify-content: center;
-  align-items: start;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+}
+
+.textContainer {
+  max-width: 50%;
+  display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 50px;
-  width: 100%;
 }
 
-.h1Text {
-  position: relative;
-  width: fit-content;
-  font-size: 50px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.title {
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 20px;
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
@@ -67,181 +43,52 @@
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  opacity: 0.7;
 }
 
-.paraph {
-  font-weight: 500;
-  font-size: 30px;
-  max-width: 600px;
+.subtitle {
+  font-size: 2rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 20px;
+  font-weight: 700;
 }
 
-.paraphSpan {
+.highlight {
   color: #87189d;
   font-weight: 700;
 }
 
-.textSloganHeader {
-  position: relative;
-  width: fit-content;
-  font-size: 80px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  background: -webkit-linear-gradient(30deg, #87189d, #e5e5e5);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  opacity: 0.7;
-}
-
-.textSloganHeader p {
-  height: 80px;
-}
-
-.animation {
-  height: 80px;
-  overflow: hidden;
-  margin-left: 1rem;
-}
-
-.animation > div > div {
-  height: 80px;
-  display: inline-block;
-}
-
-.animation div:first-child {
-  animation: text-animation 10s infinite;
-}
-
-@keyframes text-animation {
-  0% {
-    margin-top: 0;
-  }
-  10% {
-    margin-top: 0;
-  }
-  20% {
-    margin-top: -97px;
-  }
-  30% {
-    margin-top: -97px;
-  }
-  40% {
-    margin-top: -194px;
-  }
-  60% {
-    margin-top: -194px;
-  }
-  70% {
-    margin-top: -194px;
-  }
-  80% {
-    margin-top: -194px;
-  }
-  90% {
-    margin-top: -194px;
-  }
-  100% {
-    margin-top: 0;
-  }
-}
-.img {
-  /* width: 35vw;
-  max-width: 500px; */
-  display: block;
-  width: 100%;
+.image {
+  max-width: 45%;
   height: auto;
-  max-width: 500px;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
+  border-radius: 10px;
 }
 
+/* Responsive styles */
 @media only screen and (max-width: 900px) {
-  .hero {
-    padding-left: 20px;
-    padding-right: 20px;
+  .header {
+    margin: 0px 20px 0px 20px;
   }
-  .heroContainer {
-    flex-direction: column-reverse;
+  .content {
+    flex-direction: column;
   }
-  .ctaContainer {
-    margin-top: 0px;
+
+  .textContainer {
     max-width: 100%;
-    gap: 10px;
-  }
-  .img {
-    min-width: 300px;
-    width: 25vw;
-  }
-}
-
-@media (max-width: 700px) {
-  .textSloganHeader {
-    font-size: 45px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
   }
 
-  .paraph {
-    font-size: 25px;
+  .image {
+    max-width: 90%;
   }
 
-  .h1Text {
-    font-size: 30px;
+  .title {
+    font-size: 3rem;
   }
 
-  .ctaContainer {
-    max-width: 100%;
-  }
-
-  .textSloganHeader p {
-    height: 55px;
-  }
-
-  .animation {
-    height: 55px;
-  }
-
-  .animation > div > div {
-    height: 55px;
-    display: inline-block;
-  }
-  .animation div:first-child {
-    animation: text-animation2 10s infinite;
-  }
-  @keyframes text-animation2 {
-    0% {
-      margin-top: 0;
-    }
-    10% {
-      margin-top: 0;
-    }
-    20% {
-      margin-top: -55px;
-    }
-    30% {
-      margin-top: -55px;
-    }
-    40% {
-      margin-top: -110px;
-    }
-    60% {
-      margin-top: -110px;
-    }
-    70% {
-      margin-top: -110px;
-    }
-    80% {
-      margin-top: -110px;
-    }
-    90% {
-      margin-top: -110px;
-    }
-    100% {
-      margin-top: 0;
-    }
+  .subtitle {
+    font-size: 1.3rem;
   }
 }
