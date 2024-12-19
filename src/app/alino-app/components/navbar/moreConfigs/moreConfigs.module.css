@@ -20,11 +20,12 @@
 .container {
   right: -150px;
   position: absolute;
-  background-color: rgb(255, 255, 255, 0.9);
+  background-color: rgb(255, 255, 255, 0.8);
   backdrop-filter: blur(5px);
   border: 1px solid rgb(240, 240, 240);
   max-width: fit-content;
   min-width: 150px;
+  min-height: 96px;
   width: fit-content;
   height: fit-content;
   border-radius: 15px;
@@ -37,7 +38,6 @@
     rgba(12, 20, 66, 0.02) 0px 4px 12px,
     rgba(12, 20, 66, 0.08) 0px 30px 80px,
     rgb(230, 233, 237) 0px 0px 0px 0px inset;
-  overflow: hidden;
 }
 .titleSection {
   color: rgb(200, 200, 200);

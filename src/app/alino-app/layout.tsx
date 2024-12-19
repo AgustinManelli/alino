@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { readUserGetUser } from "@/lib/auth/actions";
 import ConfigSection from "./components/config-section/config-section";
 import BlurredFx from "./components/blurredFx";
+import Alerts from "./components/alerts";
 
 export default async function appLayout({
   children,
@@ -32,6 +33,7 @@ export default async function appLayout({
       <BlurredFx />
       <Navbar />
       <ConfigSection />
+      {/* <Alerts /> */}
       {children}
     </section>
   );

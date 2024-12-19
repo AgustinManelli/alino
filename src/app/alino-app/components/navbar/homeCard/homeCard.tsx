@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HomeIcon2 } from "@/lib/ui/icons";
 import { useLists } from "@/store/lists";
+import useMobileStore from "@/store/useMobileStore";
 
 interface Task {
   id: string;
@@ -29,6 +30,8 @@ export default function HomeCard({
 
   const [hover, setHover] = useState<boolean>(false);
 
+  const isMobile = useMobileStore((state) => state.isMobile);
+
   const allTasks: Task[] = lists.reduce<Task[]>((acc, list) => {
     return acc.concat(list.tasks || []);
   }, []);
@@ -37,11 +40,9 @@ export default function HomeCard({
     <div>
       <Link
         className={styles.container}
-        onMouseEnter={() => {
-          setHover(true);
-        }}
+        onMouseEnter={!isMobile ? () => setHover(true) : undefined}
         onMouseLeave={() => {
-          setHover(false);
+          if (!isMobile) setHover(false);
         }}
         style={{
           backgroundColor:

@@ -226,8 +226,8 @@ export default function ListCard({
             <button
               className={styles.button}
               style={{
-                opacity: (hover || isMoreOptions) && !isMobile ? "1" : "0",
-                display: !isMobile ? "visible" : "none",
+                opacity: hover || isMoreOptions ? "1" : "0",
+                display: isMobile ? "none" : "visible",
               }}
             >
               <MoreConfigs

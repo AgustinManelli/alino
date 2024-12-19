@@ -25,11 +25,18 @@ export default function Todo({ params }: { params: { list: string } }) {
           <div className={styles.titleContainer}>
             {setList ? (
               setList?.icon !== "" ? (
-                <EmojiComponent shortcodes={setList?.icon} size="16px" />
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                  }}
+                >
+                  <EmojiComponent shortcodes={setList?.icon} size="20px" />
+                </div>
               ) : (
                 <SquircleIcon
                   style={{
-                    width: "12px",
+                    width: "20px",
                     fill: `${setList?.color}`,
                     transition: "fill 0.2s ease-in-out",
                   }}
