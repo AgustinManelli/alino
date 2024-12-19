@@ -19,7 +19,11 @@ interface Task {
   updated_at: string;
 }
 
-export default function HomeCard() {
+export default function HomeCard({
+  handleCloseNavbar,
+}: {
+  handleCloseNavbar: () => void;
+}) {
   const pathname = usePathname();
   const lists = useLists((state) => state.lists);
 
@@ -47,6 +51,9 @@ export default function HomeCard() {
           pointerEvents: "auto",
         }}
         href={`/alino-app`}
+        onClick={() => {
+          handleCloseNavbar();
+        }}
       >
         <div
           className={styles.cardFx}

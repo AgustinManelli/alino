@@ -141,7 +141,7 @@ export default function Navbar({
                 className={styles.cardsContainer}
               >
                 <AnimatePresence mode={"popLayout"}>
-                  <HomeCard />
+                  <HomeCard handleCloseNavbar={handleCloseNavbar} />
                   {lists.map((list) => (
                     <motion.div
                       variants={containerFMVariant}
@@ -153,6 +153,7 @@ export default function Navbar({
                         list={list}
                         setIsCreating={setIsCreating}
                         isCreting={isCreating}
+                        handleCloseNavbar={handleCloseNavbar}
                       />
                     </motion.div>
                   ))}

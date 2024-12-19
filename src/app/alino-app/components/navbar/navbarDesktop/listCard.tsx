@@ -19,10 +19,12 @@ export default function ListCard({
   list,
   setIsCreating,
   isCreting,
+  handleCloseNavbar,
 }: {
   list: ListsType;
   setIsCreating: (value: boolean) => void;
   isCreting: boolean;
+  handleCloseNavbar: () => void;
 }) {
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
@@ -129,6 +131,7 @@ export default function ListCard({
         }}
         onClick={() => {
           router.push(`${location.origin}/alino-app/${list.id}`);
+          !isCreting && handleCloseNavbar();
         }}
         style={{
           backgroundColor:
