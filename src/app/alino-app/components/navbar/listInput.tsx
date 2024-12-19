@@ -9,8 +9,10 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export default function ListInput({
   setWaiting,
+  setIsCreating,
 }: {
   setWaiting: (value: boolean) => void;
+  setIsCreating: (value: boolean) => void;
 }) {
   const [input, setInput] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
@@ -32,6 +34,7 @@ export default function ListInput({
     setWaiting(false);
     setInput(false);
     setHover(false);
+    setIsCreating(false);
   };
 
   useEffect(() => {
@@ -42,13 +45,14 @@ export default function ListInput({
     }
   }, [input, color]);
 
-  useEffect(function mount() {
+  useEffect(() => {
     function divOnClick(event: MouseEvent | TouchEvent) {
       if (divRef.current !== null) {
         if (!divRef.current.contains(event.target as Node)) {
           if (value === "" && !choosingColor) {
             setColor("#87189d");
             setInput(false);
+            setIsCreating(false);
           }
           setHover(false);
         }
@@ -57,14 +61,14 @@ export default function ListInput({
     window.addEventListener("mousedown", divOnClick);
     window.addEventListener("mouseup", divOnClick);
 
-    return function unMount() {
+    return () => {
       window.removeEventListener("mousedown", divOnClick);
       window.removeEventListener("mouseup", divOnClick);
     };
   });
 
   return (
-    <div ref={divRef} className={styles.formContainer}>
+    <div className={styles.formContainer}>
       <AnimatePresence>
         {input || value !== "" ? (
           <motion.div
@@ -82,6 +86,7 @@ export default function ListInput({
               transition: { duration: 0.2 },
             }}
             exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+            ref={divRef}
           >
             <ColorPicker
               color={color}
@@ -149,6 +154,7 @@ export default function ListInput({
           <motion.button
             onClick={() => {
               setInput(true);
+              setIsCreating(true);
             }}
             className={styles.button}
             style={{

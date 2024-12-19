@@ -10,6 +10,7 @@ import { EmojiPicker } from "@/components";
 import { EmojiComponent } from "@/components";
 import { generatePalette } from "emoji-palette";
 import { COLORS } from "./constants/colors";
+import useHover from "@/hooks/useHover";
 
 type SquircleColorButonType = {
   color: string;
@@ -44,7 +45,7 @@ export function SquircleColorSelector({
           e.stopPropagation();
           setColor(colorHex);
           setEmoji("");
-          setChoosingColor && setChoosingColor(false);
+          !save && setChoosingColor && setChoosingColor(false);
           if (!save) {
             setOpen(false);
           } else {
@@ -59,7 +60,7 @@ export function SquircleColorSelector({
           setHoverColor(false);
         }}
       >
-        <SquircleIcon style={{ fill: `${colorHex}` }} />
+        <SquircleIcon style={{ fill: `${colorHex}`, width: "18px" }} />
         <SquircleIcon
           style={{
             fill: "transparent",
@@ -90,37 +91,37 @@ interface emoji {
 }
 
 interface ColorPickerInterface {
+  originalColor?: string | null;
   color: string;
   setColor: (value: string) => void;
+  originalEmoji?: string;
+  emoji: string;
+  setEmoji: (value: string) => void;
   save?: boolean;
   handleSave?: () => Promise<void>;
   width?: string;
-  originalColor?: string | null;
   choosingColor?: boolean;
   setChoosingColor?: (value: boolean) => void;
-  setEmoji: (value: string) => void;
-  emoji: string;
-  originalEmoji?: string;
 }
 
 export function ColorPicker({
-  color,
-  setColor,
-  save,
-  handleSave,
-  width,
-  originalColor,
-  choosingColor,
-  setChoosingColor,
-  setEmoji,
-  emoji,
-  originalEmoji,
+  originalColor, //corresponde al color original del elemento donde se use
+  color, //indica el color que está seleccionado en ese momento, no corresponde al original
+  setColor, //corresponde a la función para cambiar el valor de los colores temporales, no cambia valor de color original
+  originalEmoji, //corresponde al balor del emoji original.
+  emoji, //corresponde al valor del emoji temporal, no al original
+  setEmoji, //corresponde a la función para cambiar el valor del emoji temporal, similar a la de color
+  save, //indica si en el picker debe o no aparecer el boton de guardar para aplicar cambios
+  handleSave, //es la función para establecer color ya seleccionado
+  width, //corresponde al ancho que debe tener el icono para brir la modal
+  choosingColor, //indicador de si aún se está eligiendo un color
+  setChoosingColor, //función para indicar que el usuario está eligiendo un color o que aún no guardó los cambios
 }: ColorPickerInterface) {
   const [open, setOpen] = useState<boolean>(false);
-  const [hover, setHover] = useState<boolean>(false);
-  const [isSave, setIsSave] = useState<boolean>(false);
-  const [wait, setWait] = useState<boolean>(false);
-  const [type, setType] = useState<boolean>(true);
+  const saveButtonHover = useHover(false);
+  const [isSave, setIsSave] = useState<boolean>(false); //indica si el cambio de color temporal se guardó
+  const [wait, setWait] = useState<boolean>(false); //saveButton loader
+  const [type, setType] = useState<boolean>(true); //color picker o emoji picker
 
   const pickerRef = useRef<HTMLDivElement>(null);
   const childRef = useRef<HTMLDivElement>(null);
@@ -128,7 +129,6 @@ export function ColorPicker({
   const onEmojiSelect = (selectedEmoji: emoji) => {
     setEmoji(selectedEmoji.shortcodes as string);
     const palette: string[] = generatePalette(selectedEmoji.native);
-    // const dominantColor: string = palette[Math.floor(palette.length / 2)];
     const dominantColor: string = palette[0];
     setColor(dominantColor);
   };
@@ -138,16 +138,17 @@ export function ColorPicker({
       if (!pickerRef.current || !childRef.current) return;
       const parentRect = pickerRef.current!.getBoundingClientRect();
 
-      childRef.current.style.top = `${parentRect.top + parentRect.width + 10}px`;
+      childRef.current.style.top = `${parentRect.top + parentRect.width + 5}px`;
       childRef.current.style.left = `${parentRect.left}px`;
 
       if (
         pickerRef.current.getBoundingClientRect().top >
         window.innerHeight / 2
       ) {
-        childRef.current.style.top = `${parentRect.top - childRef.current.offsetHeight - 10}px`;
+        childRef.current.style.top = `${parentRect.top - childRef.current.offsetHeight - 5}px`;
       }
     }
+
     function divOnClick(event: MouseEvent | TouchEvent) {
       if (childRef.current !== null && pickerRef.current !== null) {
         if (
@@ -155,7 +156,7 @@ export function ColorPicker({
           !pickerRef.current.contains(event.target as Node)
         ) {
           setOpen(false);
-          setChoosingColor ? setChoosingColor(false) : "";
+          setChoosingColor && setChoosingColor(false);
           setType(true);
           if (save && !isSave && originalColor) {
             setColor(originalColor);
@@ -168,6 +169,7 @@ export function ColorPicker({
         }
       }
     }
+
     window.addEventListener("mousedown", divOnClick);
     window.addEventListener("mouseup", divOnClick);
     ubication();
@@ -313,7 +315,9 @@ export function ColorPicker({
                           htmlFor="colorInput"
                           className={styles.labelColor}
                         >
-                          <SquircleIcon style={{ fill: `${color}` }} />
+                          <SquircleIcon
+                            style={{ fill: `${color}`, width: "18px" }}
+                          />
                           {!COLORS.includes(color) && (
                             <SquircleIcon
                               style={{
@@ -384,13 +388,15 @@ export function ColorPicker({
                       <button
                         className={styles.saveButton}
                         style={{
-                          backgroundColor: hover ? "rgb(240,240,240)" : "",
+                          backgroundColor: saveButtonHover.value
+                            ? "rgb(240,240,240)"
+                            : "",
                         }}
                         onMouseEnter={() => {
-                          setHover(true);
+                          saveButtonHover.toggle(true);
                         }}
                         onMouseLeave={() => {
-                          setHover(false);
+                          saveButtonHover.toggle(false);
                         }}
                         onClick={(e) => {
                           e.preventDefault();

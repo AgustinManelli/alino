@@ -11,13 +11,23 @@ import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/components";
 import MoreConfigs from "../moreConfigs";
+import useMobileStore from "@/store/useMobileStore";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
-export default function ListCard({ list }: { list: ListsType }) {
+export default function ListCard({
+  list,
+  setIsCreating,
+  isCreting,
+}: {
+  list: ListsType;
+  setIsCreating: (value: boolean) => void;
+  isCreting: boolean;
+}) {
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
   const updateListName = useLists((state) => state.updateListName);
+  const isMobile = useMobileStore((state) => state.isMobile);
 
   const divRef = useRef<HTMLInputElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -66,6 +76,7 @@ export default function ListCard({ list }: { list: ListsType }) {
 
   const handleSave = async () => {
     await changeColor(colorTemp, list.id, emoji);
+    setIsCreating(false);
   };
 
   const handleSaveName = async () => {
@@ -112,11 +123,9 @@ export default function ListCard({ list }: { list: ListsType }) {
       )}
       <div
         className={styles.container}
-        onMouseEnter={() => {
-          setHover(true);
-        }}
+        onMouseEnter={!isMobile ? () => setHover(true) : undefined}
         onMouseLeave={() => {
-          !input && setHover(false);
+          if (!isMobile && !input) setHover(false);
         }}
         onClick={() => {
           router.push(`${location.origin}/alino-app/${list.id}`);
@@ -142,14 +151,16 @@ export default function ListCard({ list }: { list: ListsType }) {
         <div className={styles.identifierContainer}>
           <ColorPicker
             color={colorTemp}
-            originalColor={list.color}
             setColor={setColorTemp}
             save={true}
             handleSave={handleSave}
             width={"20px"}
+            originalColor={list.color}
             setEmoji={setEmoji}
             emoji={emoji}
             originalEmoji={list.icon}
+            setChoosingColor={setIsCreating}
+            choosingColor={isCreting}
           />
         </div>
 
@@ -212,7 +223,8 @@ export default function ListCard({ list }: { list: ListsType }) {
             <button
               className={styles.button}
               style={{
-                opacity: hover || isMoreOptions ? "1" : "0",
+                opacity: (hover || isMoreOptions) && !isMobile ? "1" : "0",
+                display: !isMobile ? "visible" : "none",
               }}
             >
               <MoreConfigs

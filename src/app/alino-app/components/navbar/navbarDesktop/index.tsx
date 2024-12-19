@@ -49,6 +49,10 @@ export default function Navbar({
 
   const [isActive, setIsActive] = useState<boolean>(false);
 
+  const [isCreating, setIsCreating] = useState<boolean>(false);
+
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+
   const lists = useLists((state) => state.lists);
 
   const { isMobile, setIsMobile } = useMobileStore();
@@ -70,7 +74,9 @@ export default function Navbar({
   };
 
   useOnClickOutside(Ref, () => {
-    handleCloseNavbar();
+    if (!isCreating) {
+      handleCloseNavbar();
+    }
   });
 
   return (
@@ -143,7 +149,11 @@ export default function Navbar({
                       exit={{ scale: 0, opacity: 0 }}
                       key={list.id}
                     >
-                      <ListCard list={list} />
+                      <ListCard
+                        list={list}
+                        setIsCreating={setIsCreating}
+                        isCreting={isCreating}
+                      />
                     </motion.div>
                   ))}
                   {waiting && (
@@ -161,7 +171,10 @@ export default function Navbar({
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <ListInput setWaiting={setWaiting} />
+                <ListInput
+                  setWaiting={setWaiting}
+                  setIsCreating={setIsCreating}
+                />
               </motion.div>
             )}
           </section>
