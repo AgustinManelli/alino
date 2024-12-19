@@ -9,19 +9,7 @@ import { createPortal } from "react-dom";
 import { EmojiPicker } from "@/components";
 import { EmojiComponent } from "@/components";
 import { generatePalette } from "emoji-palette";
-
-const colors = [
-  "#f54275",
-  "#ff00ea",
-  "#87189d",
-  "#0693e3",
-  "#2ccce4",
-  "#7ed321",
-  "#a6ff00",
-  "#ffdd00",
-  "#ff6900",
-  "#ff0004",
-];
+import { COLORS } from "./constants/colors";
 
 type SquircleColorButonType = {
   color: string;
@@ -101,6 +89,20 @@ interface emoji {
   unified: string;
 }
 
+interface ColorPickerInterface {
+  color: string;
+  setColor: (value: string) => void;
+  save?: boolean;
+  handleSave?: () => Promise<void>;
+  width?: string;
+  originalColor?: string | null;
+  choosingColor?: boolean;
+  setChoosingColor?: (value: boolean) => void;
+  setEmoji: (value: string) => void;
+  emoji: string;
+  originalEmoji?: string;
+}
+
 export function ColorPicker({
   color,
   setColor,
@@ -113,19 +115,7 @@ export function ColorPicker({
   setEmoji,
   emoji,
   originalEmoji,
-}: {
-  color: string;
-  setColor: (value: string) => void;
-  save?: boolean;
-  handleSave?: () => Promise<void>;
-  width?: string;
-  originalColor?: string | null;
-  choosingColor?: boolean;
-  setChoosingColor?: (value: boolean) => void;
-  setEmoji: (value: string) => void;
-  emoji: string;
-  originalEmoji?: string;
-}) {
+}: ColorPickerInterface) {
   const [open, setOpen] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
   const [isSave, setIsSave] = useState<boolean>(false);
@@ -241,47 +231,55 @@ export function ColorPicker({
                 transition: { duration: "0.2" },
               }}
               exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
-              className={styles.container}
+              className={`${styles.container} ${
+                save ? styles.saveTrueContainer : styles.saveFalseContainer
+              }`}
             >
               <section className={styles.titleSection}>
-                <button
-                  className={styles.title}
-                  style={{
-                    boxShadow: type
-                      ? "0px 1px 1px 0px rgb(0,0,0, 0.1), inset 0 -1px 0 0 rgb(0,0,0,0.05), inset 0 1px 1px 0 rgb(255,255,255, 0.05), 0 1px 2px 0 rgb(0,0,0,0.03)"
-                      : "none",
-                    backgroundColor: type ? "rgb(245,245,245)" : "transparent",
-                    color: type ? "rgb(130,130,130)" : "rgb(200,200,200)",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setType(true);
-                  }}
-                >
-                  color
-                </button>
-                <button
-                  className={styles.title}
-                  style={{
-                    boxShadow: type
-                      ? "none"
-                      : "0px 1px 1px 0px rgb(0,0,0, 0.1), inset 0 -1px 0 0 rgb(0,0,0,0.05), inset 0 1px 1px 0 rgb(255,255,255, 0.05), 0 1px 2px 0 rgb(0,0,0,0.03)",
-                    backgroundColor: type ? "transparent" : "rgb(245,245,245)",
-                    color: type ? "rgb(200,200,200)" : "rgb(130,130,130)",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setType(false);
-                  }}
-                >
-                  emoji
-                </button>
+                <div className={styles.titleSectioButtons}>
+                  <button
+                    className={styles.title}
+                    style={{
+                      boxShadow: type
+                        ? "0px 1px 1px 0px rgb(0,0,0, 0.1), inset 0 -1px 0 0 rgb(0,0,0,0.05), inset 0 1px 1px 0 rgb(255,255,255, 0.05), 0 1px 2px 0 rgb(0,0,0,0.03)"
+                        : "none",
+                      backgroundColor: type
+                        ? "rgb(245,245,245)"
+                        : "transparent",
+                      color: type ? "rgb(130,130,130)" : "rgb(200,200,200)",
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setType(true);
+                    }}
+                  >
+                    color
+                  </button>
+                  <button
+                    className={styles.title}
+                    style={{
+                      boxShadow: type
+                        ? "none"
+                        : "0px 1px 1px 0px rgb(0,0,0, 0.1), inset 0 -1px 0 0 rgb(0,0,0,0.05), inset 0 1px 1px 0 rgb(255,255,255, 0.05), 0 1px 2px 0 rgb(0,0,0,0.03)",
+                      backgroundColor: type
+                        ? "transparent"
+                        : "rgb(245,245,245)",
+                      color: type ? "rgb(200,200,200)" : "rgb(130,130,130)",
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setType(false);
+                    }}
+                  >
+                    emoji
+                  </button>
+                </div>
+                <div className={styles.separator}></div>
               </section>
-              <div className={styles.separator}></div>
               {type ? (
                 <div className={styles.colorSelectorContainer}>
                   <section className={styles.buttonSection}>
-                    {colors.map((colorHex, index) => (
+                    {COLORS.map((colorHex, index) => (
                       <SquircleColorSelector
                         color={color}
                         setColor={setColor}
@@ -316,7 +314,7 @@ export function ColorPicker({
                           className={styles.labelColor}
                         >
                           <SquircleIcon style={{ fill: `${color}` }} />
-                          {!colors.includes(color) && (
+                          {!COLORS.includes(color) && (
                             <SquircleIcon
                               style={{
                                 fill: "transparent",
@@ -380,46 +378,48 @@ export function ColorPicker({
               )}
               {save && handleSave && (
                 <>
-                  <div className={styles.separator}></div>
                   <div className={styles.saveButtonContainer}>
-                    <button
-                      className={styles.saveButton}
-                      style={{
-                        backgroundColor: hover ? "rgb(240,240,240)" : "",
-                      }}
-                      onMouseEnter={() => {
-                        setHover(true);
-                      }}
-                      onMouseLeave={() => {
-                        setHover(false);
-                      }}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setWait(true);
-                        handleSave()
-                          .then(() => {
-                            setOpen(false);
-                          })
-                          .finally(() => {
-                            setWait(false);
-                            setIsSave(true);
-                          });
-                      }}
-                    >
-                      {wait ? (
-                        <LoadingIcon
-                          style={{
-                            width: "20px",
-                            height: "auto",
-                            stroke: "#1c1c1c",
-                            strokeWidth: "3",
-                          }}
-                        />
-                      ) : (
-                        <p>guardar</p>
-                      )}
-                    </button>
+                    <div className={styles.separator}></div>
+                    <div className={styles.saveButtonButtonContainer}>
+                      <button
+                        className={styles.saveButton}
+                        style={{
+                          backgroundColor: hover ? "rgb(240,240,240)" : "",
+                        }}
+                        onMouseEnter={() => {
+                          setHover(true);
+                        }}
+                        onMouseLeave={() => {
+                          setHover(false);
+                        }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setWait(true);
+                          handleSave()
+                            .then(() => {
+                              setOpen(false);
+                            })
+                            .finally(() => {
+                              setWait(false);
+                              setIsSave(true);
+                            });
+                        }}
+                      >
+                        {wait ? (
+                          <LoadingIcon
+                            style={{
+                              width: "20px",
+                              height: "auto",
+                              stroke: "#1c1c1c",
+                              strokeWidth: "3",
+                            }}
+                          />
+                        ) : (
+                          <p>guardar</p>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </>
               )}
