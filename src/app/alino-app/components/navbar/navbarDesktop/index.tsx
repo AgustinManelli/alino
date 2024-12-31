@@ -23,11 +23,16 @@ const containerFMVariant = {
     opacity: 1,
     scale: 1,
     transition: {
-      delayChildren: 0,
+      type: "spring",
+      stiffness: 50,
+      delayChildren: 0.1,
       staggerChildren: 0.1,
     },
   },
-  exit: { opacity: 0, scale: 0 },
+  exit: {
+    opacity: 0,
+    scale: 0,
+  },
 };
 
 const skeletonFMVariant = {
@@ -46,6 +51,10 @@ export default function Navbar({
   initialFetching: boolean;
 }) {
   const [waiting, setWaiting] = useState<boolean>(false);
+
+  useEffect(() => {
+    console.log(waiting);
+  }, [waiting]);
 
   const [isActive, setIsActive] = useState<boolean>(false);
 
@@ -139,6 +148,8 @@ export default function Navbar({
                 animate="visible"
                 exit="exit"
                 className={styles.cardsContainer}
+                // whileInView="visible"
+                // viewport={{ once: true, amount: 0.8 }}
               >
                 <AnimatePresence mode={"popLayout"}>
                   <HomeCard handleCloseNavbar={handleCloseNavbar} />
@@ -157,7 +168,7 @@ export default function Navbar({
                       />
                     </motion.div>
                   ))}
-                  {waiting && (
+                  {/* {waiting && (
                     <motion.div
                       variants={skeletonFMVariant}
                       transition={{ ease: "easeOut", duration: 0.2 }}
@@ -169,13 +180,15 @@ export default function Navbar({
                           borderRadius: "15px",
                         }}
                       />
+                      <p>"a"</p>
                     </motion.div>
-                  )}
+                  )} */}
+
+                  <ListInput
+                    setWaiting={setWaiting}
+                    setIsCreating={setIsCreating}
+                  />
                 </AnimatePresence>
-                <ListInput
-                  setWaiting={setWaiting}
-                  setIsCreating={setIsCreating}
-                />
               </motion.div>
             )}
           </section>
