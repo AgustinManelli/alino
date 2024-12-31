@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/components";
 import MoreConfigs from "../moreConfigs";
 import useMobileStore from "@/store/useMobileStore";
+import { motion } from "framer-motion";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -192,7 +193,28 @@ export default function ListCard({
             />
           </div>
         ) : (
-          <p className={styles.listName}>{list.name}</p>
+          // <p className={styles.listName}>{list.name}</p>
+          <motion.p
+            className={styles.listName}
+            style={{
+              background: `linear-gradient(to right,#1c1c1c 80%, ${list.color} 90%, #fff 95%) 0% center / 200% no-repeat text`,
+              backgroundSize: "200% auto",
+              backgroundRepeat: "no-repeat",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+            animate={{
+              backgroundPosition: ["200% center", "0% center"],
+            }}
+            transition={{
+              duration: 2,
+              ease: "linear",
+              delay: 0.2,
+            }}
+          >
+            {list.name}
+          </motion.p>
         )}
         {input ? (
           <button
