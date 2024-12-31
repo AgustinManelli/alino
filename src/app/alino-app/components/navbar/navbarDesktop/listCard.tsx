@@ -210,6 +210,7 @@ export default function ListCard({
             transition={{
               duration: 2,
               ease: "linear",
+              delay: 0.2,
             }}
           >
             {list.name}
