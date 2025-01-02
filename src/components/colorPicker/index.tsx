@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./colorPicker.module.css";
 import { CopyToClipboardIcon, LoadingIcon, SquircleIcon } from "@/lib/ui/icons";
 import { toast } from "sonner";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "motion/react";
 import { createPortal } from "react-dom";
 import { EmojiPicker } from "@/components";
 import { EmojiComponent } from "@/components";
@@ -216,7 +216,7 @@ export function ColorPicker({
         </button>
       </div>
       {createPortal(
-        <AnimatePresence>
+        <>
           {open ? (
             <motion.section
               ref={childRef}
@@ -433,7 +433,7 @@ export function ColorPicker({
           ) : (
             ""
           )}
-        </AnimatePresence>,
+        </>,
         // document.body
         document.getElementById("app") as HTMLElement
       )}

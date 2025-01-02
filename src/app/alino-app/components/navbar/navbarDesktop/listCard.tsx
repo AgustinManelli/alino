@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/components";
 import MoreConfigs from "../moreConfigs";
 import useMobileStore from "@/store/useMobileStore";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 

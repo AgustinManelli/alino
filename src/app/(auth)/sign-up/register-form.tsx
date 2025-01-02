@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateUserInput, createUserSchema } from "@/lib/user-schema";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "motion/react";
 import styles from "../sign-in/login.module.css";
 import { LoadingIcon } from "@/lib/ui/icons";
 
@@ -50,109 +50,102 @@ export const RegisterForm = () => {
   };
 
   return (
-    <AnimatePresence>
-      <motion.div
-        transition={{ duration: 1 }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className={styles.form}
-      >
-        <div>
-          <h2 className={styles.title}>Registrarte</h2>
-          <p className={styles.paraph}>
-            Crea una cuenta alino, es 100% gratis.
-          </p>
+    <motion.div
+      transition={{ duration: 1 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className={styles.form}
+    >
+      <div>
+        <h2 className={styles.title}>Registrarte</h2>
+        <p className={styles.paraph}>Crea una cuenta alino, es 100% gratis.</p>
+      </div>
+      <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
+        <div className={styles.inputContainer}>
+          {errors["email"] && (
+            <motion.p
+              className={styles.errorMsg}
+              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, height: "0px" }}
+              animate={{ opacity: 1, height: "initial" }}
+              exit={{ opacity: 0, height: "0px" }}
+            >
+              {errors["email"]?.message as string}
+            </motion.p>
+          )}
+          <input
+            id="email"
+            type="email"
+            placeholder="email"
+            className={styles.input}
+            {...register("email")}
+            required
+          />
         </div>
-        <form
-          className={styles.inputs}
-          onSubmit={handleSubmit(onSubmitHandler)}
-        >
-          <div className={styles.inputContainer}>
-            {errors["email"] && (
-              <motion.p
-                className={styles.errorMsg}
-                transition={{ duration: 0.2 }}
-                initial={{ opacity: 0, height: "0px" }}
-                animate={{ opacity: 1, height: "initial" }}
-                exit={{ opacity: 0, height: "0px" }}
-              >
-                {errors["email"]?.message as string}
-              </motion.p>
-            )}
-            <input
-              id="email"
-              type="email"
-              placeholder="email"
-              className={styles.input}
-              {...register("email")}
-              required
-            />
-          </div>
-          <div className={styles.inputContainer}>
-            {errors["password"] && (
-              <motion.p
-                className={styles.errorMsg}
-                transition={{ duration: 0.2 }}
-                initial={{ opacity: 0, height: "0px" }}
-                animate={{ opacity: 1, height: "initial" }}
-                exit={{ opacity: 0, height: "0px" }}
-              >
-                {errors["password"]?.message as string}
-              </motion.p>
-            )}
-            <input
-              id="password"
-              type="password"
-              placeholder="password"
-              className={styles.input}
-              {...register("password")}
-              required
-            />
-          </div>
-          <div className={styles.inputContainer}>
-            {errors["passwordConfirm"] && (
-              <motion.p
-                className={styles.errorMsg}
-                transition={{ duration: 0.2 }}
-                initial={{ opacity: 0, height: "0px" }}
-                animate={{ opacity: 1, height: "initial" }}
-                exit={{ opacity: 0, height: "0px" }}
-              >
-                {errors["passwordConfirm"]?.message as string}
-              </motion.p>
-            )}
-            <input
-              id="password"
-              type="password"
-              placeholder="Confirm Password"
-              className={styles.input}
-              {...register("passwordConfirm")}
-              required
-            />
-          </div>
-          <button className={styles.buttom} type="submit" disabled={isPending}>
-            {isPending ? (
-              <LoadingIcon
-                style={{
-                  width: "20px",
-                  height: "auto",
-                  stroke: "#fff",
-                  strokeWidth: "3",
-                }}
-              />
-            ) : (
-              ""
-            )}
-            <p>{isPending ? "Creando cuenta..." : "Crear cuenta"}</p>
-          </button>
-        </form>
-        <div className={styles.moreInfo}>
-          <Link className={styles.textButton} href="/sign-in">
-            ¿Ya tienes una cuenta?
-          </Link>
+        <div className={styles.inputContainer}>
+          {errors["password"] && (
+            <motion.p
+              className={styles.errorMsg}
+              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, height: "0px" }}
+              animate={{ opacity: 1, height: "initial" }}
+              exit={{ opacity: 0, height: "0px" }}
+            >
+              {errors["password"]?.message as string}
+            </motion.p>
+          )}
+          <input
+            id="password"
+            type="password"
+            placeholder="password"
+            className={styles.input}
+            {...register("password")}
+            required
+          />
         </div>
-      </motion.div>
-    </AnimatePresence>
+        <div className={styles.inputContainer}>
+          {errors["passwordConfirm"] && (
+            <motion.p
+              className={styles.errorMsg}
+              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, height: "0px" }}
+              animate={{ opacity: 1, height: "initial" }}
+              exit={{ opacity: 0, height: "0px" }}
+            >
+              {errors["passwordConfirm"]?.message as string}
+            </motion.p>
+          )}
+          <input
+            id="password"
+            type="password"
+            placeholder="Confirm Password"
+            className={styles.input}
+            {...register("passwordConfirm")}
+            required
+          />
+        </div>
+        <button className={styles.buttom} type="submit" disabled={isPending}>
+          {isPending ? (
+            <LoadingIcon
+              style={{
+                width: "20px",
+                height: "auto",
+                stroke: "#fff",
+                strokeWidth: "3",
+              }}
+            />
+          ) : (
+            ""
+          )}
+          <p>{isPending ? "Creando cuenta..." : "Crear cuenta"}</p>
+        </button>
+      </form>
+      <div className={styles.moreInfo}>
+        <Link className={styles.textButton} href="/sign-in">
+          ¿Ya tienes una cuenta?
+        </Link>
+      </div>
+    </motion.div>
   );
 };

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLists } from "@/store/lists";
 import { LoadingIcon, PlusBoxIcon, SendIcon } from "@/lib/ui/icons";
 import { ColorPicker } from "@/components";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "motion/react";
 
 export default function ListInput({
   setWaiting,
@@ -69,125 +69,123 @@ export default function ListInput({
 
   return (
     <div className={styles.formContainer}>
-      <AnimatePresence>
-        {input || value !== "" ? (
-          <motion.div
-            className={styles.form}
-            transition={{
-              type: "spring",
-              stiffness: 700,
-              damping: 40,
+      {input || value !== "" ? (
+        <motion.div
+          className={styles.form}
+          transition={{
+            type: "spring",
+            stiffness: 700,
+            damping: 40,
+          }}
+          initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+          animate={{
+            scale: 1,
+            opacity: 1,
+            filter: "blur(0px)",
+            transition: { duration: 0.2 },
+          }}
+          exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+          ref={divRef}
+        >
+          <ColorPicker
+            color={color}
+            setColor={setColor}
+            choosingColor={choosingColor}
+            setChoosingColor={setChoosingColor}
+            emoji={emoji}
+            setEmoji={setEmoji}
+          />
+          <input
+            disabled={transition}
+            type="text"
+            placeholder="cree una lista nueva"
+            value={value}
+            ref={inputRef}
+            onChange={(e) => {
+              setValue(e.target.value);
             }}
-            initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
-            animate={{
-              scale: 1,
-              opacity: 1,
-              filter: "blur(0px)",
-              transition: { duration: 0.2 },
+            className={styles.inputText}
+            onKeyDown={(e) => {
+              if (!inputRef.current) return;
+              if (e.key === "Enter") {
+                handleSubmit();
+              }
+              if (e.key === "Escape") {
+                setInput(false);
+              }
             }}
-            exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
-            ref={divRef}
-          >
-            <ColorPicker
-              color={color}
-              setColor={setColor}
-              choosingColor={choosingColor}
-              setChoosingColor={setChoosingColor}
-              emoji={emoji}
-              setEmoji={setEmoji}
+          ></input>
+          {transition ? (
+            <LoadingIcon
+              style={{
+                width: "20px",
+                height: "auto",
+                stroke: "#000",
+                strokeWidth: "3",
+                opacity: "0.5",
+              }}
             />
-            <input
-              disabled={transition}
-              type="text"
-              placeholder="cree una lista nueva"
-              value={value}
-              ref={inputRef}
-              onChange={(e) => {
-                setValue(e.target.value);
+          ) : (
+            <button
+              style={{
+                border: "none",
+                backgroundColor: "transparent",
+                cursor: "pointer",
+                display: "flex",
               }}
-              className={styles.inputText}
-              onKeyDown={(e) => {
-                if (!inputRef.current) return;
-                if (e.key === "Enter") {
-                  handleSubmit();
-                }
-                if (e.key === "Escape") {
-                  setInput(false);
-                }
+              onClick={(e) => {
+                e.preventDefault();
+                handleSubmit();
               }}
-            ></input>
-            {transition ? (
-              <LoadingIcon
+            >
+              <SendIcon
                 style={{
                   width: "20px",
-                  height: "auto",
-                  stroke: "#000",
-                  strokeWidth: "3",
+                  stroke: "#1c1c1c",
+                  strokeWidth: "2",
                   opacity: "0.5",
                 }}
               />
-            ) : (
-              <button
-                style={{
-                  border: "none",
-                  backgroundColor: "transparent",
-                  cursor: "pointer",
-                  display: "flex",
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSubmit();
-                }}
-              >
-                <SendIcon
-                  style={{
-                    width: "20px",
-                    stroke: "#1c1c1c",
-                    strokeWidth: "2",
-                    opacity: "0.5",
-                  }}
-                />
-              </button>
-            )}
-          </motion.div>
-        ) : (
-          <motion.button
-            onClick={() => {
-              setInput(true);
-              setIsCreating(true);
-            }}
-            className={styles.button}
+            </button>
+          )}
+        </motion.div>
+      ) : (
+        <motion.button
+          onClick={() => {
+            setInput(true);
+            setIsCreating(true);
+          }}
+          className={styles.button}
+          style={{
+            backgroundColor: hover ? "rgb(240, 240, 240)" : "transparent",
+          }}
+          onMouseEnter={() => {
+            setHover(true);
+          }}
+          onMouseLeave={() => {
+            setHover(false);
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 700,
+            damping: 40,
+          }}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{
+            scale: 1,
+            opacity: 1,
+          }}
+          exit={{ scale: 0, opacity: 0 }}
+        >
+          <PlusBoxIcon
             style={{
-              backgroundColor: hover ? "rgb(240, 240, 240)" : "transparent",
+              stroke: "#1c1c1c",
+              strokeWidth: "1.5",
+              width: "20px",
             }}
-            onMouseEnter={() => {
-              setHover(true);
-            }}
-            onMouseLeave={() => {
-              setHover(false);
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 700,
-              damping: 40,
-            }}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{
-              scale: 1,
-              opacity: 1,
-            }}
-            exit={{ scale: 0, opacity: 0 }}
-          >
-            <PlusBoxIcon
-              style={{
-                stroke: "#1c1c1c",
-                strokeWidth: "1.5",
-                width: "20px",
-              }}
-            />
-          </motion.button>
-        )}
-      </AnimatePresence>
+          />
+        </motion.button>
+      )}
     </div>
   );
 }
