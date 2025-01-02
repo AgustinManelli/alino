@@ -3,6 +3,7 @@
 import { animate, spring } from "motion";
 import { interpolate } from "flubber";
 import styles from "./checkbox.module.css";
+import { useState } from "react";
 
 const paths = {
   normal: {
@@ -27,72 +28,49 @@ export default function Checkbox({
   style?: React.CSSProperties;
   id: string;
 }) {
+  const [tempStatus, setTempStatus] = useState(status);
   function togglePath() {
+    setTempStatus(!tempStatus);
     const path = document.getElementById(`path-${id}`);
     const svg = document.getElementById(`svg-${id}`);
     const currentPath = paths.clicked;
     const mixPaths = interpolate(path?.getAttribute("d"), currentPath.d, {
-      maxSegmentLength: 1.5,
+      maxSegmentLength: 2,
     });
+
+    if (!path || !svg) return;
+
     animate(
-      svg ? svg : "",
-      { transform: "scale(0.75)", fill: !status ? "#1c1c1c" : "transparent" },
+      svg,
+      { transform: "scale(0.75)" },
       {
-        transform: { easing: spring(), duration: 0.2 },
-        fill: { easing: "ease-in-out", duration: 0.1 },
+        transform: { duration: 0.2 },
       }
     );
-    animate((progress) => path?.setAttribute("d", mixPaths(progress)), {
-      duration: 0.2,
-      easing: "ease-in-out",
-    }).finished.then(() => {
-      if (!status) {
-        const mixPaths = interpolate(path?.getAttribute("d"), paths.finish.d, {
-          maxSegmentLength: 1.5,
-        });
-        animate(
-          svg ? svg : "",
-          { transform: "scale(1)", fill: !status ? "#1c1c1c" : "transparent" },
-          {
-            transform: { easing: spring(), duration: 0.2 },
-            fill: { easing: "ease-in-out", duration: 0.1 },
-          }
-        );
-        animate((progress) => path?.setAttribute("d", mixPaths(progress)), {
-          duration: 0.1,
-          easing: "ease-in-out",
-        }).finished.then(() => {
-          if (!status) {
-            const mixPaths = interpolate(
-              path?.getAttribute("d"),
-              paths.normal.d,
-              {
-                maxSegmentLength: 1.5,
-              }
-            );
-            animate((progress) => path?.setAttribute("d", mixPaths(progress)), {
-              duration: 0.2,
-              easing: "ease-in-out",
-            });
-          }
-        });
-      } else {
-        const mixPaths = interpolate(path?.getAttribute("d"), paths.normal.d, {
-          maxSegmentLength: 1.5,
-        });
-        animate(
-          svg ? svg : "",
-          { transform: "scale(1)", fill: !status ? "#1c1c1c" : "transparent" },
-          {
-            transform: { easing: spring(), duration: 0.2 },
-            fill: { easing: "ease-in-out", duration: 0.1 },
-          }
-        );
-        animate((progress) => path?.setAttribute("d", mixPaths(progress)), {
-          duration: 0.2,
-          easing: "ease-in-out",
-        });
-      }
+    animate(0, 100, {
+      duration: 0.3,
+      ease: "easeInOut",
+      onUpdate: (progress) => {
+        path.setAttribute("d", mixPaths(progress));
+      },
+    }).then(() => {
+      const mixPaths = interpolate(path?.getAttribute("d"), paths.normal.d, {
+        maxSegmentLength: 2,
+      });
+      animate(
+        svg,
+        { transform: "scale(1)" },
+        {
+          transform: { duration: 0.2 },
+        }
+      );
+      animate(0, 100, {
+        duration: 0.2,
+        ease: "easeInOut",
+        onUpdate: (progress) => {
+          path.setAttribute("d", mixPaths(progress));
+        },
+      });
     });
   }
   return (
@@ -112,7 +90,8 @@ export default function Checkbox({
           stroke: "#1c1c1c",
           strokeWidth: "2",
           overflow: "visible",
-          fill: status ? "#1c1c1c" : "transparent",
+          fill: tempStatus ? "#1c1c1c" : "transparent",
+          transition: "fill 0.1s ease-in-out",
         }}
         id={`svg-${id}`}
       >

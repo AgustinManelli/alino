@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useLists } from "@/store/lists";
 import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
 import { Skeleton } from "@/components";
@@ -35,15 +35,15 @@ const containerFMVariant = {
   },
 };
 
-const skeletonFMVariant = {
-  hidden: { scale: 1, opacity: 0, y: 60 },
-  visible: {
-    scale: 1,
-    opacity: 1,
-    y: 0,
-  },
-  exit: { opacity: 0, scale: 0 },
-};
+// const skeletonFMVariant = {
+//   hidden: { scale: 1, opacity: 0, y: 60 },
+//   visible: {
+//     scale: 1,
+//     opacity: 1,
+//     y: 0,
+//   },
+//   exit: { opacity: 0, scale: 0 },
+// };
 
 export default function Navbar({
   initialFetching,
@@ -151,24 +151,23 @@ export default function Navbar({
                 // whileInView="visible"
                 // viewport={{ once: true, amount: 0.8 }}
               >
-                <AnimatePresence mode={"popLayout"}>
-                  <HomeCard handleCloseNavbar={handleCloseNavbar} />
-                  {lists.map((list) => (
-                    <motion.div
-                      variants={containerFMVariant}
-                      initial={{ scale: 0, opacity: 0 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      key={list.id}
-                    >
-                      <ListCard
-                        list={list}
-                        setIsCreating={setIsCreating}
-                        isCreting={isCreating}
-                        handleCloseNavbar={handleCloseNavbar}
-                      />
-                    </motion.div>
-                  ))}
-                  {/* {waiting && (
+                <HomeCard handleCloseNavbar={handleCloseNavbar} />
+                {lists.map((list) => (
+                  <motion.div
+                    variants={containerFMVariant}
+                    initial={{ scale: 0, opacity: 0 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    key={list.id}
+                  >
+                    <ListCard
+                      list={list}
+                      setIsCreating={setIsCreating}
+                      isCreting={isCreating}
+                      handleCloseNavbar={handleCloseNavbar}
+                    />
+                  </motion.div>
+                ))}
+                {/* {waiting && (
                     <motion.div
                       variants={skeletonFMVariant}
                       transition={{ ease: "easeOut", duration: 0.2 }}
@@ -184,11 +183,10 @@ export default function Navbar({
                     </motion.div>
                   )} */}
 
-                  <ListInput
-                    setWaiting={setWaiting}
-                    setIsCreating={setIsCreating}
-                  />
-                </AnimatePresence>
+                <ListInput
+                  setWaiting={setWaiting}
+                  setIsCreating={setIsCreating}
+                />
               </motion.div>
             )}
           </section>
