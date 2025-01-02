@@ -143,6 +143,7 @@ export default function Navbar({
               </div>
             ) : (
               <motion.div
+                layout
                 variants={containerFMVariant}
                 initial="hidden"
                 animate="visible"
@@ -152,21 +153,30 @@ export default function Navbar({
                 // viewport={{ once: true, amount: 0.8 }}
               >
                 <HomeCard handleCloseNavbar={handleCloseNavbar} />
-                {lists.map((list) => (
-                  <motion.div
-                    variants={containerFMVariant}
-                    initial={{ scale: 0, opacity: 0 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    key={list.id}
-                  >
-                    <ListCard
-                      list={list}
-                      setIsCreating={setIsCreating}
-                      isCreting={isCreating}
-                      handleCloseNavbar={handleCloseNavbar}
-                    />
-                  </motion.div>
-                ))}
+                {lists
+                  .sort((a, b) => {
+                    if (a.pinned && !b.pinned) return -1;
+                    if (!a.pinned && b.pinned) return 1;
+                    if (a.index === null) return 1;
+                    if (b.index === null) return -1;
+                    return a.index - b.index;
+                  })
+                  .map((list) => (
+                    <motion.div
+                      layout
+                      variants={containerFMVariant}
+                      initial={{ scale: 0, opacity: 0 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      key={list.id}
+                    >
+                      <ListCard
+                        list={list}
+                        setIsCreating={setIsCreating}
+                        isCreting={isCreating}
+                        handleCloseNavbar={handleCloseNavbar}
+                      />
+                    </motion.div>
+                  ))}
                 {/* {waiting && (
                     <motion.div
                       variants={skeletonFMVariant}

@@ -10,6 +10,7 @@ import {
   UpdateDataListToDB,
   UpdateListNameToDB,
   UpdateTasksCompleted,
+  UpdatePinnedListToDB,
 } from "@/lib/todo/actions";
 import { AddListToDB } from "@/lib/todo/actions";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ type todo_list = {
   addTask: (list_id: string, task: string) => void;
   deleteTask: (id: string, list_id: string) => void;
   updateTaskCompleted: (id: string, list_id: string, status: boolean) => void;
+  updateListPinned: (id: string, pinned: boolean) => void;
 };
 
 export const useLists = create<todo_list>()((set, get) => ({
@@ -135,6 +137,31 @@ export const useLists = create<todo_list>()((set, get) => ({
     }));
 
     toast.success(`Nombre de lista modificado correctamente`);
+  },
+
+  updateListPinned: async (id, pinned) => {
+    const result = await UpdatePinnedListToDB(id, pinned);
+
+    if (result.error) {
+      toast.error(`Error al modificar lista: ${result.error.message}`);
+      return;
+    }
+
+    set((state) => ({
+      lists: state.lists.map((list) => {
+        if (list.id === id) {
+          return {
+            ...list,
+            pinned: pinned,
+          };
+        }
+        return list;
+      }),
+    }));
+
+    pinned
+      ? toast.success(`Lista fijada correctamente`)
+      : toast.success(`Lista desfijada correctamente`);
   },
 
   addTask: async (list_id, task) => {

@@ -38,6 +38,7 @@ export type Database = {
           tasks: tasks[];
           updated_at: string | null;
           user_id: string;
+          pinned: boolean;
         };
         Insert: {
           color?: string | null;
@@ -49,6 +50,7 @@ export type Database = {
           tasks?: tasks[] | null;
           updated_at?: string | null;
           user_id: string;
+          pinned?: boolean;
         };
         Update: {
           color?: string | null;
@@ -60,6 +62,7 @@ export type Database = {
           tasks?: tasks[] | null;
           updated_at?: string | null;
           user_id?: string;
+          pinned?: boolean;
         };
         Relationships: [
           {

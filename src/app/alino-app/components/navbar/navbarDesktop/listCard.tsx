@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ColorPicker } from "@/components";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
-import { Check } from "@/lib/ui/icons";
+import { Check, Pin } from "@/lib/ui/icons";
 import styles from "./listCard.module.css";
 import { CounterAnimation } from "@/components";
 import { usePathname } from "next/navigation";
@@ -30,6 +30,7 @@ export default function ListCard({
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
   const updateListName = useLists((state) => state.updateListName);
+  const updateListPinned = useLists((state) => state.updateListPinned);
   const isMobile = useMobileStore((state) => state.isMobile);
 
   const divRef = useRef<HTMLInputElement | null>(null);
@@ -91,6 +92,12 @@ export default function ListCard({
     await updateListName(list.id, inputName);
     setInput(false);
     setIsNameChange(false);
+  };
+
+  const handlePin = async () => {
+    setIsMoreOptions(false);
+    setHover(false);
+    await updateListPinned(list.id, !list.pinned);
   };
 
   useEffect(() => {
@@ -197,7 +204,7 @@ export default function ListCard({
           <motion.p
             className={styles.listName}
             style={{
-              background: `linear-gradient(to right,#1c1c1c 80%, ${list.color} 90%, #fff 95%) 0% center / 200% no-repeat text`,
+              background: `linear-gradient(to right,#1c1c1c 80%, ${list.color} 90%, transparent 95%) 0% center / 200% no-repeat text`,
               backgroundSize: "200% auto",
               backgroundRepeat: "no-repeat",
               WebkitBackgroundClip: "text",
@@ -215,6 +222,17 @@ export default function ListCard({
           >
             {list.name}
           </motion.p>
+        )}
+        {list.pinned && (
+          <div className={styles.pinContainer}>
+            <Pin
+              style={{
+                width: "14px",
+                stroke: "rgb(210, 210, 210)",
+                strokeWidth: "2",
+              }}
+            />
+          </div>
         )}
         {input ? (
           <button
@@ -253,11 +271,13 @@ export default function ListCard({
               }}
             >
               <MoreConfigs
-                width={"25px"}
+                width={"23px"}
                 open={isMoreOptions}
                 setOpen={handleChangeMoreOptions}
                 handleDelete={handleConfirm}
                 handleNameChange={handleNameChange}
+                handlePin={handlePin}
+                pinned={list.pinned}
               />
             </button>
             <p

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./moreConfigs.module.css";
-import { DeleteIcon, Edit, MoreVertical } from "@/lib/ui/icons";
+import { DeleteIcon, Edit, MoreVertical, Pin, Unpin } from "@/lib/ui/icons";
 import { createPortal } from "react-dom";
 import OptionCard from "./optionCard";
 
@@ -12,12 +12,16 @@ export function MoreConfigs({
   setOpen,
   handleDelete,
   handleNameChange,
+  handlePin,
+  pinned,
 }: {
   width: string;
   open: boolean;
   setOpen: (prop: boolean) => void;
   handleDelete: () => void;
   handleNameChange: () => void;
+  handlePin: () => void;
+  pinned: boolean;
 }) {
   const [hover, setHover] = useState<boolean>(false);
 
@@ -102,6 +106,29 @@ export function MoreConfigs({
                     />
                   }
                   action={handleNameChange}
+                />
+                <OptionCard
+                  name={pinned ? "Desfijar" : "Fijar"}
+                  icon={
+                    pinned ? (
+                      <Unpin
+                        style={{
+                          width: "14px",
+                          stroke: "#1c1c1c",
+                          strokeWidth: "2",
+                        }}
+                      />
+                    ) : (
+                      <Pin
+                        style={{
+                          width: "14px",
+                          stroke: "#1c1c1c",
+                          strokeWidth: "2",
+                        }}
+                      />
+                    )
+                  }
+                  action={handlePin}
                 />
                 <OptionCard
                   name={"Eliminar"}

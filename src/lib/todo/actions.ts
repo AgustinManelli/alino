@@ -16,10 +16,12 @@ type Task = {
 export async function GetLists() {
   const supabase = createClient();
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("User is not logged in")
+    throw new Error("User is not logged in");
   }
 
   const { data, error } = await supabase
@@ -28,7 +30,7 @@ export async function GetLists() {
       "*, tasks: tasks(id, category_id, description, completed, index, name, created_at, updated_at)"
     )
     .order("index", { ascending: true });
-    //.eq("user_id", user.id); Is not necessary
+  //.eq("user_id", user.id); Is not necessary
 
   if (error) {
     console.error("Error fetching data:", error);
@@ -53,7 +55,8 @@ export const AddListToDB = async (
   const setColor = color === "" ? "#87189d" : color; // Establece el color predeterminado si está vacío
 
   const supabase = createClient();
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
   if (sessionError || !sessionData?.session) {
     return { error: sessionError || new Error("No active session found") };
   }
@@ -152,6 +155,33 @@ export const UpdateListNameToDB = async (id: string, newName: string) => {
   const { data, error } = await supabase
     .from("todos_data")
     .update({ name: newName })
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    return { error };
+  }
+
+  return { data };
+};
+
+export const UpdatePinnedListToDB = async (id: string, pinned: boolean) => {
+  const supabase = createClient();
+
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError) {
+    return { error: sessionError };
+  }
+
+  if (!sessionData.session) {
+    return { error: new Error("No active session found") };
+  }
+
+  const { data, error } = await supabase
+    .from("todos_data")
+    .update({ pinned: pinned })
     .eq("id", id)
     .select();
 
