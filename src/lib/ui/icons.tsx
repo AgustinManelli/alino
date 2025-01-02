@@ -1,4 +1,3 @@
-import { style } from "motion";
 import styles from "./icons.module.css";
 
 export const AlinoLogo = ({
