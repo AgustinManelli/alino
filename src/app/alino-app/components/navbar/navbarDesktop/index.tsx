@@ -143,7 +143,6 @@ export default function Navbar({
               </div>
             ) : (
               <motion.div
-                layout
                 variants={containerFMVariant}
                 initial="hidden"
                 animate="visible"

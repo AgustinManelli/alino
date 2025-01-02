@@ -113,8 +113,8 @@
 .pinContainer {
   position: absolute;
   right: 35px;
-  width: 25px;
-  height: 25px;
+  width: 23px;
+  height: 23px;
   display: flex;
   justify-content: center;
   align-items: center;
