@@ -35,32 +35,14 @@ const containerFMVariant = {
   },
 };
 
-// const skeletonFMVariant = {
-//   hidden: { scale: 1, opacity: 0, y: 60 },
-//   visible: {
-//     scale: 1,
-//     opacity: 1,
-//     y: 0,
-//   },
-//   exit: { opacity: 0, scale: 0 },
-// };
-
 export default function Navbar({
   initialFetching,
 }: {
   initialFetching: boolean;
 }) {
-  const [waiting, setWaiting] = useState<boolean>(false);
-
-  useEffect(() => {
-    console.log(waiting);
-  }, [waiting]);
-
   const [isActive, setIsActive] = useState<boolean>(false);
 
   const [isCreating, setIsCreating] = useState<boolean>(false);
-
-  const [isEditing, setIsEditing] = useState<boolean>(false);
 
   const lists = useLists((state) => state.lists);
 
@@ -176,26 +158,8 @@ export default function Navbar({
                       />
                     </motion.div>
                   ))}
-                {/* {waiting && (
-                    <motion.div
-                      variants={skeletonFMVariant}
-                      transition={{ ease: "easeOut", duration: 0.2 }}
-                    >
-                      <Skeleton
-                        style={{
-                          width: "100%",
-                          height: "45px",
-                          borderRadius: "15px",
-                        }}
-                      />
-                      <p>"a"</p>
-                    </motion.div>
-                  )} */}
 
-                <ListInput
-                  setWaiting={setWaiting}
-                  setIsCreating={setIsCreating}
-                />
+                <ListInput setIsCreating={setIsCreating} />
               </motion.div>
             )}
           </section>

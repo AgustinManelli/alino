@@ -8,10 +8,8 @@ import { ColorPicker } from "@/components";
 import { motion } from "motion/react";
 
 export default function ListInput({
-  setWaiting,
   setIsCreating,
 }: {
-  setWaiting: (value: boolean) => void;
   setIsCreating: (value: boolean) => void;
 }) {
   const [input, setInput] = useState<boolean>(false);
@@ -26,12 +24,10 @@ export default function ListInput({
   const [emoji, setEmoji] = useState<string>("");
 
   const handleSubmit = async () => {
-    setWaiting(true);
     setTransition(true);
     await setAddList(color, value, emoji as string);
     setValue("");
     setTransition(false);
-    setWaiting(false);
     setInput(false);
     setHover(false);
     setIsCreating(false);
