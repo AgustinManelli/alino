@@ -2,16 +2,8 @@
 
 import { createClient } from "@/utils/supabase/server";
 
-type Task = {
-  id: number;
-  category_id: number;
-  description: string;
-  completed: boolean;
-  index: number;
-  name: string;
-  created_at: string;
-  updated_at: string;
-};
+import { Database, tasks as Task } from "@/lib/todosSchema";
+type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 export async function GetLists() {
   const supabase = createClient();
@@ -48,6 +40,7 @@ export async function GetLists() {
 }
 
 export const AddListToDB = async (
+  index: number,
   color: string,
   name: string,
   shortcodeemoji: string
@@ -66,6 +59,7 @@ export const AddListToDB = async (
   const { data, error } = await supabase
     .from("todos_data")
     .insert({
+      index: index,
       color: setColor,
       icon: shortcodeemoji,
       name: name,
@@ -137,6 +131,33 @@ export const UpdateDataListToDB = async (
 
   return { data };
 };
+
+// export const UpdateIndexListToDB = async (id: string, newIndex: number) => {
+//   const supabase = createClient();
+
+//   const { data: sessionData, error: sessionError } =
+//     await supabase.auth.getSession();
+
+//   if (sessionError) {
+//     return { error: sessionError };
+//   }
+
+//   if (!sessionData.session) {
+//     return { error: new Error("No active session found") };
+//   }
+
+//   const { data, error } = await supabase
+//     .from("todos_data")
+//     .update({ index: newIndex })
+//     .eq("id", id)
+//     .select();
+
+//   if (error) {
+//     return { error };
+//   }
+
+//   return { data };
+// };
 
 export const UpdateListNameToDB = async (id: string, newName: string) => {
   const supabase = createClient();

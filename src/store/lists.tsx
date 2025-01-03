@@ -17,6 +17,8 @@ import { toast } from "sonner";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
+const posIndex = 16384;
+
 type todo_list = {
   lists: ListsType[];
   tasks: tasks[];
@@ -45,7 +47,18 @@ export const useLists = create<todo_list>()((set, get) => ({
       return;
     }
 
-    const result = await AddListToDB(color, name, shortcodeemoji);
+    const { lists } = get();
+
+    //obtener el índice máximo de las listas
+    const maxIndex = lists.reduce<number>(
+      (max, current) =>
+        current.index !== null && current.index > max ? current.index : max,
+      0
+    );
+
+    const index = lists.length === 0 ? posIndex : maxIndex + posIndex;
+
+    const result = await AddListToDB(index, color, name, shortcodeemoji);
 
     if (!result.error) {
       const data = result?.data;
