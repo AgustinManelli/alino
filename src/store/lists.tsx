@@ -174,6 +174,14 @@ export const useLists = create<todo_list>()((set, get) => ({
       }),
     }));
 
+    set((state) => ({
+      lists: state.lists.sort((a, b) => {
+        if (a.index === null) return 1;
+        if (b.index === null) return -1;
+        return a.index - b.index;
+      }),
+    }));
+
     pinned
       ? toast.success(`Lista fijada correctamente`)
       : toast.success(`Lista desfijada correctamente`);
