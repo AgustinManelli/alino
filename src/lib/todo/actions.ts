@@ -132,32 +132,32 @@ export const UpdateDataListToDB = async (
   return { data };
 };
 
-// export const UpdateIndexListToDB = async (id: string, newIndex: number) => {
-//   const supabase = createClient();
+export const UpdateIndexListToDB = async (id: string, newIndex: number) => {
+  const supabase = createClient();
 
-//   const { data: sessionData, error: sessionError } =
-//     await supabase.auth.getSession();
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
 
-//   if (sessionError) {
-//     return { error: sessionError };
-//   }
+  if (sessionError) {
+    return { error: sessionError };
+  }
 
-//   if (!sessionData.session) {
-//     return { error: new Error("No active session found") };
-//   }
+  if (!sessionData.session) {
+    return { error: new Error("No active session found") };
+  }
 
-//   const { data, error } = await supabase
-//     .from("todos_data")
-//     .update({ index: newIndex })
-//     .eq("id", id)
-//     .select();
+  const { data, error } = await supabase
+    .from("todos_data")
+    .update({ index: newIndex })
+    .eq("id", id)
+    .select();
 
-//   if (error) {
-//     return { error };
-//   }
+  if (error) {
+    return { error };
+  }
 
-//   return { data };
-// };
+  return { data };
+};
 
 export const UpdateListNameToDB = async (id: string, newName: string) => {
   const supabase = createClient();

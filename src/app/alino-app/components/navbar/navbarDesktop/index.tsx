@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
+import { motion, Reorder } from "motion/react";
 import { useLists } from "@/store/lists";
 import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
 import { Skeleton } from "@/components";
@@ -11,11 +11,14 @@ import styles from "./navbar.module.css";
 import HomeCard from "../homeCard/homeCard";
 import useMobileStore from "@/store/useMobileStore";
 import useOnClickOutside from "@/hooks/useOnClickOutside";
+import { Database } from "@/lib/todosSchema";
 
 //INIT EMOJI-MART
 import { init } from "emoji-mart";
 import data from "@emoji-mart/data/sets/15/apple.json";
 init({ data });
+
+type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 const containerFMVariant = {
   hidden: { opacity: 1, scale: 1 },
@@ -44,7 +47,13 @@ export default function Navbar({
 
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
+  const [draggedItem, setDraggedItem] = useState<ListsType | null>(null);
+
+  const [tempIndex, setTempIndex] = useState<number | null>(null);
+
   const lists = useLists((state) => state.lists);
+  const setLists = useLists((state) => state.setLists);
+  const updateListPosition = useLists((state) => state.updateListPosition);
 
   const { isMobile, setIsMobile } = useMobileStore();
 
@@ -69,6 +78,39 @@ export default function Navbar({
       handleCloseNavbar();
     }
   });
+
+  const handleSet = (values: ListsType[]) => {
+    setLists(values);
+  };
+
+  const handleDragStart = (list: ListsType) => {
+    setDraggedItem(list);
+    const index = lists.findIndex((item) => item.id === list.id);
+    setTempIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    const index = lists.findIndex((list) => list.id === draggedItem?.id);
+
+    const prevIndex = index === 0 ? 0 : lists[index - 1]?.index;
+    const postIndex = index === lists.length - 1 ? 0 : lists[index + 1]?.index;
+
+    if (tempIndex === index) {
+      setDraggedItem(null);
+      setTempIndex(null);
+      return;
+    }
+
+    if (prevIndex === 0 && postIndex !== null && draggedItem) {
+      updateListPosition(draggedItem.id, postIndex / 2);
+    } else if (postIndex === 0 && prevIndex !== null && draggedItem) {
+      updateListPosition(draggedItem?.id, prevIndex + 16384);
+    } else if (prevIndex !== null && postIndex !== null && draggedItem) {
+      updateListPosition(draggedItem?.id, (prevIndex + postIndex) / 2);
+    }
+
+    setDraggedItem(null);
+  };
 
   return (
     <>
@@ -124,31 +166,24 @@ export default function Navbar({
                   ))}
               </div>
             ) : (
-              <motion.div
+              <Reorder.Group
                 variants={containerFMVariant}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
                 className={styles.cardsContainer}
-                // whileInView="visible"
-                // viewport={{ once: true, amount: 0.8 }}
+                values={lists}
+                onReorder={handleSet}
               >
                 <HomeCard handleCloseNavbar={handleCloseNavbar} />
                 {lists
-                  .sort((a, b) => {
-                    if (a.pinned && !b.pinned) return -1;
-                    if (!a.pinned && b.pinned) return 1;
-                    if (a.index === null) return 1;
-                    if (b.index === null) return -1;
-                    return a.index - b.index;
-                  })
+                  .filter((list) => list.pinned)
                   .map((list) => (
-                    <motion.div
-                      layout
-                      variants={containerFMVariant}
-                      initial={{ scale: 0, opacity: 0 }}
-                      exit={{ scale: 0, opacity: 0 }}
+                    <Reorder.Item
                       key={list.id}
+                      value={list}
+                      onDragStart={() => handleDragStart(list)}
+                      onDragEnd={handleDragEnd}
                     >
                       <ListCard
                         list={list}
@@ -156,11 +191,68 @@ export default function Navbar({
                         isCreting={isCreating}
                         handleCloseNavbar={handleCloseNavbar}
                       />
-                    </motion.div>
+                    </Reorder.Item>
                   ))}
-
+                {lists
+                  .filter((list) => list.pinned === false)
+                  .map((list) => (
+                    <Reorder.Item
+                      layout
+                      variants={containerFMVariant}
+                      initial={{ scale: 0, opacity: 0 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      key={list.id}
+                      value={list}
+                      onDragStart={() => handleDragStart(list)}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <ListCard
+                        list={list}
+                        setIsCreating={setIsCreating}
+                        isCreting={isCreating}
+                        handleCloseNavbar={handleCloseNavbar}
+                      />
+                    </Reorder.Item>
+                  ))}
                 <ListInput setIsCreating={setIsCreating} />
-              </motion.div>
+              </Reorder.Group>
+              // <motion.div
+              //   variants={containerFMVariant}
+              //   initial="hidden"
+              //   animate="visible"
+              //   exit="exit"
+              //   className={styles.cardsContainer}
+              //   // whileInView="visible"
+              //   // viewport={{ once: true, amount: 0.8 }}
+              // >
+              //   <HomeCard handleCloseNavbar={handleCloseNavbar} />
+              //   {lists
+              //     .sort((a, b) => {
+              //       if (a.pinned && !b.pinned) return -1;
+              //       if (!a.pinned && b.pinned) return 1;
+              //       if (a.index === null) return 1;
+              //       if (b.index === null) return -1;
+              //       return a.index - b.index;
+              //     })
+              //     .map((list) => (
+              //       <motion.div
+              //         layout
+              //         variants={containerFMVariant}
+              //         initial={{ scale: 0, opacity: 0 }}
+              //         exit={{ scale: 0, opacity: 0 }}
+              //         key={list.id}
+              //       >
+              //         <ListCard
+              //           list={list}
+              //           setIsCreating={setIsCreating}
+              //           isCreting={isCreating}
+              //           handleCloseNavbar={handleCloseNavbar}
+              //         />
+              //       </motion.div>
+              //     ))}
+
+              //   <ListInput setIsCreating={setIsCreating} />
+              // </motion.div>
             )}
           </section>
         </div>

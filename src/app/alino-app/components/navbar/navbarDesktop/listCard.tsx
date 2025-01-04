@@ -159,6 +159,9 @@ export default function ListCard({
                 : `initial`,
           }}
         ></div>
+        {/* <p style={{ position: "absolute", left: "150px", fontSize: "10px" }}>
+          {list.index}
+        </p> */}
         <div className={styles.identifierContainer}>
           <ColorPicker
             color={colorTemp}

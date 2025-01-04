@@ -11,6 +11,7 @@ import {
   UpdateListNameToDB,
   UpdateTasksCompleted,
   UpdatePinnedListToDB,
+  UpdateIndexListToDB,
 } from "@/lib/todo/actions";
 import { AddListToDB } from "@/lib/todo/actions";
 import { toast } from "sonner";
@@ -32,6 +33,7 @@ type todo_list = {
   deleteTask: (id: string, list_id: string) => void;
   updateTaskCompleted: (id: string, list_id: string, status: boolean) => void;
   updateListPinned: (id: string, pinned: boolean) => void;
+  updateListPosition: (id: string, index: number) => void;
 };
 
 export const useLists = create<todo_list>()((set, get) => ({
@@ -175,6 +177,21 @@ export const useLists = create<todo_list>()((set, get) => ({
     pinned
       ? toast.success(`Lista fijada correctamente`)
       : toast.success(`Lista desfijada correctamente`);
+  },
+
+  updateListPosition: async (id, index) => {
+    set((state) => ({
+      lists: state.lists.map((list) => {
+        if (list.id === id) {
+          return {
+            ...list,
+            index: index,
+          };
+        }
+        return list;
+      }),
+    }));
+    UpdateIndexListToDB(id, index);
   },
 
   addTask: async (list_id, task) => {
