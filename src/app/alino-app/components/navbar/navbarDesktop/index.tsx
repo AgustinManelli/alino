@@ -112,6 +112,15 @@ export default function Navbar({
     setDraggedItem(null);
   };
 
+  useEffect(() => {
+    var objDiv = document.getElementById("listContainer");
+    if (objDiv === null) return;
+    objDiv.scrollTo({
+      top: objDiv.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [lists]);
+
   return (
     <>
       {isMobile && (
