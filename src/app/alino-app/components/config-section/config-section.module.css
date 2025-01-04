@@ -19,6 +19,8 @@
   transition: background-color 0.2s;
   background-color: rgb(235, 235, 235);
   -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  padding: 2px;
 }
 .configButton:hover {
   background-color: #e6e6e6;

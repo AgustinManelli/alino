@@ -112,6 +112,15 @@ export default function Navbar({
     setDraggedItem(null);
   };
 
+  // const scrollToBottom = () => {
+  //   var objDiv = document.getElementById("listContainer");
+  //   if (objDiv === null) return;
+  //   objDiv.scrollTo({
+  //     top: objDiv.scrollHeight,
+  //     behavior: "smooth",
+  //   });
+  // };
+
   useEffect(() => {
     var objDiv = document.getElementById("listContainer");
     if (objDiv === null) return;
@@ -119,7 +128,7 @@ export default function Navbar({
       top: objDiv.scrollHeight,
       behavior: "smooth",
     });
-  }, [lists]);
+  }, [isCreating]);
 
   return (
     <>
@@ -228,43 +237,6 @@ export default function Navbar({
                   ))}
                 <ListInput setIsCreating={setIsCreating} />
               </Reorder.Group>
-              // <motion.div
-              //   variants={containerFMVariant}
-              //   initial="hidden"
-              //   animate="visible"
-              //   exit="exit"
-              //   className={styles.cardsContainer}
-              //   // whileInView="visible"
-              //   // viewport={{ once: true, amount: 0.8 }}
-              // >
-              //   <HomeCard handleCloseNavbar={handleCloseNavbar} />
-              //   {lists
-              //     .sort((a, b) => {
-              //       if (a.pinned && !b.pinned) return -1;
-              //       if (!a.pinned && b.pinned) return 1;
-              //       if (a.index === null) return 1;
-              //       if (b.index === null) return -1;
-              //       return a.index - b.index;
-              //     })
-              //     .map((list) => (
-              //       <motion.div
-              //         layout
-              //         variants={containerFMVariant}
-              //         initial={{ scale: 0, opacity: 0 }}
-              //         exit={{ scale: 0, opacity: 0 }}
-              //         key={list.id}
-              //       >
-              //         <ListCard
-              //           list={list}
-              //           setIsCreating={setIsCreating}
-              //           isCreting={isCreating}
-              //           handleCloseNavbar={handleCloseNavbar}
-              //         />
-              //       </motion.div>
-              //     ))}
-
-              //   <ListInput setIsCreating={setIsCreating} />
-              // </motion.div>
             )}
           </section>
         </div>

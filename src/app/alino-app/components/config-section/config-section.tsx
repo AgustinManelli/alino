@@ -6,8 +6,15 @@ import { useRef, useState } from "react";
 import { ModalBox, OptionBox } from "@/components";
 import { signout } from "@/lib/auth/actions";
 import { useLoaderStore } from "@/store/useLoaderStore";
+import ConfigUserIcon from "./config-user-icon";
 
-export default function ConfigSection() {
+export default function ConfigSection({
+  userAvatarUrl,
+  name,
+}: {
+  userAvatarUrl: string;
+  name: string;
+}) {
   const iconRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<boolean>(false);
   const setLoading = useLoaderStore((state) => state.setLoading);
@@ -27,19 +34,20 @@ export default function ConfigSection() {
   return (
     <div className={styles.configSection}>
       <div className={styles.configButton} onClick={handleToggle} ref={iconRef}>
-        <ConfigIcon
+        {/* <ConfigIcon
           style={{
             width: "25px",
             height: "auto",
             stroke: "#1c1c1c",
             strokeWidth: "2",
           }}
-        />
+        /> */}
+        <ConfigUserIcon userAvatarUrl={userAvatarUrl} />
       </div>
       {active && (
         <ModalBox
-          title={"configuration"}
-          footer={"alino"}
+          title={name}
+          footer={`alino · ${new Date().getFullYear()}`}
           onClose={handleClose}
           iconRef={iconRef}
         >
