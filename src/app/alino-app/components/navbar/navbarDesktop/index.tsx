@@ -180,6 +180,9 @@ export default function Navbar({
                   .filter((list) => list.pinned)
                   .map((list) => (
                     <Reorder.Item
+                      variants={containerFMVariant}
+                      initial={{ scale: 0, opacity: 0 }}
+                      exit={{ scale: 0, opacity: 0 }}
                       key={list.id}
                       value={list}
                       onDragStart={() => handleDragStart(list)}
