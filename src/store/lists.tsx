@@ -45,11 +45,13 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   setAddList: async (color, name, shortcodeemoji) => {
+    //Comprobar que el nombre de la lista no esté vacío
     if (name.length < 1) {
       toast.error("El nombre de tu lista debe tener un carácter como mínimo");
       return;
     }
 
+    //Obtener las listas actuales
     const { lists } = get();
 
     //obtener el índice máximo de las listas
@@ -59,6 +61,7 @@ export const useLists = create<todo_list>()((set, get) => ({
       0
     );
 
+    //Calcular el índice de la nueva lista
     const index = lists.length === 0 ? posIndex : maxIndex + posIndex;
 
     //Lista temporal
@@ -105,7 +108,6 @@ export const useLists = create<todo_list>()((set, get) => ({
             return list;
           }),
         }));
-        toast.success(`Lista "${name}" agregada correctamente`);
       } else {
         throw new Error(result.error.message);
       }
@@ -113,38 +115,42 @@ export const useLists = create<todo_list>()((set, get) => ({
       toast.error(
         "Hubo un problema al agregar la lista. Por favor, inténtalo de nuevo."
       );
+
+      //eliminado de la lista temporal creada cuando ocurre un error en su creación
+      const filtered = lists.filter((all) => all.id !== tempId);
+      set(() => ({ lists: filtered }));
     }
   },
 
   deleteList: async (id, name) => {
-    const result = await DeleteListToDB(id);
-
     const { lists } = get();
     const filtered = lists.filter((all) => all.id !== id);
     set(() => ({ lists: filtered }));
 
-    if (result.error) {
+    try {
+      const result = await DeleteListToDB(id);
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      toast.success(`Lista "${name}" eliminada correctamente`);
+    } catch {
       // Revertir los cambios en la UI si la eliminación falla
       set(() => ({ lists }));
+      toast.error("Hubo un error al eliminar la lista, intentalo nuevamente.");
     }
-
-    if (result.error) {
-      toast.error(`Error al eliminar la lista: ${result.error.message}`);
-      return;
-    }
-
-    toast.success(`Lista "${name}" eliminada correctamente`);
   },
 
   getLists: async () => {
-    const result = (await GetLists()) as any;
-
-    if (result.error) {
-      toast.error(`Error al cargar las listas: ${result.error.message}`);
-      return;
+    try {
+      const result = (await GetLists()) as any;
+      if (!result.error) {
+        set(() => ({ lists: result.data || [] }));
+      } else {
+        throw new Error(result.error.message);
+      }
+    } catch {
+      toast.error(`Hubo un error al cargar las listas, instentalo nuevamente.`);
     }
-
-    set(() => ({ lists: result.data || [] }));
   },
 
   changeColor: async (color, id, shortcodeemoji) => {
@@ -161,25 +167,20 @@ export const useLists = create<todo_list>()((set, get) => ({
       }),
     }));
 
-    const result = await UpdateDataListToDB(color, id, shortcodeemoji);
-
-    if (result.error) {
-      toast.error(`Error al modificar lista: ${result.error.message}`);
-      return;
+    try {
+      const result = await UpdateDataListToDB(color, id, shortcodeemoji);
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      toast.success(`Color de lista modificado correctamente`);
+    } catch {
+      toast.error(`Hubo un error al modificar la lista, intentalo nuevamente.`);
     }
-
-    toast.success(`Lista modificada correctamente`);
   },
 
   updateListName: async (id, newName) => {
     if (newName.length < 1) {
       toast.error("El nombre de tu lista debe tener un carácter como mínimo");
-      return;
-    }
-    const result = await UpdateListNameToDB(id, newName);
-
-    if (result.error) {
-      toast.error(`Error al modificar lista: ${result.error.message}`);
       return;
     }
 
@@ -195,17 +196,18 @@ export const useLists = create<todo_list>()((set, get) => ({
       }),
     }));
 
-    toast.success(`Nombre de lista modificado correctamente`);
+    try {
+      const result = await UpdateListNameToDB(id, newName);
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      toast.success(`Nombre de lista modificado correctamente`);
+    } catch {
+      toast.error("Hubo un error al modificar la lista, intentalo nuevamente.");
+    }
   },
 
   updateListPinned: async (id, pinned) => {
-    const result = await UpdatePinnedListToDB(id, pinned);
-
-    if (result.error) {
-      toast.error(`Error al modificar lista: ${result.error.message}`);
-      return;
-    }
-
     set((state) => ({
       lists: state.lists.map((list) => {
         if (list.id === id) {
@@ -226,9 +228,18 @@ export const useLists = create<todo_list>()((set, get) => ({
       }),
     }));
 
-    pinned
-      ? toast.success(`Lista fijada correctamente`)
-      : toast.success(`Lista desfijada correctamente`);
+    try {
+      const result = await UpdatePinnedListToDB(id, pinned);
+      if (!result.error) {
+        pinned
+          ? toast.success(`Lista fijada correctamente`)
+          : toast.success(`Lista desfijada correctamente`);
+      } else {
+        throw new Error(result.error.message);
+      }
+    } catch {
+      toast.error("Hubo un error al modificar la lista, intentalo nuevamente.");
+    }
   },
 
   updateListPosition: async (id, index) => {
@@ -243,8 +254,17 @@ export const useLists = create<todo_list>()((set, get) => ({
         return list;
       }),
     }));
-    UpdateIndexListToDB(id, index);
+    try {
+      const result = await UpdateIndexListToDB(id, index);
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+    } catch {
+      toast.error("Hubo un error al modificar la lista, intentalo nuevamente.");
+    }
   },
+
+  //ACCIONES DE TAREAS
 
   addTask: async (list_id, task) => {
     const result = await AddTaskToDB(list_id, task);
