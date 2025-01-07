@@ -43,7 +43,8 @@ export const AddListToDB = async (
   index: number,
   color: string,
   name: string,
-  shortcodeemoji: string
+  shortcodeemoji: string,
+  tempId: string
 ) => {
   const setColor = color === "" ? "#87189d" : color; // Establece el color predeterminado si está vacío
 
@@ -64,6 +65,7 @@ export const AddListToDB = async (
       icon: shortcodeemoji,
       name: name,
       user_id: user.id,
+      id: tempId,
     })
     .select()
     .single();

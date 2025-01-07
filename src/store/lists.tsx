@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { Database, tasks } from "@/lib/todosSchema";
+import { v4 as uuidv4 } from "uuid";
 import {
   AddTaskToDB,
   DeleteListToDB,
@@ -60,15 +61,58 @@ export const useLists = create<todo_list>()((set, get) => ({
 
     const index = lists.length === 0 ? posIndex : maxIndex + posIndex;
 
-    const result = await AddListToDB(index, color, name, shortcodeemoji);
+    //Lista temporal
+    const tempId = uuidv4();
+    set((state: any) => ({
+      lists: [
+        ...state.lists,
+        {
+          color: color,
+          icon: shortcodeemoji,
+          id: tempId,
+          index: index,
+          inserted_at: "0",
+          name: name,
+          pinned: false,
+          tasks: [],
+          updated_at: "0",
+          user_id: "0",
+        },
+      ],
+    }));
 
-    if (!result.error) {
-      const data = result?.data;
-      const final = { ...data, tasks: [] };
-      set((state: any) => ({ lists: [...state.lists, final] }));
-      toast.success(`Lista "${name}" agregada correctamente`);
-    } else {
-      toast.error(result.error.message);
+    try {
+      const result = await AddListToDB(
+        index,
+        color,
+        name,
+        shortcodeemoji,
+        tempId
+      );
+      if (!result.error) {
+        const data = result?.data;
+        set((state: any) => ({
+          lists: state.lists.map((list: any) => {
+            if (list.id === tempId) {
+              return {
+                ...list,
+                id: data.id,
+                user_id: data.user_id,
+                inserted_at: data.inserted_at,
+                updated_at: data.updated_at,
+              };
+            }
+            return list;
+          }),
+        }));
+        toast.success(`Lista "${name}" agregada correctamente`);
+      } else {
+        throw new Error(result.error.message);
+      }
+    } catch (error: any) {
+      toast.error(
+        "Hubo un problema al agregar la lista. Por favor, inténtalo de nuevo."
+      );
     }
   },
 
@@ -104,13 +148,6 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   changeColor: async (color, id, shortcodeemoji) => {
-    const result = await UpdateDataListToDB(color, id, shortcodeemoji);
-
-    if (result.error) {
-      toast.error(`Error al modificar lista: ${result.error.message}`);
-      return;
-    }
-
     set((state) => ({
       lists: state.lists.map((list) => {
         if (list.id === id) {
@@ -123,6 +160,13 @@ export const useLists = create<todo_list>()((set, get) => ({
         return list;
       }),
     }));
+
+    const result = await UpdateDataListToDB(color, id, shortcodeemoji);
+
+    if (result.error) {
+      toast.error(`Error al modificar lista: ${result.error.message}`);
+      return;
+    }
 
     toast.success(`Lista modificada correctamente`);
   },

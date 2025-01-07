@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, Reorder } from "motion/react";
+import { Reorder } from "motion/react";
 import { useLists } from "@/store/lists";
 import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
 import { Skeleton } from "@/components";
@@ -58,6 +58,7 @@ export default function Navbar({
   const { isMobile, setIsMobile } = useMobileStore();
 
   const Ref = useRef<HTMLInputElement | null>(null);
+  const refContainer = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -85,6 +86,7 @@ export default function Navbar({
 
   const handleDragStart = (list: ListsType) => {
     setDraggedItem(list);
+
     const index = lists.findIndex((item) => item.id === list.id);
     setTempIndex(index);
   };
@@ -108,18 +110,7 @@ export default function Navbar({
     } else if (prevIndex !== null && postIndex !== null && draggedItem) {
       updateListPosition(draggedItem?.id, (prevIndex + postIndex) / 2);
     }
-
-    setDraggedItem(null);
   };
-
-  // const scrollToBottom = () => {
-  //   var objDiv = document.getElementById("listContainer");
-  //   if (objDiv === null) return;
-  //   objDiv.scrollTo({
-  //     top: objDiv.scrollHeight,
-  //     behavior: "smooth",
-  //   });
-  // };
 
   useEffect(() => {
     var objDiv = document.getElementById("listContainer");
@@ -129,6 +120,21 @@ export default function Navbar({
       behavior: "smooth",
     });
   }, [isCreating]);
+
+  function onDrag(event: any, info: any) {
+    const scrollContainer = document.getElementById("listContainer");
+    if (!scrollContainer) return;
+    const containerHeight = Ref.current?.clientHeight;
+    const speed = 10; // Velocidad del desplazamiento
+
+    if (!containerHeight) return;
+
+    if (info.point.y > containerHeight * 0.8) {
+      scrollContainer.scrollBy({ top: speed, behavior: "smooth" });
+    } else if (info.point.y < containerHeight * 0.2) {
+      scrollContainer.scrollBy({ top: -speed, behavior: "smooth" });
+    }
+  }
 
   return (
     <>
@@ -192,12 +198,14 @@ export default function Navbar({
                 className={styles.cardsContainer}
                 values={lists}
                 onReorder={handleSet}
+                ref={refContainer}
               >
                 <HomeCard handleCloseNavbar={handleCloseNavbar} />
                 {lists
                   .filter((list) => list.pinned)
                   .map((list) => (
                     <Reorder.Item
+                      layout
                       variants={containerFMVariant}
                       initial={{ scale: 0, opacity: 0 }}
                       exit={{ scale: 0, opacity: 0 }}
@@ -205,6 +213,10 @@ export default function Navbar({
                       value={list}
                       onDragStart={() => handleDragStart(list)}
                       onDragEnd={handleDragEnd}
+                      dragConstraints={refContainer}
+                      dragElastic={0.1}
+                      onDrag={onDrag}
+                      dragListener={isCreating ? false : true}
                     >
                       <ListCard
                         list={list}
@@ -226,6 +238,10 @@ export default function Navbar({
                       value={list}
                       onDragStart={() => handleDragStart(list)}
                       onDragEnd={handleDragEnd}
+                      dragConstraints={refContainer}
+                      dragElastic={0.1}
+                      onDrag={onDrag}
+                      dragListener={isCreating ? false : true}
                     >
                       <ListCard
                         list={list}

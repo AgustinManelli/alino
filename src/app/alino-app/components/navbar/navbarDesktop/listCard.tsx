@@ -70,6 +70,7 @@ export default function ListCard({
     setIsMoreOptions(false);
     setInput(true);
     setHover(true);
+    setIsCreating(true);
   };
 
   useEffect(() => {
@@ -84,14 +85,15 @@ export default function ListCard({
   };
 
   const handleSaveName = async () => {
+    setIsCreating(false);
     if (list.name === inputName) {
       setInput(false);
       setIsNameChange(false);
       return;
     }
-    await updateListName(list.id, inputName);
     setInput(false);
     setIsNameChange(false);
+    await updateListName(list.id, inputName);
   };
 
   const handlePin = async () => {
@@ -110,6 +112,7 @@ export default function ListCard({
       ) {
         setIsNameChange(false);
         setInput(false);
+        setIsCreating(false);
         setInputName(list.name);
       }
     };
@@ -145,7 +148,7 @@ export default function ListCard({
           backgroundColor:
             hover || pathname === `/alino-app/${list.id}` || isMoreOptions
               ? "rgb(250, 250, 250)"
-              : "transparent",
+              : "#fff",
           pointerEvents: "auto",
         }}
         // href={`/alino-app/${list.id}`}

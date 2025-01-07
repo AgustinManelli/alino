@@ -3,7 +3,7 @@
 import styles from "./listInput.module.css";
 import { useEffect, useRef, useState } from "react";
 import { useLists } from "@/store/lists";
-import { LoadingIcon, PlusBoxIcon, SendIcon } from "@/lib/ui/icons";
+import { PlusBoxIcon, SendIcon } from "@/lib/ui/icons";
 import { ColorPicker } from "@/components";
 import { motion } from "motion/react";
 
@@ -17,20 +17,18 @@ export default function ListInput({
   const [color, setColor] = useState<string>("#87189d");
   const [hover, setHover] = useState<boolean>(false);
   const [choosingColor, setChoosingColor] = useState<boolean>(false);
-  const [transition, setTransition] = useState<boolean>(false);
+
   const setAddList = useLists((state) => state.setAddList);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
   const [emoji, setEmoji] = useState<string>("");
 
   const handleSubmit = async () => {
-    setTransition(true);
-    await setAddList(color, value, emoji as string);
-    setValue("");
-    setTransition(false);
     setInput(false);
     setHover(false);
     setIsCreating(false);
+    setValue("");
+    await setAddList(color, value, emoji as string);
   };
 
   useEffect(() => {
@@ -92,7 +90,6 @@ export default function ListInput({
             setEmoji={setEmoji}
           />
           <input
-            disabled={transition}
             type="text"
             placeholder="cree una lista nueva"
             value={value}
@@ -111,39 +108,28 @@ export default function ListInput({
               }
             }}
           ></input>
-          {transition ? (
-            <LoadingIcon
+
+          <button
+            style={{
+              border: "none",
+              backgroundColor: "transparent",
+              cursor: "pointer",
+              display: "flex",
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+          >
+            <SendIcon
               style={{
                 width: "20px",
-                height: "auto",
-                stroke: "#000",
-                strokeWidth: "3",
+                stroke: "#1c1c1c",
+                strokeWidth: "2",
                 opacity: "0.5",
               }}
             />
-          ) : (
-            <button
-              style={{
-                border: "none",
-                backgroundColor: "transparent",
-                cursor: "pointer",
-                display: "flex",
-              }}
-              onClick={(e) => {
-                e.preventDefault();
-                handleSubmit();
-              }}
-            >
-              <SendIcon
-                style={{
-                  width: "20px",
-                  stroke: "#1c1c1c",
-                  strokeWidth: "2",
-                  opacity: "0.5",
-                }}
-              />
-            </button>
-          )}
+          </button>
         </motion.div>
       ) : (
         <motion.button

@@ -1,29 +1,21 @@
 import Navbar from "./components/navbar";
 import { redirect } from "next/navigation";
-import { readUserGetUser } from "@/lib/auth/actions";
 import ConfigSection from "./components/config-section/config-section";
 import BlurredFx from "./components/blurredFx";
-import Alerts from "./components/alerts";
 import { createClient } from "@/utils/supabase/server";
+import { readUserSession } from "@/lib/auth/actions";
 
 export default async function appLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // const result = await readUserGetUser();
-  const supabase = createClient();
   const {
     data: { session },
-  } = await supabase.auth.getSession();
-
-  if (session === null) {
+  } = await readUserSession();
+  if (!session) {
     return redirect("/sign-in");
   }
-
-  // if (result.error) {
-  //   return redirect("/sign-in");
-  // }
 
   return (
     <section
@@ -42,8 +34,8 @@ export default async function appLayout({
       <BlurredFx />
       <Navbar />
       <ConfigSection
-        userAvatarUrl={session.user?.user_metadata?.avatar_url}
-        name={session.user?.user_metadata.name}
+        userAvatarUrl={session?.user?.user_metadata?.avatar_url}
+        name={session?.user?.user_metadata.name}
       />
       {/* <Alerts /> */}
       <p

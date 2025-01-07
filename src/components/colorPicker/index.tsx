@@ -120,7 +120,6 @@ export function ColorPicker({
   const [open, setOpen] = useState<boolean>(false);
   const saveButtonHover = useHover(false);
   const [isSave, setIsSave] = useState<boolean>(false); //indica si el cambio de color temporal se guardó
-  const [wait, setWait] = useState<boolean>(false); //saveButton loader
   const [type, setType] = useState<boolean>(true); //color picker o emoji picker
 
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -401,29 +400,13 @@ export function ColorPicker({
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          setWait(true);
-                          handleSave()
-                            .then(() => {
-                              setOpen(false);
-                            })
-                            .finally(() => {
-                              setWait(false);
-                              setIsSave(true);
-                            });
+                          // setWait(true);
+                          handleSave();
+                          setOpen(false);
+                          setIsSave(true);
                         }}
                       >
-                        {wait ? (
-                          <LoadingIcon
-                            style={{
-                              width: "20px",
-                              height: "auto",
-                              stroke: "#1c1c1c",
-                              strokeWidth: "3",
-                            }}
-                          />
-                        ) : (
-                          <p>guardar</p>
-                        )}
+                        <p>guardar</p>
                       </button>
                     </div>
                   </div>
