@@ -53,8 +53,8 @@ export default function TodoInput({ setList }: { setList: ListsType }) {
   const addTask = useLists((state) => state.addTask);
 
   const handleAdd = async () => {
-    await addTask(setList.id, task);
     setTask("");
+    await addTask(setList.id, task);
   };
 
   return (

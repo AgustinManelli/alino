@@ -215,7 +215,11 @@ export const UpdatePinnedListToDB = async (id: string, pinned: boolean) => {
   return { data };
 };
 
-export const AddTaskToDB = async (category_id: string, name: string) => {
+export const AddTaskToDB = async (
+  category_id: string,
+  name: string,
+  tempId: string
+) => {
   const supabase = createClient();
   const { data: sessionData, error: sessionError } =
     await supabase.auth.getSession();
@@ -232,6 +236,7 @@ export const AddTaskToDB = async (category_id: string, name: string) => {
   const { data, error } = await supabase
     .from("tasks")
     .insert({
+      id: tempId,
       category_id,
       user_id: user.id,
       name,
