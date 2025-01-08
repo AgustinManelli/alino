@@ -7,7 +7,7 @@ import { Database } from "@/lib/todosSchema";
 import { Check, Pin } from "@/lib/ui/icons";
 import styles from "./listCard.module.css";
 import { CounterAnimation } from "@/components";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/components";
 import MoreConfigs from "../moreConfigs";
@@ -59,10 +59,10 @@ export default function ListCard({
 
   const handleDelete = async () => {
     setIsMoreOptions(false);
-    await deleteList(list.id, list.name);
     if (pathname === `/alino-app/${list.id}`) {
       router.push(`${location.origin}/alino-app`);
     }
+    await deleteList(list.id, list.name);
   };
 
   const handleNameChange = () => {
