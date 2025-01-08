@@ -180,7 +180,6 @@ export const useLists = create<todo_list>()((set, get) => ({
         throw new Error(result.error.message);
       }
       addToQueue(-1);
-      toast.success(`Color de lista modificado correctamente`);
     } catch {
       toast.error(`Hubo un error al modificar la lista, inténtalo nuevamente.`);
     }
@@ -211,7 +210,6 @@ export const useLists = create<todo_list>()((set, get) => ({
         throw new Error(result.error.message);
       }
       addToQueue(-1);
-      toast.success(`Nombre de lista modificado correctamente`);
     } catch {
       toast.error("Hubo un error al modificar la lista, inténtalo nuevamente.");
     }
@@ -240,11 +238,7 @@ export const useLists = create<todo_list>()((set, get) => ({
 
     try {
       const result = await UpdatePinnedListToDB(id, pinned);
-      if (!result.error) {
-        pinned
-          ? toast.success(`Lista fijada correctamente`)
-          : toast.success(`Lista desfijada correctamente`);
-      } else {
+      if (result.error) {
         throw new Error(result.error.message);
       }
     } catch {

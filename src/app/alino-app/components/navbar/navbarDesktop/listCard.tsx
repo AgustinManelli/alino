@@ -80,19 +80,24 @@ export default function ListCard({
   }, [input]);
 
   const handleSave = async () => {
-    await changeColor(colorTemp, list.id, emoji);
     setIsCreating(false);
+    await changeColor(colorTemp, list.id, emoji);
   };
 
   const handleSaveName = async () => {
     setIsCreating(false);
+
     if (list.name === inputName) {
       setInput(false);
       setIsNameChange(false);
+      setHover(false);
+      console.log("pase");
       return;
     }
+
     setInput(false);
     setIsNameChange(false);
+    setHover(false);
     await updateListName(list.id, inputName);
   };
 
@@ -114,6 +119,7 @@ export default function ListCard({
         setInput(false);
         setIsCreating(false);
         setInputName(list.name);
+        setHover(false);
       }
     };
 

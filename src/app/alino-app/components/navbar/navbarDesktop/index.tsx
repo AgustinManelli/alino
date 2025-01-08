@@ -115,14 +115,33 @@ export default function Navbar({
     }
   };
 
+  // useEffect(() => {
+  //   var objDiv = document.getElementById("listContainer");
+  //   if (objDiv === null) return;
+  //   objDiv.scrollTo({
+  //     top: objDiv.scrollHeight,
+  //     behavior: "smooth",
+  //   });
+  // }, [lists]);
+
+  const prevLengthRef = useRef<number>(lists.length);
   useEffect(() => {
-    var objDiv = document.getElementById("listContainer");
-    if (objDiv === null) return;
-    objDiv.scrollTo({
-      top: objDiv.scrollHeight,
-      behavior: "smooth",
-    });
-  }, [isCreating]);
+    // Referencia para almacenar la longitud anterior de la lista
+
+    if (lists.length > prevLengthRef.current) {
+      // Solo ejecuta el scroll si se agregó un elemento
+      const objDiv = document.getElementById("listContainer");
+      if (objDiv !== null) {
+        objDiv.scrollTo({
+          top: objDiv.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    }
+
+    // Actualiza la longitud previa
+    prevLengthRef.current = lists.length;
+  }, [lists]);
 
   function onDrag(event: any, info: any) {
     const scrollContainer = document.getElementById("listContainer");
@@ -175,7 +194,11 @@ export default function Navbar({
               decoFill={"#1c1c1c"}
             />
           </div>
-          <section className={styles.cardsSection} id="listContainer">
+          <section
+            className={styles.cardsSection}
+            id="listContainer"
+            style={{ overflow: isCreating ? "hidden" : "auto" }}
+          >
             {initialFetching ? (
               <div className={styles.cardsContainer}>
                 {Array(4)
