@@ -2,10 +2,7 @@ import Navbar from "./components/navbar";
 import { redirect } from "next/navigation";
 import ConfigSection from "./components/config-section/config-section";
 import BlurredFx from "./components/blurredFx";
-import { createClient } from "@/utils/supabase/server";
 import { readUserSession } from "@/lib/auth/actions";
-import WindowComponent from "@/components/windowComponent";
-import AccountConfigSection from "./components/accountConfigSection";
 
 export default async function appLayout({
   children,

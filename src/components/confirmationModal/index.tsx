@@ -47,18 +47,18 @@ export default function ConfirmationModal({
           <button
             className={styles.modalButton}
             onClick={() => {
-              handleAccept();
-            }}
-          >
-            aceptar
-          </button>
-          <button
-            className={styles.modalButton}
-            onClick={() => {
               handleCancel();
             }}
           >
             cancelar
+          </button>
+          <button
+            className={styles.modalButton}
+            onClick={() => {
+              handleAccept();
+            }}
+          >
+            aceptar
           </button>
         </section>
       </motion.div>
