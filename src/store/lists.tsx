@@ -16,6 +16,9 @@ import {
 } from "@/lib/todo/actions";
 import { AddListToDB } from "@/lib/todo/actions";
 import { toast } from "sonner";
+import { useCloudStore } from "./useCloudStore";
+
+const addToQueue = useCloudStore.getState().addToQueue;
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -45,6 +48,7 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   setAddList: async (color, name, shortcodeemoji) => {
+    addToQueue(1);
     //Comprobar que el nombre de la lista no esté vacío
     if (name.length < 1) {
       toast.error("El nombre de tu lista debe tener un carácter como mínimo");
@@ -108,6 +112,7 @@ export const useLists = create<todo_list>()((set, get) => ({
             return list;
           }),
         }));
+        addToQueue(-1);
       } else {
         throw new Error(result.error.message);
       }
@@ -121,16 +126,17 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   deleteList: async (id, name) => {
+    addToQueue(1);
     const { lists } = get();
-    const filtered = lists.filter((all) => all.id !== id);
-    set(() => ({ lists: filtered }));
 
+    set({ lists: lists.filter((list) => list.id !== id) });
     try {
       const result = await DeleteListToDB(id);
       if (result.error) {
         throw new Error(result.error.message);
       }
       toast.success(`Lista "${name}" eliminada correctamente`);
+      addToQueue(-1);
     } catch {
       // Revertir los cambios en la UI si la eliminación falla
       set(() => ({ lists }));
@@ -139,10 +145,12 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   getLists: async () => {
+    addToQueue(1);
     try {
       const result = (await GetLists()) as any;
       if (!result.error) {
         set(() => ({ lists: result.data || [] }));
+        addToQueue(-1);
       } else {
         throw new Error(result.error.message);
       }
@@ -152,6 +160,7 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   changeColor: async (color, id, shortcodeemoji) => {
+    addToQueue(1);
     set((state) => ({
       lists: state.lists.map((list) => {
         if (list.id === id) {
@@ -170,6 +179,7 @@ export const useLists = create<todo_list>()((set, get) => ({
       if (result.error) {
         throw new Error(result.error.message);
       }
+      addToQueue(-1);
       toast.success(`Color de lista modificado correctamente`);
     } catch {
       toast.error(`Hubo un error al modificar la lista, inténtalo nuevamente.`);
@@ -177,6 +187,7 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   updateListName: async (id, newName) => {
+    addToQueue(1);
     if (newName.length < 1) {
       toast.error("El nombre de tu lista debe tener un carácter como mínimo");
       return;
@@ -199,6 +210,7 @@ export const useLists = create<todo_list>()((set, get) => ({
       if (result.error) {
         throw new Error(result.error.message);
       }
+      addToQueue(-1);
       toast.success(`Nombre de lista modificado correctamente`);
     } catch {
       toast.error("Hubo un error al modificar la lista, inténtalo nuevamente.");

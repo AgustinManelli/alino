@@ -8,6 +8,7 @@ import { signout } from "@/lib/auth/actions";
 import { useLoaderStore } from "@/store/useLoaderStore";
 import ConfigUserIcon from "./config-user-icon";
 import AccountConfigSection from "../accountConfigSection";
+import CloudStateIndicator from "../cloudStateIndicator/cloudStateIndicator";
 
 export default function ConfigSection({
   userAvatarUrl,
@@ -53,6 +54,7 @@ export default function ConfigSection({
         />
       )}
       <div className={styles.configSection}>
+        <CloudStateIndicator />
         <div
           className={styles.configButton}
           onClick={handleToggle}

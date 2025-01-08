@@ -21,6 +21,7 @@
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
   padding: 2px;
+  z-index: 1;
 }
 .configButton:hover {
   background-color: #e6e6e6;

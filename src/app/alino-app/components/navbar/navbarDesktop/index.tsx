@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Reorder } from "motion/react";
+import { AnimatePresence, Reorder } from "motion/react";
 import { useLists } from "@/store/lists";
 import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
 import { Skeleton } from "@/components";
@@ -35,6 +35,9 @@ const containerFMVariant = {
   exit: {
     opacity: 0,
     scale: 0,
+    transition: {
+      duration: 0.3,
+    },
   },
 };
 
@@ -191,6 +194,7 @@ export default function Navbar({
               </div>
             ) : (
               <Reorder.Group
+                axis="y"
                 variants={containerFMVariant}
                 initial="hidden"
                 animate="visible"
@@ -217,6 +221,9 @@ export default function Navbar({
                       dragElastic={0.1}
                       onDrag={onDrag}
                       dragListener={isCreating ? false : true}
+                      whileDrag={{
+                        scale: 1.1,
+                      }}
                     >
                       <ListCard
                         list={list}
@@ -242,6 +249,9 @@ export default function Navbar({
                       dragElastic={0.1}
                       onDrag={onDrag}
                       dragListener={isCreating ? false : true}
+                      whileDrag={{
+                        scale: 1.1,
+                      }}
                     >
                       <ListCard
                         list={list}
