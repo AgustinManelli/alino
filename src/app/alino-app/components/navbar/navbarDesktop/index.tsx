@@ -219,7 +219,7 @@ export default function Navbar({
               <Reorder.Group
                 axis="y"
                 variants={containerFMVariant}
-                initial="hidden"
+                // initial="hidden"
                 animate="visible"
                 exit="exit"
                 className={styles.cardsContainer}
@@ -227,64 +227,77 @@ export default function Navbar({
                 onReorder={handleSet}
                 ref={refContainer}
               >
-                <HomeCard handleCloseNavbar={handleCloseNavbar} />
-                {lists
-                  .filter((list) => list.pinned)
-                  .map((list) => (
-                    <Reorder.Item
-                      layout
-                      variants={containerFMVariant}
-                      initial={{ scale: 0, opacity: 0 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      key={list.id}
-                      value={list}
-                      onDragStart={() => handleDragStart(list)}
-                      onDragEnd={handleDragEnd}
-                      dragConstraints={refContainer}
-                      dragElastic={0.1}
-                      onDrag={onDrag}
-                      dragListener={isCreating ? false : true}
-                      whileDrag={{
-                        scale: 1.1,
-                      }}
-                    >
-                      <ListCard
-                        list={list}
-                        setIsCreating={setIsCreating}
-                        isCreting={isCreating}
-                        handleCloseNavbar={handleCloseNavbar}
-                      />
-                    </Reorder.Item>
-                  ))}
-                {lists
-                  .filter((list) => list.pinned === false)
-                  .map((list) => (
-                    <Reorder.Item
-                      layout
-                      variants={containerFMVariant}
-                      initial={{ scale: 0, opacity: 0 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      key={list.id}
-                      value={list}
-                      onDragStart={() => handleDragStart(list)}
-                      onDragEnd={handleDragEnd}
-                      dragConstraints={refContainer}
-                      dragElastic={0.1}
-                      onDrag={onDrag}
-                      dragListener={isCreating ? false : true}
-                      whileDrag={{
-                        scale: 1.1,
-                      }}
-                    >
-                      <ListCard
-                        list={list}
-                        setIsCreating={setIsCreating}
-                        isCreting={isCreating}
-                        handleCloseNavbar={handleCloseNavbar}
-                      />
-                    </Reorder.Item>
-                  ))}
-                <ListInput setIsCreating={setIsCreating} />
+                <AnimatePresence mode="popLayout">
+                  <HomeCard
+                    handleCloseNavbar={handleCloseNavbar}
+                    key={"homecard"}
+                  />
+                  {lists
+                    .filter((list) => list.pinned)
+                    .map((list) => (
+                      <Reorder.Item
+                        layout
+                        variants={containerFMVariant}
+                        initial={{ scale: 0, opacity: 0 }}
+                        // exit={{ scale: 0, opacity: 0 }}
+                        key={`${list.id}-pinned`}
+                        value={list}
+                        onDragStart={() => handleDragStart(list)}
+                        onDragEnd={handleDragEnd}
+                        dragConstraints={refContainer}
+                        dragElastic={0.1}
+                        onDrag={onDrag}
+                        dragListener={isCreating ? false : true}
+                        whileDrag={{
+                          scale: 1.1,
+                        }}
+                      >
+                        <ListCard
+                          list={list}
+                          setIsCreating={setIsCreating}
+                          isCreting={isCreating}
+                          handleCloseNavbar={handleCloseNavbar}
+                        />
+                      </Reorder.Item>
+                    ))}
+                  {lists
+                    .filter((list) => list.pinned === false)
+                    .map((list) => (
+                      <Reorder.Item
+                        layout
+                        variants={containerFMVariant}
+                        initial={{ scale: 0, opacity: 0 }}
+                        exit={{
+                          scale: 1.3,
+                          opacity: 0,
+                          filter: "blur(30px)",
+                          y: -30,
+                          transition: {
+                            duration: 1,
+                          },
+                        }}
+                        key={list.id}
+                        value={list}
+                        onDragStart={() => handleDragStart(list)}
+                        onDragEnd={handleDragEnd}
+                        dragConstraints={refContainer}
+                        dragElastic={0.1}
+                        onDrag={onDrag}
+                        dragListener={isCreating ? false : true}
+                        whileDrag={{
+                          scale: 1.1,
+                        }}
+                      >
+                        <ListCard
+                          list={list}
+                          setIsCreating={setIsCreating}
+                          isCreting={isCreating}
+                          handleCloseNavbar={handleCloseNavbar}
+                        />
+                      </Reorder.Item>
+                    ))}
+                  <ListInput setIsCreating={setIsCreating} key={"input"} />
+                </AnimatePresence>
               </Reorder.Group>
             )}
           </section>

@@ -62,7 +62,7 @@ export default function ListInput({
   });
 
   return (
-    <div className={styles.formContainer}>
+    <motion.div className={styles.formContainer} layout>
       {input || value !== "" ? (
         <motion.div
           className={styles.form}
@@ -168,6 +168,6 @@ export default function ListInput({
           />
         </motion.button>
       )}
-    </div>
+    </motion.div>
   );
 }
