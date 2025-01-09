@@ -251,7 +251,22 @@ export default function Navbar({
                         dragListener={isCreating ? false : true}
                         whileDrag={{
                           scale: 1.1,
+                          zIndex: 1000,
+                          rotate: [1, -1, 1], // Pequeña rotación
+                          transition: {
+                            rotate: {
+                              repeat: Infinity,
+                              duration: 0.2, // Más rápido
+                              ease: "easeInOut", // Para un movimiento más suave
+                            },
+                          },
                         }}
+                        onClick={(e: any) => {
+                          if (draggedItem) {
+                            e.preventDefault(); // Prevenir el click si está arrastrando
+                          }
+                        }}
+                        style={{ touchAction: "none" }}
                       >
                         <ListCard
                           list={list}
@@ -302,6 +317,7 @@ export default function Navbar({
                             e.preventDefault(); // Prevenir el click si está arrastrando
                           }
                         }}
+                        style={{ touchAction: "none" }}
                       >
                         <ListCard
                           list={list}
