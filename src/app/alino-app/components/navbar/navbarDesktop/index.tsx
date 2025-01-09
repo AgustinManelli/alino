@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, Reorder } from "motion/react";
+import { AnimatePresence, Reorder, motion } from "motion/react";
 import { useLists } from "@/store/lists";
 import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
 import { Skeleton } from "@/components";
@@ -23,6 +23,7 @@ type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 const containerFMVariant = {
   hidden: { opacity: 1, scale: 1 },
   visible: {
+    rotate: 0,
     opacity: 1,
     scale: 1,
     transition: {
@@ -115,15 +116,6 @@ export default function Navbar({
     }
   };
 
-  // useEffect(() => {
-  //   var objDiv = document.getElementById("listContainer");
-  //   if (objDiv === null) return;
-  //   objDiv.scrollTo({
-  //     top: objDiv.scrollHeight,
-  //     behavior: "smooth",
-  //   });
-  // }, [lists]);
-
   const prevLengthRef = useRef<number>(lists.length);
   useEffect(() => {
     // Referencia para almacenar la longitud anterior de la lista
@@ -194,10 +186,10 @@ export default function Navbar({
               decoFill={"#1c1c1c"}
             />
           </div>
-          <section
+          <motion.section
             className={styles.cardsSection}
             id="listContainer"
-            style={{ overflow: isCreating ? "hidden" : "auto" }}
+            style={{ overflowY: isCreating ? "hidden" : "scroll" }}
           >
             {initialFetching ? (
               <div className={styles.cardsContainer}>
@@ -217,6 +209,7 @@ export default function Navbar({
               </div>
             ) : (
               <Reorder.Group
+                as="div"
                 axis="y"
                 variants={containerFMVariant}
                 // initial="hidden"
@@ -239,7 +232,15 @@ export default function Navbar({
                         layout
                         variants={containerFMVariant}
                         initial={{ scale: 0, opacity: 0 }}
-                        // exit={{ scale: 0, opacity: 0 }}
+                        exit={{
+                          scale: 1.3,
+                          opacity: 0,
+                          filter: "blur(30px) grayscale(100%)",
+                          y: -30,
+                          transition: {
+                            duration: 1,
+                          },
+                        }}
                         key={`${list.id}-pinned`}
                         value={list}
                         onDragStart={() => handleDragStart(list)}
@@ -270,7 +271,7 @@ export default function Navbar({
                         exit={{
                           scale: 1.3,
                           opacity: 0,
-                          filter: "blur(30px)",
+                          filter: "blur(30px) grayscale(100%)",
                           y: -30,
                           transition: {
                             duration: 1,
@@ -286,6 +287,20 @@ export default function Navbar({
                         dragListener={isCreating ? false : true}
                         whileDrag={{
                           scale: 1.1,
+                          zIndex: 1000,
+                          rotate: [1, -1, 1], // Pequeña rotación
+                          transition: {
+                            rotate: {
+                              repeat: Infinity,
+                              duration: 0.2, // Más rápido
+                              ease: "easeInOut", // Para un movimiento más suave
+                            },
+                          },
+                        }}
+                        onClick={(e: any) => {
+                          if (draggedItem) {
+                            e.preventDefault(); // Prevenir el click si está arrastrando
+                          }
                         }}
                       >
                         <ListCard
@@ -300,7 +315,7 @@ export default function Navbar({
                 </AnimatePresence>
               </Reorder.Group>
             )}
-          </section>
+          </motion.section>
         </div>
       </div>
     </>

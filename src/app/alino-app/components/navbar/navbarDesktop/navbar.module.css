@@ -76,11 +76,12 @@
 }
 
 .cardsSection {
+  position: relative;
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow-y: scroll;
   padding: 30px 40px 0px 40px;
 }
 
