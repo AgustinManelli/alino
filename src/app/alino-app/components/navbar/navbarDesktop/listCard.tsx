@@ -7,25 +7,28 @@ import { Database } from "@/lib/todosSchema";
 import { Check, Pin } from "@/lib/ui/icons";
 import styles from "./listCard.module.css";
 import { CounterAnimation } from "@/components";
-import { redirect, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/components";
 import MoreConfigs from "../moreConfigs";
 import useMobileStore from "@/store/useMobileStore";
 import { motion } from "motion/react";
+import { useSortable } from "@dnd-kit/sortable";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 export default function ListCard({
   list,
   setIsCreating,
-  isCreting,
+  isCreating,
   handleCloseNavbar,
+  draggedItem,
 }: {
   list: ListsType;
   setIsCreating: (value: boolean) => void;
-  isCreting: boolean;
+  isCreating: boolean;
   handleCloseNavbar: () => void;
+  draggedItem: string | undefined;
 }) {
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
@@ -49,6 +52,17 @@ export default function ListCard({
   const [checkHover, setCheckHover] = useState<boolean>(false);
 
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
+
+  const id = list.id;
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id,
+      transition: {
+        duration: 500,
+        easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+      },
+    });
+
   const handleChangeMoreOptions = (prop: boolean) => {
     setIsMoreOptions(prop);
   };
@@ -130,6 +144,21 @@ export default function ListCard({
     };
   }, [list.name]);
 
+  const style = {
+    transform: `translate3d(${transform ? transform.x : "0"}px, ${transform ? transform.y : "0"}px, 0)`,
+    transition,
+    backgroundColor:
+      hover ||
+      pathname === `/alino-app/${list.id}` ||
+      isMoreOptions ||
+      draggedItem === list.id
+        ? "rgb(250, 250, 250)"
+        : "#fff",
+    pointerEvents: "auto",
+    zIndex: draggedItem === list.id ? "1000" : "0",
+    scale: draggedItem === list.id ? "1.1" : "1",
+  } as React.CSSProperties;
+
   return (
     <div ref={divRef}>
       {deleteConfirm && (
@@ -146,18 +175,16 @@ export default function ListCard({
         onMouseLeave={() => {
           if (!isMobile && !input) setHover(false);
         }}
-        onClick={() => {
+        onClick={(e) => {
           router.push(`${location.origin}/alino-app/${list.id}`);
-          !isCreting && handleCloseNavbar();
+          !isCreating && handleCloseNavbar();
+          e.preventDefault();
+          e.stopPropagation();
         }}
-        style={{
-          backgroundColor:
-            hover || pathname === `/alino-app/${list.id}` || isMoreOptions
-              ? "rgb(250, 250, 250)"
-              : "#fff",
-          pointerEvents: "auto",
-        }}
-        // href={`/alino-app/${list.id}`}
+        style={style}
+        {...attributes}
+        {...listeners}
+        ref={setNodeRef}
       >
         <div
           className={styles.cardFx}
@@ -168,9 +195,6 @@ export default function ListCard({
                 : `initial`,
           }}
         ></div>
-        {/* <p style={{ position: "absolute", left: "150px", fontSize: "10px" }}>
-          {list.index}
-        </p> */}
         <div className={styles.identifierContainer}>
           <ColorPicker
             color={colorTemp}
@@ -183,7 +207,7 @@ export default function ListCard({
             emoji={emoji}
             originalEmoji={list.icon}
             setChoosingColor={setIsCreating}
-            choosingColor={isCreting}
+            choosingColor={isCreating}
           />
         </div>
 
