@@ -363,6 +363,11 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { Database } from "@/lib/todosSchema";
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
+//INIT EMOJI-MART
+import { init } from "emoji-mart";
+import data from "@emoji-mart/data/sets/15/apple.json";
+init({ data });
+
 import ListCard from "./listCard";
 import ListInput from "../listInput";
 import HomeCard from "../homeCard/homeCard";
