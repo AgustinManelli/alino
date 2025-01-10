@@ -553,8 +553,9 @@ export default function Navbar({
                     <AnimatePresence mode="popLayout">
                       {lists.map((list) => (
                         <motion.div
-                          layout
-                          layoutId={`list-${list.id}`}
+                          layout={draggedItem ? false : true}
+                          // layout="position"
+                          // layoutId={`list-${list.id}`}
                           transition={{
                             layout: {
                               duration: draggedItem?.id === list.id ? 0 : 1,
@@ -562,6 +563,7 @@ export default function Navbar({
                               bounce: 0.2,
                             },
                           }}
+                          // // animate="visible"
                           variants={containerFMVariant}
                           initial={{ scale: 0, opacity: 0 }}
                           exit={{
