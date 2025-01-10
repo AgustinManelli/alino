@@ -48,7 +48,7 @@ export default function Alerts() {
               minWidth: "200px",
             }}
           >
-            <OptionBox text={"alerta testing"} action={() => alert("alerta")} />
+            {/* <OptionBox text={"alerta testing"} action={() => alert("alerta")} /> */}
           </div>
         </ModalBox>
       )}
