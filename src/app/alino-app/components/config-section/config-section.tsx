@@ -1,7 +1,7 @@
 "use client";
 
 import styles from "./config-section.module.css";
-import { ConfigIcon } from "@/lib/ui/icons";
+import { ConfigIcon, Config, LogOut } from "@/lib/ui/icons";
 import { useRef, useState } from "react";
 import { ModalBox, OptionBox } from "@/components";
 import { signout } from "@/lib/auth/actions";
@@ -81,8 +81,26 @@ export default function ConfigSection({
                 minWidth: "200px",
               }}
             >
-              <OptionBox text={"Configuración"} action={handleOpenConfig} />
-              <OptionBox text={"Cerrar sesión"} action={logout} />
+              <OptionBox text={"Configuración"} action={handleOpenConfig}>
+                <Config
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    strokeWidth: "2",
+                    stroke: "#1c1c1c",
+                  }}
+                />
+              </OptionBox>
+              <OptionBox text={"Cerrar sesión"} action={logout}>
+                <LogOut
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    strokeWidth: "2",
+                    stroke: "#1c1c1c",
+                  }}
+                />
+              </OptionBox>
             </div>
           </ModalBox>
         )}

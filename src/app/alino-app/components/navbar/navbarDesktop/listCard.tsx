@@ -157,6 +157,8 @@ export default function ListCard({
     pointerEvents: "auto",
     zIndex: draggedItem === list.id ? "1000" : "0",
     scale: draggedItem === list.id ? "1.1" : "1",
+    boxShadow:
+      draggedItem === list.id ? "0px 0px 30px 0px rgba(0,0,0,0.05)" : "initial",
   } as React.CSSProperties;
 
   return (

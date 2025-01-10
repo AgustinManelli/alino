@@ -430,11 +430,11 @@ export default function Navbar({
     }),
     useSensor(TouchSensor, {
       activationConstraint: { distance: 5, delay: 250, tolerance: 5 },
-    }),
-    // useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     })
+    // useSensor(PointerSensor),
+    // useSensor(KeyboardSensor, {
+    //   coordinateGetter: sortableKeyboardCoordinates,
+    // })
   );
 
   const handleDragStart = (event: DragStartEvent) => {
