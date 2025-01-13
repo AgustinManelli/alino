@@ -272,7 +272,7 @@ export default function ListCard({
               delay: 0.2,
             }}
           >
-            {`${list.name} - ${list.index}`}
+            {list.name}
           </motion.p>
         )}
         {list.pinned && (
