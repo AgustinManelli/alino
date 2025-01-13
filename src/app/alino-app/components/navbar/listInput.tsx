@@ -17,6 +17,7 @@ export default function ListInput({
   const [color, setColor] = useState<string>("#87189d");
   const [hover, setHover] = useState<boolean>(false);
   const [choosingColor, setChoosingColor] = useState<boolean>(false);
+  const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
 
   const setAddList = useLists((state) => state.setAddList);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -82,6 +83,8 @@ export default function ListInput({
           ref={divRef}
         >
           <ColorPicker
+            isOpenPicker={isOpenPicker}
+            setIsOpenPicker={setIsOpenPicker}
             color={color}
             setColor={setColor}
             choosingColor={choosingColor}
