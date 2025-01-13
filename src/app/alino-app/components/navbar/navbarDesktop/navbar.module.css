@@ -1,9 +1,9 @@
 .mobileButton {
   position: absolute;
-  width: 45px;
-  height: 45px;
-  top: 25px;
-  left: 25px;
+  width: 40px;
+  height: 40px;
+  top: 15px;
+  left: 15px;
   z-index: 100;
   border: none;
   background-color: rgb(225, 225, 225);
@@ -114,11 +114,12 @@
 @media only screen and (max-width: 850px) {
   .container {
     position: absolute;
-    width: 70%;
+    width: 75%;
     min-width: inherit;
+    height: calc(100% - 30px);
     left: -100%;
     transition: left 0.2s ease-in-out;
-    padding: 25px 0 25px 5px;
+    padding: 0px 0 0px 15px;
   }
   .active {
     left: initial;

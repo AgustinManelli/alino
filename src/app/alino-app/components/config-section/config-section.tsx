@@ -48,7 +48,7 @@ export default function ConfigSection({
     <>
       {configActive && (
         <AccountConfigSection
-          name={name}
+          name={name ? name : "User"}
           userAvatarUrl={userAvatarUrl}
           handleCloseConfig={handleCloseConfig}
         />
@@ -64,7 +64,7 @@ export default function ConfigSection({
         </div>
         {active && (
           <ModalBox
-            title={name}
+            title={name ? name : "User"}
             footer={`alino · ${new Date().getFullYear()}`}
             onClose={handleClose}
             iconRef={iconRef}
