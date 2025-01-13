@@ -215,6 +215,30 @@ export const UpdatePinnedListToDB = async (id: string, pinned: boolean) => {
   return { data };
 };
 
+export const UpdateAllIndexLists = async (id: string) => {
+  const supabase = createClient();
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError) {
+    return { error: sessionError };
+  }
+
+  if (!sessionData.session) {
+    return { error: new Error("No active session found") };
+  }
+
+  const { data, error } = await supabase.rpc("update_todos_indices", {
+    p_user_id: sessionData.session.user.id,
+  });
+
+  if (error) {
+    return { error };
+  }
+
+  return { data };
+};
+
 export const AddTaskToDB = async (
   category_id: string,
   name: string,

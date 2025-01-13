@@ -32,7 +32,7 @@ export type Database = {
           color: string;
           icon: string;
           id: string;
-          index: number | null;
+          index: number;
           inserted_at: string;
           name: string;
           tasks: tasks[];
@@ -44,7 +44,7 @@ export type Database = {
           color?: string | null;
           icon?: string | null;
           id?: string;
-          index?: number | null;
+          index?: number;
           inserted_at?: string;
           name?: string | null;
           tasks?: tasks[] | null;
@@ -56,7 +56,7 @@ export type Database = {
           color?: string | null;
           icon?: string | null;
           id?: string;
-          index?: number | null;
+          index?: number;
           inserted_at?: string;
           name?: string | null;
           tasks?: tasks[] | null;

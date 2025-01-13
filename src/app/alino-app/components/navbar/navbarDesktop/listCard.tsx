@@ -64,7 +64,7 @@ export default function ListCard({
         duration: 500,
         easing: "cubic-bezier(0.25, 1, 0.5, 1)",
       },
-      disabled: isCreating || isMoreOptions,
+      disabled: isCreating || isMoreOptions || isOpenPicker || list.pinned,
     });
 
   const handleChangeMoreOptions = (prop: boolean) => {
@@ -272,7 +272,7 @@ export default function ListCard({
               delay: 0.2,
             }}
           >
-            {list.name}
+            {`${list.name} - ${list.index}`}
           </motion.p>
         )}
         {list.pinned && (

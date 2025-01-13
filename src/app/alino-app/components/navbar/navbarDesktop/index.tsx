@@ -597,43 +597,87 @@ export default function Navbar({
                       handleCloseNavbar={handleCloseNavbar}
                       key={"homecard"}
                     />
+                    <DndContext>
+                      <AnimatePresence mode="popLayout">
+                        {lists
+                          .filter((list) => list.pinned === true)
+                          .map((list) => (
+                            <motion.div
+                              layout={draggedItem ? false : true}
+                              variants={containerFMVariant}
+                              initial={{ scale: 0, opacity: 0 }}
+                              transition={{
+                                scale: {
+                                  duration: 0.2,
+                                  ease: "easeInOut",
+                                },
+                              }}
+                              exit={{
+                                scale: 1.3,
+                                opacity: 0,
+                                filter: "blur(30px) grayscale(100%)",
+                                y: -30,
+                                transition: {
+                                  duration: 1,
+                                },
+                                zIndex: "5",
+                              }}
+                              key={`pinned-${list.id}`}
+                              style={{
+                                touchAction: "none", // Mejora el comportamiento táctil
+                              }}
+                            >
+                              <ListCard
+                                list={list}
+                                setIsCreating={setIsCreating}
+                                isCreating={isCreating}
+                                handleCloseNavbar={handleCloseNavbar}
+                                draggedItem={draggedItem?.id}
+                                navScrolling={navScrolling}
+                              />
+                            </motion.div>
+                          ))}
+                      </AnimatePresence>
+                    </DndContext>
                     <AnimatePresence mode="popLayout">
-                      {lists.map((list) => (
-                        <motion.div
-                          layout={draggedItem ? false : true}
-                          variants={containerFMVariant}
-                          initial={{ scale: 0, opacity: 0 }}
-                          transition={{
-                            scale: {
-                              duration: 0.2,
-                              ease: "easeInOut",
-                            },
-                          }}
-                          exit={{
-                            scale: 1.3,
-                            opacity: 0,
-                            filter: "blur(30px) grayscale(100%)",
-                            y: -30,
-                            transition: {
-                              duration: 1,
-                            },
-                            zIndex: "5",
-                          }}
-                          key={`list-${list.id}`}
-                          style={{
-                            touchAction: "none", // Mejora el comportamiento táctil
-                          }}
-                        >
-                          <ListCard
-                            list={list}
-                            setIsCreating={setIsCreating}
-                            isCreating={isCreating}
-                            handleCloseNavbar={handleCloseNavbar}
-                            draggedItem={draggedItem?.id}
-                            navScrolling={navScrolling}
-                          />
-                        </motion.div>
-                      ))}
+                      {lists
+                        .filter((list) => list.pinned === false)
+                        .map((list) => (
+                          <motion.div
+                            layout={draggedItem ? false : true}
+                            variants={containerFMVariant}
+                            initial={{ scale: 0, opacity: 0 }}
+                            transition={{
+                              scale: {
+                                duration: 0.2,
+                                ease: "easeInOut",
+                              },
+                            }}
+                            exit={{
+                              scale: 1.3,
+                              opacity: 0,
+                              filter: "blur(30px) grayscale(100%)",
+                              y: -30,
+                              transition: {
+                                duration: 1,
+                              },
+                              zIndex: "5",
+                            }}
+                            key={`list-${list.id}`}
+                            style={{
+                              touchAction: "none", // Mejora el comportamiento táctil
+                            }}
+                          >
+                            <ListCard
+                              list={list}
+                              setIsCreating={setIsCreating}
+                              isCreating={isCreating}
+                              handleCloseNavbar={handleCloseNavbar}
+                              draggedItem={draggedItem?.id}
+                              navScrolling={navScrolling}
+                            />
+                          </motion.div>
+                        ))}
                     </AnimatePresence>
                   </motion.section>
                 </SortableContext>

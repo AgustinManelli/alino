@@ -13,6 +13,7 @@ import {
   UpdateTasksCompleted,
   UpdatePinnedListToDB,
   UpdateIndexListToDB,
+  UpdateAllIndexLists,
 } from "@/lib/todo/actions";
 import { AddListToDB } from "@/lib/todo/actions";
 import { toast } from "sonner";
@@ -247,21 +248,40 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   updateListPosition: async (id, index) => {
-    set((state) => ({
-      lists: state.lists.map((list) => {
-        if (list.id === id) {
-          return {
-            ...list,
-            index: index,
-          };
-        }
-        return list;
-      }),
-    }));
     try {
-      const result = await UpdateIndexListToDB(id, index);
-      if (result.error) {
-        throw new Error(result.error.message);
+      if (!Number.isInteger(index)) {
+        set((state) => {
+          const updatedLists = state.lists.map((list, idx) => {
+            return {
+              ...list,
+              index: 16384 * (idx + 1),
+            };
+          });
+
+          return { lists: updatedLists };
+        });
+
+        const result = await UpdateAllIndexLists(id);
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+      } else {
+        set((state) => ({
+          lists: state.lists.map((list) => {
+            if (list.id === id) {
+              return {
+                ...list,
+                index: index,
+              };
+            }
+            return list;
+          }),
+        }));
+
+        const result = await UpdateIndexListToDB(id, index);
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
       }
     } catch {
       toast.error("Hubo un error al modificar la lista, inténtalo nuevamente.");
