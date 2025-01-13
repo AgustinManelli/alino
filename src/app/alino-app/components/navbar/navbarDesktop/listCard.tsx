@@ -23,18 +23,21 @@ export default function ListCard({
   isCreating,
   handleCloseNavbar,
   draggedItem,
+  navScrolling,
 }: {
   list: ListsType;
   setIsCreating: (value: boolean) => void;
   isCreating: boolean;
   handleCloseNavbar: () => void;
   draggedItem: string | undefined;
+  navScrolling: number;
 }) {
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
   const updateListName = useLists((state) => state.updateListName);
   const updateListPinned = useLists((state) => state.updateListPinned);
   const isMobile = useMobileStore((state) => state.isMobile);
+  const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
 
   const divRef = useRef<HTMLInputElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -51,7 +54,7 @@ export default function ListCard({
   const [inputName, setInputName] = useState<string>(list.name);
   const [checkHover, setCheckHover] = useState<boolean>(false);
 
-  const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
+  const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
 
   const id = list.id;
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -61,6 +64,7 @@ export default function ListCard({
         duration: 500,
         easing: "cubic-bezier(0.25, 1, 0.5, 1)",
       },
+      disabled: isCreating || isMoreOptions,
     });
 
   const handleChangeMoreOptions = (prop: boolean) => {
@@ -92,6 +96,11 @@ export default function ListCard({
       inputRef.current.focus();
     }
   }, [input]);
+
+  useEffect(() => {
+    setIsMoreOptions(false);
+    setIsOpenPicker(false);
+  }, [navScrolling]);
 
   const handleSave = async () => {
     setIsCreating(false);
@@ -155,10 +164,10 @@ export default function ListCard({
         ? "rgb(250, 250, 250)"
         : "#fff",
     pointerEvents: "auto",
-    zIndex: draggedItem === list.id ? "1000" : "0",
-    scale: draggedItem === list.id ? "1.1" : "1",
     boxShadow:
-      draggedItem === list.id ? "0px 0px 30px 0px rgba(0,0,0,0.05)" : "initial",
+      draggedItem === list.id ? "0px 0px 30px 0px rgba(0,0,0,0.05)" : "none",
+    zIndex: draggedItem === list.id ? 1000 : 1,
+    scale: draggedItem === list.id ? 1.1 : 1,
   } as React.CSSProperties;
 
   return (
@@ -192,13 +201,18 @@ export default function ListCard({
           className={styles.cardFx}
           style={{
             boxShadow:
-              hover || pathname === `/alino-app/${list.id}` || isMoreOptions
+              hover ||
+              pathname === `/alino-app/${list.id}` ||
+              isMoreOptions ||
+              draggedItem === list.id
                 ? `${colorTemp} 100px 50px 50px`
                 : `initial`,
           }}
         ></div>
         <div className={styles.identifierContainer}>
           <ColorPicker
+            isOpenPicker={isOpenPicker}
+            setIsOpenPicker={setIsOpenPicker}
             color={colorTemp}
             setColor={setColorTemp}
             save={true}

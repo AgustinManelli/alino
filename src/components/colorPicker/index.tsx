@@ -18,7 +18,7 @@ type SquircleColorButonType = {
   colorHex: string;
   setChoosingColor?: (value: boolean) => void;
   save?: boolean;
-  setOpen: (value: boolean) => void;
+  setIsOpenPicker: (value: boolean) => void;
   setIsSave: (value: boolean) => void;
   index: number;
   setEmoji: (value: string) => void;
@@ -30,7 +30,7 @@ export function SquircleColorSelector({
   colorHex,
   setChoosingColor,
   save,
-  setOpen,
+  setIsOpenPicker,
   setIsSave,
   index,
   setEmoji,
@@ -47,7 +47,7 @@ export function SquircleColorSelector({
           setEmoji("");
           !save && setChoosingColor && setChoosingColor(false);
           if (!save) {
-            setOpen(false);
+            setIsOpenPicker(false);
           } else {
             setIsSave(false);
           }
@@ -91,6 +91,8 @@ interface emoji {
 }
 
 interface ColorPickerInterface {
+  isOpenPicker: boolean;
+  setIsOpenPicker: (value: boolean) => void;
   originalColor?: string | null;
   color: string;
   setColor: (value: string) => void;
@@ -105,6 +107,8 @@ interface ColorPickerInterface {
 }
 
 export function ColorPicker({
+  isOpenPicker,
+  setIsOpenPicker,
   originalColor, //corresponde al color original del elemento donde se use
   color, //indica el color que está seleccionado en ese momento, no corresponde al original
   setColor, //corresponde a la función para cambiar el valor de los colores temporales, no cambia valor de color original
@@ -117,7 +121,6 @@ export function ColorPicker({
   choosingColor, //indicador de si aún se está eligiendo un color
   setChoosingColor, //función para indicar que el usuario está eligiendo un color o que aún no guardó los cambios
 }: ColorPickerInterface) {
-  const [open, setOpen] = useState<boolean>(false);
   const saveButtonHover = useHover(false);
   const [isSave, setIsSave] = useState<boolean>(false); //indica si el cambio de color temporal se guardó
   const [type, setType] = useState<boolean>(true); //color picker o emoji picker
@@ -154,7 +157,7 @@ export function ColorPicker({
           !childRef.current.contains(event.target as Node) &&
           !pickerRef.current.contains(event.target as Node)
         ) {
-          setOpen(false);
+          setIsOpenPicker(false);
           setChoosingColor && setChoosingColor(false);
           setType(true);
           if (save && !isSave && originalColor) {
@@ -195,7 +198,7 @@ export function ColorPicker({
             e.preventDefault();
             e.stopPropagation();
             setChoosingColor && setChoosingColor(!choosingColor);
-            setOpen(!open);
+            setIsOpenPicker(!isOpenPicker);
             setType(true);
           }}
         >
@@ -216,7 +219,7 @@ export function ColorPicker({
       </div>
       {createPortal(
         <>
-          {open ? (
+          {isOpenPicker ? (
             <motion.section
               ref={childRef}
               transition={{
@@ -287,7 +290,7 @@ export function ColorPicker({
                         colorHex={colorHex}
                         setChoosingColor={setChoosingColor}
                         save={save}
-                        setOpen={setOpen}
+                        setIsOpenPicker={setIsOpenPicker}
                         setIsSave={setIsSave}
                         index={index}
                         setEmoji={setEmoji}
@@ -402,7 +405,7 @@ export function ColorPicker({
                           e.stopPropagation();
                           // setWait(true);
                           handleSave();
-                          setOpen(false);
+                          setIsOpenPicker(false);
                           setIsSave(true);
                         }}
                       >

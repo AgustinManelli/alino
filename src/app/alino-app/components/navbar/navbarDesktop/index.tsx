@@ -359,7 +359,10 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  restrictToVerticalAxis,
+  restrictToParentElement,
+} from "@dnd-kit/modifiers";
 import { Database } from "@/lib/todosSchema";
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -401,9 +404,10 @@ export default function Navbar({
   initialFetching: boolean;
 }) {
   //estados locales
-  const [isActive, setIsActive] = useState<boolean>(false);
-  const [draggedItem, setDraggedItem] = useState<ListsType | null>(null);
-  const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [isActive, setIsActive] = useState<boolean>(false); //estado para navbar mobile
+  const [draggedItem, setDraggedItem] = useState<ListsType | null>(null); //Drag de elemento
+  const [isCreating, setIsCreating] = useState<boolean>(false); //Almacenando o editando elemento
+  const [navScrolling, setNavScrolling] = useState<number>(0);
 
   //estados globales
   const { isMobile, setIsMobile } = useMobileStore();
@@ -413,6 +417,45 @@ export default function Navbar({
 
   //ref's
   const Ref = useRef<HTMLInputElement | null>(null);
+  const prevLengthRef = useRef<number>(lists.length);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Referencia para almacenar la longitud anterior de la lista
+
+    if (lists.length > prevLengthRef.current) {
+      // Solo ejecuta el scroll si se agregó un elemento
+      const objDiv = document.getElementById("listContainer");
+      if (objDiv !== null) {
+        objDiv.scrollTo({
+          top: objDiv.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    }
+
+    // Actualiza la longitud previa
+    prevLengthRef.current = lists.length;
+  }, [lists]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollRef.current) {
+        setNavScrolling(scrollRef.current.scrollTop); // Actualiza la posición del scroll
+      }
+    };
+
+    const divElement = scrollRef.current;
+    if (divElement) {
+      divElement.addEventListener("scroll", handleScroll); // Escucha el evento scroll
+    }
+
+    return () => {
+      if (divElement) {
+        divElement.removeEventListener("scroll", handleScroll); // Limpia el evento al desmontar
+      }
+    };
+  }, []);
 
   const handleCloseNavbar = () => {
     setIsActive(false);
@@ -517,7 +560,11 @@ export default function Navbar({
             onDragStart={handleDragStart}
             modifiers={[restrictToVerticalAxis]}
           >
-            <motion.section className={styles.cardsSection}>
+            <motion.section
+              className={styles.cardsSection}
+              id="listContainer"
+              ref={scrollRef}
+            >
               {initialFetching ? (
                 <div className={styles.cardsContainer}>
                   {Array(4)
@@ -554,18 +601,14 @@ export default function Navbar({
                       {lists.map((list) => (
                         <motion.div
                           layout={draggedItem ? false : true}
-                          // layout="position"
-                          // layoutId={`list-${list.id}`}
-                          transition={{
-                            layout: {
-                              duration: draggedItem?.id === list.id ? 0 : 1,
-                              type: "spring",
-                              bounce: 0.2,
-                            },
-                          }}
-                          // // animate="visible"
                           variants={containerFMVariant}
                           initial={{ scale: 0, opacity: 0 }}
+                          transition={{
+                            scale: {
+                              duration: 0.2,
+                              ease: "easeInOut",
+                            },
+                          }}
                           exit={{
                             scale: 1.3,
                             opacity: 0,
@@ -577,6 +620,9 @@ export default function Navbar({
                             zIndex: "5",
                           }}
                           key={`list-${list.id}`}
+                          style={{
+                            touchAction: "none", // Mejora el comportamiento táctil
+                          }}
                         >
                           <ListCard
                             list={list}
@@ -584,15 +630,18 @@ export default function Navbar({
                             isCreating={isCreating}
                             handleCloseNavbar={handleCloseNavbar}
                             draggedItem={draggedItem?.id}
+                            navScrolling={navScrolling}
                           />
                         </motion.div>
                       ))}
                     </AnimatePresence>
-                    <ListInput setIsCreating={setIsCreating} key={"input"} />
                   </motion.section>
                 </SortableContext>
               )}
             </motion.section>
+            <div className={styles.inputContainer}>
+              <ListInput setIsCreating={setIsCreating} key={"input"} />
+            </div>
           </DndContext>
         </div>
       </div>
