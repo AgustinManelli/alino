@@ -688,19 +688,6 @@ export default function Navbar({
                             />
                           </motion.div>
                         ))}
-                      <DragOverlay>
-                        {draggedItem ? (
-                          <ListCard
-                            list={draggedItem}
-                            setIsCreating={setIsCreating}
-                            isCreating={isCreating}
-                            handleCloseNavbar={handleCloseNavbar}
-                            navScrolling={navScrolling}
-                            key={`list-dragged-${draggedItem.id}`}
-                            overlay={true}
-                          />
-                        ) : null}
-                      </DragOverlay>
                     </AnimatePresence>
                   </SortableContext>
                 </DndContext>

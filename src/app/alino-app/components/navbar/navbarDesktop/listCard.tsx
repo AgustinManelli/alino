@@ -23,14 +23,12 @@ export default function ListCard({
   isCreating,
   handleCloseNavbar,
   navScrolling,
-  overlay,
 }: {
   list: ListsType;
   setIsCreating: (value: boolean) => void;
   isCreating: boolean;
   handleCloseNavbar: () => void;
   navScrolling: number;
-  overlay?: boolean;
 }) {
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
@@ -167,8 +165,7 @@ export default function ListCard({
     boxShadow:
       active?.id === list.id ? "0px 0px 30px 0px rgba(0,0,0,0.05)" : "none",
     zIndex: active?.id === list.id ? 99 : 1,
-    // scale: active?.id === list.id ? 1.1 : 1,
-    opacity: active?.id === list.id ? 0.1 : 1,
+    scale: active?.id === list.id ? 1.1 : 1,
   } as React.CSSProperties;
 
   return (
@@ -263,10 +260,7 @@ export default function ListCard({
                 backgroundClip: "text",
               }}
               animate={{
-                backgroundPosition:
-                  overlay && overlay
-                    ? ["0% center"]
-                    : ["200% center", "0% center"],
+                backgroundPosition: ["200% center", "0% center"],
               }}
               transition={{
                 duration: 2,
