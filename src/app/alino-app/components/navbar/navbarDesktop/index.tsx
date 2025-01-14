@@ -338,6 +338,7 @@ import styles from "./navbar.module.css";
 import useMobileStore from "@/store/useMobileStore";
 import { useLists } from "@/store/lists";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
 import { AnimatePresence, motion } from "motion/react";
 import useOnClickOutside from "@/hooks/useOnClickOutside";
@@ -377,6 +378,7 @@ import ListCard from "./listCard";
 import ListInput from "../listInput";
 import HomeCard from "../homeCard/homeCard";
 import { Skeleton } from "@/components";
+import DragListCard from "./dragListCard";
 
 const containerFMVariant = {
   hidden: { opacity: 1, scale: 1 },
@@ -607,7 +609,7 @@ export default function Navbar({
                   onDragStart={handleDragStart}
                   modifiers={[
                     restrictToVerticalAxis,
-                    restrictToFirstScrollableAncestor,
+                    // restrictToFirstScrollableAncestor,
                   ]}
                 >
                   <SortableContext
@@ -688,6 +690,14 @@ export default function Navbar({
                             />
                           </motion.div>
                         ))}
+                      <DragOverlay>
+                        {draggedItem ? (
+                          <DragListCard
+                            list={draggedItem}
+                            key={`list-${draggedItem.id}`}
+                          />
+                        ) : null}
+                      </DragOverlay>
                     </AnimatePresence>
                   </SortableContext>
                 </DndContext>

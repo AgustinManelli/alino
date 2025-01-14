@@ -91,7 +91,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow-x: visible;
+  overflow-y: auto;
   padding: 30px 30px 30px 30px;
 }
 
@@ -100,9 +101,11 @@
 }
 
 .cardsContainer {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 5px;
+  height: fit-content;
 }
 
 .inputContainer {
