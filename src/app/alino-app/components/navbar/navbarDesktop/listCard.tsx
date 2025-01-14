@@ -22,15 +22,15 @@ export default function ListCard({
   setIsCreating,
   isCreating,
   handleCloseNavbar,
-  draggedItem,
   navScrolling,
+  overlay,
 }: {
   list: ListsType;
   setIsCreating: (value: boolean) => void;
   isCreating: boolean;
   handleCloseNavbar: () => void;
-  draggedItem: string | undefined;
   navScrolling: number;
+  overlay?: boolean;
 }) {
   const deleteList = useLists((state) => state.deleteList);
   const changeColor = useLists((state) => state.changeColor);
@@ -57,7 +57,7 @@ export default function ListCard({
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
 
   const id = list.id;
-  const { attributes, listeners, setNodeRef, transform, transition } =
+  const { active, attributes, listeners, setNodeRef, transform, transition } =
     useSortable({
       id,
       transition: {
@@ -160,18 +160,19 @@ export default function ListCard({
       hover ||
       pathname === `/alino-app/${list.id}` ||
       isMoreOptions ||
-      draggedItem === list.id
+      active?.id === list.id
         ? "rgb(250, 250, 250)"
         : "#fff",
     pointerEvents: "auto",
     boxShadow:
-      draggedItem === list.id ? "0px 0px 30px 0px rgba(0,0,0,0.05)" : "none",
-    zIndex: draggedItem === list.id ? 1000 : 1,
-    scale: draggedItem === list.id ? 1.1 : 1,
+      active?.id === list.id ? "0px 0px 30px 0px rgba(0,0,0,0.05)" : "none",
+    zIndex: active?.id === list.id ? 99 : 1,
+    // scale: active?.id === list.id ? 1.1 : 1,
+    opacity: active?.id === list.id ? 0.1 : 1,
   } as React.CSSProperties;
 
   return (
-    <div ref={divRef}>
+    <>
       {deleteConfirm && (
         <ConfirmationModal
           text={`¿Desea eliminar la lista "${list.name}"?`}
@@ -180,169 +181,173 @@ export default function ListCard({
           handleDelete={handleDelete}
         />
       )}
-      <div
-        className={styles.container}
-        onMouseEnter={!isMobile ? () => setHover(true) : undefined}
-        onMouseLeave={() => {
-          if (!isMobile && !input) setHover(false);
-        }}
-        onClick={(e) => {
-          router.push(`${location.origin}/alino-app/${list.id}`);
-          !isCreating && handleCloseNavbar();
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-        style={style}
-        {...attributes}
-        {...listeners}
-        ref={setNodeRef}
-      >
+      <div ref={divRef}>
         <div
-          className={styles.cardFx}
-          style={{
-            boxShadow:
-              hover ||
-              pathname === `/alino-app/${list.id}` ||
-              isMoreOptions ||
-              draggedItem === list.id
-                ? `${colorTemp} 100px 50px 50px`
-                : `initial`,
+          className={styles.container}
+          onMouseEnter={!isMobile ? () => setHover(true) : undefined}
+          onMouseLeave={() => {
+            if (!isMobile && !input) setHover(false);
           }}
-        ></div>
-        <div className={styles.identifierContainer}>
-          <ColorPicker
-            isOpenPicker={isOpenPicker}
-            setIsOpenPicker={setIsOpenPicker}
-            color={colorTemp}
-            setColor={setColorTemp}
-            save={true}
-            handleSave={handleSave}
-            width={"20px"}
-            originalColor={list.color}
-            setEmoji={setEmoji}
-            emoji={emoji}
-            originalEmoji={list.icon}
-            setChoosingColor={setIsCreating}
-            choosingColor={isCreating}
-          />
-        </div>
+          onClick={(e) => {
+            router.push(`${location.origin}/alino-app/${list.id}`);
+            !isCreating && handleCloseNavbar();
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          style={style}
+          {...attributes}
+          {...listeners}
+          ref={setNodeRef}
+        >
+          <div
+            className={styles.cardFx}
+            style={{
+              boxShadow:
+                pathname === `/alino-app/${list.id}`
+                  ? `${colorTemp} 100px 50px 50px`
+                  : `initial`,
+            }}
+          ></div>
+          <div className={styles.identifierContainer}>
+            <ColorPicker
+              isOpenPicker={isOpenPicker}
+              setIsOpenPicker={setIsOpenPicker}
+              color={colorTemp}
+              setColor={setColorTemp}
+              save={true}
+              handleSave={handleSave}
+              width={"20px"}
+              originalColor={list.color}
+              setEmoji={setEmoji}
+              emoji={emoji}
+              originalEmoji={list.icon}
+              setChoosingColor={setIsCreating}
+              choosingColor={isCreating}
+            />
+          </div>
 
-        {/* IMPLEMENTAR INPUT PARA CAMBIAR DE NOMBRE CON SU RESPECTIVO BOTÓN */}
-        {isNameChange ? (
-          <div className={styles.nameChangerContainer}>
-            <input
-              className={styles.nameChangerInput}
-              type="text"
-              value={inputName}
-              ref={inputRef}
-              onChange={(e) => {
-                setInputName(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (!inputRef.current) return;
-                if (e.key === "Enter") {
-                  handleSaveName();
-                }
-                if (e.key === "Escape") {
-                  setIsNameChange(false);
-                  setInput(false);
-                  setInputName(list.name);
-                }
-              }}
-            />
-          </div>
-        ) : (
-          // <p className={styles.listName}>{list.name}</p>
-          <motion.p
-            className={styles.listName}
-            style={{
-              background: `linear-gradient(to right,#1c1c1c 80%, ${list.color} 90%, transparent 95%) 0% center / 200% no-repeat text`,
-              backgroundSize: "200% auto",
-              backgroundRepeat: "no-repeat",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-            animate={{
-              backgroundPosition: ["200% center", "0% center"],
-            }}
-            transition={{
-              duration: 2,
-              ease: "linear",
-              delay: 0.2,
-            }}
-          >
-            {list.name}
-          </motion.p>
-        )}
-        {list.pinned && (
-          <div className={styles.pinContainer}>
-            <Pin
+          {/* IMPLEMENTAR INPUT PARA CAMBIAR DE NOMBRE CON SU RESPECTIVO BOTÓN */}
+          {isNameChange ? (
+            <div className={styles.nameChangerContainer}>
+              <input
+                className={styles.nameChangerInput}
+                type="text"
+                value={inputName}
+                ref={inputRef}
+                onChange={(e) => {
+                  setInputName(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (!inputRef.current) return;
+                  if (e.key === "Enter") {
+                    handleSaveName();
+                  }
+                  if (e.key === "Escape") {
+                    setIsNameChange(false);
+                    setInput(false);
+                    setInputName(list.name);
+                  }
+                }}
+              />
+            </div>
+          ) : (
+            // <p className={styles.listName}>{list.name}</p>
+            <motion.p
+              className={styles.listName}
               style={{
-                width: "14px",
-                stroke: "rgb(210, 210, 210)",
-                strokeWidth: "2",
+                background: `linear-gradient(to right,#1c1c1c 80%, ${list.color} 90%, transparent 95%) 0% center / 200% no-repeat text`,
+                backgroundSize: "200% auto",
+                backgroundRepeat: "no-repeat",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
               }}
-            />
-          </div>
-        )}
-        {input ? (
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleSaveName();
-            }}
-            className={styles.checkButton}
-            style={{
-              backgroundColor: checkHover ? "rgb(240,240,240)" : "transparent",
-            }}
-            onMouseEnter={() => {
-              setCheckHover(true);
-            }}
-            onMouseLeave={() => {
-              setCheckHover(false);
-            }}
-          >
-            <Check
-              style={{
-                stroke: "#1c1c1c",
-                strokeWidth: "2",
-                width: "20px",
-                height: "auto",
+              animate={{
+                backgroundPosition:
+                  overlay && overlay
+                    ? ["0% center"]
+                    : ["200% center", "0% center"],
               }}
-            />
-          </button>
-        ) : (
-          <>
-            <button
-              className={styles.button}
-              style={{
-                opacity: hover || isMoreOptions ? "1" : "0",
-                display: isMobile ? "none" : "visible",
+              transition={{
+                duration: 2,
+                ease: "linear",
+                delay: 0.2,
               }}
             >
-              <MoreConfigs
-                width={"23px"}
-                open={isMoreOptions}
-                setOpen={handleChangeMoreOptions}
-                handleDelete={handleConfirm}
-                handleNameChange={handleNameChange}
-                handlePin={handlePin}
-                pinned={list.pinned}
+              {list.name}
+            </motion.p>
+          )}
+          {list.pinned && (
+            <div className={styles.pinContainer}>
+              <Pin
+                style={{
+                  width: "14px",
+                  stroke: "rgb(210, 210, 210)",
+                  strokeWidth: "2",
+                }}
+              />
+            </div>
+          )}
+          {input ? (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSaveName();
+              }}
+              className={styles.checkButton}
+              style={{
+                backgroundColor: checkHover
+                  ? "rgb(240,240,240)"
+                  : "transparent",
+              }}
+              onMouseEnter={() => {
+                setCheckHover(true);
+              }}
+              onMouseLeave={() => {
+                setCheckHover(false);
+              }}
+            >
+              <Check
+                style={{
+                  stroke: "#1c1c1c",
+                  strokeWidth: "2",
+                  width: "20px",
+                  height: "auto",
+                }}
               />
             </button>
-            <p
-              className={styles.counter}
-              style={{
-                opacity: hover || isMoreOptions ? "0" : "1",
-              }}
-            >
-              <CounterAnimation tasksLength={list.tasks?.length} />
-            </p>
-          </>
-        )}
+          ) : (
+            <>
+              <button
+                className={styles.button}
+                style={{
+                  opacity: hover || isMoreOptions ? "1" : "0",
+                  display: isMobile ? "none" : "visible",
+                }}
+              >
+                <MoreConfigs
+                  width={"23px"}
+                  open={isMoreOptions}
+                  setOpen={handleChangeMoreOptions}
+                  handleDelete={handleConfirm}
+                  handleNameChange={handleNameChange}
+                  handlePin={handlePin}
+                  pinned={list.pinned}
+                />
+              </button>
+              <p
+                className={styles.counter}
+                style={{
+                  opacity: hover || isMoreOptions ? "0" : "1",
+                }}
+              >
+                <CounterAnimation tasksLength={list.tasks?.length} />
+              </p>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

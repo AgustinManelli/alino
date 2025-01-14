@@ -337,7 +337,7 @@
 import styles from "./navbar.module.css";
 import useMobileStore from "@/store/useMobileStore";
 import { useLists } from "@/store/lists";
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
 import { AnimatePresence, motion } from "motion/react";
 import useOnClickOutside from "@/hooks/useOnClickOutside";
@@ -352,6 +352,7 @@ import {
   DragStartEvent,
   MouseSensor,
   TouchSensor,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -360,8 +361,9 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import {
-  restrictToVerticalAxis,
+  restrictToFirstScrollableAncestor,
   restrictToParentElement,
+  restrictToVerticalAxis,
 } from "@dnd-kit/modifiers";
 import { Database } from "@/lib/todosSchema";
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
@@ -407,10 +409,10 @@ export default function Navbar({
   const [isActive, setIsActive] = useState<boolean>(false); //estado para navbar mobile
   const [draggedItem, setDraggedItem] = useState<ListsType | null>(null); //Drag de elemento
   const [isCreating, setIsCreating] = useState<boolean>(false); //Almacenando o editando elemento
-  const [navScrolling, setNavScrolling] = useState<number>(0);
+  const [navScrolling, setNavScrolling] = useState<number>(0); //Valor del scroll en navbar
 
   //estados globales
-  const { isMobile, setIsMobile } = useMobileStore();
+  const { isMobile } = useMobileStore();
   const lists = useLists((state) => state.lists);
   const setLists = useLists((state) => state.setLists);
   const updateListPosition = useLists((state) => state.updateListPosition);
@@ -420,9 +422,9 @@ export default function Navbar({
   const prevLengthRef = useRef<number>(lists.length);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  //useEffect's
   useEffect(() => {
-    // Referencia para almacenar la longitud anterior de la lista
-
+    //useEffect para desplazar navbar cuando se agrega una lista
     if (lists.length > prevLengthRef.current) {
       // Solo ejecuta el scroll si se agregó un elemento
       const objDiv = document.getElementById("listContainer");
@@ -433,12 +435,11 @@ export default function Navbar({
         });
       }
     }
-
-    // Actualiza la longitud previa
     prevLengthRef.current = lists.length;
   }, [lists]);
 
   useEffect(() => {
+    //useEffect para dar valor a la posición del scroll en el navbar
     const handleScroll = () => {
       if (scrollRef.current) {
         setNavScrolling(scrollRef.current.scrollTop); // Actualiza la posición del scroll
@@ -457,30 +458,14 @@ export default function Navbar({
     };
   }, []);
 
+  //funciones
   const handleCloseNavbar = () => {
+    //funcion para cerrar navbar mobile
     setIsActive(false);
   };
 
-  useOnClickOutside(Ref, () => {
-    if (!isCreating) {
-      handleCloseNavbar();
-    }
-  });
-
-  const sensors = useSensors(
-    useSensor(MouseSensor, {
-      activationConstraint: { distance: 5, delay: 250, tolerance: 5 },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: { distance: 5, delay: 250, tolerance: 5 },
-    })
-    // useSensor(PointerSensor),
-    // useSensor(KeyboardSensor, {
-    //   coordinateGetter: sortableKeyboardCoordinates,
-    // })
-  );
-
   const handleDragStart = (event: DragStartEvent) => {
+    //función que se inicial al hacer drag
     const { active } = event;
     const draggedList = lists.find((list) => list.id === active.id);
     if (draggedList) {
@@ -489,6 +474,7 @@ export default function Navbar({
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    //función que se inicia al finalizar o soltar un elemento draggable
     const { active, over } = event;
 
     if (!over || active.id === over.id) {
@@ -517,8 +503,34 @@ export default function Navbar({
     setDraggedItem(null);
   };
 
+  //customHooks
+  useOnClickOutside(Ref, () => {
+    //customHook para cerrar navbar al hacer click fuera
+    if (!isCreating) {
+      handleCloseNavbar();
+    }
+  });
+
+  //dndkit
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: { distance: 5, delay: 250, tolerance: 5 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { distance: 5, delay: 250, tolerance: 5 },
+    })
+    // useSensor(PointerSensor, {
+    //   activationConstraint: { distance: 5, delay: 250, tolerance: 5 },
+    // })
+    // useSensor(PointerSensor),
+    // useSensor(KeyboardSensor, {
+    //   coordinateGetter: sortableKeyboardCoordinates,
+    // })
+  );
+
   return (
     <>
+      {/* BOTON PARA ABRIR NAVBAR MOBILE */}
       {isMobile && (
         <button
           onClick={() => {
@@ -536,6 +548,8 @@ export default function Navbar({
           />
         </button>
       )}
+
+      {/* NAVBAR */}
       <div
         className={styles.container}
         style={{ left: isActive ? "0" : "-100%" }}
@@ -553,50 +567,53 @@ export default function Navbar({
               decoFill={"#1c1c1c"}
             />
           </div>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-            onDragStart={handleDragStart}
-            modifiers={[restrictToVerticalAxis]}
+          <motion.section
+            className={styles.cardsSection}
+            id="listContainer"
+            ref={scrollRef}
           >
-            <motion.section
-              className={styles.cardsSection}
-              id="listContainer"
-              ref={scrollRef}
-            >
-              {initialFetching ? (
-                <div className={styles.cardsContainer}>
-                  {Array(4)
-                    .fill(null)
-                    .map((_, index) => (
-                      <Skeleton
-                        style={{
-                          width: "100%",
-                          height: "45px",
-                          borderRadius: "15px",
-                        }}
-                        delay={index * 0.15}
-                        key={`skeleton-${index}`}
-                      />
-                    ))}
-                </div>
-              ) : (
-                <SortableContext
-                  items={lists}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <motion.section
-                    className={styles.cardsContainer}
-                    variants={containerFMVariant}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                  >
-                    <HomeCard
-                      handleCloseNavbar={handleCloseNavbar}
-                      key={"homecard"}
+            {initialFetching ? (
+              <div className={styles.cardsContainer}>
+                {Array(4)
+                  .fill(null)
+                  .map((_, index) => (
+                    <Skeleton
+                      style={{
+                        width: "100%",
+                        height: "45px",
+                        borderRadius: "15px",
+                      }}
+                      delay={index * 0.15}
+                      key={`skeleton-${index}`}
                     />
+                  ))}
+              </div>
+            ) : (
+              <motion.section
+                className={styles.cardsContainer}
+                variants={containerFMVariant}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <HomeCard
+                  handleCloseNavbar={handleCloseNavbar}
+                  key={"homecard"}
+                />
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                  onDragStart={handleDragStart}
+                  modifiers={[
+                    restrictToVerticalAxis,
+                    restrictToFirstScrollableAncestor,
+                  ]}
+                >
+                  <SortableContext
+                    items={lists}
+                    strategy={verticalListSortingStrategy}
+                  >
                     <DndContext>
                       <AnimatePresence mode="popLayout">
                         {lists
@@ -623,16 +640,12 @@ export default function Navbar({
                                 zIndex: "5",
                               }}
                               key={`pinned-${list.id}`}
-                              style={{
-                                touchAction: "none", // Mejora el comportamiento táctil
-                              }}
                             >
                               <ListCard
                                 list={list}
                                 setIsCreating={setIsCreating}
                                 isCreating={isCreating}
                                 handleCloseNavbar={handleCloseNavbar}
-                                draggedItem={draggedItem?.id}
                                 navScrolling={navScrolling}
                               />
                             </motion.div>
@@ -664,29 +677,39 @@ export default function Navbar({
                               zIndex: "5",
                             }}
                             key={`list-${list.id}`}
-                            style={{
-                              touchAction: "none", // Mejora el comportamiento táctil
-                            }}
+                            id={`list-${list.id}`}
                           >
                             <ListCard
                               list={list}
                               setIsCreating={setIsCreating}
                               isCreating={isCreating}
                               handleCloseNavbar={handleCloseNavbar}
-                              draggedItem={draggedItem?.id}
                               navScrolling={navScrolling}
                             />
                           </motion.div>
                         ))}
+                      <DragOverlay>
+                        {draggedItem ? (
+                          <ListCard
+                            list={draggedItem}
+                            setIsCreating={setIsCreating}
+                            isCreating={isCreating}
+                            handleCloseNavbar={handleCloseNavbar}
+                            navScrolling={navScrolling}
+                            key={`list-dragged-${draggedItem.id}`}
+                            overlay={true}
+                          />
+                        ) : null}
+                      </DragOverlay>
                     </AnimatePresence>
-                  </motion.section>
-                </SortableContext>
-              )}
-            </motion.section>
-            <div className={styles.inputContainer}>
-              <ListInput setIsCreating={setIsCreating} key={"input"} />
-            </div>
-          </DndContext>
+                  </SortableContext>
+                </DndContext>
+              </motion.section>
+            )}
+          </motion.section>
+          <div className={styles.inputContainer}>
+            <ListInput setIsCreating={setIsCreating} key={"input"} />
+          </div>
         </div>
       </div>
     </>
