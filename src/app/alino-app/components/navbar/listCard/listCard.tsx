@@ -252,13 +252,8 @@ export default function ListCard({
               setIsOpenPicker={setIsOpenPicker}
               color={colorTemp}
               setColor={setColorTemp}
-              // save={true}
-              // handleSave={handleSave}
-              width={"20px"}
-              originalColor={list.color}
-              setEmoji={setEmoji}
               emoji={emoji}
-              originalEmoji={list.icon}
+              setEmoji={setEmoji}
               active={isNameChange ? true : false}
             />
           </motion.div>

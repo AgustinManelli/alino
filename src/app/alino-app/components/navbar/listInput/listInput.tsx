@@ -91,15 +91,17 @@ export default function ListInput({
           exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
           ref={divRef}
         >
-          <ColorPicker
-            portalRef={portalRef}
-            isOpenPicker={isOpenPicker}
-            setIsOpenPicker={setIsOpenPicker}
-            color={color}
-            setColor={setColor}
-            emoji={emoji}
-            setEmoji={setEmoji}
-          />
+          <div className={styles.colorPickerContainer}>
+            <ColorPicker
+              portalRef={portalRef}
+              isOpenPicker={isOpenPicker}
+              setIsOpenPicker={setIsOpenPicker}
+              color={color}
+              setColor={setColor}
+              emoji={emoji}
+              setEmoji={setEmoji}
+            />
+          </div>
           <input
             type="text"
             placeholder="cree una lista nueva"

@@ -1,42 +1,31 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import styles from "./colorPicker.module.css";
-import {
-  ArrowThin,
-  CopyToClipboardIcon,
-  LoadingIcon,
-  SquircleIcon,
-} from "@/lib/ui/icons";
-import { toast } from "sonner";
-import { motion } from "motion/react";
 import { createPortal } from "react-dom";
-import { EmojiPicker } from "@/components";
-import { EmojiComponent } from "@/components";
+import { AnimatePresence, motion } from "motion/react";
+import { toast } from "sonner";
 import { generatePalette } from "emoji-palette";
-import { COLORS } from "./constants/colors";
-import useHover from "@/hooks/useHover";
 
-type SquircleColorButonType = {
+import { EmojiComponent, EmojiPicker } from "@/components";
+
+import styles from "./colorPicker.module.css";
+import { ArrowThin, CopyToClipboardIcon, SquircleIcon } from "@/lib/ui/icons";
+import { COLORS } from "./constants/colors";
+
+interface SquircleColorButonType {
   color: string;
   setColor: (value: string) => void;
   colorHex: string;
-  setChoosingColor?: (value: boolean) => void;
-  save?: boolean;
   setIsOpenPicker: (value: boolean) => void;
-  setIsSave: (value: boolean) => void;
   index: number;
   setEmoji: (value: string) => void;
-};
+}
 
 export function SquircleColorSelector({
   color,
   setColor,
   colorHex,
-  // setChoosingColor,
-  save,
   setIsOpenPicker,
-  setIsSave,
   index,
   setEmoji,
 }: SquircleColorButonType) {
@@ -50,12 +39,7 @@ export function SquircleColorSelector({
           e.stopPropagation();
           setColor(colorHex);
           setEmoji("");
-          // !save && setChoosingColor && setChoosingColor(false);
-          if (!save) {
-            setIsOpenPicker(false);
-          } else {
-            setIsSave(false);
-          }
+          setIsOpenPicker(false);
         }}
         key={index}
         onMouseEnter={() => {
@@ -99,54 +83,36 @@ interface ColorPickerInterface {
   portalRef: React.RefObject<HTMLDivElement>;
   isOpenPicker: boolean;
   setIsOpenPicker: (value: boolean) => void;
-  originalColor?: string | null;
   color: string;
   setColor: (value: string) => void;
-  originalEmoji?: string;
   emoji: string;
   setEmoji: (value: string) => void;
-  save?: boolean;
-  handleSave?: () => Promise<void>;
-  width?: string;
   active?: boolean;
-  // choosingColor?: boolean;
-  // setChoosingColor?: (value: boolean) => void;
 }
 
 export function ColorPicker({
-  portalRef,
-  isOpenPicker,
-  setIsOpenPicker,
-  originalColor, //corresponde al color original del elemento donde se use
+  portalRef, //importamos un ref para el portal
+  isOpenPicker, //estado para abrir/cerrar modal
+  setIsOpenPicker, //set para el estado de abrir/cerrar modal
   color, //indica el color que está seleccionado en ese momento, no corresponde al original
   setColor, //corresponde a la función para cambiar el valor de los colores temporales, no cambia valor de color original
-  originalEmoji, //corresponde al balor del emoji original.
   emoji, //corresponde al valor del emoji temporal, no al original
   setEmoji, //corresponde a la función para cambiar el valor del emoji temporal, similar a la de color
-  save, //indica si en el picker debe o no aparecer el boton de guardar para aplicar cambios
-  handleSave, //es la función para establecer color ya seleccionado
-  width, //corresponde al ancho que debe tener el icono para brir la modal
   active = true,
-  // choosingColor, //indicador de si aún se está eligiendo un color
-  // setChoosingColor, //función para indicar que el usuario está eligiendo un color o que aún no guardó los cambios
 }: ColorPickerInterface) {
-  const saveButtonHover = useHover(false);
-  const [isSave, setIsSave] = useState<boolean>(false); //indica si el cambio de color temporal se guardó
-  const [type, setType] = useState<boolean>(true); //color picker o emoji picker
+  //estados locales
+  const [type, setType] = useState<string>("color"); //modo color o emoji picker en la modal
 
+  //ref's
   const pickerRef = useRef<HTMLDivElement>(null);
 
+  //funciones
   const onEmojiSelect = (selectedEmoji: emoji) => {
     setEmoji(selectedEmoji.shortcodes as string);
     const palette: string[] = generatePalette(selectedEmoji.native);
     const dominantColor: string = palette[0];
     setColor(dominantColor);
-    // !save && setChoosingColor && setChoosingColor(false);
-    if (!save) {
-      setIsOpenPicker(false);
-    } else {
-      setIsSave(false);
-    }
+    setIsOpenPicker(false);
   };
 
   const ubication = useCallback(() => {
@@ -164,6 +130,7 @@ export function ColorPicker({
     }
   }, []);
 
+  //useEffect's
   useEffect(() => {
     if (!pickerRef.current) return;
 
@@ -175,13 +142,10 @@ export function ColorPicker({
       ubication();
     };
 
-    // Observe the button element
     resizeObserver.observe(pickerRef.current);
 
-    // Listen for scroll events on window and all parent elements
     window.addEventListener("scroll", scrollHandler, true);
 
-    // Update position on mount and when modal opens
     ubication();
 
     return () => {
@@ -198,16 +162,7 @@ export function ColorPicker({
           !pickerRef.current.contains(event.target as Node)
         ) {
           setIsOpenPicker(false);
-          // setChoosingColor && setChoosingColor(false);
-          setType(true);
-          if (save && !isSave && originalColor) {
-            setColor(originalColor);
-            if (originalEmoji) {
-              setEmoji(originalEmoji);
-            } else {
-              setEmoji("");
-            }
-          }
+          setType("color");
         }
       }
     }
@@ -222,73 +177,100 @@ export function ColorPicker({
     };
   });
 
+  const renderIcon = () => (
+    <div className={styles.renderIconContainer}>
+      {emoji === "" ? (
+        <SquircleIcon
+          style={{
+            fill: `${color}`,
+            transition: "fill 0.1s ease-in-out",
+            width: "12px",
+          }}
+        />
+      ) : (
+        <EmojiComponent shortcodes={emoji} size="16px" />
+      )}
+    </div>
+  );
+
+  const titleButtons = (typeSelected: string, titleButton: string) => (
+    <button
+      className={styles.title}
+      style={{
+        boxShadow:
+          type === typeSelected
+            ? "0px 1px 1px 0px rgb(0,0,0, 0.1), inset 0 -1px 0 0 rgb(0,0,0,0.05), inset 0 1px 1px 0 rgb(255,255,255, 0.05), 0 1px 2px 0 rgb(0,0,0,0.03)"
+            : "none",
+        backgroundColor:
+          type === typeSelected ? "rgb(245,245,245)" : "transparent",
+        color: type === typeSelected ? "rgb(130,130,130)" : "rgb(200,200,200)",
+      }}
+      onClick={(e) => {
+        e.preventDefault();
+        setType(typeSelected);
+      }}
+    >
+      {titleButton}
+    </button>
+  );
+
   return (
     <>
-      <div className={styles.fit} ref={pickerRef}>
-        <button
-          className={styles.mainButton}
-          style={{
-            backgroundColor: active ? "rgb(0,0,0, 0.05)" : "transparent",
-            transition: "background-color 0.1 ease-in-out",
-          }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // setChoosingColor && setChoosingColor(!choosingColor);
-            active && setIsOpenPicker(!isOpenPicker);
-            setType(true);
-          }}
-        >
-          {emoji === "" ? (
-            <SquircleIcon
-              style={{
-                fill: `${color}`,
-                transition: "fill 0.1s ease-in-out",
-                width: "12px",
-              }}
-            />
-          ) : (
-            <div style={{ width: "16px", height: "16px" }}>
-              <EmojiComponent shortcodes={emoji} size="16px" />
-            </div>
-          )}
-          {active && (
-            <motion.div
-              style={{
-                width: "fit-content",
-                height: "fit-content",
-                display: "flex",
-              }}
-              layout
-              initial={{ opacity: 0, width: 0 }}
-              animate={{
-                opacity: 1,
-                width: "18px",
-                rotate: isOpenPicker ? 180 : 0,
-              }}
-              transition={{ duration: 0.1 }}
-            >
-              <ArrowThin
-                style={{
-                  stroke: "#000",
-                  strokeWidth: "1.5",
-                  width: "18px",
-                  height: "auto",
-                }}
-              />
-            </motion.div>
-          )}
-        </button>
+      <div className={styles.pickerContainer} ref={pickerRef}>
+        <AnimatePresence>
+          <motion.button
+            key={"color-picker-selector"}
+            className={styles.mainButton}
+            animate={{ paddingLeft: active ? "10px" : "0" }}
+            transition={{ duration: 0.2 }}
+            style={{
+              backgroundColor: active ? "rgb(0,0,0, 0.05)" : "transparent",
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              active && setIsOpenPicker(!isOpenPicker);
+              setType("color");
+            }}
+            disabled={!active}
+          >
+            {renderIcon()}
+            <AnimatePresence>
+              {active && (
+                <motion.div
+                  layout
+                  key={"color-picker-arrow"}
+                  className={styles.arrowContainer}
+                  initial={{ opacity: 0, width: 0, marginRight: 0 }}
+                  animate={{
+                    opacity: 1,
+                    width: "18px",
+                    rotate: isOpenPicker ? 180 : 0,
+                    marginRight: "10px",
+                  }}
+                  exit={{ opacity: 0, width: 0, marginRight: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ArrowThin
+                    style={{
+                      stroke: "#000",
+                      strokeWidth: "1.5",
+                      width: "18px",
+                      height: "auto",
+                    }}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.button>
+        </AnimatePresence>
       </div>
       {createPortal(
         <>
           {isOpenPicker && (
             <motion.section
-              transition={{
-                type: "spring",
-                stiffness: 700,
-                damping: 40,
-              }}
+              className={styles.modalContainer}
+              ref={portalRef}
               initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
               animate={{
                 scale: 1,
@@ -297,53 +279,21 @@ export function ColorPicker({
                 transition: { duration: "0.2" },
               }}
               exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
-              className={`${styles.container} ${
-                save ? styles.saveTrueContainer : styles.saveFalseContainer
-              }`}
-              ref={portalRef}
+              transition={{
+                type: "spring",
+                stiffness: 700,
+                damping: 40,
+              }}
             >
               <section className={styles.titleSection}>
-                <div className={styles.titleSectioButtons}>
-                  <button
-                    className={styles.title}
-                    style={{
-                      boxShadow: type
-                        ? "0px 1px 1px 0px rgb(0,0,0, 0.1), inset 0 -1px 0 0 rgb(0,0,0,0.05), inset 0 1px 1px 0 rgb(255,255,255, 0.05), 0 1px 2px 0 rgb(0,0,0,0.03)"
-                        : "none",
-                      backgroundColor: type
-                        ? "rgb(245,245,245)"
-                        : "transparent",
-                      color: type ? "rgb(130,130,130)" : "rgb(200,200,200)",
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setType(true);
-                    }}
-                  >
-                    color
-                  </button>
-                  <button
-                    className={styles.title}
-                    style={{
-                      boxShadow: type
-                        ? "none"
-                        : "0px 1px 1px 0px rgb(0,0,0, 0.1), inset 0 -1px 0 0 rgb(0,0,0,0.05), inset 0 1px 1px 0 rgb(255,255,255, 0.05), 0 1px 2px 0 rgb(0,0,0,0.03)",
-                      backgroundColor: type
-                        ? "transparent"
-                        : "rgb(245,245,245)",
-                      color: type ? "rgb(200,200,200)" : "rgb(130,130,130)",
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setType(false);
-                    }}
-                  >
-                    emoji
-                  </button>
+                <div className={styles.titleButtons}>
+                  {titleButtons("color", "color")}
+                  {titleButtons("emoji", "emoji")}
                 </div>
                 <div className={styles.separator}></div>
               </section>
-              {type ? (
+
+              {type === "color" ? (
                 <div className={styles.colorSelectorContainer}>
                   <section className={styles.buttonSection}>
                     {COLORS.map((colorHex, index) => (
@@ -351,10 +301,7 @@ export function ColorPicker({
                         color={color}
                         setColor={setColor}
                         colorHex={colorHex}
-                        // setChoosingColor={setChoosingColor}
-                        save={save}
                         setIsOpenPicker={setIsOpenPicker}
-                        setIsSave={setIsSave}
                         index={index}
                         setEmoji={setEmoji}
                       />
@@ -364,6 +311,7 @@ export function ColorPicker({
                     <div className={styles.hexContainer}>
                       <div className={styles.inputColorContainer}>
                         <input
+                          className={styles.inputColor}
                           id="colorInput"
                           type="color"
                           value={color}
@@ -371,11 +319,8 @@ export function ColorPicker({
                             e.preventDefault();
                             e.stopPropagation();
                             setColor(e.target.value);
-                            setIsSave(false);
                           }}
-                          className={styles.colorInput}
                         ></input>
-
                         <label
                           htmlFor="colorInput"
                           className={styles.labelColor}
@@ -441,47 +386,12 @@ export function ColorPicker({
                     set={"apple"}
                     noCountryFlags={false}
                     navPosition={"none"}
-                    // parent={document.querySelector("#emoji-picker-parent")}
                   />
                 </div>
-              )}
-              {save && handleSave && (
-                <>
-                  <div className={styles.saveButtonContainer}>
-                    <div className={styles.separator}></div>
-                    <div className={styles.saveButtonButtonContainer}>
-                      <button
-                        className={styles.saveButton}
-                        style={{
-                          backgroundColor: saveButtonHover.value
-                            ? "rgb(240,240,240)"
-                            : "",
-                        }}
-                        onMouseEnter={() => {
-                          saveButtonHover.toggle(true);
-                        }}
-                        onMouseLeave={() => {
-                          saveButtonHover.toggle(false);
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          // setWait(true);
-                          handleSave();
-                          setIsOpenPicker(false);
-                          setIsSave(true);
-                        }}
-                      >
-                        <p>guardar</p>
-                      </button>
-                    </div>
-                  </div>
-                </>
               )}
             </motion.section>
           )}
         </>,
-        // document.body
         document.getElementById("app") as HTMLElement
       )}
     </>
