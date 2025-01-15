@@ -33,7 +33,12 @@ type todo_list = {
   deleteList: (id: string, name: string) => void;
   getLists: () => void;
   changeColor: (color: string, id: string, shortcodeemoji: string) => void;
-  updateListName: (id: string, newName: string) => void;
+  updateListName: (
+    id: string,
+    newName: string,
+    color: string,
+    emoji: string
+  ) => void;
   addTask: (list_id: string, task: string) => void;
   deleteTask: (id: string, list_id: string) => void;
   updateTaskCompleted: (id: string, list_id: string, status: boolean) => void;
@@ -186,7 +191,7 @@ export const useLists = create<todo_list>()((set, get) => ({
     }
   },
 
-  updateListName: async (id, newName) => {
+  updateListName: async (id, newName, color, emoji) => {
     addToQueue(1);
     if (newName.length < 1) {
       toast.error("El nombre de tu lista debe tener un carácter como mínimo");
@@ -199,6 +204,8 @@ export const useLists = create<todo_list>()((set, get) => ({
           return {
             ...list,
             name: newName,
+            color: color,
+            icon: emoji,
           };
         }
         return list;
@@ -206,7 +213,7 @@ export const useLists = create<todo_list>()((set, get) => ({
     }));
 
     try {
-      const result = await UpdateListNameToDB(id, newName);
+      const result = await UpdateListNameToDB(id, newName, color, emoji);
       if (result.error) {
         throw new Error(result.error.message);
       }

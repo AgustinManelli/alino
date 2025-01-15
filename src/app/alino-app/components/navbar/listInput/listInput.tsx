@@ -22,13 +22,21 @@ export default function ListInput({
   const setAddList = useLists((state) => state.setAddList);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
   const [emoji, setEmoji] = useState<string>("");
 
   const handleSubmit = async () => {
     setInput(false);
     setHover(false);
     setIsCreating(false);
+    if (input) {
+      if (inputRef.current !== null) {
+        inputRef.current.focus();
+      }
+    }
     setValue("");
+    setEmoji("");
+    setColor("#87189d");
     await setAddList(color, value, emoji as string);
   };
 
@@ -38,13 +46,14 @@ export default function ListInput({
         inputRef.current.focus();
       }
     }
-  }, [input, color]);
+  }, [input, color, emoji]);
 
   useEffect(() => {
     function divOnClick(event: MouseEvent | TouchEvent) {
       if (divRef.current !== null) {
         if (!divRef.current.contains(event.target as Node)) {
-          if (value === "" && !choosingColor) {
+          if (value === "" && !isOpenPicker) {
+            setEmoji("");
             setColor("#87189d");
             setInput(false);
             setIsCreating(false);
@@ -83,12 +92,11 @@ export default function ListInput({
           ref={divRef}
         >
           <ColorPicker
+            portalRef={portalRef}
             isOpenPicker={isOpenPicker}
             setIsOpenPicker={setIsOpenPicker}
             color={color}
             setColor={setColor}
-            choosingColor={choosingColor}
-            setChoosingColor={setChoosingColor}
             emoji={emoji}
             setEmoji={setEmoji}
           />

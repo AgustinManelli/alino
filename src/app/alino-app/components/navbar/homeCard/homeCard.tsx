@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import styles from "../navbarDesktop/listCard.module.css";
+import styles from "../listCard/listCard.module.css";
 import { CounterAnimation } from "@/components";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

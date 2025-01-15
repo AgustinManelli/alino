@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./colorPicker.module.css";
-import { CopyToClipboardIcon, LoadingIcon, SquircleIcon } from "@/lib/ui/icons";
+import {
+  ArrowThin,
+  CopyToClipboardIcon,
+  LoadingIcon,
+  SquircleIcon,
+} from "@/lib/ui/icons";
 import { toast } from "sonner";
 import { motion } from "motion/react";
 import { createPortal } from "react-dom";
@@ -28,7 +33,7 @@ export function SquircleColorSelector({
   color,
   setColor,
   colorHex,
-  setChoosingColor,
+  // setChoosingColor,
   save,
   setIsOpenPicker,
   setIsSave,
@@ -45,7 +50,7 @@ export function SquircleColorSelector({
           e.stopPropagation();
           setColor(colorHex);
           setEmoji("");
-          !save && setChoosingColor && setChoosingColor(false);
+          // !save && setChoosingColor && setChoosingColor(false);
           if (!save) {
             setIsOpenPicker(false);
           } else {
@@ -91,6 +96,7 @@ interface emoji {
 }
 
 interface ColorPickerInterface {
+  portalRef: React.RefObject<HTMLDivElement>;
   isOpenPicker: boolean;
   setIsOpenPicker: (value: boolean) => void;
   originalColor?: string | null;
@@ -102,11 +108,13 @@ interface ColorPickerInterface {
   save?: boolean;
   handleSave?: () => Promise<void>;
   width?: string;
-  choosingColor?: boolean;
-  setChoosingColor?: (value: boolean) => void;
+  active?: boolean;
+  // choosingColor?: boolean;
+  // setChoosingColor?: (value: boolean) => void;
 }
 
 export function ColorPicker({
+  portalRef,
   isOpenPicker,
   setIsOpenPicker,
   originalColor, //corresponde al color original del elemento donde se use
@@ -118,47 +126,79 @@ export function ColorPicker({
   save, //indica si en el picker debe o no aparecer el boton de guardar para aplicar cambios
   handleSave, //es la función para establecer color ya seleccionado
   width, //corresponde al ancho que debe tener el icono para brir la modal
-  choosingColor, //indicador de si aún se está eligiendo un color
-  setChoosingColor, //función para indicar que el usuario está eligiendo un color o que aún no guardó los cambios
+  active = true,
+  // choosingColor, //indicador de si aún se está eligiendo un color
+  // setChoosingColor, //función para indicar que el usuario está eligiendo un color o que aún no guardó los cambios
 }: ColorPickerInterface) {
   const saveButtonHover = useHover(false);
   const [isSave, setIsSave] = useState<boolean>(false); //indica si el cambio de color temporal se guardó
   const [type, setType] = useState<boolean>(true); //color picker o emoji picker
 
   const pickerRef = useRef<HTMLDivElement>(null);
-  const childRef = useRef<HTMLDivElement>(null);
 
   const onEmojiSelect = (selectedEmoji: emoji) => {
     setEmoji(selectedEmoji.shortcodes as string);
     const palette: string[] = generatePalette(selectedEmoji.native);
     const dominantColor: string = palette[0];
     setColor(dominantColor);
+    // !save && setChoosingColor && setChoosingColor(false);
+    if (!save) {
+      setIsOpenPicker(false);
+    } else {
+      setIsSave(false);
+    }
   };
 
-  useEffect(function mount() {
-    function ubication() {
-      if (!pickerRef.current || !childRef.current) return;
-      const parentRect = pickerRef.current!.getBoundingClientRect();
+  const ubication = useCallback(() => {
+    if (!pickerRef.current || !portalRef.current) return;
+    const parentRect = pickerRef.current!.getBoundingClientRect();
 
-      childRef.current.style.top = `${parentRect.top + parentRect.width + 5}px`;
-      childRef.current.style.left = `${parentRect.left}px`;
+    portalRef.current.style.top = `${parentRect.top + parentRect.height + 5}px`;
+    portalRef.current.style.left = `${parentRect.left}px`;
 
-      if (
-        pickerRef.current.getBoundingClientRect().top >
-        window.innerHeight / 2
-      ) {
-        childRef.current.style.top = `${parentRect.top - childRef.current.offsetHeight - 5}px`;
-      }
+    if (
+      pickerRef.current.getBoundingClientRect().top >
+      window.innerHeight / 2
+    ) {
+      portalRef.current.style.top = `${parentRect.top - portalRef.current.offsetHeight - 5}px`;
     }
+  }, []);
 
+  useEffect(() => {
+    if (!pickerRef.current) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      ubication();
+    });
+
+    const scrollHandler = () => {
+      ubication();
+    };
+
+    // Observe the button element
+    resizeObserver.observe(pickerRef.current);
+
+    // Listen for scroll events on window and all parent elements
+    window.addEventListener("scroll", scrollHandler, true);
+
+    // Update position on mount and when modal opens
+    ubication();
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("scroll", scrollHandler, true);
+    };
+  }, [ubication]);
+
+  useEffect(function mount() {
     function divOnClick(event: MouseEvent | TouchEvent) {
-      if (childRef.current !== null && pickerRef.current !== null) {
+      if (portalRef.current !== null && pickerRef.current !== null) {
         if (
-          !childRef.current.contains(event.target as Node) &&
+          !portalRef.current.contains(event.target as Node) &&
           !pickerRef.current.contains(event.target as Node)
         ) {
           setIsOpenPicker(false);
-          setChoosingColor && setChoosingColor(false);
+          // setChoosingColor && setChoosingColor(false);
           setType(true);
           if (save && !isSave && originalColor) {
             setColor(originalColor);
@@ -188,17 +228,14 @@ export function ColorPicker({
         <button
           className={styles.mainButton}
           style={{
-            width: `${width}`,
-            height: `${width}`,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            backgroundColor: active ? "rgb(0,0,0, 0.05)" : "transparent",
+            transition: "background-color 0.1 ease-in-out",
           }}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            setChoosingColor && setChoosingColor(!choosingColor);
-            setIsOpenPicker(!isOpenPicker);
+            // setChoosingColor && setChoosingColor(!choosingColor);
+            active && setIsOpenPicker(!isOpenPicker);
             setType(true);
           }}
         >
@@ -215,13 +252,38 @@ export function ColorPicker({
               <EmojiComponent shortcodes={emoji} size="16px" />
             </div>
           )}
+          {active && (
+            <motion.div
+              style={{
+                width: "fit-content",
+                height: "fit-content",
+                display: "flex",
+              }}
+              layout
+              initial={{ opacity: 0, width: 0 }}
+              animate={{
+                opacity: 1,
+                width: "18px",
+                rotate: isOpenPicker ? 180 : 0,
+              }}
+              transition={{ duration: 0.1 }}
+            >
+              <ArrowThin
+                style={{
+                  stroke: "#000",
+                  strokeWidth: "1.5",
+                  width: "18px",
+                  height: "auto",
+                }}
+              />
+            </motion.div>
+          )}
         </button>
       </div>
       {createPortal(
         <>
-          {isOpenPicker ? (
+          {isOpenPicker && (
             <motion.section
-              ref={childRef}
               transition={{
                 type: "spring",
                 stiffness: 700,
@@ -238,6 +300,7 @@ export function ColorPicker({
               className={`${styles.container} ${
                 save ? styles.saveTrueContainer : styles.saveFalseContainer
               }`}
+              ref={portalRef}
             >
               <section className={styles.titleSection}>
                 <div className={styles.titleSectioButtons}>
@@ -288,7 +351,7 @@ export function ColorPicker({
                         color={color}
                         setColor={setColor}
                         colorHex={colorHex}
-                        setChoosingColor={setChoosingColor}
+                        // setChoosingColor={setChoosingColor}
                         save={save}
                         setIsOpenPicker={setIsOpenPicker}
                         setIsSave={setIsSave}
@@ -416,8 +479,6 @@ export function ColorPicker({
                 </>
               )}
             </motion.section>
-          ) : (
-            ""
           )}
         </>,
         // document.body

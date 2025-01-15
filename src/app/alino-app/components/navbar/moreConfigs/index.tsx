@@ -1,20 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import styles from "./moreConfigs.module.css";
-import { DeleteIcon, Edit, MoreVertical, Pin, Unpin } from "@/lib/ui/icons";
 import { createPortal } from "react-dom";
+
 import OptionCard from "./optionCard";
 
-export function MoreConfigs({
-  width,
-  open,
-  setOpen,
-  handleDelete,
-  handleNameChange,
-  handlePin,
-  pinned,
-}: {
+import { DeleteIcon, Edit, MoreVertical, Pin, Unpin } from "@/lib/ui/icons";
+import styles from "./moreConfigs.module.css";
+
+interface props {
   width: string;
   open: boolean;
   setOpen: (prop: boolean) => void;
@@ -22,7 +16,17 @@ export function MoreConfigs({
   handleNameChange: () => void;
   handlePin: () => void;
   pinned: boolean;
-}) {
+}
+
+export default function MoreConfigs({
+  width,
+  open,
+  setOpen,
+  handleDelete,
+  handleNameChange,
+  handlePin,
+  pinned,
+}: props) {
   const [hover, setHover] = useState<boolean>(false);
 
   const Ref = useRef<HTMLDivElement>(null);
@@ -92,10 +96,17 @@ export function MoreConfigs({
       {createPortal(
         <>
           {open ? (
-            <section ref={sRef} className={styles.container}>
+            <section
+              ref={sRef}
+              className={styles.container}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
               <section className={styles.optionsContainer}>
                 <OptionCard
-                  name={"Cambiar nombre"}
+                  name={"Editar"}
                   icon={
                     <Edit
                       style={{
@@ -156,5 +167,3 @@ export function MoreConfigs({
     </>
   );
 }
-
-export default MoreConfigs;

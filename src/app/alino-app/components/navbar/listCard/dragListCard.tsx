@@ -10,7 +10,7 @@ import { EmojiComponent } from "@/components";
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 const variants = {
-  hidden: { opacity: 1, scale: 1 },
+  hidden: { opacity: 1 },
   visible: {
     opacity: 1,
     rotate: [1, -1, 1],
@@ -22,14 +22,6 @@ const variants = {
         duration: 0.2,
         ease: "easeInOut",
       },
-    },
-  },
-  exit: {
-    rotate: 0,
-    opacity: 0,
-    scale: 1,
-    transition: {
-      duration: 0.3,
     },
   },
 };

@@ -161,7 +161,12 @@ export const UpdateIndexListToDB = async (id: string, newIndex: number) => {
   return { data };
 };
 
-export const UpdateListNameToDB = async (id: string, newName: string) => {
+export const UpdateListNameToDB = async (
+  id: string,
+  newName: string,
+  color: string,
+  emoji: string
+) => {
   const supabase = createClient();
 
   const { data: sessionData, error: sessionError } =
@@ -177,7 +182,7 @@ export const UpdateListNameToDB = async (id: string, newName: string) => {
 
   const { data, error } = await supabase
     .from("todos_data")
-    .update({ name: newName })
+    .update({ name: newName, color: color, icon: emoji })
     .eq("id", id)
     .select();
 
