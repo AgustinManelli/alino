@@ -21,7 +21,8 @@ export default function Manager({
   const setBlurredFx = useBlurredFxStore((state) => state.setColor);
 
   useEffect(() => {
-    if (setList?.color !== undefined) setBlurredFx(setList?.color);
+    if (setList?.color !== undefined && setList?.color !== null)
+      setBlurredFx(setList?.color);
   });
 
   const temporalHomeListLength = lists.reduce(
