@@ -35,7 +35,7 @@ export default function ListInput({
     }
   };
 
-  const setAddList = useLists((state) => state.setAddList);
+  const insertList = useLists((state) => state.insertList);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
@@ -53,7 +53,7 @@ export default function ListInput({
     setValue("");
     setEmoji("");
     setColor("#87189d");
-    await setAddList(color, value, emoji as string);
+    await insertList(color, value, emoji as string);
   };
 
   useEffect(() => {
