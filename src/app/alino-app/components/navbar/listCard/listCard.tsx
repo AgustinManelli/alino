@@ -67,6 +67,21 @@ export default function ListCard({
   const router = useRouter();
 
   //funciones
+  const handleSetColor = (color: string, typing?: boolean) => {
+    setColorTemp(color);
+    if (typing) return;
+    if (inputRef.current !== null) {
+      inputRef.current.focus();
+    }
+  };
+
+  const handleSetEmoji = (emoji: string) => {
+    setEmoji(emoji);
+    if (inputRef.current !== null) {
+      inputRef.current.focus();
+    }
+  };
+
   const handleChangeMoreOptions = (prop: boolean) => {
     //función para abrir el panel de opciones de cada lista
     setIsMoreOptions(prop);
@@ -140,7 +155,7 @@ export default function ListCard({
     if (inputRef.current !== null) {
       inputRef.current.focus();
     }
-  }, [input, colorTemp, emoji]);
+  }, [input]);
 
   useEffect(() => {
     setIsMoreOptions(false);
@@ -251,9 +266,9 @@ export default function ListCard({
               isOpenPicker={isOpenPicker}
               setIsOpenPicker={setIsOpenPicker}
               color={colorTemp}
-              setColor={setColorTemp}
+              setColor={handleSetColor}
               emoji={emoji}
-              setEmoji={setEmoji}
+              setEmoji={handleSetEmoji}
               active={isNameChange ? true : false}
             />
           </motion.div>

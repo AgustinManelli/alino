@@ -84,7 +84,7 @@ interface ColorPickerInterface {
   isOpenPicker: boolean;
   setIsOpenPicker: (value: boolean) => void;
   color: string;
-  setColor: (value: string) => void;
+  setColor: (value: string, typing?: boolean) => void;
   emoji: string;
   setEmoji: (value: string) => void;
   active?: boolean;
@@ -118,15 +118,16 @@ export function ColorPicker({
   const ubication = useCallback(() => {
     if (!pickerRef.current || !portalRef.current) return;
     const parentRect = pickerRef.current!.getBoundingClientRect();
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
 
-    portalRef.current.style.top = `${parentRect.top + parentRect.height + 5}px`;
+    portalRef.current.style.top = `${parentRect.top + scrollY + parentRect.height + 5}px`;
     portalRef.current.style.left = `${parentRect.left}px`;
 
     if (
       pickerRef.current.getBoundingClientRect().top >
       window.innerHeight / 2
     ) {
-      portalRef.current.style.top = `${parentRect.top - portalRef.current.offsetHeight - 5}px`;
+      portalRef.current.style.top = `${parentRect.top + scrollY - portalRef.current.offsetHeight - 5}px`;
     }
   }, []);
 
@@ -145,12 +146,14 @@ export function ColorPicker({
     resizeObserver.observe(pickerRef.current);
 
     window.addEventListener("scroll", scrollHandler, true);
+    window.addEventListener("resize", scrollHandler, true);
 
     ubication();
 
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener("scroll", scrollHandler, true);
+      window.removeEventListener("resize", scrollHandler, true);
     };
   }, [ubication]);
 
@@ -222,7 +225,7 @@ export function ColorPicker({
             key={"color-picker-selector"}
             className={styles.mainButton}
             animate={{ paddingLeft: active ? "10px" : "0" }}
-            transition={{ duration: 0.2 }}
+            transition={{ paddingLeft: { duration: 0.2 } }}
             style={{
               backgroundColor: active ? "rgb(0,0,0, 0.05)" : "transparent",
             }}
@@ -241,7 +244,11 @@ export function ColorPicker({
                   layout
                   key={"color-picker-arrow"}
                   className={styles.arrowContainer}
-                  initial={{ opacity: 0, width: 0, marginRight: 0 }}
+                  initial={{
+                    opacity: 0,
+                    width: 0,
+                    marginRight: 0,
+                  }}
                   animate={{
                     opacity: 1,
                     width: "18px",
@@ -249,7 +256,9 @@ export function ColorPicker({
                     marginRight: "10px",
                   }}
                   exit={{ opacity: 0, width: 0, marginRight: 0 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{
+                    rotate: { type: "spring", stiffness: 300, damping: 20 },
+                  }}
                 >
                   <ArrowThin
                     style={{
@@ -346,7 +355,7 @@ export function ColorPicker({
                         type="text"
                         value={`${color}`}
                         onChange={(e) => {
-                          setColor(e.target.value);
+                          setColor(e.target.value, true);
                         }}
                       ></input>
                     </div>
@@ -380,7 +389,7 @@ export function ColorPicker({
                     maxFrequentRows={0}
                     perLine={6}
                     previewPosition={"none"}
-                    searchPosition={"sticky"}
+                    searchPosition={"static"}
                     skin={1}
                     emojiSize={24}
                     set={"apple"}

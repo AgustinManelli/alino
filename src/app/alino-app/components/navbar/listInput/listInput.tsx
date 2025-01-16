@@ -16,8 +16,11 @@ export default function ListInput({
   const [value, setValue] = useState<string>("");
   const [color, setColor] = useState<string>("#87189d");
   const [hover, setHover] = useState<boolean>(false);
-  const [choosingColor, setChoosingColor] = useState<boolean>(false);
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
+
+  const handleSetColor = (color: string, typing?: boolean) => {
+    setColor(color);
+  };
 
   const setAddList = useLists((state) => state.setAddList);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -97,7 +100,7 @@ export default function ListInput({
               isOpenPicker={isOpenPicker}
               setIsOpenPicker={setIsOpenPicker}
               color={color}
-              setColor={setColor}
+              setColor={handleSetColor}
               emoji={emoji}
               setEmoji={setEmoji}
             />

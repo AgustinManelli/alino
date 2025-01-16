@@ -293,7 +293,7 @@ export default function Navbar({
                                 filter: "blur(30px) grayscale(100%)",
                                 y: -30,
                                 transition: {
-                                  duration: 1,
+                                  duration: 0.5,
                                 },
                                 zIndex: "5",
                               }}
@@ -353,7 +353,7 @@ export default function Navbar({
                               filter: "blur(30px) grayscale(100%)",
                               y: -30,
                               transition: {
-                                duration: 1,
+                                duration: 0.5,
                               },
                               zIndex: "5",
                             }}
