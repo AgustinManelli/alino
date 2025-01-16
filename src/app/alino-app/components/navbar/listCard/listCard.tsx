@@ -42,7 +42,7 @@ export default function ListCard({
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(list.color);
-  const [emoji, setEmoji] = useState<string>(list.icon);
+  const [emoji, setEmoji] = useState<string | null>(list.icon);
   const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
   const [input, setInput] = useState<boolean>(false);

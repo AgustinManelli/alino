@@ -27,6 +27,7 @@ const posIndex = 16384;
 type todo_list = {
   lists: ListsType[];
   tasks: TaskType[];
+  setLists: (list: ListsType[]) => void;
   getLists: () => void;
   insertList: (color: string, name: string, shortcodeemoji: string) => void;
   deleteList: (id: string, name: string) => void;
@@ -35,7 +36,7 @@ type todo_list = {
     id: string,
     newName: string,
     color: string,
-    emoji: string
+    emoji: string | null
   ) => void;
   addTask: (list_id: string, task: string) => void;
   deleteTask: (id: string, list_id: string) => void;
@@ -47,6 +48,9 @@ type todo_list = {
 export const useLists = create<todo_list>()((set, get) => ({
   lists: [],
   tasks: [],
+  setLists: (list) => {
+    set(() => ({ lists: list }));
+  },
   getLists: async () => {
     addToQueue(1);
     try {

@@ -164,7 +164,7 @@ export type Database = {
       };
       todos_data: {
         Row: {
-          color: string | null;
+          color: string;
           icon: string | null;
           id: string;
           index: number | null;
@@ -176,7 +176,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
-          color?: string | null;
+          color?: string;
           icon?: string | null;
           id?: string;
           index?: number | null;
@@ -188,7 +188,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
-          color?: string | null;
+          color?: string;
           icon?: string | null;
           id?: string;
           index?: number | null;

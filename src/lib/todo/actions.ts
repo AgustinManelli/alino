@@ -172,7 +172,7 @@ export const UpdateListNameToDB = async (
   id: string,
   newName: string,
   color: string,
-  emoji: string
+  emoji: string | null
 ) => {
   const supabase = createClient();
 

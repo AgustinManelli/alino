@@ -85,7 +85,7 @@ interface ColorPickerInterface {
   setIsOpenPicker: (value: boolean) => void;
   color: string;
   setColor: (value: string, typing?: boolean) => void;
-  emoji: string;
+  emoji: string | null;
   setEmoji: (value: string) => void;
   active?: boolean;
 }
