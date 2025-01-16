@@ -20,6 +20,19 @@ export default function ListInput({
 
   const handleSetColor = (color: string, typing?: boolean) => {
     setColor(color);
+    if (typing) return;
+    if (input) {
+      if (inputRef.current !== null) {
+        inputRef.current.focus();
+      }
+    }
+  };
+
+  const handleSetEmoji = (emoji: string) => {
+    setEmoji(emoji);
+    if (inputRef.current !== null) {
+      inputRef.current.focus();
+    }
   };
 
   const setAddList = useLists((state) => state.setAddList);
@@ -49,7 +62,7 @@ export default function ListInput({
         inputRef.current.focus();
       }
     }
-  }, [input, color, emoji]);
+  }, [input]);
 
   useEffect(() => {
     function divOnClick(event: MouseEvent | TouchEvent) {
@@ -102,7 +115,7 @@ export default function ListInput({
               color={color}
               setColor={handleSetColor}
               emoji={emoji}
-              setEmoji={setEmoji}
+              setEmoji={handleSetEmoji}
             />
           </div>
           <input

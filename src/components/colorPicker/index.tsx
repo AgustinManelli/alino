@@ -357,6 +357,13 @@ export function ColorPicker({
                         onChange={(e) => {
                           setColor(e.target.value, true);
                         }}
+                        onKeyDown={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          if (e.key === "Enter" || e.key === "Escape") {
+                            setIsOpenPicker(false);
+                            setColor(target.value);
+                          }
+                        }}
                       ></input>
                     </div>
                     <button
