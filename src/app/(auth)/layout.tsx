@@ -1,9 +1,12 @@
 import { redirect } from "next/navigation";
-import styles from "./auth.module.css";
-import { ButtonComp } from "@/components";
+
 import { AlinoLogo, HomeIcon } from "@/lib/ui/icons";
 import { readUserGetUser } from "@/lib/auth/actions";
+
+import { ButtonLink } from "@/components/button-link";
+
 import pattern from "../../../public/pattern.svg";
+import styles from "./auth.module.css";
 
 export default async function authLayout({
   children,
@@ -27,7 +30,7 @@ export default async function authLayout({
     >
       <section className={styles.container}>
         <div className={styles.backButton}>
-          <ButtonComp
+          <ButtonLink
             background="rgb(240, 240, 240)"
             hover="rgb(230, 230, 230)"
             letterColor="#000"
@@ -42,7 +45,7 @@ export default async function authLayout({
                 fill: "none",
               }}
             />
-          </ButtonComp>
+          </ButtonLink>
         </div>
         <AlinoLogo style={{ height: "50px" }} />
         <div className={styles.form}>{children}</div>

@@ -1,12 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
-import styles from "../login.module.css";
-import { LoadingIcon } from "@/lib/ui/icons";
-import { useState } from "react";
 
-interface Provider {
+import { LoadingIcon } from "@/lib/ui/icons";
+import styles from "../login.module.css";
+
+interface props {
   providerName: string;
   providerType: any;
   children?: string | JSX.Element | JSX.Element[] | null;
@@ -15,15 +16,16 @@ interface Provider {
   loadColor: string;
 }
 
-export const OauthButton: React.FC<Provider> = ({
+export function OauthButton({
   providerName,
   providerType,
   children,
   style,
   text,
   loadColor,
-}) => {
+}: props) {
   const [isPending, setIsPending] = useState<boolean>(false);
+
   const handleSignIn = async () => {
     setIsPending(true);
     const supabase = await createClient();
@@ -40,6 +42,7 @@ export const OauthButton: React.FC<Provider> = ({
       return;
     }
   };
+
   return (
     <button
       onClick={handleSignIn}
@@ -62,4 +65,4 @@ export const OauthButton: React.FC<Provider> = ({
       {text ? <p>Continue with {providerName}</p> : ""}
     </button>
   );
-};
+}

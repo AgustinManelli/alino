@@ -1,19 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import styles from "./accordion.module.css";
+
 import { ArrowThin } from "@/lib/ui/icons";
+import styles from "./accordion.module.css";
 
 interface AccordionItem {
   title: string;
   content: string;
 }
 
-interface AccordionProps {
+interface props {
   items: AccordionItem[];
 }
 
-const Accordion: React.FC<AccordionProps> = ({ items }) => {
+export function Accordion({ items }: props) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const handleToggle = (index: number) => {
@@ -51,6 +52,4 @@ const Accordion: React.FC<AccordionProps> = ({ items }) => {
       ))}
     </div>
   );
-};
-
-export default Accordion;
+}

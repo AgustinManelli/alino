@@ -7,7 +7,7 @@ interface MobileState {
   setIsMobile: (value: boolean) => void;
 }
 
-const useMobileStore = create<MobileState>((set) => ({
+export const useMobileStore = create<MobileState>((set) => ({
   isMobile: window.innerWidth < 850,
   setIsMobile: (value) => set({ isMobile: value }),
 }));

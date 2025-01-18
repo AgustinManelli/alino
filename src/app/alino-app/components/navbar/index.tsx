@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { useLists } from "@/store/lists";
-import Navbar from "./navbar";
 import { useLoaderStore } from "@/store/useLoaderStore";
-import { useCloudStore } from "@/store/useCloudStore";
+
+import { Navbar } from "./navbar";
 
 export default function NavbarComponent() {
-  const getLists = useLists((state) => state.getLists);
   const [initialFetching, setInitialFetching] = useState<boolean>(true);
+
+  const getLists = useLists((state) => state.getLists);
   const setLoading = useLoaderStore((state) => state.setLoading);
 
   useEffect(() => {
@@ -19,7 +21,6 @@ export default function NavbarComponent() {
     };
     fetchTodos();
     setLoading(false);
-    document.body.style.overflow = "";
   }, []);
 
   return <Navbar initialFetching={initialFetching} />;

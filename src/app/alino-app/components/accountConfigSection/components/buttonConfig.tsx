@@ -1,5 +1,7 @@
-import { ConfirmationModal } from "@/components";
+"use client";
+
 import { useState } from "react";
+import { ConfirmationModal } from "@/components/confirmation-modal";
 
 interface props {
   name: string;

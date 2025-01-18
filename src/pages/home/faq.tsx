@@ -1,6 +1,6 @@
 "use client";
 
-import { Accordion } from "@/components";
+import { Accordion } from "@/components/accordion";
 import styles from "./faq.module.css";
 export default function Faq() {
   return (

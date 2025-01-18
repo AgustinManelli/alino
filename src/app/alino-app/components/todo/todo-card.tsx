@@ -1,6 +1,8 @@
+"use client";
+
 import { tasks } from "@/lib/todosSchema";
 import styles from "./todo-card.module.css";
-import { Checkbox } from "@/components";
+import { Checkbox } from "@/components/checkbox";
 import { useState } from "react";
 import { DeleteIcon } from "@/lib/ui/icons";
 import { useLists } from "@/store/lists";

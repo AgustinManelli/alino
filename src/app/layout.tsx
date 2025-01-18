@@ -4,7 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { seoData } from "@/config/root/seo";
 import { getUrl } from "@/lib/utils";
-import { Loader } from "@/components";
+import { Loader } from "@/components/loader";
 
 export const metadata: Metadata = {
   title: "Alino | Tu organizador en linea",

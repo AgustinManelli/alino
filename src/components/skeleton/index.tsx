@@ -1,14 +1,13 @@
 "use client";
 
-import styles from "./skeleton.module.css";
+import styles from "./Skeleton.module.css";
 
-export default function Skeleton({
-  style,
-  delay,
-}: {
+interface props {
   style?: React.CSSProperties;
   delay?: number;
-}) {
+}
+
+export function Skeleton({ style, delay }: props) {
   return (
     <div className={styles.subjectAddCardSkeletonContainer} style={style}>
       <div

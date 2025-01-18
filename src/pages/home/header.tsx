@@ -1,6 +1,6 @@
 "use client";
 
-import { ButtonComp } from "@/components";
+import { ButtonLink } from "@/components/button-link";
 import styles from "./header.module.css";
 import imgHero from "../../../public/headerAlino3DOpt.webp";
 import { useLoaderStore } from "@/store/useLoaderStore";
@@ -68,7 +68,7 @@ export default function Header() {
               Organizá tus clases, tareas o trabajos
               <span className={styles.highlight}> en un mismo lugar.</span>
             </p>
-            <ButtonComp
+            <ButtonLink
               text="Pruébalo ya mismo"
               background="#1c1c1c"
               hover="rgb(230, 230, 230)"

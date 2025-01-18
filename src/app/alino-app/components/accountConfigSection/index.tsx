@@ -1,13 +1,17 @@
 "use client";
-import WindowComponent from "@/components/windowComponent";
-import styles from "./accountConfigSection.module.css";
+
 import { useState } from "react";
-import NavbarConfig from "./components/navbar";
-import ContainerConfig from "./components/container";
-import { SwitchButton } from "@/components/switchButton";
-import { useAnimationStore } from "@/store/useAnimationStore";
-import { ButtonConfig } from "./components/buttonConfig";
+
 import { useLists } from "@/store/lists";
+import { useAnimationStore } from "@/store/useAnimationStore";
+
+import { ButtonConfig } from "./components/buttonConfig";
+import { Switch } from "@/components/switch";
+import ContainerConfig from "./components/container";
+import NavbarConfig from "./components/navbar";
+import WindowComponent from "@/components/windowComponent";
+
+import styles from "./accountConfigSection.module.css";
 
 export default function AccountConfigSection({
   name,
@@ -47,7 +51,7 @@ export default function AccountConfigSection({
                           </p>
                         </div>
                         <div className={styles.switchSection}>
-                          <SwitchButton
+                          <Switch
                             value={animations}
                             action={toggleAnimations}
                             width={40}

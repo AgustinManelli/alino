@@ -1,29 +1,34 @@
 "use client";
 
-import { resetUserSchema, ResetUserInput } from "@/lib/user-schema";
-import styles from "../sign-in/login.module.css";
-import { resetPassword } from "@/lib/auth/actions";
-import { toast } from "sonner";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { useState, useTransition } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import { useTransition } from "react";
 import Link from "next/link";
+import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
-export const ForgotPasswordForm = () => {
+import { resetUserSchema, ResetUserInput } from "@/lib/user-schema";
+import { resetPassword } from "@/lib/auth/actions";
+
+import styles from "../sign-in/login.module.css";
+
+export function ForgotPasswordForm() {
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState("");
+
   const router = useRouter();
+
   const methods = useForm<ResetUserInput>({
     resolver: zodResolver(resetUserSchema),
   });
+
   const {
     reset,
     handleSubmit,
     register,
     formState: { errors },
   } = methods;
+
   const onSubmitHandler: SubmitHandler<ResetUserInput> = async (values) => {
     startTransition(async () => {
       const href = window.location.origin;
@@ -32,17 +37,16 @@ export const ForgotPasswordForm = () => {
       const { error } = JSON.parse(result);
 
       if (error) {
-        setError(error.message);
         toast.error("Email o contraseña incorrecta");
         return;
       }
-      setError("");
       toast.success(
         "Verifique su casilla de correo para recuperar su contraseña"
       );
       router.push("/sign-in");
     });
   };
+
   return (
     <motion.div
       transition={{ duration: 1 }}
@@ -90,4 +94,4 @@ export const ForgotPasswordForm = () => {
       </div>
     </motion.div>
   );
-};
+}
