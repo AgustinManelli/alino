@@ -27,7 +27,7 @@ export default async function appLayout({
         display: "flex",
         flexDirection: "row",
         overflow: "hidden",
-        overflowY: "hidden",
+        padding: "15px",
       }}
     >
       <BlurredFx />
@@ -39,8 +39,8 @@ export default async function appLayout({
       <p
         style={{
           position: "absolute",
-          right: "25px",
-          bottom: "25px",
+          right: "15px",
+          bottom: "15px",
           backgroundColor: "#fff",
           borderRadius: "10px",
           padding: "5px 10px",

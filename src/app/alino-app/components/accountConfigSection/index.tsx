@@ -2,6 +2,12 @@
 import WindowComponent from "@/components/windowComponent";
 import styles from "./accountConfigSection.module.css";
 import { useState } from "react";
+import NavbarConfig from "./components/navbar";
+import ContainerConfig from "./components/container";
+import { SwitchButton } from "@/components/switchButton";
+import { useAnimationStore } from "@/store/useAnimationStore";
+import { ButtonConfig } from "./components/buttonConfig";
+import { useLists } from "@/store/lists";
 
 export default function AccountConfigSection({
   name,
@@ -12,41 +18,126 @@ export default function AccountConfigSection({
   userAvatarUrl: string;
   handleCloseConfig: () => void;
 }) {
-  const [type, setType] = useState<string>("account");
+  const [type, setType] = useState<string>("app");
+  const { animations, toggleAnimations } = useAnimationStore();
+  const { deleteAllLists, deleteAllTasks } = useLists();
+  const [allowClose, setAllowClose] = useState<boolean>(true);
 
   return (
     <WindowComponent
       windowName={"configuración"}
-      crossAction={handleCloseConfig}
+      crossAction={allowClose ? handleCloseConfig : () => {}}
     >
       <div className={styles.body}>
-        <section className={styles.navbar}>
-          <button
-            className={styles.option}
-            onClick={() => {
-              setType("account");
-            }}
-            style={{
-              backgroundColor:
-                type === "account" ? "rgb(245, 245, 245)" : "#fff",
-              boxShadow:
-                type === "account"
-                  ? "rgba(12, 20, 66, 0.02) 0px 4px 12px, rgba(12, 20, 66, 0.08) 0px 30px 80px, rgb(230, 233, 237) 0px 0px 0px 0px inset;"
-                  : "none",
-            }}
-          >
-            <p className={styles.optionText}>cuenta</p>
-          </button>
-        </section>
-        <div className={styles.separator}></div>
-        {type === "account" ? (
-          <section className={styles.section1}>
-            <img className={styles.avatar} src={userAvatarUrl} />
-            <p>{name}</p>
-          </section>
-        ) : (
-          <section className={styles.section1}></section>
-        )}
+        <NavbarConfig type={type} setType={setType} />
+        {(() => {
+          switch (type) {
+            case "account":
+              return <ContainerConfig></ContainerConfig>;
+            case "app":
+              return (
+                <ContainerConfig>
+                  <div className={styles.sectionContainer}>
+                    <p className={styles.sectionTitle}>Animaciones</p>
+                    <section className={styles.configSection}>
+                      <div className={styles.configElement}>
+                        <div>
+                          <p className={styles.configSectionTitle}>
+                            Animaciones de la UI
+                          </p>
+                        </div>
+                        <div className={styles.switchSection}>
+                          <SwitchButton
+                            value={animations}
+                            action={toggleAnimations}
+                            width={40}
+                          />
+                        </div>
+                      </div>
+                    </section>
+                    <p className={styles.configSectionDescription}>
+                      Desactivar animaciones si experimenta bajo rendimiento o
+                      retrasos en la aplicación.
+                    </p>
+                  </div>
+                  <div className={styles.sectionContainer}>
+                    <p className={styles.sectionTitle}>Almacenamiento</p>
+                    <section className={styles.configSection}>
+                      <div className={styles.configElement}>
+                        <div>
+                          <p className={styles.configSectionTitle}>
+                            Eliminar todas las listas
+                          </p>
+                        </div>
+                        <div className={styles.switchSection}>
+                          <ButtonConfig
+                            name={"Eliminar"}
+                            action={() => {
+                              deleteAllLists();
+                            }}
+                            stylesProp={{
+                              width: "fit-content",
+                              height: "100%",
+                              padding: "0 10px",
+                              borderRadius: "5px",
+                              backgroundColor: "rgb(255, 231, 230)",
+                              color: "#1c1c1c",
+                              fontSize: "14px",
+                            }}
+                            setAllowClose={setAllowClose}
+                            deleteModalText={
+                              "¿Desea eliminar todas las listas?"
+                            }
+                            additionalDeleteModalText={
+                              "Ten en cuenta que esta acción es irreversible y no podrás recuperar las listas y tareas eliminadas."
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className={styles.configElementSeparator}></div>
+                      <div className={styles.configElement}>
+                        <div>
+                          <p className={styles.configSectionTitle}>
+                            Eliminar todas las tareas
+                          </p>
+                        </div>
+                        <div className={styles.switchSection}>
+                          <ButtonConfig
+                            name={"Eliminar"}
+                            action={() => {
+                              deleteAllTasks();
+                            }}
+                            stylesProp={{
+                              width: "fit-content",
+                              height: "100%",
+                              padding: "0 10px",
+                              border: "none",
+                              borderRadius: "5px",
+                              backgroundColor: "rgb(255, 231, 230)",
+                              color: "#1c1c1c",
+                              fontSize: "14px",
+                            }}
+                            setAllowClose={setAllowClose}
+                            deleteModalText={
+                              "¿Desea eliminar todas las tareas?"
+                            }
+                            additionalDeleteModalText={
+                              "Ten en cuenta que esta acción es irreversible y no podrás recuperar las tareas eliminadas."
+                            }
+                          />
+                        </div>
+                      </div>
+                    </section>
+                    <p className={styles.configSectionDescription}>
+                      Eliminar todas las listas o tareas es una acción
+                      irreversible. Eliminar todas las listas implica eliminar
+                      todas las tareas.
+                    </p>
+                  </div>
+                </ContainerConfig>
+              );
+          }
+        })()}
       </div>
     </WindowComponent>
   );

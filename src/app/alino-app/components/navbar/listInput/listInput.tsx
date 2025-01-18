@@ -16,19 +16,44 @@ export default function ListInput({
   const [value, setValue] = useState<string>("");
   const [color, setColor] = useState<string>("#87189d");
   const [hover, setHover] = useState<boolean>(false);
-  const [choosingColor, setChoosingColor] = useState<boolean>(false);
+  const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
 
-  const setAddList = useLists((state) => state.setAddList);
+  const handleSetColor = (color: string, typing?: boolean) => {
+    setColor(color);
+    if (typing) return;
+    if (input) {
+      if (inputRef.current !== null) {
+        inputRef.current.focus();
+      }
+    }
+  };
+
+  const handleSetEmoji = (emoji: string) => {
+    setEmoji(emoji);
+    if (inputRef.current !== null) {
+      inputRef.current.focus();
+    }
+  };
+
+  const insertList = useLists((state) => state.insertList);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
   const [emoji, setEmoji] = useState<string>("");
 
   const handleSubmit = async () => {
     setInput(false);
     setHover(false);
     setIsCreating(false);
+    if (input) {
+      if (inputRef.current !== null) {
+        inputRef.current.focus();
+      }
+    }
     setValue("");
-    await setAddList(color, value, emoji as string);
+    setEmoji("");
+    setColor("#87189d");
+    await insertList(color, value, emoji as string);
   };
 
   useEffect(() => {
@@ -37,13 +62,14 @@ export default function ListInput({
         inputRef.current.focus();
       }
     }
-  }, [input, color]);
+  }, [input]);
 
   useEffect(() => {
     function divOnClick(event: MouseEvent | TouchEvent) {
       if (divRef.current !== null) {
         if (!divRef.current.contains(event.target as Node)) {
-          if (value === "" && !choosingColor) {
+          if (value === "" && !isOpenPicker) {
+            setEmoji("");
             setColor("#87189d");
             setInput(false);
             setIsCreating(false);
@@ -62,7 +88,7 @@ export default function ListInput({
   });
 
   return (
-    <div className={styles.formContainer}>
+    <motion.div className={styles.formContainer} layout>
       {input || value !== "" ? (
         <motion.div
           className={styles.form}
@@ -81,14 +107,17 @@ export default function ListInput({
           exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
           ref={divRef}
         >
-          <ColorPicker
-            color={color}
-            setColor={setColor}
-            choosingColor={choosingColor}
-            setChoosingColor={setChoosingColor}
-            emoji={emoji}
-            setEmoji={setEmoji}
-          />
+          <div className={styles.colorPickerContainer}>
+            <ColorPicker
+              portalRef={portalRef}
+              isOpenPicker={isOpenPicker}
+              setIsOpenPicker={setIsOpenPicker}
+              color={color}
+              setColor={handleSetColor}
+              emoji={emoji}
+              setEmoji={handleSetEmoji}
+            />
+          </div>
           <input
             type="text"
             placeholder="cree una lista nueva"
@@ -168,6 +197,6 @@ export default function ListInput({
           />
         </motion.button>
       )}
-    </div>
+    </motion.div>
   );
 }

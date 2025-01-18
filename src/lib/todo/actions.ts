@@ -2,61 +2,67 @@
 
 import { createClient } from "@/utils/supabase/server";
 
-import { Database, tasks as Task } from "@/lib/todosSchema";
+import { Database } from "@/lib/todosSchema";
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
 
-export async function GetLists() {
+export async function getLists() {
+  // Crear cliente de Supabase
   const supabase = createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Obtener usuario autenticado
+  const { data: userData, error: userError } = await supabase.auth.getUser();
 
-  if (!user) {
-    throw new Error("User is not logged in");
+  if (userError || !userData?.user) {
+    return {
+      error: new Error("User is not logged in or authentication failed"),
+    };
   }
 
+  const user = userData.user;
+
+  // Realizar consulta de las listas con sus tareas asociadas
   const { data, error } = await supabase
     .from("todos_data")
     .select(
       "*, tasks: tasks(id, category_id, description, completed, index, name, created_at, updated_at)"
     )
+    .eq("user_id", user.id)
     .order("index", { ascending: true });
-  //.eq("user_id", user.id); Is not necessary
 
   if (error) {
-    console.error("Error fetching data:", error);
-    return { error };
+    return { error: new Error("Failed to fetch lists from the database") };
   }
 
-  // Ordenar las tareas dentro de cada lista
-  if (data) {
-    data.forEach((todo) => {
-      todo.tasks = todo.tasks.sort((a: Task, b: Task) => b.index - a.index);
-    });
-  }
-
+  // Retornar datos
   return { data };
 }
 
-export const AddListToDB = async (
+export const insertList = async (
   index: number,
   color: string,
   name: string,
   shortcodeemoji: string,
   tempId: string
 ) => {
-  const setColor = color === "" ? "#87189d" : color; // Establece el color predeterminado si está vacío
+  // Establece el color predeterminado si está vacío
+  const setColor = color === "" ? "#87189d" : color;
 
+  // Crear cliente de Supabase
   const supabase = createClient();
-  const { data: sessionData, error: sessionError } =
-    await supabase.auth.getSession();
-  if (sessionError || !sessionData?.session) {
-    return { error: sessionError || new Error("No active session found") };
+
+  // Obtener usuario autenticado
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData?.user) {
+    return {
+      error: new Error("User is not logged in or authentication failed"),
+    };
   }
 
-  const user = sessionData.session.user;
+  const user = userData.user;
 
+  //Añadir tarea a base de datos
   const { data, error } = await supabase
     .from("todos_data")
     .insert({
@@ -74,10 +80,11 @@ export const AddListToDB = async (
     return { error: new Error("Failed to insert the list into the database") };
   }
 
+  // Retornar datos
   return { data };
 };
 
-export const DeleteListToDB = async (id: string) => {
+export const deleteList = async (id: string) => {
   const supabase = createClient();
 
   const { data: sessionData, error: sessionError } =
@@ -161,7 +168,12 @@ export const UpdateIndexListToDB = async (id: string, newIndex: number) => {
   return { data };
 };
 
-export const UpdateListNameToDB = async (id: string, newName: string) => {
+export const UpdateListNameToDB = async (
+  id: string,
+  newName: string,
+  color: string,
+  emoji: string | null
+) => {
   const supabase = createClient();
 
   const { data: sessionData, error: sessionError } =
@@ -177,7 +189,7 @@ export const UpdateListNameToDB = async (id: string, newName: string) => {
 
   const { data, error } = await supabase
     .from("todos_data")
-    .update({ name: newName })
+    .update({ name: newName, color: color, icon: emoji })
     .eq("id", id)
     .select();
 
@@ -212,6 +224,59 @@ export const UpdatePinnedListToDB = async (id: string, pinned: boolean) => {
     return { error };
   }
 
+  return { data };
+};
+
+export const UpdateAllIndexLists = async (id: string) => {
+  const supabase = createClient();
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError) {
+    return { error: sessionError };
+  }
+
+  if (!sessionData.session) {
+    return { error: new Error("No active session found") };
+  }
+
+  const { data, error } = await supabase.rpc("update_todos_indices", {
+    p_user_id: sessionData.session.user.id,
+  });
+
+  if (error) {
+    return { error };
+  }
+
+  return { data };
+};
+
+export const DeleteAllLists = async () => {
+  // Crear cliente de Supabase
+  const supabase = createClient();
+
+  // Obtener usuario autenticado
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData?.user) {
+    return {
+      error: new Error("User is not logged in or authentication failed"),
+    };
+  }
+
+  const user = userData.user;
+
+  //Eliminar listas
+  const { data, error } = await supabase
+    .from("todos_data")
+    .delete()
+    .eq("user_id", user.id);
+
+  if (error) {
+    return { error: new Error("Failed to delete all lists") };
+  }
+
+  // Retornar datos
   return { data };
 };
 
@@ -300,4 +365,33 @@ export const UpdateTasksCompleted = async (id: string, status: boolean) => {
   }
 
   return { data: updateData };
+};
+
+export const DeleteAllTasks = async () => {
+  // Crear cliente de Supabase
+  const supabase = createClient();
+
+  // Obtener usuario autenticado
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData?.user) {
+    return {
+      error: new Error("User is not logged in or authentication failed"),
+    };
+  }
+
+  const user = userData.user;
+
+  //Eliminar listas
+  const { data, error } = await supabase
+    .from("tasks")
+    .delete()
+    .eq("user_id", user.id);
+
+  if (error) {
+    return { error: new Error("Failed to delete all tasks") };
+  }
+
+  // Retornar datos
+  return { data };
 };

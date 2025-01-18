@@ -1,7 +1,7 @@
 .configSection {
   position: absolute;
-  top: 25px;
-  right: 25px;
+  top: 15px;
+  right: 15px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -9,8 +9,8 @@
   user-select: none;
 }
 .configButton {
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   display: flex;
   justify-content: center;
@@ -21,6 +21,7 @@
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
   padding: 2px;
+  z-index: 1;
 }
 .configButton:hover {
   background-color: #e6e6e6;

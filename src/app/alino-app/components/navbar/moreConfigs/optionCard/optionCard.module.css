@@ -1,4 +1,5 @@
 .options {
+  position: relative;
   width: 100%;
   height: fit-content;
   background-color: rgb(245, 245, 245);
