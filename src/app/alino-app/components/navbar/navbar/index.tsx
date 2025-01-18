@@ -38,6 +38,7 @@ import styles from "./navbar.module.css";
 //INIT EMOJI-MART
 import { init } from "emoji-mart";
 import data from "@emoji-mart/data/sets/15/apple.json";
+import { AlinoLogoMotion } from "@/lib/ui/alinoLogoMotion";
 init({ data });
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
@@ -215,7 +216,7 @@ export default function Navbar({
       >
         <div className={styles.navbar}>
           <div className={styles.logoContainer}>
-            <AlinoLogo
+            {/* <AlinoLogo
               style={{
                 height: "20px",
                 width: "auto",
@@ -223,6 +224,15 @@ export default function Navbar({
                 opacity: "0.1",
               }}
               decoFill={"#1c1c1c"}
+            /> */}
+            <AlinoLogoMotion
+              style={{
+                height: "20px",
+                width: "auto",
+                fill: "#1c1c1c",
+                opacity: "0.2",
+                overflow: "visible",
+              }}
             />
           </div>
           <motion.section

@@ -4,6 +4,10 @@ import { create } from "zustand";
 import { Database } from "@/lib/todosSchema";
 import { v4 as uuidv4 } from "uuid";
 import {
+  getLists,
+  insertList,
+  deleteList,
+  //a partir de acá controlar y revirsar funciones
   AddTaskToDB,
   DeleteTaskToDB,
   UpdateDataListToDB,
@@ -13,7 +17,6 @@ import {
   UpdateIndexListToDB,
   UpdateAllIndexLists,
 } from "@/lib/todo/actions";
-import { insertList, getLists, deleteList } from "@/lib/todo/actions";
 import { toast } from "sonner";
 import { useCloudStore } from "./useCloudStore";
 
@@ -48,9 +51,11 @@ type todo_list = {
 export const useLists = create<todo_list>()((set, get) => ({
   lists: [],
   tasks: [],
+
   setLists: (list) => {
     set(() => ({ lists: list }));
   },
+
   getLists: async () => {
     addToQueue(1);
     try {
