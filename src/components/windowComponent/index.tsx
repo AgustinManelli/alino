@@ -3,6 +3,7 @@ import { Cross } from "@/lib/ui/icons";
 import styles from "./window-component.module.css";
 import { useRef } from "react";
 import useOnClickOutside from "@/hooks/useOnClickOutside";
+import { createPortal } from "react-dom";
 
 export default function WindowComponent({
   children,
@@ -23,7 +24,7 @@ export default function WindowComponent({
     windowRef
   );
 
-  return (
+  return createPortal(
     <div className={styles.container}>
       <div className={styles.window} ref={windowRef}>
         <section className={styles.header}>
@@ -45,6 +46,7 @@ export default function WindowComponent({
         </section>
         <section className={styles.body}>{children}</section>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

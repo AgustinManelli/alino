@@ -1,9 +1,9 @@
 .mobileButton {
   position: absolute;
-  width: 45px;
-  height: 45px;
-  top: 25px;
-  left: 25px;
+  width: 40px;
+  height: 40px;
+  top: 15px;
+  left: 15px;
   z-index: 100;
   border: none;
   background-color: rgb(225, 225, 225);
@@ -16,12 +16,12 @@
 
 .container {
   width: 25vw;
-  min-width: 400px;
+  min-width: 350px;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 25px;
+  /* padding: 25px; */
   z-index: 100;
 }
 
@@ -66,6 +66,16 @@
   z-index: 100;
   background: linear-gradient(rgb(255, 255, 255) 50%, transparent);
 }
+.navbar::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 20px;
+  bottom: 80px;
+  overflow: hidden;
+  z-index: 100;
+  background: linear-gradient(transparent, rgb(255, 255, 255) 50%);
+}
 
 .logoContainer {
   width: 100%;
@@ -76,12 +86,14 @@
 }
 
 .cardsSection {
+  position: relative;
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: auto;
-  padding: 30px 40px 0px 40px;
+  overflow-x: visible;
+  overflow-y: auto;
+  padding: 30px 30px 30px 30px;
 }
 
 .cardsSection::-webkit-scrollbar {
@@ -89,25 +101,35 @@
 }
 
 .cardsContainer {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 5px;
-  list-style-type: none;
+  height: fit-content;
+}
+
+.inputContainer {
+  position: relative;
+  padding: 0 30px;
 }
 
 @media only screen and (max-width: 850px) {
   .container {
     position: absolute;
-    width: 70%;
+    width: 75%;
     min-width: inherit;
+    height: calc(100% - 30px);
     left: -100%;
     transition: left 0.2s ease-in-out;
-    padding: 25px 0 25px 5px;
+    padding: 0px 0 0px 15px;
   }
   .active {
     left: initial;
   }
   .cardsSection {
-    padding: 30px 15px 0px 15px;
+    padding: 30px 15px 15px 15px;
+  }
+  .inputContainer {
+    padding: 0 15px;
   }
 }

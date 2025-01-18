@@ -27,17 +27,21 @@
   justify-content: space-between;
   align-items: center;
 }
+
 .modalTexts {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  width: 100%;
 }
+
 .modalTitle {
   width: 100%;
   font-weight: 700;
   font-size: 15px;
   text-align: left;
 }
+
 .modalAdditionalText {
   font-size: 13px;
 }

@@ -1,50 +1,92 @@
 "use client";
 
 import { create } from "zustand";
-import { Database, tasks } from "@/lib/todosSchema";
+import { Database } from "@/lib/todosSchema";
 import { v4 as uuidv4 } from "uuid";
 import {
+  getLists,
+  insertList,
+  deleteList,
+  //a partir de acá controlar y revirsar funciones
   AddTaskToDB,
-  DeleteListToDB,
   DeleteTaskToDB,
-  GetLists,
   UpdateDataListToDB,
   UpdateListNameToDB,
   UpdateTasksCompleted,
   UpdatePinnedListToDB,
   UpdateIndexListToDB,
+  UpdateAllIndexLists,
+  DeleteAllLists,
+  DeleteAllTasks,
 } from "@/lib/todo/actions";
-import { AddListToDB } from "@/lib/todo/actions";
 import { toast } from "sonner";
+import { useCloudStore } from "./useCloudStore";
+
+const addToQueue = useCloudStore.getState().addToQueue;
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
 
 const posIndex = 16384;
 
 type todo_list = {
   lists: ListsType[];
-  tasks: tasks[];
+  tasks: TaskType[];
   setLists: (list: ListsType[]) => void;
-  setAddList: (color: string, name: string, shortcodeemoji: string) => void;
-  deleteList: (id: string, name: string) => void;
   getLists: () => void;
+  insertList: (color: string, name: string, shortcodeemoji: string) => void;
+  deleteList: (id: string, name: string) => void;
   changeColor: (color: string, id: string, shortcodeemoji: string) => void;
-  updateListName: (id: string, newName: string) => void;
+  updateListName: (
+    id: string,
+    newName: string,
+    color: string,
+    emoji: string | null
+  ) => void;
+  deleteAllLists: () => void;
   addTask: (list_id: string, task: string) => void;
   deleteTask: (id: string, list_id: string) => void;
   updateTaskCompleted: (id: string, list_id: string, status: boolean) => void;
   updateListPinned: (id: string, pinned: boolean) => void;
   updateListPosition: (id: string, index: number) => void;
+  deleteAllTasks: () => void;
 };
 
 export const useLists = create<todo_list>()((set, get) => ({
   lists: [],
   tasks: [],
+
   setLists: (list) => {
     set(() => ({ lists: list }));
   },
 
-  setAddList: async (color, name, shortcodeemoji) => {
+  getLists: async () => {
+    addToQueue(1);
+    try {
+      const result = await getLists();
+
+      if (!result.error) {
+        result.data?.forEach((todo: ListsType) => {
+          todo.tasks = todo.tasks.sort(
+            (a: TaskType, b: TaskType) => (b.index ?? 0) - (a.index ?? 0)
+          );
+        });
+
+        set(() => ({ lists: result.data || [] }));
+      } else {
+        throw new Error(result.error.message);
+      }
+    } catch (error: any) {
+      toast.error(
+        `Hubo un error al cargar las listas, inténtalo nuevamente. ${error}`
+      );
+    } finally {
+      addToQueue(-1);
+    }
+  },
+
+  insertList: async (color, name, shortcodeemoji) => {
+    addToQueue(1);
     //Comprobar que el nombre de la lista no esté vacío
     if (name.length < 1) {
       toast.error("El nombre de tu lista debe tener un carácter como mínimo");
@@ -85,7 +127,7 @@ export const useLists = create<todo_list>()((set, get) => ({
     }));
 
     try {
-      const result = await AddListToDB(
+      const result = await insertList(
         index,
         color,
         name,
@@ -112,46 +154,42 @@ export const useLists = create<todo_list>()((set, get) => ({
         throw new Error(result.error.message);
       }
     } catch (error: any) {
-      toast.error("Hubo un problema al agregar la lista, inténtalo de nuevo.");
+      toast.error(
+        `Hubo un problema al agregar la lista, inténtalo de nuevo. ${error}`
+      );
 
       //eliminado de la lista temporal creada cuando ocurre un error en su creación
       const filtered = lists.filter((all) => all.id !== tempId);
       set(() => ({ lists: filtered }));
+    } finally {
+      addToQueue(-1);
     }
   },
 
   deleteList: async (id, name) => {
+    addToQueue(1);
     const { lists } = get();
-    const filtered = lists.filter((all) => all.id !== id);
-    set(() => ({ lists: filtered }));
 
+    set({ lists: lists.filter((list) => list.id !== id) });
     try {
-      const result = await DeleteListToDB(id);
+      const result = await deleteList(id);
       if (result.error) {
         throw new Error(result.error.message);
       }
       toast.success(`Lista "${name}" eliminada correctamente`);
-    } catch {
+    } catch (error: any) {
       // Revertir los cambios en la UI si la eliminación falla
       set(() => ({ lists }));
-      toast.error("Hubo un error al eliminar la lista, inténtalo nuevamente.");
-    }
-  },
-
-  getLists: async () => {
-    try {
-      const result = (await GetLists()) as any;
-      if (!result.error) {
-        set(() => ({ lists: result.data || [] }));
-      } else {
-        throw new Error(result.error.message);
-      }
-    } catch {
-      toast.error(`Hubo un error al cargar las listas, inténtalo nuevamente.`);
+      toast.error(
+        `Hubo un error al eliminar la lista, inténtalo nuevamente. ${error}`
+      );
+    } finally {
+      addToQueue(-1);
     }
   },
 
   changeColor: async (color, id, shortcodeemoji) => {
+    addToQueue(1);
     set((state) => ({
       lists: state.lists.map((list) => {
         if (list.id === id) {
@@ -170,13 +208,14 @@ export const useLists = create<todo_list>()((set, get) => ({
       if (result.error) {
         throw new Error(result.error.message);
       }
-      toast.success(`Color de lista modificado correctamente`);
+      addToQueue(-1);
     } catch {
       toast.error(`Hubo un error al modificar la lista, inténtalo nuevamente.`);
     }
   },
 
-  updateListName: async (id, newName) => {
+  updateListName: async (id, newName, color, emoji) => {
+    addToQueue(1);
     if (newName.length < 1) {
       toast.error("El nombre de tu lista debe tener un carácter como mínimo");
       return;
@@ -188,6 +227,8 @@ export const useLists = create<todo_list>()((set, get) => ({
           return {
             ...list,
             name: newName,
+            color: color,
+            icon: emoji,
           };
         }
         return list;
@@ -195,11 +236,11 @@ export const useLists = create<todo_list>()((set, get) => ({
     }));
 
     try {
-      const result = await UpdateListNameToDB(id, newName);
+      const result = await UpdateListNameToDB(id, newName, color, emoji);
       if (result.error) {
         throw new Error(result.error.message);
       }
-      toast.success(`Nombre de lista modificado correctamente`);
+      addToQueue(-1);
     } catch {
       toast.error("Hubo un error al modificar la lista, inténtalo nuevamente.");
     }
@@ -228,11 +269,7 @@ export const useLists = create<todo_list>()((set, get) => ({
 
     try {
       const result = await UpdatePinnedListToDB(id, pinned);
-      if (!result.error) {
-        pinned
-          ? toast.success(`Lista fijada correctamente`)
-          : toast.success(`Lista desfijada correctamente`);
-      } else {
+      if (result.error) {
         throw new Error(result.error.message);
       }
     } catch {
@@ -241,24 +278,69 @@ export const useLists = create<todo_list>()((set, get) => ({
   },
 
   updateListPosition: async (id, index) => {
-    set((state) => ({
-      lists: state.lists.map((list) => {
-        if (list.id === id) {
-          return {
-            ...list,
-            index: index,
-          };
-        }
-        return list;
-      }),
-    }));
     try {
-      const result = await UpdateIndexListToDB(id, index);
-      if (result.error) {
-        throw new Error(result.error.message);
+      if (!Number.isInteger(index)) {
+        set((state) => {
+          const updatedLists = state.lists.map((list, idx) => {
+            return {
+              ...list,
+              index: 16384 * (idx + 1),
+            };
+          });
+
+          return { lists: updatedLists };
+        });
+
+        const result = await UpdateAllIndexLists(id);
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+      } else {
+        set((state) => ({
+          lists: state.lists.map((list) => {
+            if (list.id === id) {
+              return {
+                ...list,
+                index: index,
+              };
+            }
+            return list;
+          }),
+        }));
+
+        const result = await UpdateIndexListToDB(id, index);
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
       }
     } catch {
       toast.error("Hubo un error al modificar la lista, inténtalo nuevamente.");
+    }
+  },
+
+  deleteAllLists: async () => {
+    addToQueue(1);
+    const { lists } = get();
+    const tempLists = lists;
+
+    set(() => ({
+      lists: [],
+    }));
+
+    try {
+      const result = await DeleteAllLists();
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+    } catch (error: any) {
+      toast.error(
+        `Hubo un error al eliminar las listas, inténtalo nuevamente. ${error}`
+      );
+      set(() => ({
+        lists: tempLists,
+      }));
+    } finally {
+      addToQueue(-1);
     }
   },
 
@@ -287,6 +369,7 @@ export const useLists = create<todo_list>()((set, get) => ({
                 name: task,
                 created_at: "0",
                 updated_at: "0",
+                user_id: "0",
               },
             ],
           };
@@ -312,6 +395,7 @@ export const useLists = create<todo_list>()((set, get) => ({
                       index: data.id,
                       created_at: data.created_at,
                       updated_at: data.updated_at,
+                      user_id: data.id,
                     };
                   }
                   return task; // Devolver otras tareas sin cambios
@@ -382,6 +466,35 @@ export const useLists = create<todo_list>()((set, get) => ({
       toast.error(
         "Hubo un error al actualizar la tarea, inténtalo nuevamente."
       );
+    }
+  },
+
+  deleteAllTasks: async () => {
+    addToQueue(1);
+    const { lists } = get();
+    const tempLists = lists;
+
+    set((state) => ({
+      lists: state.lists.map((list) => ({
+        ...list,
+        tasks: [],
+      })),
+    }));
+
+    try {
+      const result = await DeleteAllTasks();
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+    } catch (error: any) {
+      toast.error(
+        `Hubo un error al eliminar las tareas, inténtalo nuevamente. ${error}`
+      );
+      set(() => ({
+        lists: tempLists,
+      }));
+    } finally {
+      addToQueue(-1);
     }
   },
 }));

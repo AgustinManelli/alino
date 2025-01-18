@@ -9,18 +9,22 @@ export default function ConfirmationModal({
   aditionalText,
   isDeleteConfirm,
   handleDelete,
+  setAllowCloseNavbar,
 }: {
   text: string;
   aditionalText: string;
   isDeleteConfirm: (value: boolean) => void;
   handleDelete: () => void;
+  setAllowCloseNavbar?: (value: boolean) => void;
 }) {
   const handleAccept = () => {
-    handleDelete();
     isDeleteConfirm(false);
+    setAllowCloseNavbar && setAllowCloseNavbar(true);
+    handleDelete();
   };
   const handleCancel = () => {
     isDeleteConfirm(false);
+    setAllowCloseNavbar && setAllowCloseNavbar(true);
   };
   return createPortal(
     <div className={styles.backgroundModal}>

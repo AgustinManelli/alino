@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useLists } from "@/store/lists";
-import Navbar from "./navbarDesktop";
+import Navbar from "./navbar";
 import { useLoaderStore } from "@/store/useLoaderStore";
+import { useCloudStore } from "@/store/useCloudStore";
 
 export default function NavbarComponent() {
   const getLists = useLists((state) => state.getLists);

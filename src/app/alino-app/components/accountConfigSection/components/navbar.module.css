@@ -1,0 +1,35 @@
+.navbar {
+  width: 20%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  gap: 5px;
+}
+
+.option {
+  width: 100%;
+  height: fit-content;
+  border-radius: 10px;
+  padding: 5px 10px;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+}
+
+.optionText {
+  font-size: 16px;
+  color: #1c1c1c;
+}
+
+@media only screen and (max-width: 850px) {
+  .navbar {
+    width: 100%;
+    height: fit-content;
+    display: flex;
+    flex-direction: row;
+  }
+}
