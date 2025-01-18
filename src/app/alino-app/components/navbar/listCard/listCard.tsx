@@ -6,16 +6,15 @@ import { motion } from "motion/react";
 import { useSortable } from "@dnd-kit/sortable";
 
 import { useLists } from "@/store/lists";
+import { useAnimationStore } from "@/store/useAnimationStore";
 import useMobileStore from "@/store/useMobileStore";
 import { Database } from "@/lib/todosSchema";
 
-import { ColorPicker, EmojiComponent } from "@/components";
-import { CounterAnimation } from "@/components";
-import { ConfirmationModal } from "@/components";
+import { ColorPicker, CounterAnimation, ConfirmationModal } from "@/components";
 import MoreConfigs from "../moreConfigs";
 
 import styles from "./listCard.module.css";
-import { ArrowThin, Check, Pin, SquircleIcon } from "@/lib/ui/icons";
+import { Check, Pin } from "@/lib/ui/icons";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -25,7 +24,6 @@ interface props {
   isCreating: boolean;
   handleCloseNavbar: () => void;
   navScrolling: number;
-  allowCloseNavbar: boolean;
   setAllowCloseNavbar: (value: boolean) => void;
 }
 
@@ -35,7 +33,6 @@ export default function ListCard({
   isCreating,
   handleCloseNavbar,
   navScrolling,
-  allowCloseNavbar,
   setAllowCloseNavbar,
 }: props) {
   //estados locales
@@ -51,11 +48,9 @@ export default function ListCard({
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
 
   //estados globales
-  const deleteList = useLists((state) => state.deleteList);
-  const changeColor = useLists((state) => state.changeColor);
-  const updateListName = useLists((state) => state.updateListName);
-  const updateListPinned = useLists((state) => state.updateListPinned);
-  const isMobile = useMobileStore((state) => state.isMobile);
+  const { deleteList, updateListName, updateListPinned } = useLists();
+  const { isMobile } = useMobileStore();
+  const { animations } = useAnimationStore();
 
   //ref's
   const divRef = useRef<HTMLInputElement | null>(null);
@@ -113,13 +108,6 @@ export default function ListCard({
     setAllowCloseNavbar(false);
     setIsCreating(true);
   };
-
-  // const handleSave = async () => {
-  //   // setIsCreating(false);
-  //   // setAllowCloseNavbar(true);
-  //   setInput(!input);
-  //   await changeColor(colorTemp, list.id, emoji);
-  // };
 
   const handleSaveName = async () => {
     setIsCreating(false);
@@ -308,6 +296,7 @@ export default function ListCard({
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
               }}
+              initial={{ backgroundPosition: "200% center" }}
               animate={{
                 backgroundPosition: ["200% center", "0% center"],
               }}

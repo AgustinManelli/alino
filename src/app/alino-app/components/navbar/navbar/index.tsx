@@ -39,6 +39,7 @@ import styles from "./navbar.module.css";
 import { init } from "emoji-mart";
 import data from "@emoji-mart/data/sets/15/apple.json";
 import { AlinoLogoMotion } from "@/lib/ui/alinoLogoMotion";
+import { useAnimationStore } from "@/store/useAnimationStore";
 init({ data });
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
@@ -79,9 +80,8 @@ export default function Navbar({
 
   //estados globales
   const { isMobile } = useMobileStore();
-  const lists = useLists((state) => state.lists);
-  const setLists = useLists((state) => state.setLists);
-  const updateListPosition = useLists((state) => state.updateListPosition);
+  const { lists, setLists, updateListPosition } = useLists();
+  const { animations } = useAnimationStore();
 
   //ref's
   const Ref = useRef<HTMLInputElement | null>(null);
@@ -216,15 +216,6 @@ export default function Navbar({
       >
         <div className={styles.navbar}>
           <div className={styles.logoContainer}>
-            {/* <AlinoLogo
-              style={{
-                height: "20px",
-                width: "auto",
-                fill: "#1c1c1c",
-                opacity: "0.1",
-              }}
-              decoFill={"#1c1c1c"}
-            /> */}
             <AlinoLogoMotion
               style={{
                 height: "20px",
@@ -289,25 +280,40 @@ export default function Navbar({
                           .map((list) => (
                             <motion.div
                               layout={draggedItem ? false : true}
-                              variants={containerFMVariant}
-                              initial={{ scale: 0, opacity: 0 }}
-                              transition={{
-                                scale: {
-                                  duration: 0.2,
-                                  ease: "easeInOut",
-                                },
-                              }}
-                              exit={{
-                                scale: 1.3,
-                                opacity: 0,
-                                filter: "blur(30px) grayscale(100%)",
-                                y: -30,
-                                transition: {
-                                  duration: 0.5,
-                                },
-                                zIndex: "5",
-                              }}
+                              variants={
+                                animations ? containerFMVariant : undefined
+                              }
+                              initial={
+                                animations
+                                  ? { scale: 0, opacity: 0 }
+                                  : undefined
+                              }
+                              transition={
+                                animations
+                                  ? {
+                                      scale: {
+                                        duration: 0.2,
+                                        ease: "easeInOut",
+                                      },
+                                    }
+                                  : undefined
+                              }
+                              exit={
+                                animations
+                                  ? {
+                                      scale: 1.3,
+                                      opacity: 0,
+                                      filter: "blur(30px) grayscale(100%)",
+                                      y: -30,
+                                      transition: {
+                                        duration: 0.5,
+                                      },
+                                      zIndex: "5",
+                                    }
+                                  : undefined
+                              }
                               key={`pinned-${list.id}`}
+                              id={`pinned-${list.id}`}
                             >
                               <ListCard
                                 list={list}
@@ -315,7 +321,6 @@ export default function Navbar({
                                 isCreating={isCreating}
                                 handleCloseNavbar={handleCloseNavbar}
                                 navScrolling={navScrolling}
-                                allowCloseNavbar={allowCloseNavbar}
                                 setAllowCloseNavbar={setAllowCloseNavbar}
                               />
                             </motion.div>
@@ -349,24 +354,36 @@ export default function Navbar({
                         .map((list) => (
                           <motion.div
                             layout={draggedItem ? false : true}
-                            variants={containerFMVariant}
-                            initial={{ scale: 0, opacity: 0 }}
-                            transition={{
-                              scale: {
-                                duration: 0.2,
-                                ease: "easeInOut",
-                              },
-                            }}
-                            exit={{
-                              scale: 1.3,
-                              opacity: 0,
-                              filter: "blur(30px) grayscale(100%)",
-                              y: -30,
-                              transition: {
-                                duration: 0.5,
-                              },
-                              zIndex: "5",
-                            }}
+                            variants={
+                              animations ? containerFMVariant : undefined
+                            }
+                            initial={
+                              animations ? { scale: 0, opacity: 0 } : undefined
+                            }
+                            transition={
+                              animations
+                                ? {
+                                    scale: {
+                                      duration: 0.2,
+                                      ease: "easeInOut",
+                                    },
+                                  }
+                                : undefined
+                            }
+                            exit={
+                              animations
+                                ? {
+                                    scale: 1.3,
+                                    opacity: 0,
+                                    filter: "blur(30px) grayscale(100%)",
+                                    y: -30,
+                                    transition: {
+                                      duration: 0.5,
+                                    },
+                                    zIndex: "5",
+                                  }
+                                : undefined
+                            }
                             key={`list-${list.id}`}
                             id={`list-${list.id}`}
                           >
@@ -376,7 +393,6 @@ export default function Navbar({
                               isCreating={isCreating}
                               handleCloseNavbar={handleCloseNavbar}
                               navScrolling={navScrolling}
-                              allowCloseNavbar={allowCloseNavbar}
                               setAllowCloseNavbar={setAllowCloseNavbar}
                             />
                           </motion.div>
