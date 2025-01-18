@@ -20,57 +20,29 @@ import {
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
-import useOnClickOutside from "@/hooks/useOnClickOutside";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
-import useMobileStore from "@/store/useMobileStore";
+import { useMobileStore } from "@/store/useMobileStore";
+import { useAnimationStore } from "@/store/useAnimationStore";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
 
-import HomeCard from "../homeCard/homeCard";
-import ListCard from "../listCard/listCard";
-import DragListCard from "../listCard/dragListCard";
-import ListInput from "../listInput/listInput";
-import { Skeleton } from "@/components";
+import { HomeCard } from "../home-card";
+import { ListCard } from "../list-card";
+import { DragListCard } from "../list-card/drag-list-card";
+import { ListInput } from "../list-input";
+import { Skeleton } from "@/components/skeleton";
 
-import { AlinoLogo, MenuIcon } from "@/lib/ui/icons";
+import { IconAlinoMotion } from "@/lib/ui/icon-alino-motion";
+import { MenuIcon } from "@/lib/ui/icons";
 import styles from "./navbar.module.css";
 
 //INIT EMOJI-MART
 import { init } from "emoji-mart";
 import data from "@emoji-mart/data/sets/15/apple.json";
-import { AlinoLogoMotion } from "@/lib/ui/alinoLogoMotion";
-import { useAnimationStore } from "@/store/useAnimationStore";
 init({ data });
 
-type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
-
-const containerFMVariant = {
-  hidden: { opacity: 1, scale: 1 },
-  visible: {
-    rotate: 0,
-    opacity: 1,
-    scale: 1,
-    transition: {
-      type: "spring",
-      stiffness: 50,
-      delayChildren: 0.1,
-      staggerChildren: 0.1,
-    },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0,
-    transition: {
-      duration: 0.3,
-    },
-  },
-};
-
-export default function Navbar({
-  initialFetching,
-}: {
-  initialFetching: boolean;
-}) {
+export function Navbar({ initialFetching }: { initialFetching: boolean }) {
   //estados locales
   const [isActive, setIsActive] = useState<boolean>(false); //estado para navbar mobile
   const [draggedItem, setDraggedItem] = useState<ListsType | null>(null); //Drag de elemento
@@ -216,7 +188,7 @@ export default function Navbar({
       >
         <div className={styles.navbar}>
           <div className={styles.logoContainer}>
-            <AlinoLogoMotion
+            <IconAlinoMotion
               style={{
                 height: "20px",
                 width: "auto",
@@ -264,10 +236,7 @@ export default function Navbar({
                   collisionDetection={closestCenter}
                   onDragEnd={handleDragEnd}
                   onDragStart={handleDragStart}
-                  modifiers={[
-                    restrictToVerticalAxis,
-                    // restrictToFirstScrollableAncestor,
-                  ]}
+                  modifiers={[restrictToVerticalAxis]}
                 >
                   <SortableContext
                     items={lists}
@@ -419,3 +388,27 @@ export default function Navbar({
     </>
   );
 }
+
+type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+
+const containerFMVariant = {
+  hidden: { opacity: 1, scale: 1 },
+  visible: {
+    rotate: 0,
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 50,
+      delayChildren: 0.1,
+      staggerChildren: 0.1,
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};

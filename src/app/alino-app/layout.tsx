@@ -1,8 +1,10 @@
-import Navbar from "./components/navbar";
 import { redirect } from "next/navigation";
-import ConfigSection from "./components/config-section/config-section";
-import BlurredFx from "./components/blurredFx";
+
 import { readUserSession } from "@/lib/auth/actions";
+
+import BlurredFx from "./components/blurredFx";
+import { ConfigSection } from "./components/config-section";
+import Navbar from "./components/navbar";
 
 export default async function appLayout({
   children,

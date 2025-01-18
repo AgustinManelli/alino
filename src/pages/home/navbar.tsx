@@ -1,7 +1,7 @@
 "use client";
 
 import { AlinoLogo, UserIcon, Crown } from "../../lib/ui/icons";
-import { ButtonComp } from "@/components";
+import { ButtonLink } from "@/components/button-link";
 import styles from "./navbar.module.css";
 
 export default function Navbar() {
@@ -10,7 +10,7 @@ export default function Navbar() {
       <nav className={styles.navbar}>
         <AlinoLogo style={{ height: "35px" }} />
         <div className={styles.buttonsDiv}>
-          <ButtonComp
+          <ButtonLink
             text=""
             background="rgb(240, 240, 240)"
             hover="rgb(230, 230, 230)"
@@ -28,8 +28,8 @@ export default function Navbar() {
                 height: "auto",
               }}
             />
-          </ButtonComp>
-          <ButtonComp
+          </ButtonLink>
+          <ButtonLink
             text="iniciar sesión"
             background="rgb(240, 240, 240)"
             hover="rgb(230, 230, 230)"
@@ -46,7 +46,7 @@ export default function Navbar() {
                 height: "auto",
               }}
             />
-          </ButtonComp>
+          </ButtonLink>
         </div>
       </nav>
     </div>

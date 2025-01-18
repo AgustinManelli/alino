@@ -1,20 +1,23 @@
 "use client";
 
-import styles from "./login.module.css";
-import { LoginUserInput, loginUserSchema } from "@/lib/user-schema";
-import { signInWithEmailAndPassword } from "@/lib/auth/actions";
-import { toast } from "sonner";
-import { SubmitHandler, useForm } from "react-hook-form";
 import { useEffect, useTransition } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { GithubIcon, GoogleIcon, LoadingIcon } from "@/lib/ui/icons";
-import { OauthButton } from "./components/oauthButton";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useLoaderStore } from "@/store/useLoaderStore";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
-export const LoginForm = () => {
+import { useLoaderStore } from "@/store/useLoaderStore";
+import { LoginUserInput, loginUserSchema } from "@/lib/user-schema";
+import { signInWithEmailAndPassword } from "@/lib/auth/actions";
+
+import { OauthButton } from "./components/oauthButton";
+
+import { GithubIcon, GoogleIcon, LoadingIcon } from "@/lib/ui/icons";
+import styles from "./login.module.css";
+
+export function LoginForm() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -22,7 +25,7 @@ export const LoginForm = () => {
     resolver: zodResolver(loginUserSchema),
   });
 
-  const setLoading = useLoaderStore((state) => state.setLoading);
+  const { setLoading } = useLoaderStore();
 
   useEffect(() => {
     setLoading(false);
@@ -162,4 +165,4 @@ export const LoginForm = () => {
       </div>
     </motion.div>
   );
-};
+}

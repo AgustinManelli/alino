@@ -1,13 +1,12 @@
 "use client";
 
-import TodoTasksSection from "./todo-tasks-section";
 import TodoInput from "./todo-input";
 import { SquircleIcon } from "@/lib/ui/icons";
 import styles from "./todo.module.css";
 import { useLists } from "@/store/lists";
 import { Database } from "@/lib/todosSchema";
-import { EmojiComponent } from "@/components";
-import { Skeleton } from "@/components";
+import { EmojiMartComponent } from "@/components/emoji-mart/emoji-mart-component";
+import { Skeleton } from "@/components/skeleton";
 import Manager from "../manager";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
@@ -31,7 +30,7 @@ export default function Todo({ params }: { params: { list: string } }) {
                     height: "20px",
                   }}
                 >
-                  <EmojiComponent shortcodes={setList?.icon} size="20px" />
+                  <EmojiMartComponent shortcodes={setList?.icon} size="20px" />
                 </div>
               ) : (
                 <SquircleIcon
@@ -74,9 +73,6 @@ export default function Todo({ params }: { params: { list: string } }) {
           <TodoInput setList={setList} />
         </section>
       </Manager>
-      {/* <section className={styles.todoManagerContainer}>
-          <TodoTasksSection setList={setList} />
-        </section> */}
     </div>
   );
 }

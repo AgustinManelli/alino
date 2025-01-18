@@ -1,9 +1,12 @@
 "use client";
+
+import { createPortal } from "react-dom";
+import { useRef } from "react";
+
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+
 import { Cross } from "@/lib/ui/icons";
 import styles from "./window-component.module.css";
-import { useRef } from "react";
-import useOnClickOutside from "@/hooks/useOnClickOutside";
-import { createPortal } from "react-dom";
 
 export default function WindowComponent({
   children,

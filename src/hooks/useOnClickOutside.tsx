@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
-function useOnClickOutside(
+export function useOnClickOutside(
   ref: React.RefObject<HTMLElement>,
   handler: (e: MouseEvent | TouchEvent) => void,
   parentRef?: React.RefObject<HTMLElement>
@@ -34,5 +34,3 @@ function useOnClickOutside(
     };
   }, [ref, parentRef, handler]);
 }
-
-export default useOnClickOutside;

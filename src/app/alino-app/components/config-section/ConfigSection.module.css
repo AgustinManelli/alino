@@ -1,0 +1,52 @@
+.configSection {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  user-select: none;
+}
+.configButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  background-color: rgb(235, 235, 235);
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  padding: 2px;
+  z-index: 1;
+}
+
+.configButton:hover {
+  background-color: #e6e6e6;
+}
+
+.configUserIcon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 9px;
+  background-color: #fff;
+}
+
+@media only screen and (max-width: 850px) {
+  .configButton {
+    background-color: rgb(225, 225, 225);
+  }
+  .configButton:hover {
+    background-color: rgb(225, 225, 225);
+  }
+}

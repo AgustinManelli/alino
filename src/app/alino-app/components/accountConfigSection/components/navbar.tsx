@@ -1,3 +1,5 @@
+"use client";
+
 import styles from "./navbar.module.css";
 interface props {
   type: string;

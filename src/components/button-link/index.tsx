@@ -1,0 +1,80 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+
+import { useLoaderStore } from "@/store/useLoaderStore";
+
+import styles from "./ButtonLink.module.css";
+
+interface props {
+  text?: string;
+  background: string;
+  hover: string;
+  letterColor: string;
+  to: string;
+  strokeBorder?: boolean | null;
+  children?: string | JSX.Element | JSX.Element[] | null;
+  style?: React.CSSProperties;
+  withLoader?: boolean;
+}
+
+export function ButtonLink({
+  text,
+  background,
+  hover,
+  letterColor,
+  to,
+  strokeBorder,
+  children,
+  style,
+  withLoader,
+}: props) {
+  const [isHover, setIsHover] = useState<boolean>(false);
+
+  const { setLoading } = useLoaderStore();
+
+  const loaderFunctions = () => {
+    document.body.style.overflow = "hidden";
+    setLoading(true);
+  };
+
+  const inlineStyles = {
+    backgroundColor: strokeBorder
+      ? isHover === true
+        ? `${background}`
+        : "transparent"
+      : isHover === true
+        ? `${hover}`
+        : `${background}`,
+    color: strokeBorder
+      ? isHover === true
+        ? `${letterColor}`
+        : `${background}`
+      : `${letterColor}`,
+    border: strokeBorder ? `solid ${background} 2px` : "none",
+    fontWeight: strokeBorder ? "600" : "initial",
+  };
+
+  const combinedStyles = Object.assign({}, inlineStyles, style);
+
+  return (
+    <Link
+      href={`${to}`}
+      className={styles.buttonContainer}
+      style={combinedStyles}
+      onMouseEnter={() => {
+        setIsHover(true);
+      }}
+      onMouseLeave={() => {
+        setIsHover(false);
+      }}
+      onClick={withLoader ? loaderFunctions : () => {}}
+    >
+      <div className={styles.container}>
+        {children}
+        {text}
+      </div>
+    </Link>
+  );
+}

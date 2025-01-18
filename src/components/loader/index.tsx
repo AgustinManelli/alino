@@ -1,12 +1,14 @@
 "use client";
 
-import { LoadingIcon } from "@/lib/ui/icons";
-import { useLoaderStore } from "@/store/useLoaderStore";
 import { useEffect, useState } from "react";
-import styles from "./loader.module.css";
 
-export default function Loader() {
-  const loading = useLoaderStore((state) => state.loading);
+import { useLoaderStore } from "@/store/useLoaderStore";
+
+import { LoadingIcon } from "@/lib/ui/icons";
+import styles from "./Loader.module.css";
+
+export function Loader() {
+  const { loading } = useLoaderStore();
 
   const texts = [
     "Alino viene de la unión de las palabras All in One",

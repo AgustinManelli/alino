@@ -1,19 +1,22 @@
 "use client";
 
+import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
-import { signUpWithEmailAndPassword } from "@/lib/auth/actions";
-import { toast } from "sonner";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { CreateUserInput, createUserSchema } from "@/lib/user-schema";
 import { motion } from "motion/react";
-import styles from "../sign-in/login.module.css";
-import { LoadingIcon } from "@/lib/ui/icons";
+import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SubmitHandler, useForm } from "react-hook-form";
 
-export const RegisterForm = () => {
+import { CreateUserInput, createUserSchema } from "@/lib/user-schema";
+import { signUpWithEmailAndPassword } from "@/lib/auth/actions";
+
+import { LoadingIcon } from "@/lib/ui/icons";
+import styles from "../sign-in/login.module.css";
+
+export function RegisterForm() {
   const [isPending, startTransition] = useTransition();
+
   const router = useRouter();
 
   const methods = useForm<CreateUserInput>({
@@ -148,4 +151,4 @@ export const RegisterForm = () => {
       </div>
     </motion.div>
   );
-};
+}
