@@ -251,6 +251,35 @@ export const UpdateAllIndexLists = async (id: string) => {
   return { data };
 };
 
+export const DeleteAllLists = async () => {
+  // Crear cliente de Supabase
+  const supabase = createClient();
+
+  // Obtener usuario autenticado
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData?.user) {
+    return {
+      error: new Error("User is not logged in or authentication failed"),
+    };
+  }
+
+  const user = userData.user;
+
+  //Eliminar listas
+  const { data, error } = await supabase
+    .from("todos_data")
+    .delete()
+    .eq("user_id", user.id);
+
+  if (error) {
+    return { error: new Error("Failed to delete all lists") };
+  }
+
+  // Retornar datos
+  return { data };
+};
+
 export const AddTaskToDB = async (
   category_id: string,
   name: string,
@@ -336,4 +365,33 @@ export const UpdateTasksCompleted = async (id: string, status: boolean) => {
   }
 
   return { data: updateData };
+};
+
+export const DeleteAllTasks = async () => {
+  // Crear cliente de Supabase
+  const supabase = createClient();
+
+  // Obtener usuario autenticado
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData?.user) {
+    return {
+      error: new Error("User is not logged in or authentication failed"),
+    };
+  }
+
+  const user = userData.user;
+
+  //Eliminar listas
+  const { data, error } = await supabase
+    .from("tasks")
+    .delete()
+    .eq("user_id", user.id);
+
+  if (error) {
+    return { error: new Error("Failed to delete all tasks") };
+  }
+
+  // Retornar datos
+  return { data };
 };

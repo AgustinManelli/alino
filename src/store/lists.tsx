@@ -16,6 +16,8 @@ import {
   UpdatePinnedListToDB,
   UpdateIndexListToDB,
   UpdateAllIndexLists,
+  DeleteAllLists,
+  DeleteAllTasks,
 } from "@/lib/todo/actions";
 import { toast } from "sonner";
 import { useCloudStore } from "./useCloudStore";
@@ -41,11 +43,13 @@ type todo_list = {
     color: string,
     emoji: string | null
   ) => void;
+  deleteAllLists: () => void;
   addTask: (list_id: string, task: string) => void;
   deleteTask: (id: string, list_id: string) => void;
   updateTaskCompleted: (id: string, list_id: string, status: boolean) => void;
   updateListPinned: (id: string, pinned: boolean) => void;
   updateListPosition: (id: string, index: number) => void;
+  deleteAllTasks: () => void;
 };
 
 export const useLists = create<todo_list>()((set, get) => ({
@@ -314,6 +318,32 @@ export const useLists = create<todo_list>()((set, get) => ({
     }
   },
 
+  deleteAllLists: async () => {
+    addToQueue(1);
+    const { lists } = get();
+    const tempLists = lists;
+
+    set(() => ({
+      lists: [],
+    }));
+
+    try {
+      const result = await DeleteAllLists();
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+    } catch (error: any) {
+      toast.error(
+        `Hubo un error al eliminar las listas, inténtalo nuevamente. ${error}`
+      );
+      set(() => ({
+        lists: tempLists,
+      }));
+    } finally {
+      addToQueue(-1);
+    }
+  },
+
   //ACCIONES DE TAREAS
 
   addTask: async (list_id, task) => {
@@ -436,6 +466,35 @@ export const useLists = create<todo_list>()((set, get) => ({
       toast.error(
         "Hubo un error al actualizar la tarea, inténtalo nuevamente."
       );
+    }
+  },
+
+  deleteAllTasks: async () => {
+    addToQueue(1);
+    const { lists } = get();
+    const tempLists = lists;
+
+    set((state) => ({
+      lists: state.lists.map((list) => ({
+        ...list,
+        tasks: [],
+      })),
+    }));
+
+    try {
+      const result = await DeleteAllTasks();
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+    } catch (error: any) {
+      toast.error(
+        `Hubo un error al eliminar las tareas, inténtalo nuevamente. ${error}`
+      );
+      set(() => ({
+        lists: tempLists,
+      }));
+    } finally {
+      addToQueue(-1);
     }
   },
 }));

@@ -23,14 +23,29 @@
 .configSection {
   position: relative;
   background-color: rgb(250, 250, 250);
+  border-radius: 10px;
+  padding: 10px 15px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.configElement {
+  position: relative;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  border-radius: 10px;
-  padding: 10px 15px;
+  height: 26px;
   width: 100%;
+}
+
+.configElementSeparator {
+  width: 100%;
+  height: 1px;
+  background-color: rgb(230, 230, 230);
 }
 
 .configSectionTitle {
@@ -49,6 +64,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100%;
 }
 
 @media only screen and (max-width: 850px) {
