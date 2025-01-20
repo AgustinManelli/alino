@@ -11,7 +11,7 @@ import { Database } from "@/lib/todosSchema";
 import { CounterAnimation } from "@/components/counter-animation";
 
 import { HomeIcon2 } from "@/lib/ui/icons";
-import styles from "../list-card/listCard.module.css";
+import styles from "../list-card/ListCard.module.css";
 
 export function HomeCard({
   handleCloseNavbar,
