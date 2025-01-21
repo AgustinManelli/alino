@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useLoaderStore } from "@/store/useLoaderStore";
 
 import { LoadingIcon } from "@/lib/ui/icons";
-import styles from "./Loader.module.css";
+import styles from "./loader.module.css";
 
 export function Loader() {
   const { loading } = useLoaderStore();

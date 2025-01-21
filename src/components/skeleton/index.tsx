@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "./Skeleton.module.css";
+import styles from "./skeleton.module.css";
 
 interface props {
   style?: React.CSSProperties;
