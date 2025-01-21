@@ -161,8 +161,8 @@ export function MoreConfigs({
             ""
           )}
         </>,
-        // document.body
-        document.getElementById("app") as HTMLElement
+        document.body
+        // document.getElementById("app") as HTMLElement
       )}
     </>
   );

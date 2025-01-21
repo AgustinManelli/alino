@@ -341,7 +341,8 @@ export function ColorPicker({
             </motion.section>
           )}
         </>,
-        document.getElementById("app") as HTMLElement
+        // document.getElementById("app") as HTMLElement
+        document.body
       )}
     </>
   );
