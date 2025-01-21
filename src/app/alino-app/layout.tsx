@@ -6,8 +6,6 @@ import BlurredFx from "./components/blurredFx";
 import { ConfigSection } from "./components/config-section";
 import Navbar from "./components/navbar";
 
-import styles from "./layout.module.css";
-
 export default async function appLayout({
   children,
 }: {
@@ -22,7 +20,6 @@ export default async function appLayout({
 
   return (
     <section
-      className={styles.app}
       style={{
         position: "relative",
         backgroundColor: "rgb(240, 240, 240)",
