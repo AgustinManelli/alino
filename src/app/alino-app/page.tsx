@@ -4,7 +4,7 @@ import { readUserSession } from "@/lib/auth/actions";
 
 export async function generateMetadata() {
   return {
-    title: "Alino | Home",
+    title: "Home",
   };
 }
 

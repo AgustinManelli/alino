@@ -1,5 +1,12 @@
 {
-  "name": "App",
+  "name": "Alino",
+  "short_name": "Alino",
+  "theme_color": "rgb(240,240,240)",
+  "background_color": "rgb(240,240,240)",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/alino-app",
+  "start_url": "/alino-app",
   "icons": [
     {
       "src": "/android-icon-36x36.png",
@@ -37,6 +44,5 @@
       "type": "image/png",
       "density": "4.0"
     }
-  ],
-  "display": "standalone"
+  ]
 }

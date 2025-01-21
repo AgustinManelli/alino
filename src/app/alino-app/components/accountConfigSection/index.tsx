@@ -9,9 +9,9 @@ import { ButtonConfig } from "./components/buttonConfig";
 import { Switch } from "@/components/switch";
 import ContainerConfig from "./components/container";
 import NavbarConfig from "./components/navbar";
-import WindowComponent from "@/components/windowComponent";
+import { WindowComponent } from "@/components/window-component";
 
-import styles from "./accountConfigSection.module.css";
+import styles from "./AccountConfigSection.module.css";
 
 export default function AccountConfigSection({
   name,

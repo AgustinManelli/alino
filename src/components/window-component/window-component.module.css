@@ -61,6 +61,7 @@
   cursor: pointer;
   width: fit-content;
   height: fit-content;
+  -webkit-tap-highlight-color: "transparent";
 }
 .body {
   width: 100%;
