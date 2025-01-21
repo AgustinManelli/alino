@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useAnimation } from "motion/react";
+import { useState } from "react";
 
 interface props {
   value: boolean;
@@ -8,34 +9,45 @@ interface props {
   width: number;
 }
 
-export function Switch({ value, action, width }: props) {
+export function Switch({ value, action, width = 40 }: props) {
+  const [isPressed, setIsPressed] = useState(false);
+
   const toggleSwitch = () => action();
 
+  const height = width * 0.6;
+  const squeezed = (height - (width / 20) * 2) * 1.3;
+
   return (
-    <button
+    <motion.button
       style={{
         position: "relative",
         aspectRatio: "1.5 / 1",
-        height: `${width / 1.5}px`,
-        borderRadius: 50,
+        height: `${height}px`,
+        borderRadius: `${width / 1.6 / 2}px`,
         cursor: "pointer",
         display: "flex",
         border: "none",
         justifyContent: "flex-" + (value ? "end" : "start"),
         width: `${width}px`,
         padding: `${width / 20}px`,
-        backgroundColor: value ? "rgb(41, 204, 0)" : "rgb(230, 230, 230)",
+        backgroundColor: value ? "#2FD159" : "rgb(230, 230, 230)",
+        overflow: "hidden",
+        WebkitTapHighlightColor: "transparent",
+        touchAction: "manipulation",
       }}
       onClick={toggleSwitch}
+      onTapStart={() => setIsPressed(true)}
+      onTap={() => setIsPressed(false)}
+      onTapCancel={() => setIsPressed(false)}
     >
       <motion.div
         layout
         style={{
-          width: "auto",
+          width: `${isPressed ? squeezed : height - (width / 20) * 2}px`,
           height: "100%",
-          aspectRatio: "1 / 1",
           backgroundColor: "#fff",
-          borderRadius: "50%",
+          borderRadius: `${(width - width / 20) / 2}px`,
+          boxShadow: "-5px 0px 10px rgb(0, 0, 0, 0.1)",
         }}
         transition={{
           type: "spring",
@@ -43,6 +55,6 @@ export function Switch({ value, action, width }: props) {
           bounce: 0.2,
         }}
       />
-    </button>
+    </motion.button>
   );
 }

@@ -4,14 +4,12 @@ import Todo from "../components/todo/todo";
 export async function generateMetadata() {
   const { data, error } = await readUserSession();
   if (!error) {
-    const nameSession = data.session?.user.user_metadata.name ?? "user";
+    const nameSession =
+      data.session?.user.user_metadata.name ?? data.session?.user.email;
     return {
-      title: `alino app | ${nameSession}`,
+      title: `${nameSession}`,
     };
   }
-  return {
-    title: "alino app",
-  };
 }
 
 export default function listTodoPage({ params }: { params: { list: string } }) {

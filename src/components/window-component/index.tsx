@@ -8,7 +8,7 @@ import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { Cross } from "@/lib/ui/icons";
 import styles from "./window-component.module.css";
 
-export default function WindowComponent({
+export function WindowComponent({
   children,
   windowName,
   crossAction,

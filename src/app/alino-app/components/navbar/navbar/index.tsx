@@ -162,12 +162,29 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
   return (
     <>
       {/* BOTON PARA ABRIR NAVBAR MOBILE */}
-      {isMobile && (
-        <button
+      {isMobile && !isActive && (
+        <motion.button
           onClick={() => {
             setIsActive(!isActive);
           }}
           className={styles.mobileButton}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            transition: {
+              opacity: { duration: 0.2 },
+              scale: { duration: 0.2 },
+            },
+          }}
+          exit={{
+            opacity: 0,
+            scale: 0,
+            transition: {
+              opacity: { duration: 0.2 },
+              scale: { duration: 0.2 },
+            },
+          }}
         >
           <MenuIcon
             style={{
@@ -177,7 +194,7 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
               strokeWidth: "2",
             }}
           />
-        </button>
+        </motion.button>
       )}
 
       {/* NAVBAR */}
@@ -275,9 +292,9 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
                                       filter: "blur(30px) grayscale(100%)",
                                       y: -30,
                                       transition: {
-                                        duration: 0.5,
+                                        duration: 1,
                                       },
-                                      zIndex: "5",
+                                      zIndex: "-1",
                                     }
                                   : undefined
                               }
@@ -327,7 +344,9 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
                               animations ? containerFMVariant : undefined
                             }
                             initial={
-                              animations ? { scale: 0, opacity: 0 } : undefined
+                              animations
+                                ? { scale: 0, opacity: 0, zIndex: 1 }
+                                : undefined
                             }
                             transition={
                               animations
@@ -347,9 +366,9 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
                                     filter: "blur(30px) grayscale(100%)",
                                     y: -30,
                                     transition: {
-                                      duration: 0.5,
+                                      duration: 1,
                                     },
-                                    zIndex: "5",
+                                    zIndex: "0",
                                   }
                                 : undefined
                             }
