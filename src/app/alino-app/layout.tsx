@@ -21,41 +21,31 @@ export default async function appLayout({
   }
 
   return (
-    <section
-      className={styles.app}
-      style={{
-        position: "relative",
-        backgroundColor: "rgb(240, 240, 240)",
-        width: "100vw",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "row",
-        overflow: "hidden",
-        padding: "15px",
-      }}
-    >
+    <section className={styles.app}>
       <BlurredFx />
-      <Navbar />
-      <ConfigSection
-        userAvatarUrl={session?.user?.user_metadata?.avatar_url}
-        name={session?.user?.user_metadata.name}
-      />
-      <p
-        style={{
-          position: "absolute",
-          right: "15px",
-          bottom: "15px",
-          backgroundColor: "#fff",
-          borderRadius: "10px",
-          padding: "5px 10px",
-          fontSize: "12px",
-          color: "#1c1c1c",
-          opacity: "0.5",
-        }}
-      >
-        pre-alpha version
-      </p>
-      {children}
+      <div className={styles.appContainer}>
+        <ConfigSection
+          userAvatarUrl={session?.user?.user_metadata?.avatar_url}
+          name={session?.user?.user_metadata.name}
+        />
+        <Navbar />
+        <p
+          style={{
+            position: "absolute",
+            right: "0",
+            bottom: "0",
+            backgroundColor: "#fff",
+            borderRadius: "10px",
+            padding: "5px 10px",
+            fontSize: "12px",
+            color: "#1c1c1c",
+            opacity: "0.5",
+          }}
+        >
+          pre-alpha version
+        </p>
+        {children}
+      </div>
     </section>
   );
 }
