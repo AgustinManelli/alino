@@ -12,6 +12,7 @@ import { CloudIndicator } from "./cloud-indicator";
 
 import { Config, LogOut, UserIcon } from "@/lib/ui/icons";
 import styles from "./ConfigSection.module.css";
+import { AnimatePresence } from "motion/react";
 
 interface props {
   userAvatarUrl: string;
@@ -50,13 +51,15 @@ export function ConfigSection({ userAvatarUrl, name }: props) {
 
   return (
     <>
-      {configActive && (
-        <AccountConfigSection
-          name={name ? name : "User"}
-          userAvatarUrl={userAvatarUrl}
-          handleCloseConfig={handleCloseConfig}
-        />
-      )}
+      <AnimatePresence>
+        {configActive && (
+          <AccountConfigSection
+            name={name ? name : "User"}
+            userAvatarUrl={userAvatarUrl}
+            handleCloseConfig={handleCloseConfig}
+          />
+        )}
+      </AnimatePresence>
       <div className={styles.configSection}>
         <CloudIndicator />
         <div

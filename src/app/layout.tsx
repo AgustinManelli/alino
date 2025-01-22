@@ -58,6 +58,13 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: APP_DEFAULT_TITLE,
+    startupImage: [
+      "/loadscreen-01.webp",
+      {
+        url: "/loadscreen-01.webp",
+        media: "(device-width: 768px) and (device-height: 1024px)",
+      },
+    ],
   },
   formatDetection: {
     telephone: false,

@@ -52,3 +52,9 @@
     left: 20px;
   }
 }
+
+@media only screen and (max-width: 850px) and (display-mode: standalone) {
+  .backButton {
+    display: none;
+  }
+}
