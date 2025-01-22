@@ -5,8 +5,8 @@
   "background_color": "rgb(240,240,240)",
   "display": "standalone",
   "orientation": "portrait",
-  "scope": "/alino-app",
-  "start_url": "/alino-app",
+  "scope": "/",
+  "start_url": "/sign-in",
   "icons": [
     {
       "src": "/android-icon-36x36.png",

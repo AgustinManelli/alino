@@ -40,6 +40,7 @@ export function ButtonConfig({
         style={{
           cursor: "pointer",
           border: "none",
+          WebkitTapHighlightColor: "transparent",
           ...stylesProp,
         }}
       >
