@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { LoadingIcon } from "@/lib/ui/icons";
 import styles from "../login.module.css";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface props {
   providerName: string;
@@ -63,31 +64,39 @@ export function OauthButton({
   }, [popup]);
 
   const login = async () => {
-    const supabase = createClient();
-    const origin = location.origin;
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: providerType,
-      options: {
-        redirectTo: `${origin}/auth/popup-callback`,
-        queryParams: { prompt: "select_account" },
-        skipBrowserRedirect: true,
-      },
-    });
-    if (error || !data) {
-      return console.error(error);
+    const isPWA = window.matchMedia("(display-mode: standalone)").matches;
+    if (isPWA) {
+      const supabase = await createClient();
+      const href = window.location.origin;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: providerType,
+        options: {
+          redirectTo: `${href}/auth/callback`,
+        },
+      });
+      if (error) {
+        toast.error("Hubo un error al iniciar sesión");
+        setIsPending(false);
+        return;
+      }
+    } else {
+      const supabase = createClient();
+      const origin = location.origin;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: providerType,
+        options: {
+          redirectTo: `${origin}/auth/popup-callback`,
+          queryParams: { prompt: "select_account" },
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error || !data) {
+        return console.error(error);
+      }
+      const popup = openPopup(data.url);
+      setPopup(popup);
+      setIsPending(true);
     }
-    // const popup = openPopup(data.url);
-
-    const width = 500;
-    const height = 600;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
-
-    // window features for popup
-    const windowFeatures = `scrollbars=no, resizable=no, copyhistory=no, width=${width}, height=${height}, top=${top}, left=${left}`;
-    const popup = window.open(data.url, "popup", windowFeatures);
-
-    setPopup(popup);
   };
 
   const openPopup = (url: string) => {
@@ -112,6 +121,7 @@ export function OauthButton({
 
     // clear popup and replace the route
     setPopup(null);
+    setIsPending(false);
     router.replace(`auth/callback?code=${code}`);
   };
 
