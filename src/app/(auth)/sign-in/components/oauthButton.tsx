@@ -76,7 +76,17 @@ export function OauthButton({
     if (error || !data) {
       return console.error(error);
     }
-    const popup = openPopup(data.url);
+    // const popup = openPopup(data.url);
+
+    const width = 500;
+    const height = 600;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+
+    // window features for popup
+    const windowFeatures = `scrollbars=no, resizable=no, copyhistory=no, width=${width}, height=${height}, top=${top}, left=${left}`;
+    const popup = window.open(data.url, "popup", windowFeatures);
+
     setPopup(popup);
   };
 
