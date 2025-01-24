@@ -195,6 +195,21 @@ export const GoogleIcon = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
+export const AppleIcon = ({ style }: { style?: React.CSSProperties }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      version="1.1"
+      viewBox="0 0 48 48"
+      style={style}
+    >
+      <g>
+        <path d="M42,16.5c-.3.2-5.1,2.9-5.1,9s6.2,9.5,6.4,9.6c0,.2-1,3.4-3.3,6.7-2,2.9-4.1,5.8-7.4,5.8s-4-1.9-7.8-1.9-4.9,1.9-7.9,1.9-5-2.7-7.4-6c-2.7-3.9-4.9-9.9-4.9-15.7,0-9.2,6-14.1,11.9-14.1s5.7,2.1,7.7,2.1,4.8-2.2,8.4-2.2,6.2.1,9.4,4.7h0ZM31,7.9c1.5-1.7,2.5-4.2,2.5-6.6s0-.7,0-1c-2.4,0-5.2,1.6-7,3.6-1.3,1.5-2.6,4-2.6,6.4s0,.7,0,.9c.2,0,.4,0,.6,0,2.2,0,4.9-1.4,6.4-3.4h0Z" />
+      </g>
+    </svg>
+  );
+};
+
 export const DeleteIcon = ({ style }: { style?: React.CSSProperties }) => {
   return (
     <svg
