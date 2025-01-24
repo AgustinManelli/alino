@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-// import { Suspense } from "react";
+import { Suspense } from "react";
 
 const PopupCallback = () => {
   const [mounted, setMounted] = useState(false);
@@ -31,12 +31,12 @@ const PopupCallback = () => {
   return null;
 };
 
-export default PopupCallback;
+// export default PopupCallback;
 
-// export default function Page() {
-//   return (
-//    <Suspense>
-//     <
-//    </Suspense>
-//   );
-// }
+export default function Page() {
+  return (
+    <Suspense>
+      <PopupCallback />
+    </Suspense>
+  );
+}
