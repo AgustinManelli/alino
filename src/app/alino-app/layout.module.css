@@ -5,6 +5,7 @@
   width: 100vw;
   padding: 15px;
   overflow: hidden;
+  touch-action: none;
 }
 .appContainer {
   position: relative;
@@ -15,6 +16,7 @@
 @media all and (display-mode: standalone) {
   .app {
     height: 100vh;
-    padding: calc(env(safe-area-inset-top) + 15px) 15px 15px 15px;
+    padding: calc(env(safe-area-inset-top) + 15px) 15px
+      calc(env(safe-area-inset-bottom) + 15px) 15px;
   }
 }

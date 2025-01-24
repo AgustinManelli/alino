@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
 
 import { LoadingIcon } from "@/lib/ui/icons";
 import styles from "../login.module.css";
+import { useRouter } from "next/navigation";
 
 interface props {
   providerName: string;
@@ -26,26 +26,88 @@ export function OauthButton({
 }: props) {
   const [isPending, setIsPending] = useState<boolean>(false);
 
-  const handleSignIn = async () => {
-    setIsPending(true);
-    const supabase = await createClient();
-    const href = window.location.origin;
-    const { error } = await supabase.auth.signInWithOAuth({
+  // const handleSignIn = async () => {
+  //   setIsPending(true);
+  //   const supabase = await createClient();
+  //   const href = window.location.origin;
+  //   const { error } = await supabase.auth.signInWithOAuth({
+  //     provider: providerType,
+  //     options: {
+  //       redirectTo: `${href}/auth/callback`,
+  //       // skipBrowserRedirect: true,
+  //     },
+  //   });
+  //   if (error) {
+  //     toast.error("Hubo un error al iniciar sesión");
+  //     setIsPending(false);
+  //     return;
+  //   }
+  // };
+
+  const [popup, setPopup] = useState<Window | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    // If there is no popup, nothing to do
+    if (!popup) return;
+
+    // Listen for messages from the popup by creating a BroadcastChannel
+    const channel = new BroadcastChannel("popup-channel");
+    channel.addEventListener("message", getDataFromPopup);
+
+    // effect cleaner (when component unmount)
+    return () => {
+      channel.removeEventListener("message", getDataFromPopup);
+      setPopup(null);
+    };
+  }, [popup]);
+
+  const login = async () => {
+    const supabase = createClient();
+    const origin = location.origin;
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: providerType,
       options: {
-        redirectTo: `${href}/auth/callback`,
+        redirectTo: `${origin}/auth/popup-callback`,
+        queryParams: { prompt: "select_account" },
+        skipBrowserRedirect: true,
       },
     });
-    if (error) {
-      toast.error("Hubo un error al iniciar sesión");
-      setIsPending(false);
-      return;
+    if (error || !data) {
+      return console.error(error);
     }
+    const popup = openPopup(data.url);
+    setPopup(popup);
+  };
+
+  const openPopup = (url: string) => {
+    const width = 500;
+    const height = 600;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+
+    // window features for popup
+    const windowFeatures = `scrollbars=no, resizable=no, copyhistory=no, width=${width}, height=${height}, top=${top}, left=${left}`;
+    const popup = window.open(url, "popup", windowFeatures);
+    return popup;
+  };
+
+  const getDataFromPopup = (e: any) => {
+    // check origin
+    if (e.origin !== window.location.origin) return;
+
+    // get authResultCode from popup
+    const code = e.data?.authResultCode;
+    if (!code) return;
+
+    // clear popup and replace the route
+    setPopup(null);
+    router.replace(`auth/callback?code=${code}`);
   };
 
   return (
     <button
-      onClick={handleSignIn}
+      onClick={login}
       className={styles.LoginOauth}
       type="button"
       style={style}
