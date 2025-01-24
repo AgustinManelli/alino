@@ -59,9 +59,9 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: APP_DEFAULT_TITLE,
     startupImage: [
-      "/loadscreen-01.webp",
+      "/apple-touch-startup-image-1024-768.png",
       {
-        url: "/loadscreen-01.webp",
+        url: "/apple-touch-startup-image-1024-768.png",
         media: "(device-width: 768px) and (device-height: 1024px)",
       },
     ],
@@ -103,11 +103,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" style={{ overflow: "hidden" }}>
-      <body
-        style={{ height: "100%", touchAction: "none" }}
-        className={`${inter.className}`}
-      >
+    <html lang="en">
+      <body style={{ height: "100%" }} className={`${inter.className}`}>
         <Loader />
         <Toaster richColors />
         {children}
