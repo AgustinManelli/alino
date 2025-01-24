@@ -14,7 +14,7 @@ import { signInWithEmailAndPassword } from "@/lib/auth/actions";
 
 import { OauthButton } from "./components/oauthButton";
 
-import { GithubIcon, GoogleIcon, LoadingIcon } from "@/lib/ui/icons";
+import { AppleIcon, GithubIcon, GoogleIcon, LoadingIcon } from "@/lib/ui/icons";
 import styles from "./login.module.css";
 
 export function LoginForm() {
@@ -152,6 +152,14 @@ export function LoginForm() {
             >
               <GoogleIcon style={{ width: "25px" }} />
             </OauthButton>
+            {/* <OauthButton
+              providerName={"Apple"}
+              providerType={"apple"}
+              style={{ backgroundColor: "#fff", color: "#1c1c1c" }}
+              loadColor={"#1c1c1c"}
+            >
+              <AppleIcon style={{ width: "25px" }} />
+            </OauthButton> */}
           </section>
         </section>
       </form>
