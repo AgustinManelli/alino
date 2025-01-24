@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
 
 import { LoadingIcon } from "@/lib/ui/icons";
 import styles from "../login.module.css";
@@ -16,14 +15,6 @@ interface props {
   text?: boolean | null;
   loadColor: string;
 }
-
-const buildAuthURL = (provider: "google" | "github") => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  const redirectTo = `${window.location.origin}/auth/callback`; // Opcional: URL para redirigir después del login
-
-  return `${supabaseUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}&apikey=${supabaseKey}`;
-};
 
 export function OauthButton({
   providerName,
@@ -111,7 +102,7 @@ export function OauthButton({
 
     // clear popup and replace the route
     setPopup(null);
-    router.replace(`auth/callback/?code=${code}`);
+    router.replace(`auth/callback?code=${code}`);
   };
 
   return (
