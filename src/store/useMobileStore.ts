@@ -8,7 +8,7 @@ interface MobileState {
 }
 
 export const useMobileStore = create<MobileState>((set) => ({
-  isMobile: window.innerWidth < 850,
+  isMobile: false,
   setIsMobile: (value) => set({ isMobile: value }),
 }));
 
