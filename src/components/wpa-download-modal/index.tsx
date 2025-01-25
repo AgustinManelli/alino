@@ -8,26 +8,27 @@ import useMobileStore from "@/store/useMobileStore";
 import { Modal } from "./modal";
 
 export function WpaDownloadModal() {
-  const storedIsOpen = localStorage.getItem("pwa-user-md");
-  const [isOpen, setIsOpen] = useState(
-    storedIsOpen ? JSON.parse(storedIsOpen) : false
-  );
+  // const storedIsOpen = localStorage.getItem("pwa-user-md");
+  // const [isOpen, setIsOpen] = useState(
+  //   storedIsOpen ? JSON.parse(storedIsOpen) : false
+  // );
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const { isMobile, setIsMobile } = useMobileStore();
 
   const handleCloseModal = (value: boolean) => {
     setIsOpen(value);
-    localStorage.setItem("pwa-user-md", "false");
+    // localStorage.setItem("pwa-user-md", "false");
   };
 
   useEffect(() => {
-    if (storedIsOpen === null) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 5000);
+    // if (storedIsOpen === null) {
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 5000);
 
-      return () => clearTimeout(timer);
-    }
-  }, [storedIsOpen]);
+    return () => clearTimeout(timer);
+    // }
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -47,11 +48,9 @@ export function WpaDownloadModal() {
 
   return (
     <>
-      {/* <AnimatePresence>
-        {isOpen && isMobile && !isStandalone && (
-          <Modal setIsOpen={handleCloseModal} />
-        )}
-      </AnimatePresence> */}
+      <AnimatePresence>
+        {isOpen && isMobile && <Modal setIsOpen={handleCloseModal} />}
+      </AnimatePresence>
     </>
   );
 }
