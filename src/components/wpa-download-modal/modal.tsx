@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { motion, PanInfo } from "motion/react";
 import InstallPWAButton from "./install-pwa-button";
 import styles from "./WpaDownloadModal.module.css";
+import { AlinoLogo, SquircleIcon } from "@/lib/ui/icons";
 
 interface props {
   setIsOpen: (value: boolean) => void;
@@ -41,6 +42,117 @@ export function Modal({ setIsOpen }: props) {
         onClick={(e) => e.stopPropagation()}
         className={styles.modal}
       >
+        <div className={styles.dragBar}></div>
+        <section className={styles.iconSection}>
+          <motion.div
+            className={styles.skeletonIcon}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.6,
+            }}
+          >
+            <SquircleIcon
+              style={{
+                fill: "rgba(0,0,0, 0.05)",
+                width: "30px",
+                height: "auto",
+              }}
+            />
+          </motion.div>
+          <motion.div
+            className={styles.skeletonIcon}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.4,
+            }}
+          >
+            <SquircleIcon
+              style={{
+                fill: "rgba(0,0,0, 0.05)",
+                width: "50px",
+                height: "auto",
+              }}
+            />
+          </motion.div>
+          <motion.div
+            className={styles.alinoIcon}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.2,
+            }}
+          >
+            <motion.div
+              className={styles.glow}
+              initial={{ scale: 0, rotate: 0 }}
+              animate={{ scale: 1, rotate: [0, 360] }}
+              transition={{
+                duration: 0.5,
+                rotate: {
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "linear",
+                },
+                delay: 0.5,
+              }}
+            />
+            <SquircleIcon
+              style={{
+                fill: "#fff",
+                width: "80px",
+                height: "auto",
+              }}
+            />
+            <AlinoLogo
+              style={{
+                stroke: "#1c1c1c",
+                strokeWidth: "1.5",
+                width: "40px",
+                height: "auto",
+                position: "absolute",
+              }}
+            />
+          </motion.div>
+          <motion.div
+            className={styles.skeletonIcon}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.4,
+            }}
+          >
+            <SquircleIcon
+              style={{
+                fill: "rgba(0,0,0, 0.05)",
+                width: "50px",
+                height: "auto",
+              }}
+            />
+          </motion.div>
+          <motion.div
+            className={styles.skeletonIcon}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.6,
+            }}
+          >
+            <SquircleIcon
+              style={{
+                fill: "rgba(0,0,0, 0.05)",
+                width: "30px",
+                height: "auto",
+              }}
+            />
+          </motion.div>
+        </section>
         <section className={styles.textSection}>
           {/* <h2>Descargá Alino</h2> */}
           {/* <p>
@@ -49,12 +161,12 @@ export function Modal({ setIsOpen }: props) {
           </p> */}
           <AnimatedText
             style={{ fontSize: "20px", fontWeight: "bold" }}
-            text={"Descargá Alino"}
+            text={"Descarga Alino"}
           />
           <AnimatedText
             style={{ fontSize: "16px" }}
             text={
-              "Mejora tu experiencia agregando nuestra app a tu inicio. ¡Rápida, práctica y siempre a mano!"
+              "Mejora tu experiencia agregando Alino a tu inicio. ¡Rápida, práctica y siempre a mano!"
             }
           />
         </section>

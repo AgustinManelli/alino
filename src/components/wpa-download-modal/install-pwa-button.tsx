@@ -70,6 +70,7 @@ export default function InstallPWAButton() {
             backgroundColor: "#87189d",
             color: "#fff",
             fontSize: "16px",
+            cursor: "pointer",
           }}
         >
           Instalar
@@ -96,14 +97,14 @@ export default function InstallPWAButton() {
               style={{
                 display: "flex",
                 padding: "3px 5px",
-                backgroundColor: "rgb(235, 235, 235)",
+                backgroundColor: "rgba(0, 0, 0, 0.05)",
                 borderRadius: "5px",
               }}
             >
               <Share
                 style={{
                   stroke: "#1c1c1c",
-                  strokeWidth: "1.5",
+                  strokeWidth: "2",
                   width: "16px",
                   height: "auto",
                 }}
@@ -124,7 +125,7 @@ export default function InstallPWAButton() {
                 display: "flex",
                 gap: "5px",
                 padding: "3px 5px",
-                backgroundColor: "rgb(235, 235, 235)",
+                backgroundColor: "rgba(0, 0, 0, 0.05)",
                 borderRadius: "5px",
               }}
             >
@@ -132,7 +133,7 @@ export default function InstallPWAButton() {
               <PlusBoxIcon
                 style={{
                   stroke: "#1c1c1c",
-                  strokeWidth: "1.5",
+                  strokeWidth: "2",
                   width: "16px",
                   height: "auto",
                 }}
