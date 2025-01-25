@@ -47,9 +47,9 @@ export function WindowComponent({ children, windowName, crossAction }: props) {
         ref={windowRef}
         key={"window-component-modal"}
         initial={{
-          scale: 0.9,
+          scale: 0.8,
           opacity: 0,
-          y: -8,
+          y: -50,
         }}
         animate={{
           scale: 1,
@@ -57,9 +57,8 @@ export function WindowComponent({ children, windowName, crossAction }: props) {
           y: 0,
         }}
         exit={{
-          scale: 0.9,
+          scale: 0.8,
           opacity: 0,
-          y: 8,
         }}
         transition={{
           duration: 0.4,

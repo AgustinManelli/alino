@@ -3,6 +3,7 @@ import { inter } from "../lib/ui/fonts";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { Loader } from "@/components/loader";
+import { WpaDownloadModal } from "@/components/wpa-download-modal";
 
 const APP_NAME = "Alino";
 const APP_DEFAULT_TITLE = "Alino";
@@ -107,6 +108,9 @@ export default function RootLayout({
       <body style={{ height: "100%" }} className={`${inter.className}`}>
         <Loader />
         <Toaster richColors />
+        <div id="modal-root">
+          <WpaDownloadModal />
+        </div>
         {children}
       </body>
     </html>
