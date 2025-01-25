@@ -15,7 +15,7 @@ export function Modal({ setIsOpen }: props) {
       setIsOpen(false);
     }
   };
-  const portalRoot = document.getElementById("modal-root");
+  const portalRoot = document?.getElementById("modal-root");
   if (!portalRoot) {
     return null;
   }
