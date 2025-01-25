@@ -29,28 +29,26 @@ export function WpaDownloadModal() {
     }
   }, [storedIsOpen]);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 850);
-    };
+  // useEffect(() => {
+  //   const handleResize = () => {
+  //     setIsMobile(window.innerWidth < 850);
+  //   };
 
-    // Inicializar con el valor actual
-    handleResize();
+  //   // Inicializar con el valor actual
+  //   handleResize();
 
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  //   window.addEventListener("resize", handleResize);
+  //   return () => {
+  //     window.removeEventListener("resize", handleResize);
+  //   };
+  // }, []);
 
-  const isStandalone = window?.matchMedia("(display-mode: standalone)").matches;
+  // const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
 
   return (
     <>
       <AnimatePresence>
-        {isOpen && isMobile && !isStandalone && (
-          <Modal setIsOpen={handleCloseModal} />
-        )}
+        {isOpen && isMobile && <Modal setIsOpen={handleCloseModal} />}
       </AnimatePresence>
     </>
   );
