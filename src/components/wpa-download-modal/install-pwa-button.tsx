@@ -8,25 +8,26 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-export default function InstallPWAButton() {
+export default function InstallPWAButton({
+  handleCloseModal,
+}: {
+  handleCloseModal: () => void;
+}) {
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstallable, setIsInstallable] = useState(false);
+  const [isIOSorMac, setIsIOSorMac] = useState(false);
 
   useEffect(() => {
-    // Verificar si el navegador soporta PWA
-    const isStandalone = window.matchMedia(
-      "(display-mode: standalone)"
-    ).matches;
-    if (isStandalone) {
-      setIsInstallable(false);
-      return;
-    }
+    // Detectar sistema operativo
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+    const isMac = /macintosh|mac os x/.test(userAgent);
+
+    setIsIOSorMac(isIOS || isMac);
 
     const handleInstallPrompt = (e: Event) => {
       e.preventDefault();
       setInstallPrompt(e as BeforeInstallPromptEvent);
-      setIsInstallable(true);
     };
 
     window.addEventListener("beforeinstallprompt", handleInstallPrompt);
@@ -44,10 +45,7 @@ export default function InstallPWAButton() {
       const choiceResult = await installPrompt.userChoice;
 
       if (choiceResult.outcome === "accepted") {
-        console.log("Usuario aceptó instalar la PWA");
-        setIsInstallable(false);
-      } else {
-        console.log("Usuario rechazó instalar la PWA");
+        handleCloseModal;
       }
     } catch (error) {
       console.error("Error al instalar la PWA:", error);
@@ -56,11 +54,9 @@ export default function InstallPWAButton() {
     }
   };
 
-  // if (!isInstallable) return null;
-
   return (
     <>
-      {isInstallable ? (
+      {!isIOSorMac ? (
         <button
           onClick={handleInstallClick}
           style={{
@@ -75,7 +71,7 @@ export default function InstallPWAButton() {
         >
           Instalar
         </button>
-      ) : (
+      ) : isIOSorMac ? (
         <ul
           style={{
             listStyle: "none",
@@ -141,7 +137,7 @@ export default function InstallPWAButton() {
             </label>
           </li>
         </ul>
-      )}
+      ) : null}
     </>
   );
 }

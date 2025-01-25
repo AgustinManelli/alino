@@ -7,13 +7,13 @@ import styles from "./WpaDownloadModal.module.css";
 import { AlinoLogo, SquircleIcon } from "@/lib/ui/icons";
 
 interface props {
-  setIsOpen: (value: boolean) => void;
+  handleCloseModal: () => void;
 }
 
-export function Modal({ setIsOpen }: props) {
+export function Modal({ handleCloseModal }: props) {
   const handleDragEnd = (_: any, info: PanInfo) => {
     if (info.offset.y > 100) {
-      setIsOpen(false);
+      handleCloseModal;
     }
   };
   const portalRoot = document.getElementById("modal-root");
@@ -90,13 +90,18 @@ export function Modal({ setIsOpen }: props) {
             <motion.div
               className={styles.glow}
               initial={{ scale: 0, rotate: 0 }}
-              animate={{ scale: 1, rotate: [0, 360] }}
+              animate={{ scale: [1, 1.05, 0.95, 1], rotate: [0, 360] }}
               transition={{
                 duration: 0.5,
                 rotate: {
                   duration: 5,
                   repeat: Infinity,
                   ease: "linear",
+                },
+                scale: {
+                  duration: 10,
+                  repeat: Infinity,
+                  ease: "easeInOut",
                 },
                 delay: 0.5,
               }}
@@ -171,7 +176,7 @@ export function Modal({ setIsOpen }: props) {
           />
         </section>
         <section className={styles.buttonSection}>
-          <InstallPWAButton />
+          <InstallPWAButton handleCloseModal={handleCloseModal} />
         </section>
       </motion.div>
     </motion.div>,

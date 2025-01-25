@@ -10,8 +10,8 @@ export function WpaDownloadModal() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { isMobile, setIsMobile } = useMobileStore();
 
-  const handleCloseModal = (value: boolean) => {
-    setIsOpen(value);
+  const handleCloseModal = () => {
+    setIsOpen(false);
     if (typeof window !== "undefined") {
       localStorage.setItem("pwa-user-md", "false");
     }
@@ -52,7 +52,7 @@ export function WpaDownloadModal() {
     <>
       <AnimatePresence>
         {isOpen && isMobile && !isStandalone && (
-          <Modal setIsOpen={handleCloseModal} />
+          <Modal handleCloseModal={handleCloseModal} />
         )}
       </AnimatePresence>
     </>
