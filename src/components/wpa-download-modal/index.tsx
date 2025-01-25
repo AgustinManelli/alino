@@ -43,16 +43,15 @@ export function WpaDownloadModal() {
     };
   }, []);
 
-  const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+  // const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
 
   return (
     <>
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {isOpen && isMobile && !isStandalone && (
-          // <Modal setIsOpen={handleCloseModal} />
-          <p></p>
+          <Modal setIsOpen={handleCloseModal} />
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
     </>
   );
 }
