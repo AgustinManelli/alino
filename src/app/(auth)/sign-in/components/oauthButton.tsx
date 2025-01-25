@@ -60,6 +60,7 @@ export function OauthButton({
     return () => {
       channel.removeEventListener("message", getDataFromPopup);
       setPopup(null);
+      setIsPending(false);
     };
   }, [popup]);
 
@@ -95,7 +96,6 @@ export function OauthButton({
       }
       const popup = openPopup(data.url);
       setPopup(popup);
-      setIsPending(true);
     }
   };
 
@@ -121,7 +121,6 @@ export function OauthButton({
 
     // clear popup and replace the route
     setPopup(null);
-    setIsPending(false);
     router.replace(`auth/callback?code=${code}`);
   };
 
