@@ -108,9 +108,7 @@ export default function RootLayout({
       <body style={{ height: "100%" }} className={`${inter.className}`}>
         <Loader />
         <Toaster richColors />
-        <div id="modal-root">
-          <WpaDownloadModal />
-        </div>
+        <div id="modal-root">{/* <WpaDownloadModal /> */}</div>
         {children}
       </body>
     </html>
