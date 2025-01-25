@@ -1,3 +1,5 @@
+"use client";
+
 import { createPortal } from "react-dom";
 import { motion, PanInfo } from "motion/react";
 import InstallPWAButton from "./install-pwa-button";
