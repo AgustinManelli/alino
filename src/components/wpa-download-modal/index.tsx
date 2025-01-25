@@ -49,7 +49,8 @@ export function WpaDownloadModal() {
     <>
       <AnimatePresence>
         {isOpen && isMobile && !isStandalone && (
-          <Modal setIsOpen={handleCloseModal} />
+          // <Modal setIsOpen={handleCloseModal} />
+          <p></p>
         )}
       </AnimatePresence>
     </>
