@@ -24,17 +24,17 @@ import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
 import { useMobileStore } from "@/store/useMobileStore";
 import { useAnimationStore } from "@/store/useAnimationStore";
-import { useLists } from "@/store/lists";
-import { Database } from "@/lib/todosSchema";
+import { useLists } from "@/store/useLists";
+import { Database } from "@/lib/schemas/todo-schema";
 
 import { HomeCard } from "../home-card";
 import { ListCard } from "../list-card";
 import { DragListCard } from "../list-card/drag-list-card";
 import { ListInput } from "../list-input";
-import { Skeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
-import { IconAlinoMotion } from "@/lib/ui/icon-alino-motion";
-import { MenuIcon } from "@/lib/ui/icons";
+import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
+import { MenuIcon } from "@/components/ui/icons/icons";
 import styles from "./navbar.module.css";
 
 //INIT EMOJI-MART

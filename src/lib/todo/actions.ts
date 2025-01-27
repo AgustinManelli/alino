@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 
-import { Database } from "@/lib/todosSchema";
+import { Database } from "@/lib/schemas/todo-schema";
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
 

@@ -1,11 +1,11 @@
 "use client";
 
-import { tasks } from "@/lib/todosSchema";
+import { tasks } from "@/lib/schemas/todo-schema";
 import styles from "./todo-card.module.css";
-import { Checkbox } from "@/components/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
-import { DeleteIcon } from "@/lib/ui/icons";
-import { useLists } from "@/store/lists";
+import { DeleteIcon } from "@/components/ui/icons/icons";
+import { useLists } from "@/store/useLists";
 import useMobileStore from "@/store/useMobileStore";
 
 export default function TodoCard({ task }: { task: tasks }) {

@@ -4,8 +4,8 @@ import { motion } from "motion/react";
 
 import { StorageAnimation } from "./storage-animation";
 import Image from "next/image";
-import minimalism from "../../../../public/tile-resource.webp";
-import responsivedesign from "../../../../public/responsive-design.webp";
+import minimalism from "../../../../../public/tile-resource.webp";
+import responsivedesign from "../../../../../public/responsive-design.webp";
 
 import styles from "./Cards.module.css";
 

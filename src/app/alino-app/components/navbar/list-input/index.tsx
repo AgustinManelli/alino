@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 
-import { useLists } from "@/store/lists";
+import { useLists } from "@/store/useLists";
 
-import { ColorPicker } from "@/components/color-picker";
+import { ColorPicker } from "@/components/ui/color-picker";
 
-import { PlusBoxIcon, SendIcon } from "@/lib/ui/icons";
+import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
 
 export function ListInput({

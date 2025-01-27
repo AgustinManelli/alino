@@ -6,10 +6,14 @@ import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { generatePalette } from "emoji-palette";
 
-import { EmojiMartComponent } from "@/components/emoji-mart/emoji-mart-component";
-import { EmojiMartPicker } from "@/components/emoji-mart/emoji-mart-picker";
+import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
+import { EmojiMartPicker } from "@/components/ui/emoji-mart/emoji-mart-picker";
 
-import { ArrowThin, CopyToClipboardIcon, SquircleIcon } from "@/lib/ui/icons";
+import {
+  ArrowThin,
+  CopyToClipboardIcon,
+  SquircleIcon,
+} from "@/components/ui/icons/icons";
 import styles from "./ColorPicker.module.css";
 
 interface ColorPickerInterface {

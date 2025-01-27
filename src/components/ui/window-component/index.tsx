@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
-import { Cross } from "@/lib/ui/icons";
+import { Cross } from "@/components/ui/icons/icons";
 import styles from "./window-component.module.css";
 
 interface props {

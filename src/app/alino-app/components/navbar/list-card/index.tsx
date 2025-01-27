@@ -5,16 +5,16 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useSortable } from "@dnd-kit/sortable";
 
-import { useLists } from "@/store/lists";
+import { useLists } from "@/store/useLists";
 import useMobileStore from "@/store/useMobileStore";
-import { Database } from "@/lib/todosSchema";
+import { Database } from "@/lib/schemas/todo-schema";
 
-import { CounterAnimation } from "@/components/counter-animation";
-import { ConfirmationModal } from "@/components/confirmation-modal";
-import { ColorPicker } from "@/components/color-picker";
+import { CounterAnimation } from "@/components/ui/counter-animation";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { ColorPicker } from "@/components/ui/color-picker";
 import { MoreConfigs } from "../more-configs";
 
-import { Check, Pin } from "@/lib/ui/icons";
+import { Check, Pin } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 
 interface props {

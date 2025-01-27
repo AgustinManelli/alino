@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
-import { AlinoLogo, HomeIcon } from "@/lib/ui/icons";
+import { AlinoLogo, HomeIcon } from "@/components/ui/icons/icons";
 import { readUserGetUser } from "@/lib/auth/actions";
 
-import { ButtonLink } from "@/components/button-link";
+import { ButtonLink } from "@/components/ui/button-link";
 
 import pattern from "../../../public/pattern.svg";
 import styles from "./auth.module.css";

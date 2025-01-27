@@ -1,6 +1,9 @@
 "use client";
 
-import { UpdatePasswordInput, updatePasswordScheme } from "@/lib/user-schema";
+import {
+  UpdatePasswordInput,
+  updatePasswordScheme,
+} from "@/lib/schemas/user-schema";
 import styles from "../../(auth)/sign-in/login.module.css";
 import { updatePassword, signout } from "@/lib/auth/actions";
 import { toast } from "sonner";
@@ -8,7 +11,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "motion/react";
-import { LoadingIcon } from "@/lib/ui/icons";
+import { LoadingIcon } from "@/components/ui/icons/icons";
 
 export const ResetForm = () => {
   const [isPending, startTransition] = useTransition();

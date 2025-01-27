@@ -8,10 +8,10 @@ import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import { CreateUserInput, createUserSchema } from "@/lib/user-schema";
+import { CreateUserInput, createUserSchema } from "@/lib/schemas/user-schema";
 import { signUpWithEmailAndPassword } from "@/lib/auth/actions";
 
-import { LoadingIcon } from "@/lib/ui/icons";
+import { LoadingIcon } from "@/components/ui/icons/icons";
 import styles from "../sign-in/login.module.css";
 
 export function RegisterForm() {

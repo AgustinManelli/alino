@@ -1,9 +1,9 @@
 "use client";
 
 import styles from "./manager.module.css";
-import { useLists } from "@/store/lists";
+import { useLists } from "@/store/useLists";
 import TodoCard from "../todo/todo-card";
-import { Database } from "@/lib/todosSchema";
+import { Database } from "@/lib/schemas/todo-schema";
 import { useEffect } from "react";
 import { useBlurredFxStore } from "@/store/useBlurredFx";
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];

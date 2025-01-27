@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { Database } from "@/lib/todosSchema";
+import { Database } from "@/lib/schemas/todo-schema";
 import { v4 as uuidv4 } from "uuid";
 import {
   getLists,
