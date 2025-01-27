@@ -8,7 +8,7 @@ import {
   LoginUserInput,
   ResetUserInput,
   UpdatePasswordInput,
-} from "../user-schema";
+} from "@/lib/schemas/user-schema";
 
 export async function signInWithEmailAndPassword(dataInput: LoginUserInput) {
   const supabase = createClient();
