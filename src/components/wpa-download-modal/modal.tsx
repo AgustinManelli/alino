@@ -13,7 +13,7 @@ interface props {
 export function Modal({ handleCloseModal }: props) {
   const handleDragEnd = (_: any, info: PanInfo) => {
     if (info.offset.y > 100) {
-      handleCloseModal;
+      handleCloseModal();
     }
   };
   const portalRoot = document.getElementById("modal-root");

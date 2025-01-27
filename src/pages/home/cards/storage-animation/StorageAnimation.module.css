@@ -1,0 +1,86 @@
+.container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  /* background-color: aqua; */
+  padding: 40px;
+}
+
+.orbit {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  border-radius: 50%;
+  border: 2px solid #f8f8f8;
+  aspect-ratio: 1 / 1;
+}
+
+.glow {
+  position: absolute;
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #ffb6c1,
+    #ffc3a0,
+    #ffde91,
+    #e1f0b0,
+    #a4f1ce,
+    #a4dbf1,
+    #b3b5f1,
+    #e2a5ff,
+    #ffb6c1
+  );
+  filter: blur(15px);
+}
+
+.floatingContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  /* background-color: aliceblue; */
+}
+
+.userContainer {
+  position: absolute;
+  width: 20%;
+  height: 20%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.userDot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  background-color: #06e200;
+  border-radius: 50%;
+  outline: 2px solid #fff;
+  z-index: 1;
+}
+
+.userBorder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1.5px solid #fff;
+  border-radius: 50%;
+  padding: 5px;
+}

@@ -12,7 +12,10 @@ export function WpaDownloadModal() {
 
   const handleCloseModal = () => {
     setIsOpen(false);
-    if (typeof window !== "undefined") {
+    if (
+      typeof window !== "undefined" &&
+      process.env.NODE_ENV !== "development"
+    ) {
       localStorage.setItem("pwa-user-md", "false");
     }
   };
