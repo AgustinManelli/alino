@@ -45,7 +45,7 @@ export default function InstallPWAButton({
       const choiceResult = await installPrompt.userChoice;
 
       if (choiceResult.outcome === "accepted") {
-        handleCloseModal;
+        handleCloseModal();
       }
     } catch (error) {
       console.error("Error al instalar la PWA:", error);
