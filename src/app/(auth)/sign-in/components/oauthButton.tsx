@@ -100,7 +100,7 @@ export function OauthButton({
 
     // clear popup and replace the route
     setPopup(null);
-    router.replace(`auth/callback?code=${code}`);
+    router.replace(`/api/auth/callback?code=${code}`);
   };
 
   return (
