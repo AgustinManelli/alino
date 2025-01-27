@@ -34,9 +34,10 @@ export function Checkbox({
     const path = document.getElementById(`path-${id}`);
     const svg = document.getElementById(`svg-${id}`);
 
-    if (!path || !svg) return;
+    if (!path || !svg || path.getAttribute("d") === null) return;
     const currentPath = paths.clicked;
-    const mixPaths = interpolate(path?.getAttribute("d"), currentPath.d, {
+    const pathData = path.getAttribute("d") ?? "";
+    const mixPaths = interpolate(pathData, currentPath.d, {
       maxSegmentLength: 2,
     });
     animate(
@@ -54,7 +55,7 @@ export function Checkbox({
         console.log(progress);
       },
     }).then(() => {
-      const mixPaths = interpolate(path?.getAttribute("d"), paths.normal.d, {
+      const mixPaths = interpolate(pathData, paths.normal.d, {
         maxSegmentLength: 2,
       });
       animate(
