@@ -51,7 +51,7 @@ export function OauthButton({
       const { error } = await supabase.auth.signInWithOAuth({
         provider: providerType,
         options: {
-          redirectTo: `${href}/api/callback`,
+          redirectTo: `${href}/api/auth/callback`,
         },
       });
       if (error) {
@@ -65,7 +65,7 @@ export function OauthButton({
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: providerType,
         options: {
-          redirectTo: `${origin}/api/popup-callback`,
+          redirectTo: `${origin}/api/auth/popup-callback`,
           queryParams: { prompt: "select_account" },
           skipBrowserRedirect: true,
         },

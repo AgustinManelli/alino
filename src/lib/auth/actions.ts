@@ -8,7 +8,7 @@ import {
   LoginUserInput,
   ResetUserInput,
   UpdatePasswordInput,
-} from "../schemas/user-schema";
+} from "../user-schema";
 
 export async function signInWithEmailAndPassword(dataInput: LoginUserInput) {
   const supabase = createClient();
@@ -53,7 +53,7 @@ export async function resetPassword(data: ResetUserInput, href: string) {
   const supabase = createClient();
 
   const result = await supabase.auth.resetPasswordForEmail(data.email, {
-    redirectTo: `${href}/api/update-password`,
+    redirectTo: `${href}/auth/update-password`,
   });
 
   return JSON.stringify(result);
