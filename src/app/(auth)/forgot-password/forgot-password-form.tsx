@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { resetUserSchema, ResetUserInput } from "@/lib/user-schema";
+import { resetUserSchema, ResetUserInput } from "@/lib/schemas/user-schema";
 import { resetPassword } from "@/lib/auth/actions";
 
 import styles from "../sign-in/login.module.css";

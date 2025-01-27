@@ -1,13 +1,12 @@
-import styles from "./page.module.css";
-import Navbar from "@/components/home/navbar";
-import { Header } from "@/components/home/header";
-import Footer from "@/components/home/footer";
-import Faq from "@/components/home/faq";
-import { Cards } from "@/components/home/cards";
+import Navbar from "@/components/pages/home/navbar";
+import { Header } from "@/components/pages/home/header";
+import Footer from "@/components/pages/home/footer";
+import Faq from "@/components/pages/home/faq";
+import { Cards } from "@/components/pages/home/cards";
 
 export default function Home() {
   return (
-    <main className={styles.main}>
+    <main style={{ overflow: "hidden" }}>
       <Navbar />
       <Header />
       <Cards />

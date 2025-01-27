@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { ArrowThin } from "@/lib/ui/icons";
+import { ArrowThin } from "@/components/ui/icons/icons";
 import styles from "./accordion.module.css";
 
 interface AccordionItem {

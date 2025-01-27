@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
-import { LoadingIcon } from "@/lib/ui/icons";
+import { LoadingIcon } from "@/components/ui/icons/icons";
 import styles from "../login.module.css";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -27,36 +27,15 @@ export function OauthButton({
 }: props) {
   const [isPending, setIsPending] = useState<boolean>(false);
 
-  // const handleSignIn = async () => {
-  //   setIsPending(true);
-  //   const supabase = await createClient();
-  //   const href = window.location.origin;
-  //   const { error } = await supabase.auth.signInWithOAuth({
-  //     provider: providerType,
-  //     options: {
-  //       redirectTo: `${href}/auth/callback`,
-  //       // skipBrowserRedirect: true,
-  //     },
-  //   });
-  //   if (error) {
-  //     toast.error("Hubo un error al iniciar sesión");
-  //     setIsPending(false);
-  //     return;
-  //   }
-  // };
-
   const [popup, setPopup] = useState<Window | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    // If there is no popup, nothing to do
     if (!popup) return;
 
-    // Listen for messages from the popup by creating a BroadcastChannel
     const channel = new BroadcastChannel("popup-channel");
     channel.addEventListener("message", getDataFromPopup);
 
-    // effect cleaner (when component unmount)
     return () => {
       channel.removeEventListener("message", getDataFromPopup);
       setPopup(null);
@@ -72,7 +51,7 @@ export function OauthButton({
       const { error } = await supabase.auth.signInWithOAuth({
         provider: providerType,
         options: {
-          redirectTo: `${href}/auth/callback`,
+          redirectTo: `${href}/api/callback`,
         },
       });
       if (error) {
@@ -86,7 +65,7 @@ export function OauthButton({
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: providerType,
         options: {
-          redirectTo: `${origin}/auth/popup-callback`,
+          redirectTo: `${origin}/api/popup-callback`,
           queryParams: { prompt: "select_account" },
           skipBrowserRedirect: true,
         },

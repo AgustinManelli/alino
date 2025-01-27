@@ -5,12 +5,12 @@ import { useRef, useState } from "react";
 import { useLoaderStore } from "@/store/useLoaderStore";
 import { signout } from "@/lib/auth/actions";
 
-import { ModalBox } from "@/components/modal-options-box/modalBox";
-import { OptionBox } from "@/components/modal-options-box/optionBox";
+import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
+import { OptionBox } from "@/components/ui/modal-options-box/optionBox";
 import AccountConfigSection from "../accountConfigSection";
 import { CloudIndicator } from "./cloud-indicator";
 
-import { Config, LogOut, UserIcon } from "@/lib/ui/icons";
+import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
 import { AnimatePresence } from "motion/react";
 

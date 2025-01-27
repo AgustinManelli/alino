@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 import { useLoaderStore } from "@/store/useLoaderStore";
 
-import { ButtonLink } from "@/components/button-link";
+import { ButtonLink } from "@/components/ui/button-link";
 
 import styles from "./header.module.css";
 

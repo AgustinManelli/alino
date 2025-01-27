@@ -1,7 +1,7 @@
 "use client";
 
-import { AlinoLogo, UserIcon, Crown } from "../../lib/ui/icons";
-import { ButtonLink } from "@/components/button-link";
+import { AlinoLogo, UserIcon, Crown } from "../../ui/icons/icons";
+import { ButtonLink } from "@/components/ui/button-link";
 import styles from "./navbar.module.css";
 
 export default function Navbar() {

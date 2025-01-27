@@ -1,11 +1,11 @@
 "use client";
 
-import { Database } from "@/lib/todosSchema";
-import { Pin, SquircleIcon } from "@/lib/ui/icons";
+import { Database } from "@/lib/schemas/todo-schema";
+import { Pin, SquircleIcon } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { EmojiMartComponent } from "@/components/emoji-mart/emoji-mart-component";
+import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
 
 export function DragListCard({ list }: { list: ListsType }) {
   const pathname = usePathname();

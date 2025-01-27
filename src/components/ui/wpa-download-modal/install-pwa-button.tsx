@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusBoxIcon, Share } from "@/lib/ui/icons";
+import { PlusBoxIcon, Share } from "@/components/ui/icons/icons";
 import { useState, useEffect } from "react";
 
 interface BeforeInstallPromptEvent extends Event {

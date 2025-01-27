@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 
-import { useLists } from "@/store/lists";
+import { useLists } from "@/store/useLists";
 import { useAnimationStore } from "@/store/useAnimationStore";
 
 import { ButtonConfig } from "./components/buttonConfig";
-import { Switch } from "@/components/switch";
+import { Switch } from "@/components/ui/switch";
 import ContainerConfig from "./components/container";
 import NavbarConfig from "./components/navbar";
-import { WindowComponent } from "@/components/window-component";
+import { WindowComponent } from "@/components/ui/window-component";
 
 import styles from "./AccountConfigSection.module.css";
 

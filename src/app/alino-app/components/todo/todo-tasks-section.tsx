@@ -1,7 +1,7 @@
 "use client";
 
 import styles from "./todo-tasks-section.module.css";
-import { Database } from "@/lib/todosSchema";
+import { Database } from "@/lib/schemas/todo-schema";
 import TodoCard from "./todo-card";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];

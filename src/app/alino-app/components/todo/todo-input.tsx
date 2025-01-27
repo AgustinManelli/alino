@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useLists } from "@/store/lists";
+import { useLists } from "@/store/useLists";
 import styles from "./todo-input.module.css";
-import { Database } from "@/lib/todosSchema";
+import { Database } from "@/lib/schemas/todo-schema";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 

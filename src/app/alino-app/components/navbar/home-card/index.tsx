@@ -4,13 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { useLists } from "@/store/lists";
+import { useLists } from "@/store/useLists";
 import { useMobileStore } from "@/store/useMobileStore";
-import { Database } from "@/lib/todosSchema";
+import { Database } from "@/lib/schemas/todo-schema";
 
-import { CounterAnimation } from "@/components/counter-animation";
+import { CounterAnimation } from "@/components/ui/counter-animation";
 
-import { HomeIcon2 } from "@/lib/ui/icons";
+import { HomeIcon2 } from "@/components/ui/icons/icons";
 import styles from "../list-card/ListCard.module.css";
 
 export function HomeCard({

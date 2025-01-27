@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 
-import { Cloud } from "@/lib/ui/icons";
+import { Cloud } from "@/components/ui/icons/icons";
 import styles from "./StorageAnimation.module.css";
 
 export function StorageAnimation() {

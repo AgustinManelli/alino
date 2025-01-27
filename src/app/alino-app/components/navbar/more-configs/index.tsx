@@ -5,7 +5,13 @@ import { createPortal } from "react-dom";
 
 import { OptionCard } from "./option-card";
 
-import { DeleteIcon, Edit, MoreVertical, Pin, Unpin } from "@/lib/ui/icons";
+import {
+  DeleteIcon,
+  Edit,
+  MoreVertical,
+  Pin,
+  Unpin,
+} from "@/components/ui/icons/icons";
 import styles from "./MoreConfigs.module.css";
 
 interface props {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { useLists } from "@/store/lists";
+import { useLists } from "@/store/useLists";
 import { useLoaderStore } from "@/store/useLoaderStore";
 
 import { Navbar } from "./navbar";

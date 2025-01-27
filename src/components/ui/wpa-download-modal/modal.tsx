@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { motion, PanInfo } from "motion/react";
 import InstallPWAButton from "./install-pwa-button";
 import styles from "./WpaDownloadModal.module.css";
-import { AlinoLogo, SquircleIcon } from "@/lib/ui/icons";
+import { AlinoLogo, SquircleIcon } from "@/components/ui/icons/icons";
 
 interface props {
   handleCloseModal: () => void;
