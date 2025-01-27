@@ -84,21 +84,17 @@ export function OauthButton({
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
 
-    // window features for popup
     const windowFeatures = `scrollbars=no, resizable=no, copyhistory=no, width=${width}, height=${height}, top=${top}, left=${left}`;
     const popup = window.open(url, "popup", windowFeatures);
     return popup;
   };
 
   const getDataFromPopup = (e: any) => {
-    // check origin
     if (e.origin !== window.location.origin) return;
 
-    // get authResultCode from popup
     const code = e.data?.authResultCode;
     if (!code) return;
 
-    // clear popup and replace the route
     setPopup(null);
     router.replace(`/api/auth/callback?code=${code}`);
   };
