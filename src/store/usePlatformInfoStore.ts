@@ -11,7 +11,7 @@ interface PlatformInfo {
 }
 
 export const usePlatformInfoStore = create<PlatformInfo>((set) => ({
-  isMobile: window.innerWidth < 850,
+  isMobile: false,
   isStandalone:
     typeof window !== "undefined" &&
     window.matchMedia("(display-mode: standalone)").matches,

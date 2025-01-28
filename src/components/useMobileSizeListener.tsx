@@ -19,7 +19,7 @@ export const MobileSizeListener = () => {
         window.removeEventListener("resize", handleResize);
       };
     }
-  }, [setIsMobile]);
+  }, []);
 
   return null;
 };
