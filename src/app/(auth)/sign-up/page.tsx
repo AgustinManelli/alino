@@ -6,6 +6,6 @@ export function generateMetadata() {
   };
 }
 
-export default function SignOut() {
+export default function SignUpPage() {
   return <RegisterForm />;
 }

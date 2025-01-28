@@ -7,7 +7,6 @@ interface Cloud {
   queue: number;
   setState: (state: boolean) => void;
   addToQueue: (value: number) => void;
-  subtractFromQueue: (value: number) => void;
 }
 
 export const useCloudStore = create<Cloud>((set) => ({
@@ -16,6 +15,4 @@ export const useCloudStore = create<Cloud>((set) => ({
   setState: (state) => set({ state }),
   addToQueue: (value: number) =>
     set((state) => ({ queue: state.queue + value })),
-  subtractFromQueue: (value: number) =>
-    set((state) => ({ queue: state.queue - value })),
 }));

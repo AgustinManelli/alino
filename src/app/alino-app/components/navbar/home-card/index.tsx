@@ -4,8 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { useLists } from "@/store/useLists";
-import { useMobileStore } from "@/store/useMobileStore";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { Database } from "@/lib/schemas/todo-schema";
 
 import { CounterAnimation } from "@/components/ui/counter-animation";
@@ -20,8 +20,8 @@ export function HomeCard({
 }) {
   const [hover, setHover] = useState<boolean>(false);
 
-  const { lists } = useLists();
-  const { isMobile } = useMobileStore();
+  const { lists } = useTodoDataStore();
+  const { isMobile } = usePlatformInfoStore();
 
   const pathname = usePathname();
 

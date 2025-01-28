@@ -1,11 +1,12 @@
-import { readUserSession } from "@/lib/auth/actions";
+import { getSession } from "@/lib/auth/actions";
 import Todo from "../components/todo/todo";
 
 export async function generateMetadata() {
-  const { data, error } = await readUserSession();
-  if (!error) {
+  const result = await getSession();
+  if (!result.error) {
     const nameSession =
-      data.session?.user.user_metadata.name ?? data.session?.user.email;
+      result.data?.session?.user.user_metadata.name ??
+      result.data?.session?.user.email;
     return {
       title: `${nameSession}`,
     };

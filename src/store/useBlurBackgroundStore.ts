@@ -7,7 +7,7 @@ interface BlurredState {
   setColor: (color: string) => void;
 }
 
-export const useBlurredFxStore = create<BlurredState>((set) => ({
+export const useBlurBackgroundStore = create<BlurredState>((set) => ({
   color: "transparent",
   setColor: (color) => set({ color }),
 }));

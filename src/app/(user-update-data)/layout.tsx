@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import styles from "../(auth)/auth.module.css";
 import { ButtonLink } from "@/components/ui/button-link";
 import { AlinoLogo, HomeIcon } from "@/components/ui/icons/icons";
-import { readUserSession } from "@/lib/auth/actions";
+import { getSession } from "@/lib/auth/actions";
 import pattern from "../../../public/pattern.svg";
 
 export default async function UserUpdateDataLayout({
@@ -10,8 +10,8 @@ export default async function UserUpdateDataLayout({
 }: {
   children?: React.ReactNode;
 }) {
-  const { data } = await readUserSession();
-  if (!data.session) {
+  const result = await getSession();
+  if (result.error) {
     return redirect("/sign-in");
   }
 

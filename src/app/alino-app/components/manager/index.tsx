@@ -1,11 +1,11 @@
 "use client";
 
 import styles from "./manager.module.css";
-import { useLists } from "@/store/useLists";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 import TodoCard from "../todo/todo-card";
 import { Database } from "@/lib/schemas/todo-schema";
 import { useEffect } from "react";
-import { useBlurredFxStore } from "@/store/useBlurredFx";
+import { useBlurBackgroundStore } from "@/store/useBlurBackgroundStore";
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 export default function Manager({
@@ -17,8 +17,8 @@ export default function Manager({
   children?: React.ReactNode;
   setList?: ListsType;
 }) {
-  const lists = useLists((state) => state.lists);
-  const setBlurredFx = useBlurredFxStore((state) => state.setColor);
+  const lists = useTodoDataStore((state) => state.lists);
+  const setBlurredFx = useBlurBackgroundStore((state) => state.setColor);
 
   useEffect(() => {
     if (setList?.color !== undefined) setBlurredFx(setList?.color);

@@ -5,8 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useSortable } from "@dnd-kit/sortable";
 
-import { useLists } from "@/store/useLists";
-import useMobileStore from "@/store/useMobileStore";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { Database } from "@/lib/schemas/todo-schema";
 
 import { CounterAnimation } from "@/components/ui/counter-animation";
@@ -47,8 +47,8 @@ export function ListCard({
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
 
   //estados globales
-  const { deleteList, updateListName, updateListPinned } = useLists();
-  const { isMobile } = useMobileStore();
+  const { deleteList, updateListName, updateListPinned } = useTodoDataStore();
+  const { isMobile } = usePlatformInfoStore();
 
   //ref's
   const divRef = useRef<HTMLInputElement | null>(null);

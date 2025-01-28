@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import Manager from "../manager";
 import styles from "./homeManager.module.css";
-import { useBlurredFxStore } from "@/store/useBlurredFx";
+import { useBlurBackgroundStore } from "@/store/useBlurBackgroundStore";
 
 export default function ({ userName }: { userName: string }) {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const setBlurredFx = useBlurredFxStore((state) => state.setColor);
+  const setBlurredFx = useBlurBackgroundStore((state) => state.setColor);
 
   useEffect(() => {
     setBlurredFx("rgb(106, 195, 255)");

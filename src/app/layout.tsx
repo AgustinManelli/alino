@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { Loader } from "@/components/ui/loader";
 import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
+import { MobileSizeListener } from "@/components/useMobileSizeListener";
 
 const APP_NAME = "Alino";
 const APP_DEFAULT_TITLE = "Alino";
@@ -69,6 +70,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body style={{ height: "100%" }} className={`${inter.className}`}>
+        <MobileSizeListener />
         <Loader />
         <Toaster richColors />
         <div id="modal-root">

@@ -3,35 +3,33 @@
 import { create } from "zustand";
 import { Database } from "@/lib/schemas/todo-schema";
 import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
 import {
   getLists,
   insertList,
   deleteList,
-  //a partir de acá controlar y revirsar funciones
-  AddTaskToDB,
-  DeleteTaskToDB,
-  UpdateDataListToDB,
-  UpdateListNameToDB,
-  UpdateTasksCompleted,
-  UpdatePinnedListToDB,
-  UpdateIndexListToDB,
-  UpdateAllIndexLists,
-  DeleteAllLists,
-  DeleteAllTasks,
+  insertTask,
+  deleteTask,
+  updateColorList,
+  updateDataList,
+  updateCompletedTask,
+  updatePinnedList,
+  updateIndexList,
+  updateAllIndexLists,
+  deleteAllLists,
+  deleteAllTasks,
 } from "@/lib/todo/actions";
 import { toast } from "sonner";
-import { useCloudStore } from "./useCloudStore";
-
-const addToQueue = useCloudStore.getState().addToQueue;
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
 
-const posIndex = 16384;
+const POS_INDEX = 16384;
 
 type todo_list = {
   lists: ListsType[];
   tasks: TaskType[];
+  loadingQueue: number;
   setLists: (list: ListsType[]) => void;
   getLists: () => void;
   insertList: (color: string, name: string, shortcodeemoji: string) => void;
@@ -52,47 +50,54 @@ type todo_list = {
   deleteAllTasks: () => void;
 };
 
-export const useLists = create<todo_list>()((set, get) => ({
+const ListSchema = z.object({
+  index: z.number().int().min(0),
+  color: z
+    .string()
+    .regex(
+      /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
+      "El color debe ser un código hexadecimal válido o un emoji"
+    ),
+  name: z
+    .string()
+    .min(1, "El nombre no puede estar vacío")
+    .max(25, "El nombre de las listas no pueden tener más de 25 caracteres"),
+  shortcodeemoji: z.string().optional(),
+  tempId: z.string().uuid("ID debe ser un UUID válido"),
+});
+
+export const useTodoDataStore = create<todo_list>()((set, get) => ({
   lists: [],
   tasks: [],
+  loadingQueue: 0,
 
   setLists: (list) => {
     set(() => ({ lists: list }));
   },
 
   getLists: async () => {
-    addToQueue(1);
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
     try {
-      const result = await getLists();
+      const { data, error } = await getLists();
 
-      if (!result.error) {
-        result.data?.forEach((todo: ListsType) => {
+      if (!error) {
+        data?.forEach((todo: ListsType) => {
           todo.tasks = todo.tasks.sort(
             (a: TaskType, b: TaskType) => (b.index ?? 0) - (a.index ?? 0)
           );
         });
 
-        set(() => ({ lists: result.data || [] }));
+        set(() => ({ lists: data || [] }));
+        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
       } else {
-        throw new Error(result.error.message);
+        throw new Error(error);
       }
     } catch (error: any) {
-      toast.error(
-        `Hubo un error al cargar las listas, inténtalo nuevamente. ${error}`
-      );
-    } finally {
-      addToQueue(-1);
+      toast.error(error);
     }
   },
 
   insertList: async (color, name, shortcodeemoji) => {
-    addToQueue(1);
-    //Comprobar que el nombre de la lista no esté vacío
-    if (name.length < 1) {
-      toast.error("El nombre de tu lista debe tener un carácter como mínimo");
-      return;
-    }
-
     //Obtener las listas actuales
     const { lists } = get();
 
@@ -104,38 +109,47 @@ export const useLists = create<todo_list>()((set, get) => ({
     );
 
     //Calcular el índice de la nueva lista
-    const index = lists.length === 0 ? posIndex : maxIndex + posIndex;
+    const index = lists.length === 0 ? POS_INDEX : maxIndex + POS_INDEX;
 
     //Lista temporal
     const tempId = uuidv4();
-    set((state: any) => ({
-      lists: [
-        ...state.lists,
-        {
-          color: color,
-          icon: shortcodeemoji,
-          id: tempId,
-          index: index,
-          inserted_at: "0",
-          name: name,
-          pinned: false,
-          tasks: [],
-          updated_at: "0",
-          user_id: "0",
-        },
-      ],
-    }));
-
     try {
-      const result = await insertList(
+      const validatedData = ListSchema.parse({
+        index,
+        color,
+        name,
+        shortcodeemoji,
+        tempId,
+      });
+
+      set((state: any) => ({
+        lists: [
+          ...state.lists,
+          {
+            color: validatedData.color,
+            icon: validatedData.shortcodeemoji,
+            id: validatedData.tempId,
+            index: validatedData.index,
+            inserted_at: "0",
+            name: validatedData.name,
+            pinned: false,
+            tasks: [],
+            updated_at: "0",
+            user_id: "0",
+          },
+        ],
+      }));
+
+      set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+
+      const { data, error } = await insertList(
         index,
         color,
         name,
         shortcodeemoji,
         tempId
       );
-      if (!result.error) {
-        const data = result?.data;
+      if (!error) {
         set((state: any) => ({
           lists: state.lists.map((list: any) => {
             if (list.id === tempId) {
@@ -150,46 +164,47 @@ export const useLists = create<todo_list>()((set, get) => ({
             return list;
           }),
         }));
+        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
       } else {
-        throw new Error(result.error.message);
+        throw new Error(error);
       }
     } catch (error: any) {
-      toast.error(
-        `Hubo un problema al agregar la lista, inténtalo de nuevo. ${error}`
-      );
+      if (error instanceof z.ZodError) {
+        const errors = error.errors.map((err) => err.message).join(". ");
+        toast.error(`Error de validación: ${errors}`);
+      } else {
+        toast.error(`${error}`);
+      }
 
       //eliminado de la lista temporal creada cuando ocurre un error en su creación
       const filtered = lists.filter((all) => all.id !== tempId);
       set(() => ({ lists: filtered }));
-    } finally {
-      addToQueue(-1);
     }
   },
 
   deleteList: async (id, name) => {
-    addToQueue(1);
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
     const { lists } = get();
 
     set({ lists: lists.filter((list) => list.id !== id) });
     try {
       const result = await deleteList(id);
-      if (result.error) {
-        throw new Error(result.error.message);
+      if (result?.error) {
+        throw new Error(result.error);
       }
       toast.success(`Lista "${name}" eliminada correctamente`);
+
+      set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
     } catch (error: any) {
       // Revertir los cambios en la UI si la eliminación falla
       set(() => ({ lists }));
-      toast.error(
-        `Hubo un error al eliminar la lista, inténtalo nuevamente. ${error}`
-      );
-    } finally {
-      addToQueue(-1);
+      toast.error(`${error}`);
     }
   },
 
   changeColor: async (color, id, shortcodeemoji) => {
-    addToQueue(1);
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+
     set((state) => ({
       lists: state.lists.map((list) => {
         if (list.id === id) {
@@ -204,18 +219,18 @@ export const useLists = create<todo_list>()((set, get) => ({
     }));
 
     try {
-      const result = await UpdateDataListToDB(color, id, shortcodeemoji);
-      if (result.error) {
-        throw new Error(result.error.message);
+      const { error } = await updateColorList(color, id, shortcodeemoji);
+      if (!error) {
+        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+      } else {
+        throw new Error(error);
       }
-      addToQueue(-1);
-    } catch {
-      toast.error(`Hubo un error al modificar la lista, inténtalo nuevamente.`);
+    } catch (error: any) {
+      toast.error(`${error}`);
     }
   },
 
   updateListName: async (id, newName, color, emoji) => {
-    addToQueue(1);
     if (newName.length < 1) {
       toast.error("El nombre de tu lista debe tener un carácter como mínimo");
       return;
@@ -235,14 +250,17 @@ export const useLists = create<todo_list>()((set, get) => ({
       }),
     }));
 
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+
     try {
-      const result = await UpdateListNameToDB(id, newName, color, emoji);
-      if (result.error) {
-        throw new Error(result.error.message);
+      const { error } = await updateDataList(id, newName, color, emoji);
+      if (!error) {
+        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+      } else {
+        throw new Error(error);
       }
-      addToQueue(-1);
-    } catch {
-      toast.error("Hubo un error al modificar la lista, inténtalo nuevamente.");
+    } catch (error: any) {
+      toast.error(`${error}`);
     }
   },
 
@@ -267,17 +285,22 @@ export const useLists = create<todo_list>()((set, get) => ({
       }),
     }));
 
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+
     try {
-      const result = await UpdatePinnedListToDB(id, pinned);
-      if (result.error) {
-        throw new Error(result.error.message);
+      const { error } = await updatePinnedList(id, pinned);
+      if (!error) {
+        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+      } else {
+        throw new Error(error);
       }
-    } catch {
-      toast.error("Hubo un error al modificar la lista, inténtalo nuevamente.");
+    } catch (error: any) {
+      toast.error(`${error}`);
     }
   },
 
   updateListPosition: async (id, index) => {
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
     try {
       if (!Number.isInteger(index)) {
         set((state) => {
@@ -291,9 +314,9 @@ export const useLists = create<todo_list>()((set, get) => ({
           return { lists: updatedLists };
         });
 
-        const result = await UpdateAllIndexLists(id);
+        const result = await updateAllIndexLists();
         if (result.error) {
-          throw new Error(result.error.message);
+          throw new Error(result.error);
         }
       } else {
         set((state) => ({
@@ -308,18 +331,19 @@ export const useLists = create<todo_list>()((set, get) => ({
           }),
         }));
 
-        const result = await UpdateIndexListToDB(id, index);
-        if (result.error) {
-          throw new Error(result.error.message);
+        const { error } = await updateIndexList(id, index);
+        if (!error) {
+          set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+        } else {
+          throw new Error(error);
         }
       }
-    } catch {
-      toast.error("Hubo un error al modificar la lista, inténtalo nuevamente.");
+    } catch (error: any) {
+      toast.error(`${error}`);
     }
   },
 
   deleteAllLists: async () => {
-    addToQueue(1);
     const { lists } = get();
     const tempLists = lists;
 
@@ -327,20 +351,19 @@ export const useLists = create<todo_list>()((set, get) => ({
       lists: [],
     }));
 
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
     try {
-      const result = await DeleteAllLists();
-      if (result.error) {
-        throw new Error(result.error.message);
+      const { error } = await deleteAllLists();
+      if (!error) {
+        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+      } else {
+        throw new Error(error);
       }
     } catch (error: any) {
-      toast.error(
-        `Hubo un error al eliminar las listas, inténtalo nuevamente. ${error}`
-      );
+      toast.error(`${error}`);
       set(() => ({
         lists: tempLists,
       }));
-    } finally {
-      addToQueue(-1);
     }
   },
 
@@ -351,6 +374,7 @@ export const useLists = create<todo_list>()((set, get) => ({
       toast.error("El nombre de tu tarea debe tener un carácter como mínimo");
       return;
     }
+
     const tempId = uuidv4();
 
     set((state) => ({
@@ -378,10 +402,11 @@ export const useLists = create<todo_list>()((set, get) => ({
       }),
     }));
 
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+
     try {
-      const result = await AddTaskToDB(list_id, task, tempId);
-      if (!result.error) {
-        const data = result?.data;
+      const { data, error } = await insertTask(list_id, task, tempId);
+      if (!error) {
         set((state) => ({
           lists: state.lists.map((list) => {
             if (list.id === list_id) {
@@ -405,11 +430,12 @@ export const useLists = create<todo_list>()((set, get) => ({
             return list;
           }),
         }));
+        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
       } else {
-        throw new Error(result.error.message);
+        throw new Error(error);
       }
-    } catch {
-      toast.error("Hubo un error al agregar la tarea, inténtalo nuevamente.");
+    } catch (error: any) {
+      toast.error(`${error}`);
     }
   },
 
@@ -426,13 +452,17 @@ export const useLists = create<todo_list>()((set, get) => ({
       }),
     }));
 
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+
     try {
-      const result = await DeleteTaskToDB(id);
-      if (result?.error) {
-        throw new Error(result.error.message);
+      const { error } = await deleteTask(id);
+      if (!error) {
+        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+      } else {
+        throw new Error(error);
       }
-    } catch {
-      toast.error("Hubo un error al eliminar la tarea, inténtalo nuevamente.");
+    } catch (error: any) {
+      toast.error(`${error}`);
     }
   },
 
@@ -457,20 +487,21 @@ export const useLists = create<todo_list>()((set, get) => ({
       }),
     }));
 
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+
     try {
-      const result = await UpdateTasksCompleted(id, status);
-      if (result.error) {
-        throw new Error(result.error.message);
+      const { error } = await updateCompletedTask(id, status);
+      if (!error) {
+        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+      } else {
+        throw new Error(error);
       }
-    } catch {
-      toast.error(
-        "Hubo un error al actualizar la tarea, inténtalo nuevamente."
-      );
+    } catch (error: any) {
+      toast.error(`${error}`);
     }
   },
 
   deleteAllTasks: async () => {
-    addToQueue(1);
     const { lists } = get();
     const tempLists = lists;
 
@@ -481,20 +512,20 @@ export const useLists = create<todo_list>()((set, get) => ({
       })),
     }));
 
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+
     try {
-      const result = await DeleteAllTasks();
-      if (result.error) {
-        throw new Error(result.error.message);
+      const result = await deleteAllTasks();
+      if (!result.error) {
+        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+      } else {
+        throw new Error(result.error);
       }
     } catch (error: any) {
-      toast.error(
-        `Hubo un error al eliminar las tareas, inténtalo nuevamente. ${error}`
-      );
+      toast.error(`${error}`);
       set(() => ({
         lists: tempLists,
       }));
-    } finally {
-      addToQueue(-1);
     }
   },
 }));

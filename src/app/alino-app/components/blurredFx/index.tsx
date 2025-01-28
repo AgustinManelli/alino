@@ -1,10 +1,10 @@
 "use client";
 
 import styles from "./blurredFx.module.css";
-import { useBlurredFxStore } from "@/store/useBlurredFx";
+import { useBlurBackgroundStore } from "@/store/useBlurBackgroundStore";
 
 export default function BlurredFx() {
-  const blurredFx = useBlurredFxStore((state) => state.color);
+  const blurredFx = useBlurBackgroundStore((state) => state.color);
   return (
     <div
       className={styles.blurred}

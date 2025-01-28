@@ -37,10 +37,8 @@ export function RegisterForm() {
         emailRedirectTo: `${location.origin}/auth/callback`,
       });
 
-      const typeError = JSON.parse(result)[0];
-      const error = JSON.parse(result)[1];
-      if (error) {
-        toast.error(typeError);
+      if (result.error) {
+        toast.error(result.error);
         reset({ password: "", passwordConfirm: "" });
         return;
       }
@@ -48,6 +46,7 @@ export function RegisterForm() {
       toast.success(
         "Registrado correctamente, revise su correo para verificar su cuenta"
       );
+
       router.push("/sign-in");
     });
   };
