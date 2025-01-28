@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { readUserSession } from "@/lib/auth/actions";
+import { getUser } from "@/lib/auth/actions";
 
 import BlurredFx from "./components/blurredFx";
 import { ConfigSection } from "./components/config-section";
@@ -13,10 +13,8 @@ export default async function appLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const {
-    data: { session },
-  } = await readUserSession();
-  if (!session) {
+  const result = await getUser();
+  if (result.error) {
     return redirect("/sign-in");
   }
 
@@ -25,8 +23,8 @@ export default async function appLayout({
       <BlurredFx />
       <div className={styles.appContainer}>
         <ConfigSection
-          userAvatarUrl={session?.user?.user_metadata?.avatar_url}
-          name={session?.user?.user_metadata.name}
+          userAvatarUrl={result.data?.user.user_metadata.avatar_url}
+          name={result.data?.user.user_metadata.name}
         />
         <Navbar />
         <p

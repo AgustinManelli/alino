@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 
 import { useLoaderStore } from "@/store/useLoaderStore";
-import { signout } from "@/lib/auth/actions";
+import { signOutLocal } from "@/lib/auth/actions";
 
 import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
 import { OptionBox } from "@/components/ui/modal-options-box/optionBox";
@@ -29,7 +29,7 @@ export function ConfigSection({ userAvatarUrl, name }: props) {
 
   const logout = () => {
     setLoading(true);
-    signout();
+    signOutLocal();
   };
 
   const handleClose = () => {

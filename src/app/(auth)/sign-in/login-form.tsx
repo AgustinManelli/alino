@@ -46,19 +46,25 @@ export function LoginForm() {
   const onSubmitHandler: SubmitHandler<LoginUserInput> = async (values) => {
     startTransition(async () => {
       const result = await signInWithEmailAndPassword(values);
-      const typeError = JSON.parse(result)[0];
-      const error = JSON.parse(result)[1];
 
-      if (error) {
-        if (typeError === "Invalid login credentials") {
-          toast.error("Email o contraseña incorrecta.");
-        } else {
-          toast.error(typeError);
-        }
+      if (result.error) {
+        toast.error(
+          "Email o contraseña incorrecta, verifica tus datos e intentalo nuevamente."
+        );
         reset({ password: "" });
         return;
       }
-      toast.success("Sesión iniciada correctamente");
+
+      if (result.data) {
+        const user = result.data.user;
+        const message =
+          user.user_metadata.name === undefined
+            ? "Hola, bienvenido nuevamente a Alino"
+            : `Hola ${user.user_metadata.name}, bienvenido nuevamente a Alino`;
+
+        toast.success(message);
+      }
+
       router.push("/alino-app");
     });
   };

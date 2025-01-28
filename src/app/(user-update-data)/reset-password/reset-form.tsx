@@ -5,7 +5,7 @@ import {
   updatePasswordScheme,
 } from "@/lib/schemas/user-schema";
 import styles from "../../(auth)/sign-in/login.module.css";
-import { updatePassword, signout } from "@/lib/auth/actions";
+import { updatePassword, signOutLocal } from "@/lib/auth/actions";
 import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
@@ -15,7 +15,6 @@ import { LoadingIcon } from "@/components/ui/icons/icons";
 
 export const ResetForm = () => {
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState("");
   const methods = useForm<UpdatePasswordInput>({
     resolver: zodResolver(updatePasswordScheme),
   });
@@ -31,17 +30,15 @@ export const ResetForm = () => {
     startTransition(async () => {
       const result = await updatePassword(values);
 
-      const { error } = JSON.parse(result);
-
-      if (error) {
-        setError(error.message);
-        toast.error("No se pudo actualizar su contraseña");
+      if (result.error) {
+        toast.error(
+          "Hubo un problema al actualizar su contraseña, intentelo nuevamente."
+        );
         reset({ password: "", passwordConfirm: "" });
         return;
       }
-      setError("");
       toast.success("Su contraseña se cambió correctamente");
-      await signout();
+      await signOutLocal();
     });
   };
   return (

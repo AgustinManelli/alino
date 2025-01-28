@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { useLists } from "@/store/useLists";
-import { useAnimationStore } from "@/store/useAnimationStore";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 import { ButtonConfig } from "./components/buttonConfig";
 import { Switch } from "@/components/ui/switch";
@@ -23,8 +23,8 @@ export default function AccountConfigSection({
   handleCloseConfig: () => void;
 }) {
   const [type, setType] = useState<string>("app");
-  const { animations, toggleAnimations } = useAnimationStore();
-  const { deleteAllLists, deleteAllTasks } = useLists();
+  const { animations, toggleAnimations } = useUserPreferencesStore();
+  const { deleteAllLists, deleteAllTasks } = useTodoDataStore();
   const [allowClose, setAllowClose] = useState<boolean>(true);
 
   return (

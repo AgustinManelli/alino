@@ -34,15 +34,16 @@ export function ForgotPasswordForm() {
       const href = window.location.origin;
       const result = await resetPassword(values, href);
 
-      const { error } = JSON.parse(result);
-
-      if (error) {
-        toast.error("Email o contraseña incorrecta");
-        return;
+      if (result.error) {
+        toast.error(
+          "Hubo un error al recuperar su contraseña, intenelo nuevamente,"
+        );
       }
+
       toast.success(
-        "Verifique su casilla de correo para recuperar su contraseña"
+        "Si su cuenta le pertenece, verifique su casilla de correo para recuperar su contraseña"
       );
+
       router.push("/sign-in");
     });
   };

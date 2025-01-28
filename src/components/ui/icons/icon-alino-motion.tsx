@@ -1,13 +1,13 @@
 "use client";
 
-import { useAnimationStore } from "@/store/useAnimationStore";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { motion, useAnimation, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
 
 export const IconAlinoMotion = ({ style }: { style?: React.CSSProperties }) => {
   const [isVisible, setIsVisible] = useState(true);
   const controls = useAnimation();
-  const { animations } = useAnimationStore();
+  const { animations } = useUserPreferencesStore();
 
   const containerVariants = {
     hidden: {},

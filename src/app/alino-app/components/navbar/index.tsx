@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { useLists } from "@/store/useLists";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useLoaderStore } from "@/store/useLoaderStore";
 
 import { Navbar } from "./navbar";
@@ -10,7 +10,7 @@ import { Navbar } from "./navbar";
 export default function NavbarComponent() {
   const [initialFetching, setInitialFetching] = useState<boolean>(true);
 
-  const getLists = useLists((state) => state.getLists);
+  const getLists = useTodoDataStore((state) => state.getLists);
   const setLoading = useLoaderStore((state) => state.setLoading);
 
   useEffect(() => {

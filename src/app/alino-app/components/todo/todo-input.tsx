@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useLists } from "@/store/useLists";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 import styles from "./todo-input.module.css";
 import { Database } from "@/lib/schemas/todo-schema";
 
@@ -12,7 +12,7 @@ export default function TodoInput({ setList }: { setList: ListsType }) {
 
   const formRef = useRef<HTMLDivElement>(null);
 
-  const addTask = useLists((state) => state.addTask);
+  const addTask = useTodoDataStore((state) => state.addTask);
 
   const handleAdd = async () => {
     setTask("");

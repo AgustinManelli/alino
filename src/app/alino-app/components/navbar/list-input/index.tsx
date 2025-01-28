@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 
-import { useLists } from "@/store/useLists";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 
 import { ColorPicker } from "@/components/ui/color-picker";
 
@@ -38,7 +38,7 @@ export function ListInput({
     }
   };
 
-  const insertList = useLists((state) => state.insertList);
+  const insertList = useTodoDataStore((state) => state.insertList);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);

@@ -3,18 +3,18 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
-import { useCloudStore } from "@/store/useCloudStore";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 
 export function CloudIndicator() {
   const [isVisible, setIsVisible] = useState(false);
 
-  const { queue } = useCloudStore();
+  const { loadingQueue } = useTodoDataStore();
 
   useEffect(() => {
-    if (queue !== undefined) {
+    if (loadingQueue !== undefined) {
       setIsVisible(true);
 
-      if (queue === 0) {
+      if (loadingQueue === 0) {
         const timer = setTimeout(() => {
           setIsVisible(false);
         }, 5000);
@@ -22,7 +22,7 @@ export function CloudIndicator() {
         return () => clearTimeout(timer);
       }
     }
-  }, [queue]);
+  }, [loadingQueue]);
 
   return (
     <AnimatePresence mode="wait">
@@ -51,7 +51,7 @@ export function CloudIndicator() {
             strokeLinejoin="round"
           />
           <AnimatePresence mode="wait">
-            {queue === 0 ? (
+            {loadingQueue === 0 ? (
               <motion.g
                 key="success"
                 initial="hidden"

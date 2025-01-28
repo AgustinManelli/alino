@@ -6,6 +6,6 @@ export function generateMetadata() {
   };
 }
 
-export default async function SignOut() {
+export default async function ForgotPasswordPage() {
   return <ForgotPasswordForm />;
 }

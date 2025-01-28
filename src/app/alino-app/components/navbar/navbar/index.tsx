@@ -22,9 +22,9 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
-import { useMobileStore } from "@/store/useMobileStore";
-import { useAnimationStore } from "@/store/useAnimationStore";
-import { useLists } from "@/store/useLists";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { Database } from "@/lib/schemas/todo-schema";
 
 import { HomeCard } from "../home-card";
@@ -51,9 +51,9 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
   const [allowCloseNavbar, setAllowCloseNavbar] = useState<boolean>(true);
 
   //estados globales
-  const { isMobile } = useMobileStore();
-  const { lists, setLists, updateListPosition } = useLists();
-  const { animations } = useAnimationStore();
+  const { isMobile } = usePlatformInfoStore();
+  const { lists, setLists, updateListPosition } = useTodoDataStore();
+  const { animations } = useUserPreferencesStore();
 
   //ref's
   const Ref = useRef<HTMLInputElement | null>(null);

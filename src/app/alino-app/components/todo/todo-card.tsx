@@ -5,24 +5,26 @@ import styles from "./todo-card.module.css";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { DeleteIcon } from "@/components/ui/icons/icons";
-import { useLists } from "@/store/useLists";
-import useMobileStore from "@/store/useMobileStore";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 
 export default function TodoCard({ task }: { task: tasks }) {
   const [status, setStatus] = useState<boolean>(task.completed);
   const [hover, setHover] = useState<boolean>(false);
-  const deleteTask = useLists((state) => state.deleteTask);
+  const deleteTask = useTodoDataStore((state) => state.deleteTask);
   const handleDelete = async () => {
     await deleteTask(task.id, task.category_id);
   };
-  const updateTaskCompleted = useLists((status) => status.updateTaskCompleted);
+  const updateTaskCompleted = useTodoDataStore(
+    (status) => status.updateTaskCompleted
+  );
 
   const handleUpdateStatus = async () => {
     await updateTaskCompleted(task.id, task.category_id, !status);
     setStatus(!status);
   };
 
-  const { isMobile } = useMobileStore();
+  const { isMobile } = usePlatformInfoStore();
 
   return (
     <div

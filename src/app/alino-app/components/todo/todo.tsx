@@ -3,7 +3,7 @@
 import TodoInput from "./todo-input";
 import { SquircleIcon } from "@/components/ui/icons/icons";
 import styles from "./todo.module.css";
-import { useLists } from "@/store/useLists";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { Database } from "@/lib/schemas/todo-schema";
 import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +12,7 @@ import Manager from "../manager";
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 export default function Todo({ params }: { params: { list: string } }) {
-  const lists = useLists((state) => state.lists);
+  const lists = useTodoDataStore((state) => state.lists);
   const setList = lists.find(
     (elemento) => elemento.id === params.list
   ) as ListsType;
