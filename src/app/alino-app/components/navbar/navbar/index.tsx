@@ -52,7 +52,7 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
 
   //estados globales
   const { isMobile } = usePlatformInfoStore();
-  const { lists, setLists, updateListPosition } = useTodoDataStore();
+  const { lists, setLists, updateIndexList } = useTodoDataStore();
   const { animations } = useUserPreferencesStore();
 
   //ref's
@@ -131,11 +131,11 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
         newIndex === newLists.length - 1 ? 0 : newLists[newIndex + 1]?.index;
 
       if (prevIndex === 0 && postIndex !== null && draggedItem) {
-        updateListPosition(draggedItem.id, postIndex / 2);
+        updateIndexList(draggedItem.id, postIndex / 2);
       } else if (postIndex === 0 && prevIndex !== null && draggedItem) {
-        updateListPosition(draggedItem.id, prevIndex + 16384);
+        updateIndexList(draggedItem.id, prevIndex + 16384);
       } else if (prevIndex !== null && postIndex !== null && draggedItem) {
-        updateListPosition(draggedItem.id, (prevIndex + postIndex) / 2);
+        updateIndexList(draggedItem.id, (prevIndex + postIndex) / 2);
       }
     }
     setDraggedItem(null);

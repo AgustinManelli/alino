@@ -10,7 +10,6 @@ import {
   deleteList,
   insertTask,
   deleteTask,
-  updateColorList,
   updateDataList,
   updateCompletedTask,
   updatePinnedList,
@@ -20,6 +19,9 @@ import {
   deleteAllTasks,
 } from "@/lib/todo/actions";
 import { toast } from "sonner";
+
+import { ListSchema } from "@/lib/schemas/listValidationSchema";
+import { TaskSchema } from "@/lib/schemas/taskValidationSchema";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
@@ -33,9 +35,8 @@ type todo_list = {
   setLists: (list: ListsType[]) => void;
   getLists: () => void;
   insertList: (color: string, name: string, shortcodeemoji: string) => void;
-  deleteList: (id: string, name: string) => void;
-  changeColor: (color: string, id: string, shortcodeemoji: string) => void;
-  updateListName: (
+  deleteList: (id: string) => void;
+  updateDataList: (
     id: string,
     newName: string,
     color: string,
@@ -45,26 +46,10 @@ type todo_list = {
   addTask: (list_id: string, task: string) => void;
   deleteTask: (id: string, list_id: string) => void;
   updateTaskCompleted: (id: string, list_id: string, status: boolean) => void;
-  updateListPinned: (id: string, pinned: boolean) => void;
-  updateListPosition: (id: string, index: number) => void;
+  updatePinnedList: (id: string, pinned: boolean) => void;
+  updateIndexList: (id: string, index: number) => void;
   deleteAllTasks: () => void;
 };
-
-const ListSchema = z.object({
-  index: z.number().int().min(0),
-  color: z
-    .string()
-    .regex(
-      /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
-      "El color debe ser un código hexadecimal válido o un emoji"
-    ),
-  name: z
-    .string()
-    .min(1, "El nombre no puede estar vacío")
-    .max(25, "El nombre de las listas no pueden tener más de 25 caracteres"),
-  shortcodeemoji: z.string().optional(),
-  tempId: z.string().uuid("ID debe ser un UUID válido"),
-});
 
 export const useTodoDataStore = create<todo_list>()((set, get) => ({
   lists: [],
@@ -112,14 +97,21 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
     const index = lists.length === 0 ? POS_INDEX : maxIndex + POS_INDEX;
 
     //Lista temporal
-    const tempId = uuidv4();
+    const id = uuidv4();
     try {
-      const validatedData = ListSchema.parse({
+      const pickSchema = ListSchema.pick({
+        index: true,
+        color: true,
+        name: true,
+        shortcodeemoji: true,
+        id: true,
+      });
+      const validatedData = pickSchema.parse({
         index,
         color,
         name,
         shortcodeemoji,
-        tempId,
+        id,
       });
 
       set((state: any) => ({
@@ -128,7 +120,7 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
           {
             color: validatedData.color,
             icon: validatedData.shortcodeemoji,
-            id: validatedData.tempId,
+            id: validatedData.id,
             index: validatedData.index,
             inserted_at: "0",
             name: validatedData.name,
@@ -147,12 +139,12 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
         color,
         name,
         shortcodeemoji,
-        tempId
+        id
       );
       if (!error) {
         set((state: any) => ({
           lists: state.lists.map((list: any) => {
-            if (list.id === tempId) {
+            if (list.id === id) {
               return {
                 ...list,
                 id: data.id,
@@ -177,131 +169,142 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
       }
 
       //eliminado de la lista temporal creada cuando ocurre un error en su creación
-      const filtered = lists.filter((all) => all.id !== tempId);
+      const filtered = lists.filter((all) => all.id !== id);
       set(() => ({ lists: filtered }));
     }
   },
 
-  deleteList: async (id, name) => {
+  deleteList: async (id) => {
     set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
     const { lists } = get();
 
     set({ lists: lists.filter((list) => list.id !== id) });
     try {
-      const result = await deleteList(id);
+      const pickSchema = ListSchema.pick({ id: true });
+      const validatedData = pickSchema.parse({ id });
+
+      const result = await deleteList(validatedData.id);
       if (result?.error) {
         throw new Error(result.error);
       }
-      toast.success(`Lista "${name}" eliminada correctamente`);
 
       set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
     } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        const errors = error.errors[0].message;
+        toast.error(`Error de validación: ${errors}`);
+      }
+
       // Revertir los cambios en la UI si la eliminación falla
       set(() => ({ lists }));
       toast.error(`${error}`);
     }
   },
 
-  changeColor: async (color, id, shortcodeemoji) => {
+  updateDataList: async (id, name, color, shortcodeemoji) => {
     set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
 
-    set((state) => ({
-      lists: state.lists.map((list) => {
-        if (list.id === id) {
-          return {
-            ...list,
-            color: color,
-            icon: shortcodeemoji,
-          };
-        }
-        return list;
-      }),
-    }));
-
     try {
-      const { error } = await updateColorList(color, id, shortcodeemoji);
+      const pickSchema = ListSchema.pick({
+        name: true,
+        color: true,
+        shortcodeemoji: true,
+      });
+      const validatedData = pickSchema.parse({ name, color, shortcodeemoji });
+
+      set((state) => ({
+        lists: state.lists.map((list) => {
+          if (list.id === id) {
+            return {
+              ...list,
+              name: validatedData.name,
+              color: validatedData.color,
+              icon: validatedData.shortcodeemoji,
+            };
+          }
+          return list;
+        }),
+      }));
+
+      const { error } = await updateDataList(
+        validatedData.name,
+        validatedData.color,
+        validatedData.shortcodeemoji
+      );
       if (!error) {
         set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
       } else {
         throw new Error(error);
       }
     } catch (error: any) {
-      toast.error(`${error}`);
+      if (error instanceof z.ZodError) {
+        const errors = error.errors.map((err) => err.message).join(". ");
+        toast.error(`Error de validación: ${errors}`);
+      } else {
+        toast.error(`${error}`);
+      }
     }
   },
 
-  updateListName: async (id, newName, color, emoji) => {
-    if (newName.length < 1) {
-      toast.error("El nombre de tu lista debe tener un carácter como mínimo");
-      return;
-    }
-
-    set((state) => ({
-      lists: state.lists.map((list) => {
-        if (list.id === id) {
-          return {
-            ...list,
-            name: newName,
-            color: color,
-            icon: emoji,
-          };
-        }
-        return list;
-      }),
-    }));
-
+  updatePinnedList: async (id, pinned) => {
     set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
 
     try {
-      const { error } = await updateDataList(id, newName, color, emoji);
+      const pickSchema = ListSchema.pick({
+        pinned: true,
+        id: true,
+      });
+      const validatedData = pickSchema.parse({ pinned, id });
+
+      set((state) => ({
+        lists: state.lists.map((list) => {
+          if (list.id === id) {
+            return {
+              ...list,
+              pinned: validatedData.pinned,
+            };
+          }
+          return list;
+        }),
+      }));
+
+      set((state) => ({
+        lists: state.lists.sort((a, b) => {
+          if (a.index === null) return 1;
+          if (b.index === null) return -1;
+          return a.index - b.index;
+        }),
+      }));
+
+      const { error } = await updatePinnedList(
+        validatedData.id,
+        validatedData.pinned
+      );
+
       if (!error) {
         set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
       } else {
         throw new Error(error);
       }
     } catch (error: any) {
-      toast.error(`${error}`);
-    }
-  },
-
-  updateListPinned: async (id, pinned) => {
-    set((state) => ({
-      lists: state.lists.map((list) => {
-        if (list.id === id) {
-          return {
-            ...list,
-            pinned: pinned,
-          };
-        }
-        return list;
-      }),
-    }));
-
-    set((state) => ({
-      lists: state.lists.sort((a, b) => {
-        if (a.index === null) return 1;
-        if (b.index === null) return -1;
-        return a.index - b.index;
-      }),
-    }));
-
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
-
-    try {
-      const { error } = await updatePinnedList(id, pinned);
-      if (!error) {
-        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+      if (error instanceof z.ZodError) {
+        const errors = error.errors.map((err) => err.message).join(". ");
+        toast.error(`Error de validación: ${errors}`);
       } else {
-        throw new Error(error);
+        toast.error(`${error}`);
       }
-    } catch (error: any) {
-      toast.error(`${error}`);
     }
   },
 
-  updateListPosition: async (id, index) => {
+  updateIndexList: async (id, index) => {
     set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
     try {
+      const pickSchema = ListSchema.pick({
+        id: true,
+        index: true,
+      });
+      const validatedData = pickSchema.parse({ id, index });
+
       if (!Number.isInteger(index)) {
         set((state) => {
           const updatedLists = state.lists.map((list, idx) => {
@@ -331,7 +334,10 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
           }),
         }));
 
-        const { error } = await updateIndexList(id, index);
+        const { error } = await updateIndexList(
+          validatedData.id,
+          validatedData.index
+        );
         if (!error) {
           set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
         } else {
@@ -339,7 +345,12 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
         }
       }
     } catch (error: any) {
-      toast.error(`${error}`);
+      if (error instanceof z.ZodError) {
+        const errors = error.errors.map((err) => err.message).join(". ");
+        toast.error(`Error de validación: ${errors}`);
+      } else {
+        toast.error(`${error}`);
+      }
     }
   },
 
@@ -369,51 +380,56 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
 
   //ACCIONES DE TAREAS
 
-  addTask: async (list_id, task) => {
-    if (task.length < 1) {
-      toast.error("El nombre de tu tarea debe tener un carácter como mínimo");
-      return;
-    }
-
-    const tempId = uuidv4();
-
-    set((state) => ({
-      lists: state.lists.map((list) => {
-        if (list.id === list_id) {
-          return {
-            ...list,
-            tasks: [
-              ...list.tasks,
-              {
-                id: tempId,
-                category_id: list_id,
-                description: "",
-                completed: false,
-                index: 0,
-                name: task,
-                created_at: "0",
-                updated_at: "0",
-                user_id: "0",
-              },
-            ],
-          };
-        }
-        return list;
-      }),
-    }));
+  addTask: async (category_id, name) => {
+    const id = uuidv4();
 
     set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
-
     try {
-      const { data, error } = await insertTask(list_id, task, tempId);
+      const pickSchema = TaskSchema.pick({
+        category_id: true,
+        name: true,
+        id: true,
+      });
+      const validatedData = pickSchema.parse({ category_id, name, id });
+
+      set((state) => ({
+        lists: state.lists.map((list) => {
+          if (list.id === category_id) {
+            return {
+              ...list,
+              tasks: [
+                ...list.tasks,
+                {
+                  id: validatedData.id,
+                  category_id: validatedData.category_id,
+                  description: "",
+                  completed: false,
+                  index: 0,
+                  name: name,
+                  created_at: "0",
+                  updated_at: "0",
+                  user_id: "0",
+                },
+              ],
+            };
+          }
+          return list;
+        }),
+      }));
+
+      const { data, error } = await insertTask(
+        validatedData.category_id,
+        validatedData.name,
+        validatedData.id
+      );
       if (!error) {
         set((state) => ({
           lists: state.lists.map((list) => {
-            if (list.id === list_id) {
+            if (list.id === category_id) {
               return {
                 ...list,
                 tasks: list.tasks.map((task) => {
-                  if (task.id === tempId) {
+                  if (task.id === id) {
                     // Actualizar la tarea específica
                     return {
                       ...task,
@@ -435,7 +451,12 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
         throw new Error(error);
       }
     } catch (error: any) {
-      toast.error(`${error}`);
+      if (error instanceof z.ZodError) {
+        const errors = error.errors.map((err) => err.message).join(". ");
+        toast.error(`Error de validación: ${errors}`);
+      } else {
+        toast.error(`${error}`);
+      }
     }
   },
 
