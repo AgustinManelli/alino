@@ -12,9 +12,11 @@ import { EmojiMartPicker } from "@/components/ui/emoji-mart/emoji-mart-picker";
 import {
   ArrowThin,
   CopyToClipboardIcon,
+  Cross,
   SquircleIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./ColorPicker.module.css";
+import { hexColorSchema } from "@/lib/schemas/listValidationSchema";
 
 interface ColorPickerInterface {
   portalRef: React.RefObject<HTMLDivElement>;
@@ -39,6 +41,7 @@ export function ColorPicker({
 }: ColorPickerInterface) {
   //estados locales
   const [type, setType] = useState<string>("color"); //modo color o emoji picker en la modal
+  const [flagColor, setFlagColor] = useState<string>(color);
 
   //ref's
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -101,6 +104,7 @@ export function ColorPicker({
           !portalRef.current.contains(event.target as Node) &&
           !pickerRef.current.contains(event.target as Node)
         ) {
+          setColor(flagColor);
           setIsOpenPicker(false);
           setType("color");
         }
@@ -119,7 +123,7 @@ export function ColorPicker({
 
   const renderIcon = () => (
     <div className={styles.renderIconContainer}>
-      {emoji === "" ? (
+      {emoji === null || emoji === "" ? (
         <SquircleIcon
           style={{
             fill: `${color}`,
@@ -271,17 +275,29 @@ export function ColorPicker({
                           htmlFor="colorInput"
                           className={styles.labelColor}
                         >
-                          <SquircleIcon
-                            style={{ fill: `${color}`, width: "18px" }}
-                          />
-                          {!COLORS.includes(color) && (
-                            <SquircleIcon
+                          {hexColorSchema.safeParse(color).success ? (
+                            <>
+                              <SquircleIcon
+                                style={{ fill: `${color}`, width: "18px" }}
+                              />
+                              {COLORS.includes(color) && (
+                                <SquircleIcon
+                                  style={{
+                                    fill: "transparent",
+                                    position: "absolute",
+                                    width: "30px",
+                                    strokeWidth: "1.5",
+                                    stroke: `${color}`,
+                                  }}
+                                />
+                              )}
+                            </>
+                          ) : (
+                            <Cross
                               style={{
-                                fill: "transparent",
-                                position: "absolute",
-                                width: "30px",
-                                strokeWidth: "1.5",
-                                stroke: `${color}`,
+                                width: "18px",
+                                stroke: "#999999",
+                                strokeWidth: "3",
                               }}
                             />
                           )}
@@ -293,13 +309,19 @@ export function ColorPicker({
                         value={`${color}`}
                         onChange={(e) => {
                           setColor(e.target.value, true);
+                          setFlagColor(e.target.value);
                         }}
                         onKeyDown={(e) => {
                           const target = e.target as HTMLInputElement;
                           if (e.key === "Enter" || e.key === "Escape") {
                             setIsOpenPicker(false);
                             setColor(target.value);
+                            setFlagColor(target.value);
                           }
+                        }}
+                        onBlur={(e) => {
+                          setColor(e.target.value);
+                          setFlagColor(e.target.value);
                         }}
                       ></input>
                     </div>
