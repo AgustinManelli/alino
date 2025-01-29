@@ -206,11 +206,12 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
 
     try {
       const pickSchema = ListSchema.pick({
+        id: true,
         name: true,
         color: true,
         shortcodeemoji: true,
       });
-      const validatedData = pickSchema.parse({ name, color, shortcodeemoji });
+      const validatedData = pickSchema.parse({ id, name, color, shortcodeemoji });
 
       set((state) => ({
         lists: state.lists.map((list) => {
@@ -227,6 +228,7 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
       }));
 
       const { error } = await updateDataList(
+        validatedData.id
         validatedData.name,
         validatedData.color,
         validatedData.shortcodeemoji
