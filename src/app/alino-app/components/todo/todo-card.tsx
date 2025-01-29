@@ -9,7 +9,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 
 export default function TodoCard({ task }: { task: tasks }) {
-  const [status, setStatus] = useState<boolean>(task.completed);
+  const [completed, setCompleted] = useState<boolean>(task.completed);
   const [hover, setHover] = useState<boolean>(false);
   const deleteTask = useTodoDataStore((state) => state.deleteTask);
   const handleDelete = async () => {
@@ -20,8 +20,8 @@ export default function TodoCard({ task }: { task: tasks }) {
   );
 
   const handleUpdateStatus = async () => {
-    await updateTaskCompleted(task.id, task.category_id, !status);
-    setStatus(!status);
+    await updateTaskCompleted(task.id, task.category_id, !completed);
+    setCompleted(!completed);
   };
 
   const { isMobile } = usePlatformInfoStore();
@@ -38,7 +38,7 @@ export default function TodoCard({ task }: { task: tasks }) {
     >
       <div className={styles.leftContainer}>
         <Checkbox
-          status={status}
+          status={completed}
           handleUpdateStatus={handleUpdateStatus}
           id={task.id}
         />

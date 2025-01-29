@@ -356,7 +356,15 @@ export const deleteTask = async (id: string) => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
 
-    const { data, error } = await supabase.from("tasks").delete().eq("id", id);
+    const pickSchema = TaskSchema.pick({
+      id: true,
+    });
+    const validatedData = pickSchema.parse({ id });
+
+    const { data, error } = await supabase
+      .from("tasks")
+      .delete()
+      .eq("id", validatedData.id);
 
     if (error) {
       throw new Error("Failed to delete the task. Please try again later.");
@@ -364,6 +372,10 @@ export const deleteTask = async (id: string) => {
 
     return { data };
   } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors[0].message };
+    }
+
     if (error instanceof Error) {
       return { error: error.message };
     }
@@ -372,17 +384,21 @@ export const deleteTask = async (id: string) => {
   }
 };
 
-export const updateCompletedTask = async (id: string, status: boolean) => {
+export const updateCompletedTask = async (id: string, completed: boolean) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
+    const pickSchema = TaskSchema.pick({
+      id: true,
+      completed: true,
+    });
+    const validatedData = pickSchema.parse({ id, completed });
+
     const { data, error } = await supabase
       .from("tasks")
-      .update({ completed: status })
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .select()
-      .single();
+      .update({ completed: validatedData.completed })
+      .eq("id", validatedData.id)
+      .eq("user_id", user.id);
 
     if (error) {
       throw new Error(
@@ -392,6 +408,10 @@ export const updateCompletedTask = async (id: string, status: boolean) => {
 
     return { data };
   } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors.map((err) => err.message).join(". ") };
+    }
+
     if (error instanceof Error) {
       return { error: error.message };
     }
