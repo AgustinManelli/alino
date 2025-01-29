@@ -33,9 +33,7 @@ export async function getLists() {
 
     const { data, error } = await supabase
       .from("todos_data")
-      .select(
-        "*, tasks: tasks(id, category_id, description, completed, index, name, created_at, updated_at)"
-      )
+      .select("*, tasks: tasks(*)")
       .eq("user_id", user.id)
       .order("index", { ascending: true });
 
@@ -57,7 +55,7 @@ export const insertList = async (
   index: number,
   color: string,
   name: string,
-  shortcodeemoji: string,
+  shortcodeemoji: string | null,
   id: string
 ) => {
   try {

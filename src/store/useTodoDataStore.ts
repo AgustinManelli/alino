@@ -1,6 +1,6 @@
 "use client";
 
-import { create } from "zustand";
+import { create, StoreApi } from "zustand";
 import { Database } from "@/lib/schemas/todo-schema";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
@@ -42,7 +42,7 @@ type todo_list = {
     newName: string,
     color: string,
     emoji: string | null
-  ) => void;
+  ) => Promise<{ error: string | null }>;
   deleteAllLists: () => void;
   addTask: (category_id: string, task: string) => void;
   deleteTask: (id: string, category_id: string) => void;
@@ -56,6 +56,49 @@ type todo_list = {
   deleteAllTasks: () => void;
 };
 
+type SetState = (fn: (state: todo_list) => Partial<todo_list>) => void;
+
+const withLoading = async <T>(
+  action: () => Promise<T>,
+  set: SetState
+): Promise<T> => {
+  set((state: todo_list) => ({ loadingQueue: state.loadingQueue + 1 }));
+  try {
+    return await action();
+  } finally {
+    set((state: todo_list) => ({ loadingQueue: state.loadingQueue - 1 }));
+  }
+};
+
+const createCRUDHandler = <T>(schema: z.ZodSchema<T>) => ({
+  interact: async (
+    data: unknown,
+    action: (validated: T) => Promise<void>,
+    set: SetState
+  ) => {
+    await withLoading(async () => {
+      const validated = schema.parse(data);
+      await action(validated);
+    }, set);
+  },
+});
+
+const handleError = (error: unknown, revert?: () => void) => {
+  let errorMessage = UNKNOWN_ERROR_MESSAGE;
+
+  if (error instanceof z.ZodError) {
+    errorMessage = `${error.errors.map((e) => e.message).join(". ")}`;
+  } else if (error instanceof Error) {
+    errorMessage = error.message;
+    console.error(errorMessage);
+  }
+
+  toast.error(errorMessage);
+  if (revert) revert();
+
+  return errorMessage;
+};
+
 export const useTodoDataStore = create<todo_list>()((set, get) => ({
   lists: [],
   tasks: [],
@@ -66,76 +109,55 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
   },
 
   getLists: async () => {
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
     try {
-      const { data, error } = await getLists();
+      await withLoading(async () => {
+        const { data, error } = await getLists();
 
-      if (!error) {
-        data?.forEach((todo: ListsType) => {
-          todo.tasks = todo.tasks.sort(
-            (a: TaskType, b: TaskType) => (b.index ?? 0) - (a.index ?? 0)
-          );
-        });
+        if (error) throw new Error(error);
 
-        set(() => ({ lists: data || [] }));
-        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
-      } else {
-        throw new Error(error);
-      }
+        const processLists = (lists: ListsType[] = []) =>
+          lists.map((list) => ({
+            ...list,
+            tasks: (list.tasks || []).sort(
+              (a, b) => (b.index ?? 0) - (a.index ?? 0)
+            ),
+          }));
+
+        set({ lists: processLists(data) });
+      }, set);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-        return;
-      }
-
-      toast.error(UNKNOWN_ERROR_MESSAGE);
+      handleError(error, () => {
+        // Revertir a estado anterior si es necesario
+        set({ lists: get().lists });
+      });
     }
   },
 
   insertList: async (color, name, shortcodeemoji) => {
-    //Obtener las listas actuales
+    //obtención de lista
     const { lists } = get();
 
-    //obtener el índice máximo de las listas
-    const maxIndex = lists.reduce<number>(
-      (max, current) =>
-        current.index !== null && current.index > max ? current.index : max,
-      0
-    );
-
-    //Calcular el índice de la nueva lista
-    const index = lists.length === 0 ? POS_INDEX : maxIndex + POS_INDEX;
-
-    //Lista temporal
+    //creación de UUID
     const id = uuidv4();
 
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
-    try {
-      const pickSchema = ListSchema.pick({
-        index: true,
-        color: true,
-        name: true,
-        shortcodeemoji: true,
-        id: true,
-      });
-      const validatedData = pickSchema.parse({
-        index,
-        color,
-        name,
-        shortcodeemoji,
-        id,
-      });
+    //obtención del nuevo índice
+    const newIndex =
+      lists.length === 0
+        ? POS_INDEX
+        : Math.max(...lists.map((l) => l.index || 0)) + POS_INDEX;
 
-      set((state: any) => ({
+    //Helper para actualización optimista
+    const optimisticUpdate = () => {
+      set((state: todo_list) => ({
         lists: [
           ...state.lists,
           {
-            color: validatedData.color,
-            icon: validatedData.shortcodeemoji,
-            id: validatedData.id,
-            index: validatedData.index,
+            color: color,
+            icon: shortcodeemoji,
+            id: id,
+            index: newIndex,
             inserted_at: "0",
-            name: validatedData.name,
+            name: name,
             pinned: false,
             tasks: [],
             updated_at: "0",
@@ -143,298 +165,241 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
           },
         ],
       }));
+    };
 
-      const { data, error } = await insertList(
-        index,
-        color,
-        name,
-        shortcodeemoji,
-        id
-      );
-      if (!error) {
-        set((state: any) => ({
-          lists: state.lists.map((list: any) => {
-            if (list.id === id) {
-              return {
-                ...list,
-                id: data.id,
-                user_id: data.user_id,
-                inserted_at: data.inserted_at,
-                updated_at: data.updated_at,
-              };
-            }
-            return list;
-          }),
-        }));
-        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
-      } else {
-        throw new Error(error);
-      }
-    } catch (error: unknown) {
-      if (error instanceof z.ZodError) {
-        const errors = error.errors.map((err) => err.message).join(". ");
-        toast.error(`Error de validación: ${errors}`);
-        return;
-      }
+    // Helper para revertir en caso de error
+    const revert = () => set({ lists: lists.filter((all) => all.id !== id) });
 
-      if (error instanceof Error) {
-        toast.error(error.message);
-        //eliminado de la lista temporal creada cuando ocurre un error en su creación
-        const filtered = lists.filter((all) => all.id !== id);
-        set(() => ({ lists: filtered }));
-        return;
-      }
+    await createCRUDHandler(
+      ListSchema.pick({
+        index: true,
+        color: true,
+        name: true,
+        shortcodeemoji: true,
+        id: true,
+      })
+    )
+      .interact(
+        { index: newIndex, color, name, shortcodeemoji, id },
+        async (validated) => {
+          optimisticUpdate();
 
-      toast.error(UNKNOWN_ERROR_MESSAGE);
-      //eliminado de la lista temporal creada cuando ocurre un error en su creación
-      const filtered = lists.filter((all) => all.id !== id);
-      set(() => ({ lists: filtered }));
-    }
+          const { data, error } = await insertList(
+            validated.index,
+            validated.color,
+            validated.name,
+            validated.shortcodeemoji,
+            validated.id
+          );
+
+          if (error) throw new Error(error);
+
+          set((state: todo_list) => ({
+            lists: state.lists.map((list: any) => {
+              if (list.id === id) {
+                return {
+                  ...list,
+                  user_id: data.user_id,
+                  inserted_at: data.inserted_at,
+                  updated_at: data.updated_at,
+                };
+              }
+              return list;
+            }),
+          }));
+        },
+        set
+      )
+      .catch((error) => handleError(error, revert));
   },
 
   deleteList: async (id) => {
-    const { lists } = get();
+    const originalLists = [...get().lists];
 
-    set({ lists: lists.filter((list) => list.id !== id) });
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
-    try {
-      const pickSchema = ListSchema.pick({ id: true });
-      const validatedData = pickSchema.parse({ id });
+    await createCRUDHandler(
+      ListSchema.pick({
+        id: true,
+      })
+    )
+      .interact(
+        { id },
+        async (validated) => {
+          set((state: todo_list) => ({
+            lists: state.lists.filter((list) => list.id !== validated.id),
+          }));
 
-      const result = await deleteList(validatedData.id);
-      if (result?.error) {
-        throw new Error(result.error);
-      }
+          const result = await deleteList(validated.id);
 
-      set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
-    } catch (error: unknown) {
-      if (error instanceof z.ZodError) {
-        const errors = error.errors[0].message;
-        toast.error(`Error de validación: ${errors}`);
-        return;
-      }
-
-      if (error instanceof Error) {
-        toast.error(error.message);
-        // Revertir los cambios en la UI si la eliminación falla
-        set(() => ({ lists }));
-        return;
-      }
-
-      toast.error(UNKNOWN_ERROR_MESSAGE);
-
-      // Revertir los cambios en la UI si la eliminación falla
-      set(() => ({ lists }));
-    }
+          if (result?.error) throw new Error(result.error);
+        },
+        set
+      )
+      .catch((error) =>
+        handleError(error, () => {
+          set({ lists: originalLists });
+        })
+      );
   },
 
   updateDataList: async (id, name, color, shortcodeemoji) => {
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+    const originalLists = [...get().lists];
+    let errorResult: string | null = null;
 
-    try {
-      const pickSchema = ListSchema.pick({
-        id: true,
-        name: true,
+    await createCRUDHandler(
+      ListSchema.pick({
         color: true,
+        name: true,
         shortcodeemoji: true,
-      });
-      const validatedData = pickSchema.parse({
-        id,
-        name,
-        color,
-        shortcodeemoji,
-      });
+        id: true,
+      })
+    )
+      .interact(
+        { id, name, color, shortcodeemoji },
+        async (validated) => {
+          set((state: todo_list) => ({
+            lists: state.lists.map((list) => {
+              if (list.id === id) {
+                return {
+                  ...list,
+                  name: validated.name,
+                  color: validated.color,
+                  icon: validated.shortcodeemoji,
+                };
+              }
+              return list;
+            }),
+          }));
 
-      set((state) => ({
-        lists: state.lists.map((list) => {
-          if (list.id === id) {
-            return {
-              ...list,
-              name: validatedData.name,
-              color: validatedData.color,
-              icon: validatedData.shortcodeemoji,
-            };
-          }
-          return list;
-        }),
-      }));
+          const { error } = await updateDataList(
+            validated.id,
+            validated.name,
+            validated.color,
+            validated.shortcodeemoji
+          );
 
-      const { error } = await updateDataList(
-        validatedData.id,
-        validatedData.name,
-        validatedData.color,
-        validatedData.shortcodeemoji
+          if (error) throw new Error(error);
+        },
+        set
+      )
+      .catch(
+        (error: unknown) =>
+          (errorResult = handleError(error, () => {
+            set({ lists: originalLists });
+          }))
       );
-      if (!error) {
-        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
-      } else {
-        throw new Error(error);
-      }
-    } catch (error: unknown) {
-      if (error instanceof z.ZodError) {
-        const errors = error.errors.map((err) => err.message).join(". ");
-        toast.error(`Error de validación: ${errors}`);
-        return;
-      }
-
-      if (error instanceof Error) {
-        toast.error(error.message);
-        return;
-      }
-
-      toast.error(UNKNOWN_ERROR_MESSAGE);
-    }
+    return { error: errorResult };
   },
 
   updatePinnedList: async (id, pinned) => {
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+    const originalLists = [...get().lists];
 
-    try {
-      const pickSchema = ListSchema.pick({
-        pinned: true,
+    await createCRUDHandler(
+      ListSchema.pick({
         id: true,
-      });
-      const validatedData = pickSchema.parse({ pinned, id });
+        pinned: true,
+      })
+    )
+      .interact(
+        { id, pinned },
+        async (validated) => {
+          set((state: todo_list) => ({
+            lists: state.lists
+              .map((list) => {
+                if (list.id === id) {
+                  return {
+                    ...list,
+                    pinned: validated.pinned,
+                  };
+                }
+                return list;
+              })
+              .sort((a, b) => {
+                const aIndex = a.index ?? Number.MAX_SAFE_INTEGER;
+                const bIndex = b.index ?? Number.MAX_SAFE_INTEGER;
+                return aIndex - bIndex;
+              }),
+          }));
 
-      set((state) => ({
-        lists: state.lists.map((list) => {
-          if (list.id === id) {
-            return {
-              ...list,
-              pinned: validatedData.pinned,
-            };
-          }
-          return list;
-        }),
-      }));
+          const { error } = await updatePinnedList(
+            validated.id,
+            validated.pinned
+          );
 
-      set((state) => ({
-        lists: state.lists.sort((a, b) => {
-          if (a.index === null) return 1;
-          if (b.index === null) return -1;
-          return a.index - b.index;
-        }),
-      }));
-
-      const { error } = await updatePinnedList(
-        validatedData.id,
-        validatedData.pinned
+          if (error) throw new Error(error);
+        },
+        set
+      )
+      .catch((error: unknown) =>
+        handleError(error, () => {
+          set({ lists: originalLists });
+        })
       );
-
-      if (!error) {
-        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
-      } else {
-        throw new Error(error);
-      }
-    } catch (error: unknown) {
-      if (error instanceof z.ZodError) {
-        const errors = error.errors.map((err) => err.message).join(". ");
-        toast.error(`Error de validación: ${errors}`);
-        return;
-      }
-
-      if (error instanceof Error) {
-        toast.error(error.message);
-        return;
-      }
-
-      toast.error(UNKNOWN_ERROR_MESSAGE);
-    }
   },
 
   updateIndexList: async (id, index) => {
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
-    try {
-      const pickSchema = ListSchema.pick({
+    const originalLists = [...get().lists];
+
+    await createCRUDHandler(
+      ListSchema.pick({
         id: true,
         index: true,
-      });
-      const validatedData = pickSchema.parse({ id, index });
-
-      if (!Number.isInteger(index)) {
-        set((state) => {
-          const updatedLists = state.lists.map((list, idx) => {
-            return {
-              ...list,
-              index: 16384 * (idx + 1),
-            };
-          });
-
-          return { lists: updatedLists };
-        });
-
-        const result = await updateAllIndexLists();
-        if (result.error) {
-          throw new Error(result.error);
-        }
-      } else {
-        set((state) => ({
-          lists: state.lists.map((list) => {
-            if (list.id === id) {
-              return {
+      })
+    )
+      .interact(
+        { id, index },
+        async (validated) => {
+          if (!Number.isInteger(validated.index)) {
+            // Actualización masiva optimista
+            set((state) => ({
+              lists: state.lists.map((list, idx) => ({
                 ...list,
-                index: index,
-              };
-            }
-            return list;
-          }),
-        }));
+                index: POS_INDEX * (idx + 1),
+              })),
+            }));
 
-        const { error } = await updateIndexList(
-          validatedData.id,
-          validatedData.index
-        );
-        if (!error) {
-          set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
-        } else {
-          throw new Error(error);
-        }
-      }
-    } catch (error: unknown) {
-      if (error instanceof z.ZodError) {
-        const errors = error.errors.map((err) => err.message).join(". ");
-        toast.error(`Error de validación: ${errors}`);
-        return;
-      }
+            const { error } = await updateAllIndexLists();
+            if (error) throw new Error(error);
+          } else {
+            // Actualización individual optimista
+            set((state) => ({
+              lists: state.lists.map((list) =>
+                list.id === validated.id
+                  ? { ...list, index: validated.index }
+                  : list
+              ),
+            }));
 
-      if (error instanceof Error) {
-        toast.error(error.message);
-        return;
-      }
-
-      toast.error(UNKNOWN_ERROR_MESSAGE);
-    }
+            const { error } = await updateIndexList(
+              validated.id,
+              validated.index
+            );
+            if (error) throw new Error(error);
+          }
+        },
+        set
+      )
+      .catch((error) =>
+        handleError(error, () => set({ lists: originalLists }))
+      );
   },
 
   deleteAllLists: async () => {
-    const { lists } = get();
-    const tempLists = lists;
+    const originalLists = [...get().lists];
 
-    set(() => ({
-      lists: [],
-    }));
-
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
     try {
-      const { error } = await deleteAllLists();
-      if (!error) {
-        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
-      } else {
-        throw new Error(error);
-      }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-        set(() => ({
-          lists: tempLists,
-        }));
-        return;
-      }
+      await withLoading(async () => {
+        // Actualización optimista
+        set({ lists: [] });
 
-      toast.error(UNKNOWN_ERROR_MESSAGE);
-      set(() => ({
-        lists: tempLists,
-      }));
+        // Llamada a la API
+        const { error } = await deleteAllLists();
+        if (error) throw new Error(error);
+      }, set);
+    } catch (error: unknown) {
+      handleError(error, () => {
+        // Revertir en caso de error
+        set({ lists: originalLists });
+      });
     }
   },
 
@@ -443,7 +408,7 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
   addTask: async (category_id, name) => {
     const id = uuidv4();
 
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+    set((state: todo_list) => ({ loadingQueue: state.loadingQueue + 1 }));
     try {
       const pickSchema = TaskSchema.pick({
         category_id: true,
@@ -452,7 +417,7 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
       });
       const validatedData = pickSchema.parse({ category_id, name, id });
 
-      set((state) => ({
+      set((state: todo_list) => ({
         lists: state.lists.map((list) => {
           if (list.id === category_id) {
             return {
@@ -483,7 +448,7 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
         validatedData.id
       );
       if (!error) {
-        set((state) => ({
+        set((state: todo_list) => ({
           lists: state.lists.map((list) => {
             if (list.id === category_id) {
               return {
@@ -506,28 +471,29 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
             return list;
           }),
         }));
-        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+        set((state: todo_list) => ({ loadingQueue: state.loadingQueue - 1 }));
       } else {
         throw new Error(error);
       }
     } catch (error: unknown) {
+      let errorMessage = UNKNOWN_ERROR_MESSAGE;
+
       if (error instanceof z.ZodError) {
         const errors = error.errors.map((err) => err.message).join(". ");
-        toast.error(`Error de validación: ${errors}`);
-        return;
+        errorMessage = `Error de validación: ${errors}`;
       }
 
       if (error instanceof Error) {
-        toast.error(error.message);
-        return;
+        errorMessage = error.message;
       }
 
-      toast.error(UNKNOWN_ERROR_MESSAGE);
+      toast.error(errorMessage);
+      console.error(errorMessage);
     }
   },
 
   deleteTask: async (id, category_id) => {
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+    set((state: todo_list) => ({ loadingQueue: state.loadingQueue + 1 }));
 
     try {
       const pickSchema = TaskSchema.pick({
@@ -536,7 +502,7 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
       });
       const validatedData = pickSchema.parse({ id, category_id });
 
-      set((state) => ({
+      set((state: todo_list) => ({
         lists: state.lists.map((list) => {
           if (list.id === validatedData.category_id) {
             return {
@@ -551,28 +517,29 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
       const { error } = await deleteTask(validatedData.id);
 
       if (!error) {
-        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+        set((state: todo_list) => ({ loadingQueue: state.loadingQueue - 1 }));
       } else {
         throw new Error(error);
       }
     } catch (error: unknown) {
+      let errorMessage = UNKNOWN_ERROR_MESSAGE;
+
       if (error instanceof z.ZodError) {
         const errors = error.errors.map((err) => err.message).join(". ");
-        toast.error(`Error de validación: ${errors}`);
-        return;
+        errorMessage = `Error de validación: ${errors}`;
       }
 
       if (error instanceof Error) {
-        toast.error(error.message);
-        return;
+        errorMessage = error.message;
       }
 
-      toast.error(UNKNOWN_ERROR_MESSAGE);
+      toast.error(errorMessage);
+      console.error(errorMessage);
     }
   },
 
   updateTaskCompleted: async (id, category_id, completed) => {
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+    set((state: todo_list) => ({ loadingQueue: state.loadingQueue + 1 }));
 
     try {
       const pickSchema = TaskSchema.pick({
@@ -582,7 +549,7 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
       });
       const validatedData = pickSchema.parse({ id, category_id, completed });
 
-      set((state) => ({
+      set((state: todo_list) => ({
         lists: state.lists.map((list) => {
           if (list.id === validatedData.category_id) {
             return {
@@ -607,23 +574,24 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
         validatedData.completed
       );
       if (!error) {
-        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+        set((state: todo_list) => ({ loadingQueue: state.loadingQueue - 1 }));
       } else {
         throw new Error(error);
       }
     } catch (error: unknown) {
+      let errorMessage = UNKNOWN_ERROR_MESSAGE;
+
       if (error instanceof z.ZodError) {
         const errors = error.errors.map((err) => err.message).join(". ");
-        toast.error(`Error de validación: ${errors}`);
-        return;
+        errorMessage = `Error de validación: ${errors}`;
       }
 
       if (error instanceof Error) {
-        toast.error(error.message);
-        return;
+        errorMessage = error.message;
       }
 
-      toast.error(UNKNOWN_ERROR_MESSAGE);
+      toast.error(errorMessage);
+      console.error(errorMessage);
     }
   },
 
@@ -631,32 +599,34 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
     const { lists } = get();
     const tempLists = lists;
 
-    set((state) => ({
+    set((state: todo_list) => ({
       lists: state.lists.map((list) => ({
         ...list,
         tasks: [],
       })),
     }));
 
-    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
+    set((state: todo_list) => ({ loadingQueue: state.loadingQueue + 1 }));
 
     try {
       const result = await deleteAllTasks();
       if (!result.error) {
-        set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
+        set((state: todo_list) => ({ loadingQueue: state.loadingQueue - 1 }));
       } else {
         throw new Error(result.error);
       }
     } catch (error: unknown) {
+      let errorMessage = UNKNOWN_ERROR_MESSAGE;
+
       if (error instanceof Error) {
-        toast.error(error.message);
+        errorMessage = error.message;
         set(() => ({
           lists: tempLists,
         }));
-        return;
       }
 
-      toast.error(UNKNOWN_ERROR_MESSAGE);
+      toast.error(errorMessage);
+      console.error(errorMessage);
       set(() => ({
         lists: tempLists,
       }));

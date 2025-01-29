@@ -126,7 +126,17 @@ export function ListCard({
     setIsNameChange(false);
     setHover(false);
 
-    updateDataList(list.id, inputName, colorTemp, emoji);
+    const { error } = await updateDataList(
+      list.id,
+      inputName,
+      colorTemp,
+      emoji
+    );
+
+    if (error) {
+      setInputName(list.name);
+      setColorTemp(list.color);
+    }
   };
 
   const handlePin = () => {
