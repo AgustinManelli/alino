@@ -144,19 +144,21 @@ export const deleteList = async (id: string) => {
 };
 
 export const updateDataList = async (
+  id: string,
   name: string,
   color: string,
   shortcodeemoji: string | null
 ) => {
   try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    const { supabase } = await getAuthenticatedSupabaseClient();
 
     const pickSchema = ListSchema.pick({
+      id: true,
       name: true,
       color: true,
       shortcodeemoji: true,
     });
-    const validatedData = pickSchema.parse({ name, color, shortcodeemoji });
+    const validatedData = pickSchema.parse({ id, name, color, shortcodeemoji });
 
     const { data, error } = await supabase
       .from("todos_data")
@@ -165,7 +167,7 @@ export const updateDataList = async (
         color: validatedData.color,
         icon: validatedData.shortcodeemoji,
       })
-      .eq("id", user.id)
+      .eq("id", validatedData.id)
       .select();
 
     if (error) {
