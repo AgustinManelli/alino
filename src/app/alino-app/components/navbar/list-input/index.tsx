@@ -9,6 +9,7 @@ import { ColorPicker } from "@/components/ui/color-picker";
 
 import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
+import { redirect } from "next/navigation";
 
 export function ListInput({
   setIsCreating,
@@ -44,7 +45,7 @@ export function ListInput({
   const portalRef = useRef<HTMLDivElement>(null);
   const [emoji, setEmoji] = useState<string>("");
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     setInput(false);
     setHover(false);
     setIsCreating(false);
@@ -56,7 +57,7 @@ export function ListInput({
     setValue("");
     setEmoji("");
     setColor("#87189d");
-    await insertList(color, value, emoji as string);
+    insertList(color, value, emoji as string);
   };
 
   useEffect(() => {

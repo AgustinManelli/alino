@@ -47,7 +47,7 @@ export function ListCard({
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
 
   //estados globales
-  const { deleteList, updateListName, updateListPinned } = useTodoDataStore();
+  const { deleteList, updateDataList, updatePinnedList } = useTodoDataStore();
   const { isMobile } = usePlatformInfoStore();
 
   //ref's
@@ -87,14 +87,14 @@ export function ListCard({
     setAllowCloseNavbar(false);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     //función para eliminar lista
     setAllowCloseNavbar(true);
     setIsMoreOptions(false);
     if (pathname === `/alino-app/${list.id}`) {
       router.push(`${location.origin}/alino-app`);
     }
-    await deleteList(list.id, list.name);
+    deleteList(list.id);
   };
 
   const handleNameChange = () => {
@@ -125,15 +125,16 @@ export function ListCard({
     setInput(false);
     setIsNameChange(false);
     setHover(false);
-    await updateListName(list.id, inputName, colorTemp, emoji);
+
+    updateDataList(list.id, inputName, colorTemp, emoji);
   };
 
-  const handlePin = async () => {
+  const handlePin = () => {
     setIsMoreOptions(false);
     setHover(false);
     setIsCreating(false);
     setAllowCloseNavbar(true);
-    await updateListPinned(list.id, !list.pinned);
+    updatePinnedList(list.id, !list.pinned);
   };
 
   //useEffect's

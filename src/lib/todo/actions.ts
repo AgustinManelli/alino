@@ -4,6 +4,9 @@ import { createClient } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
 import { z } from "zod";
 
+import { ListSchema } from "../schemas/listValidationSchema";
+import { TaskSchema } from "../schemas/taskValidationSchema";
+
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed.";
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
 
@@ -19,26 +22,10 @@ const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
 
   if (sessionError || !sessionData.session?.user) {
     throw new Error(AUTH_ERROR_MESSAGE);
+  } else {
+    return { supabase, user: sessionData.session.user };
   }
-
-  return { supabase, user: sessionData.session.user };
 };
-
-const ListSchema = z.object({
-  index: z.number().int().min(0),
-  color: z
-    .string()
-    .regex(
-      /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
-      "El color debe ser un código hexadecimal válido o un emoji"
-    ),
-  name: z
-    .string()
-    .min(1, "El nombre no puede estar vacío")
-    .max(25, "El nombre de las listas no pueden tener más de 25 caracteres"),
-  shortcodeemoji: z.string().optional(),
-  tempId: z.string().uuid("ID debe ser un UUID válido"),
-});
 
 export async function getLists() {
   try {
@@ -71,19 +58,27 @@ export const insertList = async (
   color: string,
   name: string,
   shortcodeemoji: string,
-  tempId: string
+  id: string
 ) => {
   try {
-    const validatedData = ListSchema.parse({
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const pickSchema = ListSchema.pick({
+      index: true,
+      color: true,
+      name: true,
+      shortcodeemoji: true,
+      id: true,
+    });
+    const validatedData = pickSchema.parse({
       index,
       color,
       name,
       shortcodeemoji,
-      tempId,
+      id,
     });
     const setColor =
       validatedData.color === "" ? "#87189d" : validatedData.color;
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("todos_data")
@@ -93,7 +88,7 @@ export const insertList = async (
         icon: validatedData.shortcodeemoji,
         name: validatedData.name,
         user_id: user.id,
-        id: validatedData.tempId,
+        id: validatedData.id,
       })
       .select()
       .single();
@@ -122,7 +117,13 @@ export const deleteList = async (id: string) => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
 
-    const { error } = await supabase.from("todos_data").delete().eq("id", id);
+    const pickSchema = ListSchema.pick({ id: true });
+    const validatedData = pickSchema.parse({ id });
+
+    const { error } = await supabase
+      .from("todos_data")
+      .delete()
+      .eq("id", validatedData.id);
 
     if (error) {
       throw new Error(
@@ -130,60 +131,10 @@ export const deleteList = async (id: string) => {
       );
     }
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return { error: error.message };
+    if (error instanceof z.ZodError) {
+      return { error: error.errors[0].message };
     }
 
-    return { error: UNKNOWN_ERROR_MESSAGE };
-  }
-};
-
-export const updateColorList = async (
-  color: string,
-  id: string,
-  shortcodeemoji: string
-) => {
-  try {
-    const { supabase } = await getAuthenticatedSupabaseClient();
-
-    const { data, error } = await supabase
-      .from("todos_data")
-      .update({ color: color, icon: shortcodeemoji })
-      .eq("id", id)
-      .select();
-
-    if (error) {
-      throw new Error("Failed to update the list. Please try again later.");
-    }
-
-    return { data };
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
-
-    return { error: UNKNOWN_ERROR_MESSAGE };
-  }
-};
-
-export const updateIndexList = async (id: string, newIndex: number) => {
-  try {
-    const { supabase } = await getAuthenticatedSupabaseClient();
-
-    const { data, error } = await supabase
-      .from("todos_data")
-      .update({ index: newIndex })
-      .eq("id", id)
-      .select();
-
-    if (error) {
-      throw new Error(
-        "Failed to update the list index. Please try again later."
-      );
-    }
-
-    return { data };
-  } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };
     }
@@ -193,18 +144,28 @@ export const updateIndexList = async (id: string, newIndex: number) => {
 };
 
 export const updateDataList = async (
-  id: string,
-  newName: string,
+  name: string,
   color: string,
-  emoji: string | null
+  shortcodeemoji: string | null
 ) => {
   try {
-    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const pickSchema = ListSchema.pick({
+      name: true,
+      color: true,
+      shortcodeemoji: true,
+    });
+    const validatedData = pickSchema.parse({ name, color, shortcodeemoji });
 
     const { data, error } = await supabase
       .from("todos_data")
-      .update({ name: newName, color: color, icon: emoji })
-      .eq("id", id)
+      .update({
+        name: validatedData.name,
+        color: validatedData.color,
+        icon: validatedData.shortcodeemoji,
+      })
+      .eq("id", user.id)
       .select();
 
     if (error) {
@@ -213,6 +174,10 @@ export const updateDataList = async (
 
     return { data };
   } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors.map((err) => err.message).join(". ") };
+    }
+
     if (error instanceof Error) {
       return { error: error.message };
     }
@@ -224,10 +189,17 @@ export const updateDataList = async (
 export const updatePinnedList = async (id: string, pinned: boolean) => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
+
+    const pickSchema = ListSchema.pick({
+      id: true,
+      pinned: true,
+    });
+    const validatedData = pickSchema.parse({ id, pinned });
+
     const { data, error } = await supabase
       .from("todos_data")
-      .update({ pinned: pinned })
-      .eq("id", id)
+      .update({ pinned: validatedData.pinned })
+      .eq("id", validatedData.id)
       .select();
 
     if (error) {
@@ -236,6 +208,46 @@ export const updatePinnedList = async (id: string, pinned: boolean) => {
 
     return { data };
   } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors[0].message };
+    }
+
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const updateIndexList = async (id: string, index: number) => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+
+    const pickSchema = ListSchema.pick({
+      id: true,
+      index: true,
+    });
+    const validatedData = pickSchema.parse({ id, index });
+
+    const { data, error } = await supabase
+      .from("todos_data")
+      .update({ index: validatedData.index })
+      .eq("id", validatedData.id)
+      .select();
+
+    if (error) {
+      throw new Error(
+        "Failed to update the list index. Please try again later."
+      );
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors.map((err) => err.message).join(". ") };
+    }
+
     if (error instanceof Error) {
       return { error: error.message };
     }
@@ -294,18 +306,25 @@ export const deleteAllLists = async () => {
 export const insertTask = async (
   category_id: string,
   name: string,
-  tempId: string
+  id: string
 ) => {
   try {
+    const pickSchema = TaskSchema.pick({
+      category_id: true,
+      name: true,
+      id: true,
+    });
+    const validatedData = pickSchema.parse({ category_id, name, id });
+
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("tasks")
       .insert({
-        id: tempId,
-        category_id,
+        id: validatedData.id,
+        category_id: validatedData.category_id,
         user_id: user.id,
-        name,
+        name: validatedData.name,
         description: "",
       })
       .select()
@@ -319,6 +338,10 @@ export const insertTask = async (
 
     return { data };
   } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors.map((err) => err.message).join(". ") };
+    }
+
     if (error instanceof Error) {
       return { error: error.message };
     }
