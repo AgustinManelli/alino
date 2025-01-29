@@ -16,6 +16,7 @@ import { MoreConfigs } from "../more-configs";
 
 import { Check, Pin } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
+import { hexColorSchema } from "@/lib/schemas/listValidationSchema";
 
 interface props {
   list: ListsType;
@@ -62,7 +63,13 @@ export function ListCard({
   //funciones
   const handleSetColor = (color: string, typing?: boolean) => {
     setColorTemp(color);
+
     if (typing) return;
+
+    const validation = hexColorSchema.safeParse(color);
+    if (!validation.success) {
+      setColorTemp(list.color);
+    }
     if (inputRef.current !== null) {
       inputRef.current.focus();
     }

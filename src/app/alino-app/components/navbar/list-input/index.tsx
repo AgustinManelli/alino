@@ -10,6 +10,7 @@ import { ColorPicker } from "@/components/ui/color-picker";
 import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
 import { redirect } from "next/navigation";
+import { hexColorSchema } from "@/lib/schemas/listValidationSchema";
 
 export function ListInput({
   setIsCreating,
@@ -24,7 +25,14 @@ export function ListInput({
 
   const handleSetColor = (color: string, typing?: boolean) => {
     setColor(color);
+
     if (typing) return;
+
+    const validation = hexColorSchema.safeParse(color);
+    if (!validation.success) {
+      setColor("#87189d");
+    }
+
     if (input) {
       if (inputRef.current !== null) {
         inputRef.current.focus();
@@ -43,7 +51,7 @@ export function ListInput({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
-  const [emoji, setEmoji] = useState<string>("");
+  const [emoji, setEmoji] = useState<string | null>(null);
 
   const handleSubmit = () => {
     setInput(false);
@@ -54,10 +62,10 @@ export function ListInput({
         inputRef.current.focus();
       }
     }
-    setValue("");
-    setEmoji("");
-    setColor("#87189d");
     insertList(color, value, emoji as string);
+    setValue("");
+    setEmoji(null);
+    setColor("#87189d");
   };
 
   useEffect(() => {
