@@ -22,6 +22,7 @@ import { toast } from "sonner";
 
 import { ListSchema } from "@/lib/schemas/listValidationSchema";
 import { TaskSchema } from "@/lib/schemas/taskValidationSchema";
+import { produce } from "immer";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
@@ -199,9 +200,10 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
               if (list.id === id) {
                 return {
                   ...list,
-                  user_id: data.user_id,
-                  inserted_at: data.inserted_at,
-                  updated_at: data.updated_at,
+                  ...data,
+                  // user_id: data.user_id,
+                  // inserted_at: data.inserted_at,
+                  // updated_at: data.updated_at,
                 };
               }
               return list;
@@ -408,134 +410,123 @@ export const useTodoDataStore = create<todo_list>()((set, get) => ({
   addTask: async (category_id, name) => {
     const id = uuidv4();
 
-    set((state: todo_list) => ({ loadingQueue: state.loadingQueue + 1 }));
-    try {
-      const pickSchema = TaskSchema.pick({
+    const optimisticUpdate = () => {
+      const newTask = {
+        id: uuidv4(),
+        category_id,
+        name,
+        completed: false,
+        index: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user_id: "temp",
+        description: "",
+      };
+
+      set(
+        produce((state) => {
+          const list = state.lists.find(
+            (list: ListsType) => list.id === category_id
+          );
+          if (list) {
+            list.tasks.unshift({ ...newTask });
+          }
+        })
+      );
+    };
+
+    const revert = () => {
+      set(
+        produce((draft: todo_list) => {
+          const targetList = draft.lists.find(
+            (list: ListsType) => list.id === category_id
+          );
+          if (!targetList) return;
+
+          // Filtrar la tarea temporal
+          targetList.tasks = targetList.tasks.filter((task) => task.id !== id);
+        })
+      );
+    };
+
+    await createCRUDHandler(
+      TaskSchema.pick({
+        id: true,
         category_id: true,
         name: true,
-        id: true,
-      });
-      const validatedData = pickSchema.parse({ category_id, name, id });
+      })
+    )
+      .interact(
+        { id, category_id, name },
+        async (validated) => {
+          optimisticUpdate();
+          const { data, error } = await insertTask(
+            validated.category_id,
+            validated.name,
+            validated.id
+          );
 
-      set((state: todo_list) => ({
-        lists: state.lists.map((list) => {
-          if (list.id === category_id) {
-            return {
-              ...list,
-              tasks: [
-                ...list.tasks,
-                {
-                  id: validatedData.id,
-                  category_id: validatedData.category_id,
-                  description: "",
-                  completed: false,
-                  index: 0,
-                  name: name,
-                  created_at: "0",
-                  updated_at: "0",
-                  user_id: "0",
-                },
-              ],
-            };
-          }
-          return list;
-        }),
-      }));
+          if (error) throw new Error(error);
 
-      const { data, error } = await insertTask(
-        validatedData.category_id,
-        validatedData.name,
-        validatedData.id
-      );
-      if (!error) {
-        set((state: todo_list) => ({
-          lists: state.lists.map((list) => {
-            if (list.id === category_id) {
-              return {
-                ...list,
-                tasks: list.tasks.map((task) => {
-                  if (task.id === id) {
-                    // Actualizar la tarea específica
-                    return {
-                      ...task,
-                      index: data.id,
-                      created_at: data.created_at,
-                      updated_at: data.updated_at,
-                      user_id: data.id,
-                    };
-                  }
-                  return task; // Devolver otras tareas sin cambios
-                }),
-              };
-            }
-            return list;
-          }),
-        }));
-        set((state: todo_list) => ({ loadingQueue: state.loadingQueue - 1 }));
-      } else {
-        throw new Error(error);
-      }
-    } catch (error: unknown) {
-      let errorMessage = UNKNOWN_ERROR_MESSAGE;
+          set(
+            produce((draft) => {
+              const targetList = draft.lists.find(
+                (list: ListsType) => list.id === category_id
+              );
+              if (!targetList) return;
 
-      if (error instanceof z.ZodError) {
-        const errors = error.errors.map((err) => err.message).join(". ");
-        errorMessage = `Error de validación: ${errors}`;
-      }
+              const targetTask = targetList.tasks.find(
+                (task: TaskType) => task.id === id
+              );
+              if (!targetTask || !data) return;
 
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      toast.error(errorMessage);
-      console.error(errorMessage);
-    }
+              Object.assign(targetTask, {
+                index: data.index ?? targetTask.index,
+                created_at: data.created_at,
+                updated_at: data.updated_at,
+                user_id: data.user_id ?? targetTask.user_id,
+              });
+            })
+          );
+        },
+        set
+      )
+      .catch((error) => handleError(error, revert));
   },
 
   deleteTask: async (id, category_id) => {
-    set((state: todo_list) => ({ loadingQueue: state.loadingQueue + 1 }));
+    const originalLists = [...get().lists];
 
-    try {
-      const pickSchema = TaskSchema.pick({
+    await createCRUDHandler(
+      TaskSchema.pick({
         id: true,
         category_id: true,
-      });
-      const validatedData = pickSchema.parse({ id, category_id });
+      })
+    )
+      .interact(
+        { id, category_id },
+        async (validated) => {
+          set((state: todo_list) => ({
+            lists: state.lists.map((list) => {
+              if (list.id === validated.category_id) {
+                return {
+                  ...list,
+                  tasks: list.tasks.filter((task) => task.id !== id),
+                };
+              }
+              return list;
+            }),
+          }));
 
-      set((state: todo_list) => ({
-        lists: state.lists.map((list) => {
-          if (list.id === validatedData.category_id) {
-            return {
-              ...list,
-              tasks: list.tasks.filter((task) => task.id !== id),
-            };
-          }
-          return list;
-        }),
-      }));
+          const { error } = await deleteTask(validated.id);
 
-      const { error } = await deleteTask(validatedData.id);
-
-      if (!error) {
-        set((state: todo_list) => ({ loadingQueue: state.loadingQueue - 1 }));
-      } else {
-        throw new Error(error);
-      }
-    } catch (error: unknown) {
-      let errorMessage = UNKNOWN_ERROR_MESSAGE;
-
-      if (error instanceof z.ZodError) {
-        const errors = error.errors.map((err) => err.message).join(". ");
-        errorMessage = `Error de validación: ${errors}`;
-      }
-
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      toast.error(errorMessage);
-      console.error(errorMessage);
-    }
+          if (error) throw new Error(error);
+        },
+        set
+      )
+      .catch((error) =>
+        handleError(error, () => set({ lists: originalLists }))
+      );
   },
 
   updateTaskCompleted: async (id, category_id, completed) => {

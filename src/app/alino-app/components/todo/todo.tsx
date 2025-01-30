@@ -23,7 +23,7 @@ export default function Todo({ params }: { params: { list: string } }) {
         <section className={styles.todoContainer}>
           <div className={styles.titleContainer}>
             {setList ? (
-              setList?.icon !== "" ? (
+              setList.icon !== null || setList.icon === "" ? (
                 <div
                   style={{
                     width: "20px",
