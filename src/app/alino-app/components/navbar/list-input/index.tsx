@@ -6,11 +6,10 @@ import { motion } from "motion/react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 
 import { ColorPicker } from "@/components/ui/color-picker";
+import { hexColorSchema } from "@/lib/schemas/validationSchemas";
 
 import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
-import { redirect } from "next/navigation";
-import { hexColorSchema } from "@/lib/schemas/listValidationSchema";
 
 export function ListInput({
   setIsCreating,
@@ -40,7 +39,7 @@ export function ListInput({
     }
   };
 
-  const handleSetEmoji = (emoji: string) => {
+  const handleSetEmoji = (emoji: string | null) => {
     setEmoji(emoji);
     if (inputRef.current !== null) {
       inputRef.current.focus();

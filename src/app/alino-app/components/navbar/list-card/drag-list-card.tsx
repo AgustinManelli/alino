@@ -37,7 +37,7 @@ export function DragListCard({ list }: { list: ListsType }) {
           }}
         ></div>
         <div className={styles.identifierContainer}>
-          {list?.icon !== "" ? (
+          {list.icon !== null || list.icon === "" ? (
             <div
               style={{
                 width: "16px",

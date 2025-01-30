@@ -4,10 +4,9 @@ import { createClient } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
 import { z } from "zod";
 
-import { ListSchema } from "../schemas/listValidationSchema";
-import { TaskSchema } from "../schemas/taskValidationSchema";
+import { ListSchema, TaskSchema } from "@/lib/schemas/validationSchemas";
 
-const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed.";
+const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
 
 interface AuthClient {
@@ -35,7 +34,10 @@ export async function getLists() {
       .from("todos_data")
       .select("*, tasks: tasks(*)")
       .eq("user_id", user.id)
-      .order("index", { ascending: true });
+      .order("index", { ascending: true })
+      .limit(20)
+      .order("created_at", { ascending: true, referencedTable: "tasks" })
+      .limit(50, { referencedTable: "tasks" });
 
     if (error)
       throw new Error(

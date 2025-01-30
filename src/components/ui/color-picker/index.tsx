@@ -16,7 +16,7 @@ import {
   SquircleIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./ColorPicker.module.css";
-import { hexColorSchema } from "@/lib/schemas/listValidationSchema";
+import { hexColorSchema } from "@/lib/schemas/validationSchemas";
 
 interface ColorPickerInterface {
   portalRef: React.RefObject<HTMLDivElement>;
@@ -25,7 +25,7 @@ interface ColorPickerInterface {
   color: string;
   setColor: (value: string, typing?: boolean) => void;
   emoji: string | null;
-  setEmoji: (value: string) => void;
+  setEmoji: (value: string | null) => void;
   active?: boolean;
 }
 
@@ -404,7 +404,7 @@ interface SquircleColorButonType {
   colorHex: string;
   setIsOpenPicker: (value: boolean) => void;
   index: number;
-  setEmoji: (value: string) => void;
+  setEmoji: (value: string | null) => void;
 }
 
 function SquircleColorSelector({
@@ -424,7 +424,7 @@ function SquircleColorSelector({
           e.preventDefault();
           e.stopPropagation();
           setColor(colorHex);
-          setEmoji("");
+          setEmoji(null);
           setIsOpenPicker(false);
         }}
         key={index}
