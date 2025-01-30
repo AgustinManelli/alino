@@ -71,7 +71,7 @@ export type Database = {
           icon: string | null;
           id: string;
           index: number | null;
-          inserted_at: string;
+          created_at: string;
           name: string;
           pinned: boolean;
           tasks: Database["public"]["Tables"]["tasks"]["Row"][];
@@ -83,7 +83,7 @@ export type Database = {
           icon?: string | null;
           id?: string;
           index?: number | null;
-          inserted_at?: string;
+          created_at?: string;
           name: string;
           pinned?: boolean;
           tasks?: Database["public"]["Tables"]["tasks"]["Row"][];
@@ -95,7 +95,7 @@ export type Database = {
           icon?: string | null;
           id?: string;
           index?: number | null;
-          inserted_at?: string;
+          created_at?: string;
           name?: string;
           pinned?: boolean;
           tasks?: Database["public"]["Tables"]["tasks"]["Row"][];

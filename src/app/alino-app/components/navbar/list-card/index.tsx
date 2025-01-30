@@ -16,7 +16,7 @@ import { MoreConfigs } from "../more-configs";
 
 import { Check, Pin } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
-import { hexColorSchema } from "@/lib/schemas/listValidationSchema";
+import { hexColorSchema } from "@/lib/schemas/validationSchemas";
 
 interface props {
   list: ListsType;
@@ -75,7 +75,7 @@ export function ListCard({
     }
   };
 
-  const handleSetEmoji = (emoji: string) => {
+  const handleSetEmoji = (emoji: string | null) => {
     setEmoji(emoji);
     if (inputRef.current !== null) {
       inputRef.current.focus();
