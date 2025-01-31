@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
 import { LoadingIcon } from "@/components/ui/icons/icons";
-import styles from "../login.module.css";
+import styles from "./OauthButton.module.css";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 

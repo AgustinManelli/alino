@@ -1,20 +1,21 @@
-import { redirect } from "next/navigation";
-
 import { AlinoLogo, HomeIcon } from "@/components/ui/icons/icons";
-import { getUser } from "@/lib/auth/actions";
 
 import { ButtonLink } from "@/components/ui/button-link";
 
 import pattern from "../../../public/pattern.svg";
 import styles from "./auth.module.css";
+import { redirect } from "next/navigation";
+import { getUser } from "@/lib/auth/actions";
+import { headers } from "next/headers";
 
 export default async function authLayout({
   children,
 }: {
   children?: React.ReactNode;
 }) {
-  const result = await getUser();
-  if (!result.error) {
+  const { error } = await getUser();
+
+  if (!error) {
     return redirect("/alino-app");
   }
 

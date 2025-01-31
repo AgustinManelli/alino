@@ -1,4 +1,4 @@
-import { RegisterForm } from "./register-form";
+import { SignUpForm } from "./register-form";
 
 export function generateMetadata() {
   return {
@@ -6,6 +6,6 @@ export function generateMetadata() {
   };
 }
 
-export default function SignUpPage() {
-  return <RegisterForm />;
+export default async function SignUpPage() {
+  return <SignUpForm />;
 }
