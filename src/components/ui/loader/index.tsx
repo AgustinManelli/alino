@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useLoaderStore } from "@/store/useLoaderStore";
 
@@ -8,7 +8,9 @@ import { LoadingIcon } from "@/components/ui/icons/icons";
 import styles from "./loader.module.css";
 
 export function Loader() {
-  const { loading } = useLoaderStore();
+  const { isLoading } = useLoaderStore();
+  const [mounted, setMounted] = useState(false);
+  const initialized = useRef(false);
 
   const texts = [
     "Alino viene de la unión de las palabras All in One",
@@ -24,19 +26,29 @@ export function Loader() {
     "Tu feedback es importante, ayúdanos a mejorar Alino",
     "Alino soporta múltiples dispositivos",
   ];
-  const [currentIndex, setCurrentIndex] = useState(() =>
-    Math.floor(Math.random() * texts.length)
-  );
+
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
+    if (!initialized.current) {
+      // Inicialización solo en cliente
+      setCurrentIndex(Math.floor(Math.random() * texts.length));
+      initialized.current = true;
+      setMounted(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % texts.length);
+      setCurrentIndex((prev) => (prev + 1) % texts.length);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [texts.length]);
+  }, [mounted]);
 
-  if (!loading) return null;
+  if (!mounted || !isLoading) return null;
 
   return (
     <div className={styles.overlay}>

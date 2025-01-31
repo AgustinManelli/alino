@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 
-import { useLoaderStore } from "@/store/useLoaderStore";
 import { signOutLocal } from "@/lib/auth/actions";
 
 import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
@@ -13,6 +12,7 @@ import { CloudIndicator } from "./cloud-indicator";
 import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
 import { AnimatePresence } from "motion/react";
+import { useNavigation } from "@/components/client-wrapper";
 
 interface props {
   userAvatarUrl: string;
@@ -22,14 +22,13 @@ interface props {
 export function ConfigSection({ userAvatarUrl, name }: props) {
   const [active, setActive] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
+  const { setLoading } = useNavigation();
 
   const iconRef = useRef<HTMLDivElement>(null);
 
-  const { setLoading } = useLoaderStore();
-
   const logout = () => {
-    setLoading(true);
     signOutLocal();
+    setLoading(true);
   };
 
   const handleClose = () => {

@@ -37,7 +37,7 @@ export default async function AuthLayout({
               style={{
                 strokeWidth: "2",
                 stroke: "#1c1c1c",
-                width: "25px",
+                width: "100%",
                 height: "auto",
                 fill: "none",
               }}
