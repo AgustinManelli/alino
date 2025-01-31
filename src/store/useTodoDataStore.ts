@@ -36,25 +36,29 @@ type TodoStore = {
   loadingQueue: number;
   setLists: (list: ListsType[]) => Promise<void>;
   getLists: () => Promise<void>;
-  insertList: (color: string, name: string, shortcodeemoji: string) => void;
-  deleteList: (id: string) => void;
+  insertList: (
+    color: string,
+    name: string,
+    shortcodeemoji: string
+  ) => Promise<void>;
+  deleteList: (id: string) => Promise<void>;
   updateDataList: (
     id: string,
     newName: string,
     color: string,
     emoji: string | null
   ) => Promise<{ error: string | null }>;
-  deleteAllLists: () => void;
-  addTask: (category_id: string, task: string) => void;
-  deleteTask: (id: string, category_id: string) => void;
+  deleteAllLists: () => Promise<void>;
+  addTask: (category_id: string, task: string) => Promise<void>;
+  deleteTask: (id: string, category_id: string) => Promise<void>;
   updateTaskCompleted: (
     id: string,
     category_id: string,
     completed: boolean
-  ) => void;
-  updatePinnedList: (id: string, pinned: boolean) => void;
-  updateIndexList: (id: string, index: number) => void;
-  deleteAllTasks: () => void;
+  ) => Promise<void>;
+  updatePinnedList: (id: string, pinned: boolean) => Promise<void>;
+  updateIndexList: (id: string, index: number) => Promise<void>;
+  deleteAllTasks: () => Promise<void>;
 };
 
 const createCRUDHandler = <T>(schema?: z.ZodSchema<T>) => ({

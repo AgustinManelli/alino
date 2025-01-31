@@ -1,8 +1,6 @@
 "use client";
 
 import { useTransition } from "react";
-import Link from "next/link";
-import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -11,7 +9,7 @@ import { toast } from "sonner";
 import { resetUserSchema, ResetUserInput } from "@/lib/schemas/user-schema";
 import { resetPassword } from "@/lib/auth/actions";
 
-import styles from "../sign-in/login.module.css";
+import { AuthForm } from "../components/auth-form";
 
 export function ForgotPasswordForm() {
   const [isPending, startTransition] = useTransition();
@@ -40,6 +38,8 @@ export function ForgotPasswordForm() {
         );
       }
 
+      reset({ email: "" });
+
       toast.success(
         "Si su cuenta le pertenece, verifique su casilla de correo para recuperar su contraseña"
       );
@@ -49,50 +49,19 @@ export function ForgotPasswordForm() {
   };
 
   return (
-    <motion.div
-      transition={{ duration: 1 }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className={styles.form}
-    >
-      <div>
-        <h2 className={styles.title}>Recupera tu cuenta</h2>
-        <p className={styles.paraph}>
-          Introduce tu correo electrónico para recuperar tu cuenta.
-        </p>
-      </div>
-      <form className={styles.inputs} onSubmit={handleSubmit(onSubmitHandler)}>
-        <div className={styles.inputContainer}>
-          {errors["email"] && (
-            <motion.p
-              className={styles.errorMsg}
-              transition={{ duration: 0.2 }}
-              initial={{ opacity: 0, height: "0px" }}
-              animate={{ opacity: 1, height: "initial" }}
-              exit={{ opacity: 0, height: "0px" }}
-            >
-              {errors["email"]?.message as string}
-            </motion.p>
-          )}
-          <input
-            id="email"
-            type="email"
-            placeholder="email"
-            className={styles.input}
-            {...register("email")}
-            required
-          />
-        </div>
-        <button className={styles.buttom} type="submit" disabled={isPending}>
-          Recuperar
-        </button>
-      </form>
-      <div className={styles.moreInfo}>
-        <Link className={styles.textButton} href="/sign-in">
-          ¿Te acuerdas tu contraseña? inicia sesión
-        </Link>
-      </div>
-    </motion.div>
+    <AuthForm
+      title="Recupera tu cuenta"
+      description="Introduce tu correo electrónico para recuperar tu cuenta"
+      fields={[{ name: "email", type: "email", placeholder: "Email" }]}
+      onSubmit={handleSubmit(onSubmitHandler)}
+      register={register}
+      errors={errors}
+      isPending={isPending}
+      submitButtonText={isPending ? "Recuperando..." : "Recuperar cuenta"}
+      showOAuth={false}
+      footerLinks={[
+        { text: "¿Recuerdas tu contraseña? inicia sesión", href: "/sign-in" },
+      ]}
+    />
   );
 }

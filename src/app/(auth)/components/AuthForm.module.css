@@ -1,42 +1,46 @@
-.form {
+.authFormContainer {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
-.inputs {
-  position: relative;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: end;
-  gap: 15px;
+
+.authFormHeader {
+  text-align: left;
 }
 
-.title {
+.authFormTitle {
   color: #1c1c1c;
-  font-size: 30px;
+  font-size: 28px;
+  margin-bottom: 8px;
 }
 
-.paraph {
+.authFormDescription {
   color: #1c1c1c;
   font-size: 16px;
 }
 
-.inputDiv {
+.authForm {
   position: relative;
-  width: 100%;
-}
-
-.inputContainer {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.input {
+.authFormFields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.authFormFieldGroup {
   position: relative;
+  width: 100%;
+}
+
+.authFormInput {
   width: 100%;
   height: 50px;
   border: none;
@@ -47,11 +51,11 @@
   font-size: 14px;
 }
 
-.input:focus {
+.authFormInput:focus {
   outline: none;
 }
 
-.buttom {
+.authFormButton {
   cursor: pointer;
   width: 100%;
   height: 50px;
@@ -65,20 +69,19 @@
   gap: 5px;
 }
 
-.buttom p {
+.authFormButton span {
   font-size: 16px;
   font-weight: 500;
 }
 
-.moreInfo {
-  position: relative;
+.authFormFooter {
   display: flex;
   flex-direction: column;
   align-items: start;
   gap: 5px;
 }
 
-.textButton {
+.authFormFooterLink {
   cursor: pointer;
   border: none;
   background: none;
@@ -86,42 +89,25 @@
   font-size: 16px;
 }
 
-.textButton:hover {
+.authFormFooterLink:hover {
   color: #87189d;
 }
 
-.errorMsg {
+.authFormErrorMessage {
   color: red;
   font-size: 14px;
-  width: fit-content;
   padding-left: 20px;
-  z-index: 10;
   margin-bottom: 5px;
 }
 
-.buttonsContainer {
+.authFormActions {
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
   gap: 10px;
 }
 
-.LoginOauth {
-  cursor: pointer;
-  width: 100%;
-  height: 50px;
-  border: none;
-  font-weight: 600;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-}
-
-.oauthButtonContainer {
+.authFormOAuthButtons {
   width: 100%;
   display: flex;
   gap: 15px;
