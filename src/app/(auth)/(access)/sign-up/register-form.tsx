@@ -9,7 +9,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { CreateUserInput, createUserSchema } from "@/lib/schemas/user-schema";
 import { signUpWithEmailAndPassword } from "@/lib/auth/actions";
 
-import { AuthForm } from "../components/auth-form";
+import { AuthForm } from "../../components/auth-form";
 
 export function SignUpForm() {
   const [isPending, startTransition] = useTransition();

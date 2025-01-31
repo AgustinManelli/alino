@@ -10,7 +10,7 @@ import { useLoaderStore } from "@/store/useLoaderStore";
 import { LoginUserInput, loginUserSchema } from "@/lib/schemas/user-schema";
 import { signInWithEmailAndPassword } from "@/lib/auth/actions";
 
-import { AuthForm } from "../components/auth-form";
+import { AuthForm } from "../../components/auth-form";
 
 export function LoginForm() {
   const [isPending, startTransition] = useTransition();

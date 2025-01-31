@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AuthForm } from "../components/auth-form";
+import { AuthForm } from "../../components/auth-form";
 
 export const ResetForm = () => {
   const [isPending, startTransition] = useTransition();

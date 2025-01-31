@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { resetUserSchema, ResetUserInput } from "@/lib/schemas/user-schema";
 import { resetPassword } from "@/lib/auth/actions";
 
-import { AuthForm } from "../components/auth-form";
+import { AuthForm } from "../../components/auth-form";
 
 export function ForgotPasswordForm() {
   const [isPending, startTransition] = useTransition();
