@@ -1,22 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
-import { motion } from "motion/react";
-
-import { useLoaderStore } from "@/store/useLoaderStore";
-
 import { ButtonLink } from "@/components/ui/button-link";
 
 import styles from "./header.module.css";
 
 export function Header() {
-  const { setLoading } = useLoaderStore();
-
-  useEffect(() => {
-    document.body.style.overflow = "";
-    setLoading(false);
-  }, [setLoading]);
-
   return (
     <div className={styles.container}>
       <div className={styles.content}>
@@ -36,8 +24,8 @@ export function Header() {
               letterColor="#fff"
               to="sign-in"
               strokeBorder={true}
-              withLoader={true}
               aria-label="Prueba Alino"
+              withLoader={true}
             />
           </div>
         </section>

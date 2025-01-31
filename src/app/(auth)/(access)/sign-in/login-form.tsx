@@ -1,30 +1,25 @@
 "use client";
 
-import { useEffect, useTransition } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { useLoaderStore } from "@/store/useLoaderStore";
 import { LoginUserInput, loginUserSchema } from "@/lib/schemas/user-schema";
 import { signInWithEmailAndPassword } from "@/lib/auth/actions";
 
 import { AuthForm } from "../../components/auth-form";
+import { useNavigation } from "@/components/client-wrapper";
 
 export function LoginForm() {
   const [isPending, startTransition] = useTransition();
+  const { setLoading } = useNavigation();
   const router = useRouter();
 
   const methods = useForm<LoginUserInput>({
     resolver: zodResolver(loginUserSchema),
   });
-
-  const { setLoading } = useLoaderStore();
-
-  useEffect(() => {
-    setLoading(false);
-  }, []);
 
   const {
     reset,
@@ -33,7 +28,7 @@ export function LoginForm() {
     formState: { errors },
   } = methods;
 
-  const onSubmitHandler: SubmitHandler<LoginUserInput> = async (values) => {
+  const onSubmitHandler: SubmitHandler<LoginUserInput> = (values) => {
     startTransition(async () => {
       const result = await signInWithEmailAndPassword(values);
 
@@ -54,8 +49,8 @@ export function LoginForm() {
 
         toast.success(message);
       }
-
       router.push("/alino-app");
+      setLoading(true);
     });
   };
 

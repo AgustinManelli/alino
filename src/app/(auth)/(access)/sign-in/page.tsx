@@ -6,6 +6,6 @@ export function generateMetadata() {
   };
 }
 
-export default async function LoginPage() {
+export default function LoginPage() {
   return <LoginForm />;
 }

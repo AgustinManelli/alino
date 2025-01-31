@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/icons/icons";
 
 import styles from "./AuthForm.module.css";
+import { useNavigation } from "@/components/client-wrapper";
 
 interface AuthFormProps {
   title: string;
@@ -41,6 +42,8 @@ export function AuthForm({
   showOAuth = false,
   footerLinks,
 }: AuthFormProps) {
+  const { setLoading } = useNavigation();
+
   return (
     <motion.article
       transition={{ duration: 1 }}

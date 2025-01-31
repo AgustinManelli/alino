@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useLoaderStore } from "@/store/useLoaderStore";
 
 import styles from "./ButtonLink.module.css";
+import { useNavigation } from "@/components/client-wrapper";
 
 interface props {
   text?: string;
@@ -32,10 +33,10 @@ export function ButtonLink({
 }: props) {
   const [isHover, setIsHover] = useState<boolean>(false);
 
-  const { setLoading } = useLoaderStore();
+  const { setLoading } = useNavigation();
 
   const loaderFunctions = () => {
-    document.body.style.overflow = "hidden";
+    // document.body.style.overflow = "hidden";
     setLoading(true);
   };
 
@@ -71,9 +72,9 @@ export function ButtonLink({
       }}
       onClick={withLoader ? loaderFunctions : () => {}}
     >
-      <div className={styles.container}>
-        {children}
-        {text}
+      <div className={styles.container} style={{ gap: text ? "7px" : 0 }}>
+        {children && <div className={styles.iconContainer}>{children}</div>}
+        <p>{text}</p>
       </div>
     </Link>
   );

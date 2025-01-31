@@ -18,3 +18,14 @@
   justify-content: center;
   gap: 7px;
 }
+
+.container p {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.iconContainer {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}

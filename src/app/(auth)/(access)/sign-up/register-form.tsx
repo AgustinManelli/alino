@@ -28,7 +28,6 @@ export function SignUpForm() {
   } = methods;
 
   const onSubmitHandler: SubmitHandler<CreateUserInput> = (values) => {
-    console.error("fuiste");
     startTransition(async () => {
       const result = await signUpWithEmailAndPassword({
         dataInput: values,
