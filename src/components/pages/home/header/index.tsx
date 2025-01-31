@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { motion } from "motion/react";
 
 import { useLoaderStore } from "@/store/useLoaderStore";
 

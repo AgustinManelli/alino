@@ -1,14 +1,13 @@
-import { AlinoLogo, HomeIcon } from "@/components/ui/icons/icons";
+import { redirect } from "next/navigation";
 
+import { getUser } from "@/lib/auth/actions";
 import { ButtonLink } from "@/components/ui/button-link";
 
-import pattern from "../../../public/pattern.svg";
+import pattern from "../../../../public/pattern.svg";
+import { AlinoLogo, HomeIcon } from "@/components/ui/icons/icons";
 import styles from "./auth.module.css";
-import { redirect } from "next/navigation";
-import { getUser } from "@/lib/auth/actions";
-import { headers } from "next/headers";
 
-export default async function authLayout({
+export default async function AuthLayout({
   children,
 }: {
   children?: React.ReactNode;
@@ -21,16 +20,13 @@ export default async function authLayout({
 
   return (
     <main
-      className={styles.main}
+      className={styles.layout}
       style={{
         backgroundImage: `url(${pattern.src})`,
-        backgroundRepeat: "repeat",
-        backgroundPosition: "top left",
-        backgroundSize: "200px",
       }}
     >
-      <section className={styles.container}>
-        <div className={styles.backButton}>
+      <section className={styles.contentContainer}>
+        <div className={styles.backLinkContainer}>
           <ButtonLink
             background="rgb(240, 240, 240)"
             hover="rgb(230, 230, 230)"
@@ -48,8 +44,8 @@ export default async function authLayout({
             />
           </ButtonLink>
         </div>
-        <AlinoLogo style={{ height: "50px" }} />
-        <div className={styles.form}>{children}</div>
+        <AlinoLogo style={{ height: "50px", minHeight: "50px" }} />
+        <div className={styles.authForm}>{children}</div>
       </section>
     </main>
   );

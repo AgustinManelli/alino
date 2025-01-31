@@ -6,7 +6,7 @@ import { Cards } from "@/components/pages/home/cards";
 
 export default function Home() {
   return (
-    <main style={{ overflow: "hidden" }}>
+    <main style={{ overflow: "hidden", position: "relative" }}>
       <Navbar />
       <Header />
       <Cards />
