@@ -89,14 +89,14 @@ export function DragListCard({ list }: { list: ListsType }) {
         {isMobile ? (
           <>
             <div className={styles.configsContainer}>
-              <p className={styles.counterMobile}>{list.tasks?.length}</p>
-            </div>
-            <div className={styles.configsContainer}>
               <div className={styles.configButtonContainerMobile}>
                 <MoreVertical
                   style={{ stroke: "#1c1c1c", width: "20px", strokeWidth: "3" }}
                 />
               </div>
+            </div>
+            <div className={styles.configsContainer}>
+              <p className={styles.counterMobile}>{list.tasks?.length}</p>
             </div>
           </>
         ) : (

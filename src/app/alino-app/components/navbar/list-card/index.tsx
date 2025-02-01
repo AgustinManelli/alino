@@ -375,11 +375,6 @@ export function ListCard({
             ) : isMobile ? (
               <>
                 <div className={styles.configsContainer}>
-                  <p className={styles.counterMobile}>
-                    <CounterAnimation tasksLength={list.tasks?.length} />
-                  </p>
-                </div>
-                <div className={styles.configsContainer}>
                   <div className={styles.configButtonContainerMobile}>
                     <MoreConfigs
                       iconWidth={"23px"}
@@ -391,6 +386,11 @@ export function ListCard({
                       pinned={list.pinned}
                     />
                   </div>
+                </div>
+                <div className={styles.configsContainer}>
+                  <p className={styles.counterMobile}>
+                    <CounterAnimation tasksLength={list.tasks?.length} />
+                  </p>
                 </div>
               </>
             ) : (
