@@ -3,10 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 
-import { useLoaderStore } from "@/store/useLoaderStore";
-
 import styles from "./ButtonLink.module.css";
-import { useNavigation } from "@/components/client-wrapper";
+import { useNavigationLoader } from "@/hooks/useNavigationLoader";
 
 interface props {
   text?: string;
@@ -33,10 +31,9 @@ export function ButtonLink({
 }: props) {
   const [isHover, setIsHover] = useState<boolean>(false);
 
-  const { setLoading } = useNavigation();
+  const { setLoading } = useNavigationLoader();
 
   const loaderFunctions = () => {
-    // document.body.style.overflow = "hidden";
     setLoading(true);
   };
 

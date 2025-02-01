@@ -10,11 +10,11 @@ import { LoginUserInput, loginUserSchema } from "@/lib/schemas/user-schema";
 import { signInWithEmailAndPassword } from "@/lib/auth/actions";
 
 import { AuthForm } from "../../components/auth-form";
-import { useNavigation } from "@/components/client-wrapper";
+import { useNavigationLoader } from "@/hooks/useNavigationLoader";
 
 export function LoginForm() {
   const [isPending, startTransition] = useTransition();
-  const { setLoading } = useNavigation();
+  const { setLoading } = useNavigationLoader();
   const router = useRouter();
 
   const methods = useForm<LoginUserInput>({

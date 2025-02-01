@@ -30,58 +30,65 @@ export function HomeCard({
   }, []);
 
   return (
-    <div>
-      <Link
-        className={styles.container}
-        onMouseEnter={!isMobile ? () => setHover(true) : undefined}
-        onMouseLeave={() => {
-          if (!isMobile) setHover(false);
-        }}
+    <Link
+      className={styles.container}
+      onMouseEnter={!isMobile ? () => setHover(true) : undefined}
+      onMouseLeave={() => {
+        if (!isMobile) setHover(false);
+      }}
+      style={{
+        backgroundColor:
+          hover || pathname === `/alino-app`
+            ? "rgb(250, 250, 250)"
+            : "transparent",
+        pointerEvents: "auto",
+      }}
+      href={`/alino-app`}
+      onClick={() => {
+        handleCloseNavbar();
+      }}
+    >
+      <div
+        className={styles.cardFx}
         style={{
-          backgroundColor:
+          boxShadow:
             hover || pathname === `/alino-app`
-              ? "rgb(250, 250, 250)"
-              : "transparent",
-          pointerEvents: "auto",
+              ? `rgb(106, 195, 255) 100px 50px 50px`
+              : `initial`,
         }}
-        href={`/alino-app`}
-        onClick={() => {
-          handleCloseNavbar();
-        }}
-      >
-        <div
-          className={styles.cardFx}
+      ></div>
+
+      <div className={styles.colorPickerContainer} style={{ minWidth: "16px" }}>
+        <HomeIcon2
           style={{
-            boxShadow:
-              hover || pathname === `/alino-app`
-                ? `rgb(106, 195, 255) 100px 50px 50px`
-                : `initial`,
+            stroke: "#000",
+            width: "12px",
+            height: "auto",
+            strokeWidth: "2.5",
           }}
-        ></div>
-        <div
+        />
+      </div>
+
+      {/* IMPLEMENTAR INPUT PARA CAMBIAR DE NOMBRE CON SU RESPECTIVO BOTÓN */}
+      <div className={styles.textContainer}>
+        <p
+          className={styles.listName}
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            width: "16px",
-            minWidth: "16px",
+            color: "#1c1c1c",
           }}
         >
-          <HomeIcon2
-            style={{
-              stroke: "#000",
-              width: "12px",
-              height: "auto",
-              strokeWidth: "2.5",
-            }}
-          />
-        </div>
-        <p className={styles.listName}>home</p>
-        <p className={styles.counter}>
-          <CounterAnimation tasksLength={allTasks.length} />
+          home
         </p>
-      </Link>
-    </div>
+      </div>
+
+      <div className={styles.listManagerContainer}>
+        <div className={styles.configsContainer}>
+          <p className={styles.counter}>
+            <CounterAnimation tasksLength={allTasks.length} />
+          </p>
+        </div>
+      </div>
+    </Link>
   );
 }
 

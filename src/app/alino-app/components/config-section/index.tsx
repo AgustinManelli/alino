@@ -12,7 +12,7 @@ import { CloudIndicator } from "./cloud-indicator";
 import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
 import { AnimatePresence } from "motion/react";
-import { useNavigation } from "@/components/client-wrapper";
+import { useNavigationLoader } from "@/hooks/useNavigationLoader";
 
 interface props {
   userAvatarUrl: string;
@@ -22,7 +22,7 @@ interface props {
 export function ConfigSection({ userAvatarUrl, name }: props) {
   const [active, setActive] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
-  const { setLoading } = useNavigation();
+  const { setLoading } = useNavigationLoader();
 
   const iconRef = useRef<HTMLDivElement>(null);
 
