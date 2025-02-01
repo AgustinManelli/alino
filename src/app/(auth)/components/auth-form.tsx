@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/icons/icons";
 
 import styles from "./AuthForm.module.css";
-import { useNavigation } from "@/components/client-wrapper";
+import { useState } from "react";
 
 interface AuthFormProps {
   title: string;
@@ -42,8 +42,7 @@ export function AuthForm({
   showOAuth = false,
   footerLinks,
 }: AuthFormProps) {
-  const { setLoading } = useNavigation();
-
+  const [oauthPending, setOauthPending] = useState<boolean>(false);
   return (
     <motion.article
       transition={{ duration: 1 }}
@@ -80,7 +79,7 @@ export function AuthForm({
                 className={styles.authFormInput}
                 {...register(field.name)}
                 required={field.required ?? true}
-                disabled={isPending}
+                disabled={isPending || oauthPending}
               />
             </div>
           ))}
@@ -90,7 +89,7 @@ export function AuthForm({
           <button
             className={styles.authFormButton}
             type="submit"
-            disabled={isPending}
+            disabled={isPending || oauthPending}
           >
             {isPending && (
               <LoadingIcon
@@ -112,6 +111,9 @@ export function AuthForm({
                 providerType="github"
                 style={{ backgroundColor: "#1c1c1c", color: "#fff" }}
                 loadColor="#ffffff"
+                disabled={isPending}
+                oauthPending={oauthPending}
+                setOauthPending={setOauthPending}
               >
                 <GithubIcon style={{ width: "25px" }} />
               </OauthButton>
@@ -120,6 +122,9 @@ export function AuthForm({
                 providerType="google"
                 style={{ backgroundColor: "#fff", color: "#1c1c1c" }}
                 loadColor="#1c1c1c"
+                disabled={isPending}
+                oauthPending={oauthPending}
+                setOauthPending={setOauthPending}
               >
                 <GoogleIcon style={{ width: "25px" }} />
               </OauthButton>

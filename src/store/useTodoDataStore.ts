@@ -256,7 +256,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       })
     )
       .interact(
-        { id, name: name, color, shortcodeemoji: shortcodeemoji },
+        { id, name: name, color, shortcodeemoji },
         {
           optimisticUpdate: (draft) => {
             draft.lists = draft.lists.map((list) =>

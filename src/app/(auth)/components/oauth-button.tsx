@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
 import { LoadingIcon } from "@/components/ui/icons/icons";
@@ -10,11 +10,14 @@ import { toast } from "sonner";
 
 interface props {
   providerName: string;
-  providerType: any;
-  children?: string | JSX.Element | JSX.Element[] | null;
+  providerType: "google" | "github";
+  children?: React.ReactNode;
   style?: React.CSSProperties;
-  text?: boolean | null;
-  loadColor: string;
+  text?: boolean;
+  loadColor?: string;
+  disabled?: boolean;
+  oauthPending: boolean;
+  setOauthPending: (value: boolean) => void;
 }
 
 export function OauthButton({
@@ -22,8 +25,11 @@ export function OauthButton({
   providerType,
   children,
   style,
-  text,
-  loadColor,
+  text = false,
+  loadColor = "#1c1c1c",
+  disabled = false,
+  oauthPending,
+  setOauthPending,
 }: props) {
   const [isPending, setIsPending] = useState<boolean>(false);
 
@@ -36,17 +42,30 @@ export function OauthButton({
     const channel = new BroadcastChannel("popup-channel");
     channel.addEventListener("message", getDataFromPopup);
 
+    const checkPopupClosed = setInterval(() => {
+      if (popup.closed) {
+        setPopup(null);
+        setIsPending(false);
+        setOauthPending(false);
+        clearInterval(checkPopupClosed);
+      }
+    }, 500);
+
     return () => {
+      clearInterval(checkPopupClosed);
       channel.removeEventListener("message", getDataFromPopup);
       setPopup(null);
       setIsPending(false);
+      setOauthPending(false);
     };
   }, [popup]);
 
   const login = async () => {
+    setIsPending(true);
+    setOauthPending(true);
     const isPWA = window.matchMedia("(display-mode: standalone)").matches;
+    const supabase = await createClient();
     if (isPWA) {
-      const supabase = await createClient();
       const href = window.location.origin;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: providerType,
@@ -57,10 +76,10 @@ export function OauthButton({
       if (error) {
         toast.error("Hubo un error al iniciar sesión");
         setIsPending(false);
+        setOauthPending(false);
         return;
       }
     } else {
-      const supabase = createClient();
       const origin = location.origin;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: providerType,
@@ -71,6 +90,8 @@ export function OauthButton({
         },
       });
       if (error || !data) {
+        setIsPending(false);
+        setOauthPending(false);
         return console.error(error);
       }
       const popup = openPopup(data.url);
@@ -86,17 +107,25 @@ export function OauthButton({
 
     const windowFeatures = `scrollbars=no, resizable=no, copyhistory=no, width=${width}, height=${height}, top=${top}, left=${left}`;
     const popup = window.open(url, "popup", windowFeatures);
+
+    if (!popup) {
+      toast.error(
+        "No se pudo abrir la ventana emergente. Revisa los bloqueadores de pop-ups."
+      );
+      return null;
+    }
+
     return popup;
   };
 
-  const getDataFromPopup = (e: any) => {
+  const getDataFromPopup = (e: MessageEvent) => {
     if (e.origin !== window.location.origin) return;
 
-    const code = e.data?.authResultCode;
-    if (!code) return;
+    const { authResultCode } = e.data as { authResultCode?: string };
+    if (!authResultCode) return;
 
     setPopup(null);
-    router.replace(`/api/auth/callback?code=${code}`);
+    router.replace(`/api/auth/callback?code=${authResultCode}`);
   };
 
   return (
@@ -105,6 +134,7 @@ export function OauthButton({
       className={styles.LoginOauth}
       type="button"
       style={style}
+      disabled={oauthPending || disabled}
     >
       {isPending ? (
         <LoadingIcon

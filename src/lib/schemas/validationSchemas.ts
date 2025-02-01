@@ -9,7 +9,7 @@ export const hexColorSchema = z.string().refine(
   }
 );
 
-const shortcodeEmojiSchema = z
+export const shortcodeEmojiSchema = z
   .string()
   .refine(
     (value) => {

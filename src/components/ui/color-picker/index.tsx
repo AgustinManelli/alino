@@ -104,7 +104,7 @@ export function ColorPicker({
           !portalRef.current.contains(event.target as Node) &&
           !pickerRef.current.contains(event.target as Node)
         ) {
-          setColor(flagColor);
+          // setColor(flagColor);
           setIsOpenPicker(false);
           setType("color");
         }
@@ -132,7 +132,9 @@ export function ColorPicker({
           }}
         />
       ) : (
-        <EmojiMartComponent shortcodes={emoji} size="16px" />
+        <div style={{ width: "16px", height: "16px" }}>
+          <EmojiMartComponent shortcodes={emoji} size="16px" />
+        </div>
       )}
     </div>
   );
@@ -192,7 +194,7 @@ export function ColorPicker({
                   }}
                   animate={{
                     opacity: 1,
-                    width: "18px",
+                    width: "16px",
                     rotate: isOpenPicker ? 180 : 0,
                     marginRight: "10px",
                   }}
