@@ -1,5 +1,6 @@
 "use client";
 
+import { animations, MotionGlobalConfig } from "motion/react";
 //store para almacenar preferencias de configuración del usuario
 
 import { create } from "zustand";
@@ -18,7 +19,7 @@ const defaultPreferences = {
   uxPwaPrompt: true,
 };
 
-export const useUserPreferencesStore = create<UserPreferences>((set) => {
+export const useUserPreferencesStore = create<UserPreferences>()((set, get) => {
   // Cargar preferencias iniciales desde localStorage
   const storedPreferences =
     typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY)

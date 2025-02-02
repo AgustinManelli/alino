@@ -7,7 +7,7 @@
   display: flex;
   justify-content: start;
   align-items: center;
-  padding: 7px 10px 7px 10px;
+  padding: 7px 10px 7px 15px;
   gap: 5px;
   transition:
     background-color 0.2s ease-in-out,
@@ -117,7 +117,6 @@
 }
 
 .configButtonContainer {
-  position: absolute;
   border: none;
   cursor: pointer;
   background-color: transparent;
@@ -129,37 +128,20 @@
 }
 
 .counter {
+  transition: opacity 0.2s ease-in-out;
+  width: 23px;
+  height: 23px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgb(210, 210, 210);
+  font-size: 14px;
+}
+
+.Desktop {
   position: absolute;
-  transition: opacity 0.2s ease-in-out;
-  width: 23px;
-  height: 23px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: rgb(210, 210, 210);
-  font-size: 14px;
 }
 
-.configButtonContainerMobile {
+.Mobile {
   position: relative;
-  border: none;
-  cursor: pointer;
-  background-color: transparent;
-  transition: opacity 0.2s ease-in-out;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1;
-}
-
-.counterMobile {
-  position: relative;
-  transition: opacity 0.2s ease-in-out;
-  width: 23px;
-  height: 23px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: rgb(210, 210, 210);
-  font-size: 14px;
 }

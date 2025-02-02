@@ -83,7 +83,7 @@ export function HomeCard({
 
       <div className={styles.listManagerContainer}>
         <div className={styles.configsContainer}>
-          <p className={styles.counter}>
+          <p className={`${styles.counter} ${styles.Mobile}`}>
             <CounterAnimation tasksLength={allTasks.length} />
           </p>
         </div>

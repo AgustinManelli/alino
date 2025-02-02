@@ -27,6 +27,7 @@ interface ColorPickerInterface {
   emoji: string | null;
   setEmoji: (value: string | null) => void;
   active?: boolean;
+  setOriginalColor: () => void;
 }
 
 export function ColorPicker({
@@ -38,6 +39,7 @@ export function ColorPicker({
   emoji, //corresponde al valor del emoji temporal, no al original
   setEmoji, //corresponde a la función para cambiar el valor del emoji temporal, similar a la de color
   active = true, //activar o desactivar funcion de cambiar de color
+  setOriginalColor,
 }: ColorPickerInterface) {
   //estados locales
   const [type, setType] = useState<string>("color"); //modo color o emoji picker en la modal
@@ -104,7 +106,10 @@ export function ColorPicker({
           !portalRef.current.contains(event.target as Node) &&
           !pickerRef.current.contains(event.target as Node)
         ) {
-          // setColor(flagColor);
+          const validation = hexColorSchema.safeParse(color);
+          if (!validation.success) {
+            setOriginalColor();
+          }
           setIsOpenPicker(false);
           setType("color");
         }
@@ -256,6 +261,7 @@ export function ColorPicker({
                         setIsOpenPicker={setIsOpenPicker}
                         index={index}
                         setEmoji={setEmoji}
+                        setFlagColor={setFlagColor}
                       />
                     ))}
                   </section>
@@ -407,6 +413,7 @@ interface SquircleColorButonType {
   setIsOpenPicker: (value: boolean) => void;
   index: number;
   setEmoji: (value: string | null) => void;
+  setFlagColor: (value: string) => void;
 }
 
 function SquircleColorSelector({
@@ -416,6 +423,7 @@ function SquircleColorSelector({
   setIsOpenPicker,
   index,
   setEmoji,
+  setFlagColor,
 }: SquircleColorButonType) {
   const [hoverColor, setHoverColor] = useState<boolean>(false);
   return (
@@ -426,6 +434,7 @@ function SquircleColorSelector({
           e.preventDefault();
           e.stopPropagation();
           setColor(colorHex);
+          setFlagColor(colorHex);
           setEmoji(null);
           setIsOpenPicker(false);
         }}

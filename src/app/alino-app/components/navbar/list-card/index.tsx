@@ -63,7 +63,7 @@ export function ListCard({
   //funciones
   const handleSetColor = (color: string, typing?: boolean) => {
     setColorTemp(color);
-    if (emoji) {
+    if (emoji && typing) {
       setEmoji(null);
     }
 
@@ -80,6 +80,11 @@ export function ListCard({
     if (inputRef.current !== null) {
       inputRef.current.focus();
     }
+  };
+
+  const setOriginalColor = () => {
+    setColorTemp(list.color);
+    setEmoji(list.icon);
   };
 
   const handleSetEmoji = (emoji: string | null) => {
@@ -282,6 +287,7 @@ export function ListCard({
               emoji={emoji}
               setEmoji={handleSetEmoji}
               active={isNameChange ? true : false}
+              setOriginalColor={setOriginalColor}
             />
           </div>
 
@@ -375,7 +381,9 @@ export function ListCard({
             ) : isMobile ? (
               <>
                 <div className={styles.configsContainer}>
-                  <div className={styles.configButtonContainerMobile}>
+                  <div
+                    className={`${styles.configButtonContainer} ${styles.Mobile}`}
+                  >
                     <MoreConfigs
                       iconWidth={"23px"}
                       open={isMoreOptions}
@@ -388,7 +396,7 @@ export function ListCard({
                   </div>
                 </div>
                 <div className={styles.configsContainer}>
-                  <p className={styles.counterMobile}>
+                  <p className={`${styles.counter} ${styles.Mobile}`}>
                     <CounterAnimation tasksLength={list.tasks?.length} />
                   </p>
                 </div>
@@ -396,7 +404,7 @@ export function ListCard({
             ) : (
               <div className={styles.configsContainer}>
                 <div
-                  className={styles.configButtonContainer}
+                  className={`${styles.configButtonContainer} ${styles.Desktop}`}
                   style={{
                     opacity: hover || isMoreOptions ? "1" : "0",
                   }}
@@ -412,7 +420,7 @@ export function ListCard({
                   />
                 </div>
                 <p
-                  className={styles.counter}
+                  className={`${styles.counter} ${styles.Desktop}`}
                   style={{
                     opacity: hover || isMoreOptions ? "0" : "1",
                   }}
