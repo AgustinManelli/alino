@@ -21,15 +21,29 @@ export function ListInput({
   const [color, setColor] = useState<string>("#87189d");
   const [hover, setHover] = useState<boolean>(false);
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
+  const [emoji, setEmoji] = useState<string | null>(null);
+
+  const { insertList } = useTodoDataStore();
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const divRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
 
   const handleSetColor = (color: string, typing?: boolean) => {
     setColor(color);
+
+    if (emoji && typing) {
+      setEmoji(null);
+    }
 
     if (typing) return;
 
     const validation = hexColorSchema.safeParse(color);
     if (!validation.success) {
       setColor("#87189d");
+      if (emoji) {
+        setEmoji(null);
+      }
     }
 
     if (input) {
@@ -39,18 +53,17 @@ export function ListInput({
     }
   };
 
+  const setOriginalColor = () => {
+    setColor("#87189d");
+    setEmoji(null);
+  };
+
   const handleSetEmoji = (emoji: string | null) => {
     setEmoji(emoji);
     if (inputRef.current !== null) {
       inputRef.current.focus();
     }
   };
-
-  const insertList = useTodoDataStore((state) => state.insertList);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const divRef = useRef<HTMLDivElement>(null);
-  const portalRef = useRef<HTMLDivElement>(null);
-  const [emoji, setEmoji] = useState<string | null>(null);
 
   const handleSubmit = () => {
     setInput(false);
@@ -127,6 +140,7 @@ export function ListInput({
               setColor={handleSetColor}
               emoji={emoji}
               setEmoji={handleSetEmoji}
+              setOriginalColor={setOriginalColor}
             />
           </div>
           <input
