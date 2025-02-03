@@ -62,4 +62,7 @@
   .backLinkContainer {
     display: none;
   }
+  .layout {
+    height: calc(100svh + env(safe-area-inset-top));
+  }
 }
