@@ -12,6 +12,7 @@ import { CounterAnimation } from "@/components/ui/counter-animation";
 
 import { HomeIcon2 } from "@/components/ui/icons/icons";
 import styles from "../list-card/ListCard.module.css";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 export function HomeCard({
   handleCloseNavbar,
@@ -22,6 +23,7 @@ export function HomeCard({
 
   const { lists } = useTodoDataStore();
   const { isMobile } = usePlatformInfoStore();
+  const { animations } = useUserPreferencesStore();
 
   const pathname = usePathname();
 
@@ -85,7 +87,11 @@ export function HomeCard({
       <div className={styles.listManagerContainer}>
         <div className={styles.configsContainer}>
           <p className={`${styles.counter} ${styles.Mobile}`}>
-            <CounterAnimation tasksLength={allTasks.length} />
+            {animations ? (
+              <CounterAnimation tasksLength={allTasks.length} />
+            ) : (
+              allTasks.length
+            )}
           </p>
         </div>
       </div>

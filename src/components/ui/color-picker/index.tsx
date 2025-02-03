@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/icons/icons";
 import styles from "./ColorPicker.module.css";
 import { hexColorSchema } from "@/lib/schemas/validationSchemas";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 interface ColorPickerInterface {
   portalRef: React.RefObject<HTMLDivElement>;
@@ -44,6 +45,9 @@ export function ColorPicker({
   //estados locales
   const [type, setType] = useState<string>("color"); //modo color o emoji picker en la modal
   const [flagColor, setFlagColor] = useState<string>(color);
+
+  //estados globales
+  const { animations } = useUserPreferencesStore();
 
   //ref's
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -172,10 +176,15 @@ export function ColorPicker({
           <motion.button
             key={"color-picker-selector"}
             className={styles.mainButton}
-            animate={{ paddingLeft: active ? "10px" : "5px" }}
-            transition={{ paddingLeft: { duration: 0.2 } }}
+            animate={
+              animations ? { paddingLeft: active ? "10px" : "5px" } : undefined
+            }
+            transition={
+              animations ? { paddingLeft: { duration: 0.2 } } : undefined
+            }
             style={{
               backgroundColor: active ? "rgb(0,0,0, 0.05)" : "transparent",
+              paddingLeft: animations ? undefined : active ? "10px" : "5px",
             }}
             onClick={(e) => {
               e.preventDefault();
@@ -192,30 +201,64 @@ export function ColorPicker({
                   layout
                   key={"color-picker-arrow"}
                   className={styles.arrowContainer}
-                  initial={{
-                    opacity: 0,
-                    width: 0,
-                    marginRight: 0,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    width: "16px",
-                    rotate: isOpenPicker ? 180 : 0,
-                    marginRight: "5px",
-                  }}
-                  exit={{ opacity: 0, width: 0, marginRight: 0 }}
-                  transition={{
-                    rotate: { type: "spring", stiffness: 300, damping: 20 },
-                  }}
+                  initial={
+                    animations
+                      ? {
+                          opacity: 0,
+                          width: 0,
+                          marginRight: 0,
+                          scale: 0,
+                        }
+                      : undefined
+                  }
+                  animate={
+                    animations
+                      ? {
+                          opacity: 1,
+                          width: "16px",
+                          marginRight: "5px",
+                          scale: 1,
+                        }
+                      : undefined
+                  }
+                  exit={
+                    animations
+                      ? { opacity: 0, width: 0, marginRight: 0, scale: 0 }
+                      : undefined
+                  }
                 >
-                  <ArrowThin
+                  <motion.div
+                    animate={{ rotate: isOpenPicker ? 180 : 0 }}
+                    transition={
+                      animations
+                        ? {
+                            rotate: {
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 20,
+                            },
+                          }
+                        : {
+                            rotate: {
+                              duration: 0.2,
+                            },
+                          }
+                    }
                     style={{
-                      stroke: "#000",
-                      strokeWidth: "1.5",
-                      width: "18px",
-                      height: "auto",
+                      width: "fit-content",
+                      height: "fit-content",
+                      display: "flex",
                     }}
-                  />
+                  >
+                    <ArrowThin
+                      style={{
+                        stroke: "#000",
+                        strokeWidth: "1.5",
+                        width: "18px",
+                        height: "auto",
+                      }}
+                    />
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>

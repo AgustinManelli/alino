@@ -10,6 +10,7 @@ import { hexColorSchema } from "@/lib/schemas/validationSchemas";
 
 import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 export function ListInput({
   setIsCreating,
@@ -24,6 +25,7 @@ export function ListInput({
   const [emoji, setEmoji] = useState<string | null>(null);
 
   const { insertList } = useTodoDataStore();
+  const { animations } = useUserPreferencesStore();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
@@ -121,14 +123,22 @@ export function ListInput({
             stiffness: 700,
             damping: 40,
           }}
-          initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+          initial={
+            animations
+              ? { scale: 0, opacity: 0, filter: "blur(30px)" }
+              : undefined
+          }
           animate={{
             scale: 1,
             opacity: 1,
             filter: "blur(0px)",
             transition: { duration: 0.2 },
           }}
-          exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+          exit={
+            animations
+              ? { scale: 0, opacity: 0, filter: "blur(30px)" }
+              : undefined
+          }
           ref={divRef}
         >
           <div className={styles.colorPickerContainer}>
@@ -212,12 +222,12 @@ export function ListInput({
             stiffness: 700,
             damping: 40,
           }}
-          initial={{ scale: 0, opacity: 0 }}
+          initial={animations ? { scale: 0, opacity: 0 } : undefined}
           animate={{
             scale: 1,
             opacity: 1,
           }}
-          exit={{ scale: 0, opacity: 0 }}
+          exit={animations ? { scale: 0, opacity: 0 } : undefined}
         >
           <PlusBoxIcon
             style={{

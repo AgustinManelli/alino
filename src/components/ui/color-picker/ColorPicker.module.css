@@ -18,6 +18,7 @@
   background-color: transparent;
   transition: background-color 0.1 ease-in-out;
   height: 100%;
+  padding-left: 5px;
 }
 
 .renderIconContainer {
@@ -29,10 +30,12 @@
 }
 
 .arrowContainer {
+  position: relative;
   display: flex;
   width: fit-content;
   height: fit-content;
   margin-right: 10px;
+  width: 16px;
 }
 
 .modalContainer {

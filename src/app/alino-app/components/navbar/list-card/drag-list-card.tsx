@@ -7,11 +7,13 @@ import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 export function DragListCard({ list }: { list: ListsType }) {
   const pathname = usePathname();
 
   const { isMobile } = usePlatformInfoStore();
+  const { animations } = useUserPreferencesStore();
 
   const style = {
     backgroundColor: "rgb(250, 250, 250)",
@@ -25,7 +27,7 @@ export function DragListCard({ list }: { list: ListsType }) {
     <motion.section
       className={styles.container}
       style={style}
-      variants={variants}
+      variants={animations ? variants : undefined}
       initial="hidden"
       animate="visible"
       exit="exit"
