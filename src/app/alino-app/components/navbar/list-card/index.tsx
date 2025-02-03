@@ -18,6 +18,7 @@ import { MoreConfigs } from "../more-configs";
 import { Check, Pin } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 import { delay } from "motion";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 interface props {
   list: ListsType;
@@ -51,6 +52,7 @@ export function ListCard({
   //estados globales
   const { deleteList, updateDataList, updatePinnedList } = useTodoDataStore();
   const { isMobile } = usePlatformInfoStore();
+  const { animations } = useUserPreferencesStore();
 
   //ref's
   const divRef = useRef<HTMLInputElement | null>(null);
@@ -296,8 +298,12 @@ export function ListCard({
           <div className={styles.textContainer}>
             {isNameChange ? (
               <motion.input
-                initial={{ backgroundColor: "#00000000" }}
-                animate={{ backgroundColor: "#0000000d" }}
+                initial={
+                  animations ? { backgroundColor: "#00000000" } : undefined
+                }
+                animate={
+                  animations ? { backgroundColor: "#0000000d" } : undefined
+                }
                 transition={{
                   backgroundColor: {
                     duration: 0.3,
@@ -333,10 +339,16 @@ export function ListCard({
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
                 }}
-                initial={{ backgroundPosition: "200% center" }}
-                animate={{
-                  backgroundPosition: ["200% center", "0% center"],
-                }}
+                initial={
+                  animations ? { backgroundPosition: "200% center" } : undefined
+                }
+                animate={
+                  animations
+                    ? {
+                        backgroundPosition: ["200% center", "0% center"],
+                      }
+                    : undefined
+                }
                 transition={{
                   duration: 2,
                   ease: "linear",
@@ -433,7 +445,11 @@ export function ListCard({
                     opacity: hover || isMoreOptions ? "0" : "1",
                   }}
                 >
-                  <CounterAnimation tasksLength={list.tasks?.length} />
+                  {animations ? (
+                    <CounterAnimation tasksLength={list.tasks?.length} />
+                  ) : (
+                    list.tasks?.length
+                  )}
                 </p>
               </div>
             )}
