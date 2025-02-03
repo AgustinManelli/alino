@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useSortable } from "@dnd-kit/sortable";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
@@ -17,6 +17,7 @@ import { MoreConfigs } from "../more-configs";
 
 import { Check, Pin } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
+import { delay } from "motion";
 
 interface props {
   list: ListsType;
@@ -294,7 +295,14 @@ export function ListCard({
           {/* IMPLEMENTAR INPUT PARA CAMBIAR DE NOMBRE CON SU RESPECTIVO BOTÓN */}
           <div className={styles.textContainer}>
             {isNameChange ? (
-              <input
+              <motion.input
+                initial={{ backgroundColor: "#00000000" }}
+                animate={{ backgroundColor: "#0000000d" }}
+                transition={{
+                  backgroundColor: {
+                    duration: 0.3,
+                  },
+                }}
                 className={styles.nameChangerInput}
                 type="text"
                 value={inputName}

@@ -143,7 +143,14 @@ export function ListInput({
               setOriginalColor={setOriginalColor}
             />
           </div>
-          <input
+          <motion.input
+            initial={{ backgroundColor: "#00000000" }}
+            animate={{ backgroundColor: "#0000000d" }}
+            transition={{
+              backgroundColor: {
+                duration: 0.3,
+              },
+            }}
             type="text"
             placeholder="cree una lista nueva"
             value={value}
@@ -161,7 +168,7 @@ export function ListInput({
                 setInput(false);
               }
             }}
-          ></input>
+          ></motion.input>
 
           <button
             style={{
@@ -177,10 +184,9 @@ export function ListInput({
           >
             <SendIcon
               style={{
-                width: "20px",
+                width: "18px",
                 stroke: "#1c1c1c",
                 strokeWidth: "2",
-                opacity: "0.5",
               }}
             />
           </button>
