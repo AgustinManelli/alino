@@ -42,12 +42,12 @@ export function HomeCard({
             ? "rgb(250, 250, 250)"
             : "transparent",
         pointerEvents: "auto",
+        padding: "7px 10px 7px 15px",
       }}
       href={`/alino-app`}
       onClick={() => {
         handleCloseNavbar();
       }}
-      style={{ padding: "7px 10px 7px 15px" }}
     >
       <div
         className={styles.cardFx}
