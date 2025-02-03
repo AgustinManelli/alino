@@ -52,7 +52,7 @@ export function ColorPicker({
   const onEmojiSelect = (selectedEmoji: emoji) => {
     setEmoji(selectedEmoji.shortcodes as string);
     const palette: string[] = generatePalette(selectedEmoji.native);
-    const dominantColor: string = palette[0];
+    const dominantColor: string = palette[Math.floor(palette.length / 2)];
     setColor(dominantColor);
     setIsOpenPicker(false);
   };
@@ -172,7 +172,7 @@ export function ColorPicker({
           <motion.button
             key={"color-picker-selector"}
             className={styles.mainButton}
-            animate={{ paddingLeft: active ? "10px" : "0" }}
+            animate={{ paddingLeft: active ? "10px" : "5px" }}
             transition={{ paddingLeft: { duration: 0.2 } }}
             style={{
               backgroundColor: active ? "rgb(0,0,0, 0.05)" : "transparent",
@@ -201,7 +201,7 @@ export function ColorPicker({
                     opacity: 1,
                     width: "16px",
                     rotate: isOpenPicker ? 180 : 0,
-                    marginRight: "10px",
+                    marginRight: "5px",
                   }}
                   exit={{ opacity: 0, width: 0, marginRight: 0 }}
                   transition={{

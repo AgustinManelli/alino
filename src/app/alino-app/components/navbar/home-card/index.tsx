@@ -47,6 +47,7 @@ export function HomeCard({
       onClick={() => {
         handleCloseNavbar();
       }}
+      style={{ padding: "7px 10px 7px 15px" }}
     >
       <div
         className={styles.cardFx}
