@@ -18,6 +18,7 @@ export function DragListCard({ list }: { list: ListsType }) {
     pointerEvents: "auto",
     boxShadow: "0px 0px 30px 0px rgba(0,0,0,0.1)",
     zIndex: 99,
+    padding: "7px 10px 7px 15px",
   } as React.CSSProperties;
 
   return (
