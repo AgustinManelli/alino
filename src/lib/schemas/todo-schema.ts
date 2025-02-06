@@ -6,18 +6,6 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type tasks = {
-  category_id: string;
-  completed: boolean;
-  created_at: string;
-  description: string | null;
-  id: string;
-  index: number | null;
-  name: string;
-  updated_at: string | null;
-  user_id: string;
-};
-
 export type Database = {
   public: {
     Tables: {
@@ -74,7 +62,6 @@ export type Database = {
           created_at: string;
           name: string;
           pinned: boolean;
-          tasks: Database["public"]["Tables"]["tasks"]["Row"][];
           updated_at: string | null;
           user_id: string;
         };
@@ -86,7 +73,6 @@ export type Database = {
           created_at?: string;
           name: string;
           pinned?: boolean;
-          tasks?: Database["public"]["Tables"]["tasks"]["Row"][];
           updated_at?: string | null;
           user_id: string;
         };
@@ -98,7 +84,6 @@ export type Database = {
           created_at?: string;
           name?: string;
           pinned?: boolean;
-          tasks?: Database["public"]["Tables"]["tasks"]["Row"][];
           updated_at?: string | null;
           user_id?: string;
         };

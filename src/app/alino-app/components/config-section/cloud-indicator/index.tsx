@@ -8,7 +8,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 export function CloudIndicator() {
   const [isVisible, setIsVisible] = useState(false);
 
-  const { loadingQueue } = useTodoDataStore();
+  const loadingQueue = useTodoDataStore((state) => state.loadingQueue);
 
   useEffect(() => {
     if (loadingQueue !== undefined) {

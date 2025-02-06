@@ -4,8 +4,9 @@ import styles from "./manager.module.css";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import TodoCard from "../todo/todo-card";
 import { Database } from "@/lib/schemas/todo-schema";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useBlurBackgroundStore } from "@/store/useBlurBackgroundStore";
+
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 export default function Manager({
@@ -17,42 +18,37 @@ export default function Manager({
   children?: React.ReactNode;
   setList?: ListsType;
 }) {
-  const lists = useTodoDataStore((state) => state.lists);
   const setBlurredFx = useBlurBackgroundStore((state) => state.setColor);
 
   useEffect(() => {
-    if (setList?.color !== undefined) setBlurredFx(setList?.color);
-  });
+    if (setList?.color) setBlurredFx(setList.color);
+  }, [setList?.color, setBlurredFx]);
 
-  const temporalHomeListLength = lists.reduce(
-    (total, list) => total + list.tasks.length,
-    0
+  const tasks = useTodoDataStore((state) => state.tasks);
+
+  const filteredTasks = useMemo(
+    () => tasks.filter((task) => task.category_id === setList?.id),
+    [tasks, setList?.id]
   );
 
   return (
     <div className={styles.container}>
       <section className={styles.section1}>{children}</section>
       <section className={styles.section2}>
-        {(setList && setList.tasks.length > 0) ||
-        (temporalHomeListLength > 0 && h) ? (
+        {h && !setList ? (
           <div className={styles.tasks}>
-            {h && !setList
-              ? lists?.map((list) =>
-                  list?.tasks?.map((task) => <TodoCard task={task} />)
-                )
-              : setList?.tasks?.map((task) => <TodoCard task={task} />)}
+            {tasks.map((task) => (
+              <TodoCard key={task.id} task={task} />
+            ))}
+          </div>
+        ) : filteredTasks.length > 0 ? (
+          <div className={styles.tasks}>
+            {filteredTasks.map((task) => (
+              <TodoCard key={task.id} task={task} />
+            ))}
           </div>
         ) : (
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              opacity: "0.3",
-            }}
-          >
+          <div className={styles.empty}>
             <p>No hay tareas...</p>
           </div>
         )}

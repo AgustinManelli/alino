@@ -11,13 +11,6 @@ export default function ({ userName }: { userName: string }) {
 
   useEffect(() => {
     setBlurredFx("rgb(106, 195, 255)");
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => {
-      clearInterval(timer);
-    };
   }, []);
 
   const formatDate = (date: Date) => {

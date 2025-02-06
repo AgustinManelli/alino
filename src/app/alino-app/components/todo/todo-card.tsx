@@ -13,14 +13,14 @@ export default function TodoCard({ task }: { task: tasks }) {
   const [hover, setHover] = useState<boolean>(false);
   const deleteTask = useTodoDataStore((state) => state.deleteTask);
   const handleDelete = async () => {
-    await deleteTask(task.id, task.category_id);
+    await deleteTask(task.id);
   };
   const updateTaskCompleted = useTodoDataStore(
     (status) => status.updateTaskCompleted
   );
 
   const handleUpdateStatus = async () => {
-    await updateTaskCompleted(task.id, task.category_id, !completed);
+    await updateTaskCompleted(task.id, !completed);
     setCompleted(!completed);
   };
 

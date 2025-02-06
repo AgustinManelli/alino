@@ -50,15 +50,12 @@ type TodoStore = {
   ) => Promise<{ error: string | null }>;
   deleteAllLists: () => Promise<void>;
   addTask: (category_id: string, task: string) => Promise<void>;
-  deleteTask: (id: string, category_id: string) => Promise<void>;
-  updateTaskCompleted: (
-    id: string,
-    category_id: string,
-    completed: boolean
-  ) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
+  updateTaskCompleted: (id: string, completed: boolean) => Promise<void>;
   updatePinnedList: (id: string, pinned: boolean) => Promise<void>;
   updateIndexList: (id: string, index: number) => Promise<void>;
   deleteAllTasks: () => Promise<void>;
+  getTaskCountByListId: (listId: string) => number;
 };
 
 const createCRUDHandler = <T>(schema?: z.ZodSchema<T>) => ({
@@ -132,15 +129,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         apiCall: async () => {
           const { data, error } = await getLists();
           if (error) throw new Error(error);
-
-          set({
-            lists: data?.map((list: ListsType) => ({
-              ...list,
-              tasks: (list.tasks || []).sort(
-                (a, b) => (b.index ?? 0) - (a.index ?? 0)
-              ),
-            })),
-          });
+          set(() => ({ lists: data?.lists, tasks: data?.tasks }));
         },
         rollback: () => {},
       },
@@ -175,7 +164,6 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
             created_at: new Date().toISOString(),
             name,
             pinned: false,
-            tasks: [],
             updated_at: new Date().toISOString(),
             user_id: "",
           });
@@ -407,13 +395,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     const revert = () => {
       set(
         produce((draft: TodoStore) => {
-          const targetList = draft.lists.find(
-            (list: ListsType) => list.id === category_id
-          );
-          if (!targetList || !targetList.tasks) return;
-
-          // Filtrar la tarea temporal
-          targetList.tasks = targetList.tasks.filter((task) => task.id !== id);
+          draft.tasks = draft.tasks.filter((t) => t.id !== id);
         })
       );
     };
@@ -424,27 +406,17 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       { id, category_id, name: task },
       {
         optimisticUpdate: (draft) => {
-          draft.lists = draft.lists.map((list) =>
-            list.id === category_id
-              ? {
-                  ...list,
-                  tasks: [
-                    {
-                      id,
-                      name: task,
-                      completed: false,
-                      index: 0,
-                      created_at: new Date().toISOString(),
-                      updated_at: new Date().toISOString(),
-                      user_id: "",
-                      category_id,
-                      description: "",
-                    },
-                    ...list.tasks,
-                  ],
-                }
-              : list
-          );
+          draft.tasks.unshift({
+            id,
+            name: task,
+            completed: false,
+            index: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user_id: "",
+            category_id,
+            description: "",
+          });
         },
         apiCall: async (validated) => {
           const { data, error } = await insertTask(
@@ -455,20 +427,11 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
           if (error) throw new Error(error);
           set(
             produce((draft) => {
-              const list = draft.lists.find(
-                (l: ListsType) => l.id === category_id
-              );
-              if (!list) return;
-
-              const taskIndex = list.tasks.findIndex(
+              const taskIndex = draft.tasks.findIndex(
                 (t: TaskType) => t.id === id
               );
               if (taskIndex === -1) return;
-
-              list.tasks[taskIndex] = {
-                ...list.tasks[taskIndex],
-                ...data,
-              };
+              draft.tasks[taskIndex] = { ...draft.tasks[taskIndex], ...data };
             })
           );
         },
@@ -478,44 +441,23 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     );
   },
 
-  deleteTask: async (id, category_id) => {
-    const currentLists = get().lists;
-
-    const listIndex = currentLists.findIndex((list) => list.id === category_id);
-    if (listIndex === -1) return;
-
-    const taskIndex = currentLists[listIndex].tasks.findIndex(
-      (task) => task.id === id
-    );
-    if (taskIndex === -1) return;
-
-    const taskToRestore = structuredClone(
-      currentLists[listIndex].tasks[taskIndex]
-    );
+  deleteTask: async (id) => {
+    const taskToRestore = get().tasks.find((t) => t.id === id);
+    if (!taskToRestore) return;
 
     const revert = () => {
       set(
         produce((draft) => {
-          const list = draft.lists[listIndex];
-          list.tasks.splice(taskIndex, 0, taskToRestore);
+          draft.tasks.push(taskToRestore);
         })
       );
     };
 
-    await createCRUDHandler(
-      TaskSchema.pick({ id: true, category_id: true })
-    ).interact(
-      { id, category_id },
+    await createCRUDHandler(TaskSchema.pick({ id: true })).interact(
+      { id },
       {
         optimisticUpdate: (draft) => {
-          draft.lists = draft.lists.map((list) =>
-            list.id === category_id
-              ? {
-                  ...list,
-                  tasks: list.tasks.filter((task) => task.id !== id),
-                }
-              : list
-          );
+          draft.tasks = draft.tasks.filter((task) => task.id !== id);
         },
         apiCall: async (validated) => {
           const { error } = await deleteTask(validated.id);
@@ -527,44 +469,27 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     );
   },
 
-  updateTaskCompleted: async (id, category_id, completed) => {
-    const currentLists = get().lists;
-
-    const listIndex = currentLists.findIndex((list) => list.id === category_id);
-    if (listIndex === -1) return;
-
-    const taskIndex = currentLists[listIndex].tasks.findIndex(
-      (task) => task.id === id
-    );
+  updateTaskCompleted: async (id, completed) => {
+    const taskIndex = get().tasks.findIndex((t) => t.id === id);
     if (taskIndex === -1) return;
 
-    const originalCompleted =
-      currentLists[listIndex].tasks[taskIndex].completed;
+    const originalCompleted = get().tasks[taskIndex].completed;
 
     const revert = () => {
       set(
         produce((draft) => {
-          draft.lists[listIndex].tasks[taskIndex].completed = originalCompleted;
+          draft.tasks[taskIndex].completed = originalCompleted;
         })
       );
     };
 
     await createCRUDHandler(
-      TaskSchema.pick({ id: true, category_id: true, completed: true })
+      TaskSchema.pick({ id: true, completed: true })
     ).interact(
-      { id, category_id, completed },
+      { id, completed },
       {
         optimisticUpdate: (draft) => {
-          draft.lists = draft.lists.map((list) =>
-            list.id === category_id
-              ? {
-                  ...list,
-                  tasks: list.tasks.map((task) =>
-                    task.id === id ? { ...task, completed } : task
-                  ),
-                }
-              : list
-          );
+          draft.tasks[taskIndex].completed = completed;
         },
         apiCall: async (validated) => {
           const { error } = await updateCompletedTask(
@@ -580,24 +505,25 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   deleteAllTasks: async () => {
-    const originalLists = get().lists;
+    const originalTasks = get().tasks;
 
     await createCRUDHandler(z.void()).interact(
       undefined,
       {
         optimisticUpdate: (draft) => {
-          draft.lists = draft.lists.map((list) => ({
-            ...list,
-            tasks: [],
-          }));
+          draft.tasks = [];
         },
         apiCall: async () => {
           const { error } = await deleteAllTasks();
           if (error) throw new Error(error);
         },
-        rollback: () => set({ lists: originalLists }),
+        rollback: () => set({ tasks: originalTasks }),
       },
       set
     );
+  },
+
+  getTaskCountByListId: (listId: string) => {
+    return get().tasks.filter((task) => task.category_id === listId).length;
   },
 }));

@@ -11,18 +11,17 @@ import { hexColorSchema } from "@/lib/schemas/validationSchemas";
 import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { useUIStore } from "@/store/useUIStore";
 
-export function ListInput({
-  setIsCreating,
-}: {
-  setIsCreating: (value: boolean) => void;
-}) {
+export function ListInput() {
   const [input, setInput] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
   const [color, setColor] = useState<string>("#87189d");
   const [hover, setHover] = useState<boolean>(false);
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
   const [emoji, setEmoji] = useState<string | null>(null);
+
+  const setIsCreating = useUIStore((state) => state.setIsCreating);
 
   const { insertList } = useTodoDataStore();
   const { animations } = useUserPreferencesStore();
