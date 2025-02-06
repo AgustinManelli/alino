@@ -195,6 +195,10 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     const listIndex = get().lists.findIndex((l) => l.id === id);
     const listToRestore = structuredClone(get().lists[listIndex]);
 
+    // Obtener tareas relacionadas para posible rollback
+    const relatedTasks = get().tasks.filter((t) => t.category_id === id);
+    const originalTasks = get().tasks;
+
     const revert = () => {
       set((state) => ({
         lists: [
@@ -202,6 +206,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
           listToRestore,
           ...state.lists.slice(listIndex),
         ],
+        tasks: originalTasks, // Restaurar todas las tareas originales
       }));
     };
 
@@ -209,7 +214,10 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       { id },
       {
         optimisticUpdate: (draft) => {
+          // Eliminar lista
           draft.lists = draft.lists.filter((l) => l.id !== id);
+          // Eliminar tareas relacionadas
+          draft.tasks = draft.tasks.filter((t) => t.category_id !== id);
         },
         apiCall: async (validated) => {
           const result = await deleteList(validated.id);
@@ -368,20 +376,24 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   deleteAllLists: async () => {
-    // const originalLists = get().lists;
+    // Guardar copia de ambos estados para el rollback
+    const originalLists = structuredClone(get().lists);
+    const originalTasks = structuredClone(get().tasks);
 
     await createCRUDHandler(z.void()).interact(
       undefined,
       {
         optimisticUpdate: (draft) => {
           draft.lists = [];
+          draft.tasks = [];
         },
         apiCall: async () => {
-          const { error } = await deleteAllLists();
-          if (error) throw new Error(error);
+          const { error: listsError } = await deleteAllLists();
+          if (listsError) throw new Error(listsError);
         },
-        rollback: () => {},
-        //set({ lists: originalLists }),
+        rollback: () => {
+          set({ lists: originalLists, tasks: originalTasks });
+        },
       },
       set
     );
