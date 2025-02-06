@@ -86,6 +86,12 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
   const prevLengthRef = useRef<number>(lists.length);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const [pinnedLists, regularLists] = useMemo(() => {
+    const pinned = lists.filter((list) => list.pinned);
+    const regular = lists.filter((list) => !list.pinned);
+    return [pinned, regular];
+  }, [lists]);
+
   //useEffect's
   useEffect(() => {
     if (lists.length > prevLengthRef.current && scrollRef.current) {
@@ -98,44 +104,50 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
   }, [lists.length]);
 
   //funciones
-  const handleCloseNavbar = () => setIsActive(false);
+  const handleCloseNavbar = useCallback(() => setIsActive(false), []);
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    const draggedList = lists.find((list) => list.id === active.id);
-    setDraggedItem(draggedList || null);
-  };
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const { active } = event;
+      const draggedList = lists.find((list) => list.id === active.id);
+      setDraggedItem(draggedList || null);
+    },
+    [lists]
+  );
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-    const oldIndex = lists.findIndex((list) => list.id === active.id);
-    const newIndex = lists.findIndex((list) => list.id === over.id);
+      const oldIndex = lists.findIndex((list) => list.id === active.id);
+      const newIndex = lists.findIndex((list) => list.id === over.id);
 
-    if (oldIndex !== newIndex) {
-      const newLists = arrayMove(lists, oldIndex, newIndex);
-      setLists(newLists);
+      if (oldIndex !== newIndex) {
+        const newLists = arrayMove(lists, oldIndex, newIndex);
+        setLists(newLists);
 
-      const prevIndex = newIndex === 0 ? 0 : newLists[newIndex - 1]?.index;
-      const postIndex =
-        newIndex === newLists.length - 1 ? 0 : newLists[newIndex + 1]?.index;
+        const prevIndex = newIndex === 0 ? 0 : newLists[newIndex - 1]?.index;
+        const postIndex =
+          newIndex === newLists.length - 1 ? 0 : newLists[newIndex + 1]?.index;
 
-      if (draggedItem) {
-        const newIndex =
-          prevIndex !== null && postIndex !== null
-            ? (prevIndex + postIndex) / 2
-            : prevIndex !== null
-              ? prevIndex + 16384
-              : postIndex !== null
-                ? postIndex / 2
-                : 16384;
+        if (draggedItem) {
+          const newIndex =
+            prevIndex !== null && postIndex !== null
+              ? (prevIndex + postIndex) / 2
+              : prevIndex !== null
+                ? prevIndex + 16384
+                : postIndex !== null
+                  ? postIndex / 2
+                  : 16384;
 
-        updateIndexList(draggedItem.id, newIndex);
+          updateIndexList(draggedItem.id, newIndex);
+        }
       }
-    }
-    setDraggedItem(null);
-  };
+      setDraggedItem(null);
+    },
+    [lists, updateIndexList, setLists]
+  );
 
   //customHooks
   useOnClickOutside(Ref, () => {
@@ -155,10 +167,206 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
     })
   );
 
+  const navbarContent = useMemo(
+    () => (
+      <div className={styles.navbar}>
+        <div className={styles.logoContainer}>
+          <IconAlinoMotion
+            style={{
+              height: "20px",
+              width: "auto",
+              fill: "#1c1c1c",
+              opacity: "0.2",
+              overflow: "visible",
+            }}
+          />
+        </div>
+        <motion.section
+          className={styles.cardsSection}
+          id="listContainer"
+          ref={scrollRef}
+        >
+          {initialFetching ? (
+            <div className={styles.cardsContainer}>
+              {Array(4)
+                .fill(null)
+                .map((_, index) => (
+                  <Skeleton
+                    style={{
+                      width: "100%",
+                      height: "45px",
+                      borderRadius: "15px",
+                    }}
+                    delay={index * 0.15}
+                    key={`skeleton-${index}`}
+                  />
+                ))}
+            </div>
+          ) : (
+            <motion.section
+              className={styles.cardsContainer}
+              variants={containerFMVariant}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <HomeCard
+                handleCloseNavbar={handleCloseNavbar}
+                key={"homecard"}
+              />
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+                onDragStart={handleDragStart}
+                modifiers={[restrictToVerticalAxis]}
+              >
+                <SortableContext
+                  items={lists}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <DndContext>
+                    <AnimatePresence mode="popLayout">
+                      {pinnedLists.map((list) => (
+                        <motion.div
+                          layout={draggedItem ? false : true}
+                          variants={animations ? containerFMVariant : undefined}
+                          initial={
+                            animations ? { scale: 0, opacity: 0 } : undefined
+                          }
+                          transition={
+                            animations
+                              ? {
+                                  scale: {
+                                    duration: 0.2,
+                                    ease: "easeInOut",
+                                  },
+                                }
+                              : undefined
+                          }
+                          exit={
+                            animations
+                              ? {
+                                  scale: 1.3,
+                                  opacity: 0,
+                                  filter: "blur(30px) grayscale(100%)",
+                                  y: -30,
+                                  transition: {
+                                    duration: 1,
+                                  },
+                                  zIndex: "-1",
+                                }
+                              : undefined
+                          }
+                          key={`pinned-${list.id}`}
+                          id={`pinned-${list.id}`}
+                        >
+                          <ListCard
+                            list={list}
+                            handleCloseNavbar={handleCloseNavbar}
+                          />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </DndContext>
+                  {lists.filter((list) => list.pinned === true).length > 0 && (
+                    <motion.div
+                      animate={{
+                        backgroundPosition: ["200% center", "0% center"],
+                      }}
+                      transition={{
+                        duration: 1,
+                        ease: "linear",
+                        delay: 0.2,
+                      }}
+                      id="separator"
+                      style={{
+                        width: "100%",
+                        height: "2px",
+                        background: `linear-gradient(to right,rgb(250,250,250) 80%, rgb(240,240,240) 100%) 0% center / 200% no-repeat`,
+                        backgroundSize: "200% auto",
+                        backgroundRepeat: "no-repeat",
+                      }}
+                    ></motion.div>
+                  )}
+                  <AnimatePresence mode="popLayout">
+                    {regularLists.map((list) => (
+                      <motion.div
+                        layout={draggedItem ? false : true}
+                        variants={animations ? containerFMVariant : undefined}
+                        initial={
+                          animations
+                            ? { scale: 0, opacity: 0, zIndex: 1 }
+                            : undefined
+                        }
+                        transition={
+                          animations
+                            ? {
+                                scale: {
+                                  duration: 0.2,
+                                  ease: "easeInOut",
+                                },
+                              }
+                            : undefined
+                        }
+                        exit={
+                          animations
+                            ? {
+                                scale: 1.3,
+                                opacity: 0,
+                                filter: "blur(30px) grayscale(100%)",
+                                y: -30,
+                                transition: {
+                                  duration: 1,
+                                },
+                                zIndex: "0",
+                              }
+                            : undefined
+                        }
+                        key={`list-${list.id}`}
+                        id={`list-${list.id}`}
+                      >
+                        <ListCard
+                          list={list}
+                          handleCloseNavbar={handleCloseNavbar}
+                        />
+                      </motion.div>
+                    ))}
+                    <DragOverlay>
+                      {draggedItem ? (
+                        <DragListCard
+                          list={draggedItem}
+                          key={`list-${draggedItem.id}`}
+                        />
+                      ) : null}
+                    </DragOverlay>
+                  </AnimatePresence>
+                </SortableContext>
+              </DndContext>
+            </motion.section>
+          )}
+        </motion.section>
+        <div className={styles.inputContainer}>
+          <ListInput key={"input"} />
+        </div>
+      </div>
+    ),
+    [
+      initialFetching,
+      pinnedLists,
+      regularLists,
+      draggedItem,
+      animations,
+      handleDragStart,
+      handleDragEnd,
+      handleCloseNavbar,
+    ]
+  );
+
   return (
     <>
       {/* BOTON PARA ABRIR NAVBAR MOBILE */}
-      {isMobile && !isActive && (
+      {isMobile && (
         <motion.button
           onClick={() => {
             setIsActive(!isActive);
@@ -167,7 +375,7 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
           initial={{ scale: 0, opacity: 0 }}
           animate={{
             opacity: 1,
-            scale: 1,
+            scale: isActive ? 0 : 1,
             transition: {
               opacity: { duration: 0.2 },
               scale: { duration: 0.2 },
@@ -199,198 +407,7 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
         style={{ left: isActive ? "0" : "-100%" }}
         ref={Ref}
       >
-        <div className={styles.navbar}>
-          <div className={styles.logoContainer}>
-            <IconAlinoMotion
-              style={{
-                height: "20px",
-                width: "auto",
-                fill: "#1c1c1c",
-                opacity: "0.2",
-                overflow: "visible",
-              }}
-            />
-          </div>
-          <motion.section
-            className={styles.cardsSection}
-            id="listContainer"
-            ref={scrollRef}
-          >
-            {initialFetching ? (
-              <div className={styles.cardsContainer}>
-                {Array(4)
-                  .fill(null)
-                  .map((_, index) => (
-                    <Skeleton
-                      style={{
-                        width: "100%",
-                        height: "45px",
-                        borderRadius: "15px",
-                      }}
-                      delay={index * 0.15}
-                      key={`skeleton-${index}`}
-                    />
-                  ))}
-              </div>
-            ) : (
-              <motion.section
-                className={styles.cardsContainer}
-                variants={containerFMVariant}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-              >
-                <HomeCard
-                  handleCloseNavbar={handleCloseNavbar}
-                  key={"homecard"}
-                />
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                  onDragStart={handleDragStart}
-                  modifiers={[restrictToVerticalAxis]}
-                >
-                  <SortableContext
-                    items={lists}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <DndContext>
-                      <AnimatePresence mode="popLayout">
-                        {lists
-                          .filter((list) => list.pinned)
-                          .map((list) => (
-                            <motion.div
-                              layout={draggedItem ? false : true}
-                              variants={
-                                animations ? containerFMVariant : undefined
-                              }
-                              initial={
-                                animations
-                                  ? { scale: 0, opacity: 0 }
-                                  : undefined
-                              }
-                              transition={
-                                animations
-                                  ? {
-                                      scale: {
-                                        duration: 0.2,
-                                        ease: "easeInOut",
-                                      },
-                                    }
-                                  : undefined
-                              }
-                              exit={
-                                animations
-                                  ? {
-                                      scale: 1.3,
-                                      opacity: 0,
-                                      filter: "blur(30px) grayscale(100%)",
-                                      y: -30,
-                                      transition: {
-                                        duration: 1,
-                                      },
-                                      zIndex: "-1",
-                                    }
-                                  : undefined
-                              }
-                              key={`pinned-${list.id}`}
-                              id={`pinned-${list.id}`}
-                            >
-                              <ListCard
-                                list={list}
-                                handleCloseNavbar={handleCloseNavbar}
-                              />
-                            </motion.div>
-                          ))}
-                      </AnimatePresence>
-                    </DndContext>
-                    {lists.filter((list) => list.pinned === true).length >
-                      0 && (
-                      <motion.div
-                        animate={{
-                          backgroundPosition: ["200% center", "0% center"],
-                        }}
-                        transition={{
-                          duration: 1,
-                          ease: "linear",
-                          delay: 0.2,
-                        }}
-                        id="separator"
-                        style={{
-                          width: "100%",
-                          height: "2px",
-                          background: `linear-gradient(to right,rgb(250,250,250) 80%, rgb(240,240,240) 100%) 0% center / 200% no-repeat`,
-                          backgroundSize: "200% auto",
-                          backgroundRepeat: "no-repeat",
-                        }}
-                      ></motion.div>
-                    )}
-                    <AnimatePresence mode="popLayout">
-                      {lists
-                        .filter((list) => !list.pinned)
-                        .map((list) => (
-                          <motion.div
-                            layout={draggedItem ? false : true}
-                            variants={
-                              animations ? containerFMVariant : undefined
-                            }
-                            initial={
-                              animations
-                                ? { scale: 0, opacity: 0, zIndex: 1 }
-                                : undefined
-                            }
-                            transition={
-                              animations
-                                ? {
-                                    scale: {
-                                      duration: 0.2,
-                                      ease: "easeInOut",
-                                    },
-                                  }
-                                : undefined
-                            }
-                            exit={
-                              animations
-                                ? {
-                                    scale: 1.3,
-                                    opacity: 0,
-                                    filter: "blur(30px) grayscale(100%)",
-                                    y: -30,
-                                    transition: {
-                                      duration: 1,
-                                    },
-                                    zIndex: "0",
-                                  }
-                                : undefined
-                            }
-                            key={`list-${list.id}`}
-                            id={`list-${list.id}`}
-                          >
-                            <ListCard
-                              list={list}
-                              handleCloseNavbar={handleCloseNavbar}
-                            />
-                          </motion.div>
-                        ))}
-                      <DragOverlay>
-                        {draggedItem ? (
-                          <DragListCard
-                            list={draggedItem}
-                            key={`list-${draggedItem.id}`}
-                          />
-                        ) : null}
-                      </DragOverlay>
-                    </AnimatePresence>
-                  </SortableContext>
-                </DndContext>
-              </motion.section>
-            )}
-          </motion.section>
-          <div className={styles.inputContainer}>
-            <ListInput key={"input"} />
-          </div>
-        </div>
+        {navbarContent}
       </div>
     </>
   );
