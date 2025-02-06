@@ -70,10 +70,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script
-          crossOrigin="anonymous"
-          src="//unpkg.com/react-scan/dist/auto.global.js"
-        />
+        {process.env.NODE_ENV === "development" && (
+          <script
+            crossOrigin="anonymous"
+            src="//unpkg.com/react-scan/dist/auto.global.js"
+          />
+        )}
       </head>
       <body style={{ height: "100%" }} className={`${inter.className}`}>
         <MobileSizeListener />
