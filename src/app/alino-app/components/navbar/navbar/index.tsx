@@ -404,7 +404,7 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
       {/* NAVBAR */}
       <div
         className={styles.container}
-        style={{ left: isActive ? "0" : "-100%" }}
+        style={{ transform: isActive ? "translateX(0)" : "translateX(-150%)" }}
         ref={Ref}
       >
         {navbarContent}

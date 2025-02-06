@@ -119,8 +119,9 @@
     width: 75%;
     height: 100%;
     min-width: inherit;
-    left: -100%;
-    transition: left 0.2s ease-in-out;
+    left: 0;
+    transform: translateX(0);
+    transition: transform 0.2s ease-in-out;
     /* padding: 0px 0 0px 15px; */
   }
   .active {
