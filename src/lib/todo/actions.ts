@@ -39,11 +39,16 @@ export async function getLists() {
       .order("created_at", { ascending: true, referencedTable: "tasks" })
       .limit(50, { referencedTable: "tasks" });
 
-    if (error)
+    if (error) {
       throw new Error(
         "Failed to fetch lists from the database. Please try again later."
       );
-    return { data };
+    }
+
+    const listsData = data.map(({ tasks, ...list }) => list);
+    const tasksData = data.flatMap((list) => list.tasks || []);
+
+    return { data: { lists: listsData, tasks: tasksData } };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };

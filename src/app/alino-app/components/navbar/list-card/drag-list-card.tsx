@@ -8,12 +8,21 @@ import { motion } from "motion/react";
 import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useMemo } from "react";
 
 export function DragListCard({ list }: { list: ListsType }) {
   const pathname = usePathname();
 
   const { isMobile } = usePlatformInfoStore();
   const { animations } = useUserPreferencesStore();
+
+  const tasks = useTodoDataStore((state) => state.tasks);
+
+  const filteredTasks = useMemo(
+    () => tasks.filter((task) => task.category_id === list.id),
+    [tasks, list.id]
+  );
 
   const style = {
     backgroundColor: "rgb(250, 250, 250)",
@@ -102,14 +111,14 @@ export function DragListCard({ list }: { list: ListsType }) {
             </div>
             <div className={styles.configsContainer}>
               <p className={`${styles.counter} ${styles.Mobile}`}>
-                {list.tasks?.length}
+                {filteredTasks?.length}
               </p>
             </div>
           </>
         ) : (
           <div className={styles.configsContainer}>
             <p className={`${styles.counter} ${styles.Desktop}`}>
-              {list.tasks?.length}
+              {filteredTasks?.length}
             </p>
           </div>
         )}

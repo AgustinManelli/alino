@@ -21,15 +21,11 @@ export function HomeCard({
 }) {
   const [hover, setHover] = useState<boolean>(false);
 
-  const { lists } = useTodoDataStore();
+  const tasks = useTodoDataStore((state) => state.tasks);
   const { isMobile } = usePlatformInfoStore();
   const { animations } = useUserPreferencesStore();
 
   const pathname = usePathname();
-
-  const allTasks: TaskType[] = lists.reduce<TaskType[]>((acc, list) => {
-    return acc.concat(list.tasks || []);
-  }, []);
 
   return (
     <Link
@@ -88,9 +84,9 @@ export function HomeCard({
         <div className={styles.configsContainer}>
           <p className={`${styles.counter} ${styles.Mobile}`}>
             {animations ? (
-              <CounterAnimation tasksLength={allTasks.length} />
+              <CounterAnimation tasksLength={tasks.length} />
             ) : (
-              allTasks.length
+              tasks.length
             )}
           </p>
         </div>

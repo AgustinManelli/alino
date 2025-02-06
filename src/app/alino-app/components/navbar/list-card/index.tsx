@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  CSSProperties,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { useSortable } from "@dnd-kit/sortable";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
@@ -17,26 +24,17 @@ import { MoreConfigs } from "../more-configs";
 
 import { Check, Pin } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
-import { delay } from "motion";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { useUIStore } from "@/store/useUIStore";
+
+type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 interface props {
   list: ListsType;
-  setIsCreating: (value: boolean) => void;
-  isCreating: boolean;
   handleCloseNavbar: () => void;
-  navScrolling: number;
-  setAllowCloseNavbar: (value: boolean) => void;
 }
 
-export function ListCard({
-  list,
-  setIsCreating,
-  isCreating,
-  handleCloseNavbar,
-  navScrolling,
-  setAllowCloseNavbar,
-}: props) {
+export function ListCard({ list, handleCloseNavbar }: props) {
   //estados locales
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
@@ -51,8 +49,15 @@ export function ListCard({
 
   //estados globales
   const { deleteList, updateDataList, updatePinnedList } = useTodoDataStore();
-  const { isMobile } = usePlatformInfoStore();
-  const { animations } = useUserPreferencesStore();
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
+  const animations = useUserPreferencesStore((state) => state.animations);
+  const setAllowCloseNavbar = useUIStore((state) => state.setAllowCloseNavbar);
+  const isCreating = useUIStore((state) => state.isCreating);
+  const setIsCreating = useUIStore((state) => state.setIsCreating);
+
+  const taskCount = useTodoDataStore((state) =>
+    state.getTaskCountByListId(list.id)
+  );
 
   //ref's
   const divRef = useRef<HTMLInputElement | null>(null);
@@ -64,72 +69,84 @@ export function ListCard({
   const router = useRouter();
 
   //funciones
-  const handleSetColor = (color: string, typing?: boolean) => {
-    setColorTemp(color);
-    if (emoji && typing) {
-      setEmoji(null);
-    }
+  const isActiveList = useMemo(
+    () => pathname === `/alino-app/${list.id}`,
+    [pathname, list.id]
+  );
 
-    if (typing) return;
+  const gradientStyle = useMemo(
+    () => ({
+      background: `linear-gradient(to right,#1c1c1c 80%, ${list.color} 90%, transparent 95%) 0% center / 200% no-repeat text`,
+      backgroundSize: "200% auto" as const,
+      backgroundRepeat: "no-repeat" as const,
+      WebkitBackgroundClip: "text" as const,
+      WebkitTextFillColor: "transparent" as const,
+      backgroundClip: "text" as const,
+    }),
+    [list.color]
+  );
 
-    const validation = hexColorSchema.safeParse(color);
+  const handleSetColor = useCallback(
+    (color: string, typing?: boolean) => {
+      setColorTemp(color);
 
-    if (!validation.success) {
-      setColorTemp(list.color);
-      if (emoji) {
-        setEmoji(list.icon);
+      if (emoji && typing) setEmoji(null);
+
+      if (typing) return;
+
+      const validation = hexColorSchema.safeParse(color);
+
+      if (!validation.success) {
+        setColorTemp(list.color);
+        if (emoji) {
+          setEmoji(list.icon);
+        }
       }
-    }
-    if (inputRef.current !== null) {
-      inputRef.current.focus();
-    }
-  };
 
-  const setOriginalColor = () => {
+      inputRef.current?.focus();
+    },
+    [emoji]
+  );
+
+  const setOriginalColor = useCallback(() => {
     setColorTemp(list.color);
     setEmoji(list.icon);
-  };
+  }, [list.color, list.icon]);
 
-  const handleSetEmoji = (emoji: string | null) => {
-    setEmoji(emoji);
-    if (inputRef.current !== null) {
-      inputRef.current.focus();
-    }
-  };
+  const handleSetEmoji = useCallback((newEmoji: string | null) => {
+    setEmoji(newEmoji);
+    inputRef.current?.focus();
+  }, []);
 
-  const handleChangeMoreOptions = (prop: boolean) => {
-    //función para abrir el panel de opciones de cada lista
-    setIsMoreOptions(prop);
-    setAllowCloseNavbar(!prop);
-  };
+  const handleChangeMoreOptions = useCallback(
+    (prop: boolean) => {
+      setIsMoreOptions(prop);
+      setAllowCloseNavbar(!prop);
+    },
+    [setAllowCloseNavbar]
+  );
 
-  const handleConfirm = () => {
-    //función para abrir el modal de eliminar lista
+  const handleConfirm = useCallback(() => {
     isDeleteConfirm(true);
     setAllowCloseNavbar(false);
-  };
+  }, [setAllowCloseNavbar]);
 
-  const handleDelete = () => {
-    //función para eliminar lista
+  const handleDelete = useCallback(() => {
     setAllowCloseNavbar(true);
     setIsMoreOptions(false);
-    if (pathname === `/alino-app/${list.id}`) {
-      router.push(`${location.origin}/alino-app`);
-    }
+    if (isActiveList) router.push(`${location.origin}/alino-app`);
     deleteList(list.id);
-  };
+  }, [isActiveList, list.id, deleteList, setAllowCloseNavbar, router]);
 
-  const handleNameChange = () => {
-    //funcion para mostrar funcionalidad de cambiar de nombre
+  const handleNameChange = useCallback(() => {
     setIsNameChange(true);
     setIsMoreOptions(false);
-    setInput(true);
     setHover(true);
     setAllowCloseNavbar(false);
     setIsCreating(true);
-  };
+  }, [setIsCreating, setAllowCloseNavbar]);
 
-  const handleSaveName = async () => {
+  const handleSaveName = useCallback(async () => {
     setIsCreating(false);
     setAllowCloseNavbar(true);
 
@@ -154,32 +171,47 @@ export function ListCard({
       colorTemp,
       emoji
     );
-
     if (error) {
       setInputName(list.name);
       setColorTemp(list.color);
+      setEmoji(list.icon);
     }
-  };
+  }, [
+    list,
+    inputName,
+    colorTemp,
+    emoji,
+    updateDataList,
+    setIsCreating,
+    setAllowCloseNavbar,
+  ]);
 
-  const handlePin = () => {
+  const handlePin = useCallback(() => {
     setIsMoreOptions(false);
     setHover(false);
     setIsCreating(false);
     setAllowCloseNavbar(true);
     updatePinnedList(list.id, !list.pinned);
-  };
+  }, [list.pinned, updatePinnedList, setAllowCloseNavbar, setIsCreating]);
 
   //useEffect's
   useEffect(() => {
-    if (inputRef.current !== null) {
-      inputRef.current.focus();
-    }
-  }, [input]);
+    inputRef.current?.focus();
+  }, [isNameChange]);
 
   useEffect(() => {
-    setIsMoreOptions(false);
-    setIsOpenPicker(false);
-  }, [navScrolling]);
+    const handleScroll = () => {
+      setIsMoreOptions(false);
+      setIsOpenPicker(false);
+    };
+
+    const scrollContainer = document.getElementById("listContainer");
+    scrollContainer?.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollContainer?.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
@@ -228,17 +260,18 @@ export function ListCard({
     disabled: isCreating || isMoreOptions || isOpenPicker || list.pinned,
   });
 
-  const style = {
-    transform: `translate3d(${transform ? transform.x : "0"}px, ${transform ? transform.y : "0"}px, 0)`,
-    transition,
-    backgroundColor:
-      hover || pathname === `/alino-app/${list.id}` || isMoreOptions
-        ? "rgb(250, 250, 250)"
-        : "#fff",
-    pointerEvents: isDragging ? "none" : "auto",
-    zIndex: isDragging ? 99 : 1,
-    opacity: isDragging ? 0.2 : 1,
-  } as React.CSSProperties;
+  const style = useMemo(
+    () => ({
+      transform: `translate3d(${transform?.x || 0}px, ${transform?.y || 0}px, 0)`,
+      transition,
+      backgroundColor:
+        hover || isActiveList || isMoreOptions ? "rgb(250, 250, 250)" : "#fff",
+      pointerEvents: isDragging ? "none" : "auto",
+      zIndex: isDragging ? 99 : 1,
+      opacity: isDragging ? 0.2 : 1,
+    }),
+    [transform, transition, hover, isActiveList, isMoreOptions, isDragging]
+  ) as CSSProperties;
 
   return (
     <>
@@ -331,14 +364,7 @@ export function ListCard({
             ) : (
               <motion.p
                 className={styles.listName}
-                style={{
-                  background: `linear-gradient(to right,#1c1c1c 80%, ${list.color} 90%, transparent 95%) 0% center / 200% no-repeat text`,
-                  backgroundSize: "200% auto",
-                  backgroundRepeat: "no-repeat",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
+                style={gradientStyle}
                 initial={
                   animations ? { backgroundPosition: "200% center" } : undefined
                 }
@@ -417,7 +443,7 @@ export function ListCard({
                 </div>
                 <div className={styles.configsContainer}>
                   <p className={`${styles.counter} ${styles.Mobile}`}>
-                    <CounterAnimation tasksLength={list.tasks?.length} />
+                    <CounterAnimation tasksLength={taskCount} />
                   </p>
                 </div>
               </>
@@ -446,9 +472,9 @@ export function ListCard({
                   }}
                 >
                   {animations ? (
-                    <CounterAnimation tasksLength={list.tasks?.length} />
+                    <CounterAnimation tasksLength={taskCount} />
                   ) : (
-                    list.tasks?.length
+                    taskCount
                   )}
                 </p>
               </div>
@@ -459,5 +485,3 @@ export function ListCard({
     </>
   );
 }
-
-type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];

@@ -7,14 +7,12 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { Navbar } from "./navbar";
 
 export default function NavbarComponent() {
-  const [initialFetching, setInitialFetching] = useState<boolean>(true);
-
-  const getLists = useTodoDataStore((state) => state.getLists);
+  const [initialFetching, setInitialFetching] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchTodos = async () => {
       setInitialFetching(true);
-      await getLists();
+      await useTodoDataStore.getState().getLists();
       setInitialFetching(false);
     };
     fetchTodos();
