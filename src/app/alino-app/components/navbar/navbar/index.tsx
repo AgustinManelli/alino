@@ -402,13 +402,15 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
       )}
 
       {/* NAVBAR */}
-      <div
+      <motion.div
         className={styles.container}
-        style={{ transform: isActive ? "translateX(0)" : "translateX(-150%)" }}
         ref={Ref}
+        initial={{ x: 0 }}
+        animate={{ x: isActive || !isMobile ? 0 : "-150%" }}
+        transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
       >
         {navbarContent}
-      </div>
+      </motion.div>
     </>
   );
 }
