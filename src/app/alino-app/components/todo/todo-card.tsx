@@ -1,6 +1,6 @@
 "use client";
-
-import { tasks } from "@/lib/schemas/todo-schema";
+import { Database } from "@/lib/schemas/todo-schema";
+type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
 import styles from "./todo-card.module.css";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
@@ -8,7 +8,7 @@ import { DeleteIcon } from "@/components/ui/icons/icons";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 
-export default function TodoCard({ task }: { task: tasks }) {
+export default function TodoCard({ task }: { task: TaskType }) {
   const [completed, setCompleted] = useState<boolean>(task.completed);
   const [hover, setHover] = useState<boolean>(false);
   const deleteTask = useTodoDataStore((state) => state.deleteTask);
