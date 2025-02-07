@@ -5,40 +5,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 25px 25px 25px 0px;
-}
-.todoContainer {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: start;
-  gap: 20px;
-  width: 100%;
-  height: fit-content;
-  flex-direction: column;
-  max-width: 600px;
-}
-.titleContainer {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: start;
-  gap: 10px;
-  width: 100%;
-}
-.referenceText {
-  color: #1c1c1c;
-  font-size: 20px;
-  font-weight: 600;
-}
-.todoManagerContainer {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: start;
-  align-items: center;
-  flex-direction: column;
-  gap: 30px;
+  padding: 25px 25px 25px 25px;
 }
 
 @media (max-width: 850px) {

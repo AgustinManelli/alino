@@ -6,9 +6,10 @@
   right: 0px;
   pointer-events: none;
   border-radius: 100%;
-  opacity: 0.35;
+  opacity: 0.4;
   transform: translateY(-175%) translateZ(0px);
   transition: box-shadow 0.2s ease-in-out;
+  z-index: 20;
 }
 
 @media only screen and (max-width: 850px) {

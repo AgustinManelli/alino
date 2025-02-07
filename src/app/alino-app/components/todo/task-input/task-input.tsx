@@ -2,12 +2,12 @@
 
 import { useRef, useState } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-import styles from "./todo-input.module.css";
+import styles from "./task-input.module.css";
 import { Database } from "@/lib/schemas/todo-schema";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
-export default function TodoInput({ setList }: { setList: ListsType }) {
+export default function TaskInput({ setList }: { setList?: ListsType }) {
   const [task, setTask] = useState<string>("");
 
   const formRef = useRef<HTMLDivElement>(null);
@@ -16,6 +16,7 @@ export default function TodoInput({ setList }: { setList: ListsType }) {
 
   const handleAdd = async () => {
     setTask("");
+    if (!setList) return;
     await addTask(setList.id, task);
   };
 
@@ -36,6 +37,7 @@ export default function TodoInput({ setList }: { setList: ListsType }) {
                 handleAdd();
               }
             }}
+            disabled={!setList}
           ></input>
         </div>
       </div>
