@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Manager from "../manager";
+import Manager from "../todo/manager";
 import styles from "./homeManager.module.css";
 import { useBlurBackgroundStore } from "@/store/useBlurBackgroundStore";
 

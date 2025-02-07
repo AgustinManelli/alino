@@ -2,6 +2,7 @@
 
 import {
   CSSProperties,
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -29,12 +30,23 @@ import { useUIStore } from "@/store/useUIStore";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
+const arePropsEqual = (prevProps: props, nextProps: props) => {
+  return (
+    prevProps.list.id === nextProps.list.id &&
+    prevProps.list.name === nextProps.list.name &&
+    prevProps.list.color === nextProps.list.color &&
+    prevProps.list.icon === nextProps.list.icon &&
+    prevProps.list.pinned === nextProps.list.pinned &&
+    prevProps.handleCloseNavbar === nextProps.handleCloseNavbar
+  );
+};
+
 interface props {
   list: ListsType;
   handleCloseNavbar: () => void;
 }
 
-export function ListCard({ list, handleCloseNavbar }: props) {
+export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
   //estados locales
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
@@ -55,8 +67,8 @@ export function ListCard({ list, handleCloseNavbar }: props) {
   const isCreating = useUIStore((state) => state.isCreating);
   const setIsCreating = useUIStore((state) => state.setIsCreating);
 
-  const taskCount = useTodoDataStore((state) =>
-    state.getTaskCountByListId(list.id)
+  const taskCount = useTodoDataStore(
+    useCallback((state) => state.getTaskCountByListId(list.id), [list.id])
   );
 
   //ref's
@@ -105,7 +117,7 @@ export function ListCard({ list, handleCloseNavbar }: props) {
 
       inputRef.current?.focus();
     },
-    [emoji]
+    [emoji, list.color, list.icon]
   );
 
   const setOriginalColor = useCallback(() => {
@@ -484,4 +496,4 @@ export function ListCard({ list, handleCloseNavbar }: props) {
       </div>
     </>
   );
-}
+}, arePropsEqual);
