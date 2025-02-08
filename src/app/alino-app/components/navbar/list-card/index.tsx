@@ -2,7 +2,6 @@
 
 import {
   CSSProperties,
-  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -30,23 +29,12 @@ import { useUIStore } from "@/store/useUIStore";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
-const arePropsEqual = (prevProps: props, nextProps: props) => {
-  return (
-    prevProps.list.id === nextProps.list.id &&
-    prevProps.list.name === nextProps.list.name &&
-    prevProps.list.color === nextProps.list.color &&
-    prevProps.list.icon === nextProps.list.icon &&
-    prevProps.list.pinned === nextProps.list.pinned &&
-    prevProps.handleCloseNavbar === nextProps.handleCloseNavbar
-  );
-};
-
 interface props {
   list: ListsType;
   handleCloseNavbar: () => void;
 }
 
-export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
+export const ListCard = ({ list, handleCloseNavbar }: props) => {
   //estados locales
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
@@ -496,4 +484,4 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
       </div>
     </>
   );
-}, arePropsEqual);
+};

@@ -1,7 +1,6 @@
 .cardContainer {
   width: 100%;
   background-color: #fff;
-  /* min-height: 50px; */
   height: fit-content;
   border-radius: 15px;
   display: flex;
@@ -10,6 +9,7 @@
   padding: 10px 15px 10px 15px;
   gap: 15px;
 }
+
 .leftContainer {
   display: flex;
   justify-content: center;
@@ -18,6 +18,7 @@
   overflow: hidden;
   word-break: break-word;
 }
+
 .deleteButton {
   display: flex;
   width: fit-content;
@@ -26,4 +27,10 @@
   border: none;
   cursor: pointer;
   transition: opacity 0.2s ease-in-out;
+}
+
+.text {
+  position: relative;
+  margin: 0;
+  padding: 0;
 }

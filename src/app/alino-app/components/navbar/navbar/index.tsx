@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   DndContext,
@@ -67,11 +67,14 @@ const containerFMVariant = {
   },
 };
 
-export function Navbar({ initialFetching }: { initialFetching: boolean }) {
+export function Navbar({
+  initialFetching = false,
+}: {
+  initialFetching?: boolean;
+}) {
   //estados locales
   const [isActive, setIsActive] = useState<boolean>(false); //Estado para navbar mobile
   const [draggedItem, setDraggedItem] = useState<ListsType | null>(null); //Estado para el item arrastrado
-
   //estados globales
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const animations = useUserPreferencesStore((state) => state.animations);
@@ -82,7 +85,7 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
   const isCreating = useUIStore((state) => state.isCreating);
 
   //ref's
-  const Ref = useRef<HTMLInputElement | null>(null);
+  const Ref = useRef<HTMLDivElement | null>(null);
   const prevLengthRef = useRef<number>(lists.length);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -167,7 +170,7 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
     })
   );
 
-  const navbarContent = useMemo(
+  const memoizedContent = useMemo(
     () => (
       <div className={styles.navbar}>
         <div className={styles.logoContainer}>
@@ -353,19 +356,44 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
     ),
     [
       initialFetching,
-      pinnedLists,
-      regularLists,
+      handleCloseNavbar,
+      sensors,
+      lists,
       draggedItem,
       animations,
-      handleDragStart,
-      handleDragEnd,
-      handleCloseNavbar,
+      pinnedLists.length, // Solo necesitamos la longitud como indicador de cambio
+      regularLists.length, // Mismo caso que pinnedLists
     ]
   );
 
   return (
     <>
       {/* BOTON PARA ABRIR NAVBAR MOBILE */}
+      <Button isActive={isActive} setIsActive={setIsActive} />
+      {/* NAVBAR */}
+      <motion.div
+        className={styles.container}
+        ref={Ref}
+        initial={{ x: 0 }}
+        animate={{ x: isActive || !isMobile ? 0 : "-150%" }}
+        transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+      >
+        {memoizedContent}
+      </motion.div>
+    </>
+  );
+}
+
+function Button({
+  isActive,
+  setIsActive,
+}: {
+  isActive: boolean;
+  setIsActive: (value: boolean) => void;
+}) {
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
+  return (
+    <>
       {isMobile && (
         <motion.button
           onClick={() => {
@@ -400,17 +428,6 @@ export function Navbar({ initialFetching }: { initialFetching: boolean }) {
           />
         </motion.button>
       )}
-
-      {/* NAVBAR */}
-      <motion.div
-        className={styles.container}
-        ref={Ref}
-        initial={{ x: 0 }}
-        animate={{ x: isActive || !isMobile ? 0 : "-150%" }}
-        transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
-      >
-        {navbarContent}
-      </motion.div>
     </>
   );
 }

@@ -36,7 +36,7 @@ export async function getLists() {
       .eq("user_id", user.id)
       .order("index", { ascending: true })
       .limit(20)
-      .order("created_at", { ascending: true, referencedTable: "tasks" })
+      .order("created_at", { ascending: false, referencedTable: "tasks" })
       .limit(50, { referencedTable: "tasks" });
 
     if (error) {
