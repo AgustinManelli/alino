@@ -16,7 +16,7 @@ type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 export default function Manager({
   setList,
   h,
-  userName = "usuario",
+  userName = "bienvenido",
 }: {
   setList?: ListsType;
   h?: boolean;
@@ -57,7 +57,7 @@ export default function Manager({
             <div className={styles.homeSubContainer}>
               <h1 className={styles.homeTitle}>
                 <span>Hola, </span>
-                <span>{userName}</span>
+                <span>{userName.split(" ")[0]}</span>
               </h1>
               <div className={styles.homeTimeContainer}>
                 <p>
@@ -73,54 +73,72 @@ export default function Manager({
             </div>
           </section>
         ) : (
-          <div className={styles.titleSection}>
-            {setList ? (
-              setList.icon !== null || setList.icon === "" ? (
+          <div className={styles.listContainer}>
+            <div className={styles.titleSection}>
+              {setList ? (
+                setList.icon !== null || setList.icon === "" ? (
+                  <div
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                    }}
+                  >
+                    <EmojiMartComponent
+                      shortcodes={setList?.icon}
+                      size="20px"
+                    />
+                  </div>
+                ) : (
+                  <SquircleIcon
+                    style={{
+                      width: "20px",
+                      fill: `${setList?.color}`,
+                      transition: "fill 0.2s ease-in-out",
+                    }}
+                  />
+                )
+              ) : (
                 <div
                   style={{
-                    width: "20px",
-                    height: "20px",
+                    display: "flex",
+                    gap: "10px",
+                    justifyContent: "center",
+                    alignItems: "center",
                   }}
                 >
-                  <EmojiMartComponent shortcodes={setList?.icon} size="20px" />
+                  <Skeleton
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "5px",
+                      backgroundColor: "rgb(230,230,230)",
+                    }}
+                  />
+                  <Skeleton
+                    style={{
+                      width: "100px",
+                      height: "28px",
+                      borderRadius: "5px",
+                      backgroundColor: "rgb(230,230,230)",
+                    }}
+                  />
                 </div>
-              ) : (
-                <SquircleIcon
-                  style={{
-                    width: "20px",
-                    fill: `${setList?.color}`,
-                    transition: "fill 0.2s ease-in-out",
-                  }}
-                />
-              )
-            ) : (
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Skeleton
-                  style={{
-                    width: "16px",
-                    height: "16px",
-                    borderRadius: "5px",
-                    backgroundColor: "rgb(230,230,230)",
-                  }}
-                />
-                <Skeleton
-                  style={{
-                    width: "100px",
-                    height: "28px",
-                    borderRadius: "5px",
-                    backgroundColor: "rgb(230,230,230)",
-                  }}
-                />
-              </div>
-            )}
-            <h2 className={styles.listTitle}>{setList?.name}</h2>
+              )}
+              <h2 className={styles.listTitle}>{setList?.name}</h2>
+            </div>
+            <p className={styles.listSubtitle}>
+              <span>
+                Tienes{" "}
+                {
+                  tasks.filter(
+                    (task) =>
+                      task.completed !== true &&
+                      task.category_id === setList?.id
+                  ).length
+                }{" "}
+                tareas activas
+              </span>
+            </p>
           </div>
         )}
         <div className={styles.inputSection}>

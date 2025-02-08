@@ -18,15 +18,11 @@
   align-items: center;
   cursor: pointer;
   transition: background-color 0.2s;
-  background-color: rgb(235, 235, 235);
+  background-color: #fff;
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
   padding: 2px;
   z-index: 0;
-}
-
-.configButton:hover {
-  background-color: #e6e6e6;
 }
 
 .configUserIcon {
@@ -40,14 +36,5 @@
   background-position: center;
   background-repeat: no-repeat;
   border-radius: 8px;
-  background-color: #fff;
-}
-
-@media only screen and (max-width: 850px) {
-  .configButton {
-    background-color: rgb(225, 225, 225);
-  }
-  .configButton:hover {
-    background-color: rgb(225, 225, 225);
-  }
+  background-color: rgb(250, 250, 250);
 }
