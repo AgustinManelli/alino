@@ -26,6 +26,7 @@
 }
 
 .navbar {
+  overflow: hidden;
   position: relative;
   width: 100%;
   max-width: 1366px;
@@ -42,20 +43,6 @@
     rgb(230, 233, 237) 0px 0px 0px 0px inset;
 }
 
-/* .navbar::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 75px;
-  background: rgba(255, 255, 255, 0.1);
-  top: 0px;
-  overflow: hidden;
-  z-index: 100;
-  mask-image: linear-gradient(rgb(0, 0, 0) 80%, transparent);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-} */
-
 .navbar::before {
   content: "";
   position: absolute;
@@ -66,6 +53,7 @@
   z-index: 100;
   background: linear-gradient(rgb(255, 255, 255) 50%, transparent);
 }
+
 .navbar::after {
   content: "";
   position: absolute;
@@ -91,9 +79,9 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-x: visible;
   overflow-y: auto;
-  padding: 30px 30px 30px 30px;
+  overscroll-behavior: contain;
+  padding: 30px;
 }
 
 .cardsSection::-webkit-scrollbar {
@@ -120,16 +108,16 @@
     height: 100%;
     min-width: inherit;
     left: 0;
-    /* transform: translateX(-150); */
-    /* transition: transform 0.2s ease-in-out; */
-    /* padding: 0px 0 0px 15px; */
   }
+
   .active {
     left: initial;
   }
+
   .cardsSection {
     padding: 30px 15px 15px 15px;
   }
+
   .inputContainer {
     padding: 0 15px;
   }

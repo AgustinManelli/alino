@@ -7,12 +7,14 @@
   overflow: hidden;
   touch-action: none;
 }
+
 .appContainer {
   position: relative;
   height: 100%;
   display: flex;
   flex-direction: row;
 }
+
 @media all and (display-mode: standalone) {
   .app {
     height: 100vh;
