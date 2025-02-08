@@ -63,7 +63,11 @@ export default function Manager({
                 <p>
                   <span>Hoy es </span>
                   {formatDate(currentTime)} <br />
-                  <span>Tienes {tasks.length} tareas activas</span>
+                  <span>
+                    Tienes{" "}
+                    {tasks.filter((task) => task.completed !== true).length}{" "}
+                    tareas activas
+                  </span>
                 </p>
               </div>
             </div>
