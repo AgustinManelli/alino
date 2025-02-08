@@ -161,14 +161,14 @@
   }
 
   .section1 {
-    height: 200px;
+    height: 220px;
   }
 
   .section1::before {
-    height: calc(200px + 20px);
+    height: calc(220px + 20px);
   }
 
   .tasksSection {
-    padding-top: 200px;
+    padding-top: 220px;
   }
 }

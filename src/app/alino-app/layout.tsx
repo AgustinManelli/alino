@@ -27,7 +27,7 @@ export default async function appLayout({
           name={result.data?.user.user_metadata.name}
         />
         <Navbar />
-        <p
+        {/* <p
           style={{
             position: "absolute",
             right: "0",
@@ -41,7 +41,7 @@ export default async function appLayout({
           }}
         >
           pre-alpha version
-        </p>
+        </p> */}
         {children}
       </div>
     </section>

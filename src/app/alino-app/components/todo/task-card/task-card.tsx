@@ -69,13 +69,13 @@ export function TaskCard({ task }: { task: TaskType }) {
     };
   }, []); // Recalcular cuando cambie el texto
 
-  const handleDelete = async () => {
-    await deleteTask(task.id);
+  const handleDelete = () => {
+    deleteTask(task.id);
   };
 
-  const handleUpdateStatus = async () => {
-    await updateTaskCompleted(task.id, !completed);
+  const handleUpdateStatus = () => {
     setCompleted(!completed);
+    updateTaskCompleted(task.id, !completed);
   };
 
   return (
@@ -94,7 +94,7 @@ export function TaskCard({ task }: { task: TaskType }) {
           <p
             ref={textRef}
             className={styles.text}
-            style={{ opacity: completed ? 0.5 : 1 }}
+            style={{ opacity: completed ? 0.3 : 1 }}
           >
             {task.name}
           </p>
@@ -122,6 +122,7 @@ export function TaskCard({ task }: { task: TaskType }) {
                   y2="1"
                   stroke="#1c1c1c"
                   strokeWidth="2"
+                  // strokeLinecap="round"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: completed ? 1 : 0 }}
                   transition={{
