@@ -77,7 +77,7 @@ export function TaskCard({ task }: { task: TaskType }) {
     return () => {
       window.removeEventListener("resize", calculateLines);
     };
-  }, []);
+  }, [task]);
 
   const generateWavePath = (width: number) => {
     const waveSegments = Math.max(4, Math.floor(width / 20));
