@@ -218,6 +218,7 @@ export function TaskCard({ task }: { task: TaskType }) {
         {editing ? (
           <motion.textarea
             rows={1}
+            maxLength={200}
             initial={animations ? { backgroundColor: "#00000000" } : undefined}
             animate={animations ? { backgroundColor: "#0000000d" } : undefined}
             transition={{

@@ -25,6 +25,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
       <div className={styles.formContainer}>
         <div className={styles.form} ref={formRef}>
           <input
+            maxLength={200}
             className={styles.input}
             type="text"
             placeholder="ingrese una tarea"
@@ -39,6 +40,23 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             }}
             disabled={!setList}
           ></input>
+          {task.length > 0 && (
+            <p
+              className={styles.limitIndicator}
+              style={{
+                color:
+                  task.length > 150
+                    ? task.length > 180
+                      ? task.length > 195
+                        ? "#fc0303"
+                        : "#fc8003"
+                      : "#ffb300"
+                    : "#8a8a8a",
+              }}
+            >
+              {task.length}/200
+            </p>
+          )}
         </div>
       </div>
     </section>

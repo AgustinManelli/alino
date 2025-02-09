@@ -331,6 +331,7 @@ export const ListCard = ({ list, handleCloseNavbar }: props) => {
           <div className={styles.textContainer}>
             {isNameChange ? (
               <motion.input
+                maxLength={30}
                 initial={
                   animations ? { backgroundColor: "#00000000" } : undefined
                 }
