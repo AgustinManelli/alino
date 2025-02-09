@@ -81,7 +81,7 @@ export const IconAlinoMotion = ({ style }: { style?: React.CSSProperties }) => {
     const animationCycle = async () => {
       await controls.start("visible");
 
-      await new Promise((resolve) => setTimeout(resolve, 300000));
+      await new Promise((resolve) => setTimeout(resolve, 30000));
 
       setIsVisible(false);
 
