@@ -524,7 +524,9 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   updateTaskName: async (id, name) => {
     let errorResult: string | null = null;
     const taskIndex = get().tasks.findIndex((t) => t.id === id);
-    if (taskIndex === -1) return;
+    if (taskIndex === -1) {
+      return { error: "Task not found" };
+    }
 
     const originalName = get().tasks[taskIndex].name;
 
