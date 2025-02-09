@@ -28,7 +28,7 @@ export const ListSchema = z.object({
   name: z
     .string()
     .min(1, "El nombre de la lista debe tener al menos 1 carácter")
-    .max(25, "El nombre de las listas debe tener menos de 25 caracteres"),
+    .max(30, "El nombre de las listas debe tener menos de 25 caracteres"),
   shortcodeemoji: shortcodeEmojiSchema,
   id: z
     .string()
@@ -43,7 +43,7 @@ export const TaskSchema = z.object({
   name: z
     .string()
     .min(1, "El contenido de la tarea debe tener al menos 1 carácter")
-    .max(100, "El contenido de las listas debe tener menos de 100 caracteres"),
+    .max(200, "El contenido de las listas debe tener menos de 100 caracteres"),
   index: z.number().int().min(0),
   category_id: z
     .string()

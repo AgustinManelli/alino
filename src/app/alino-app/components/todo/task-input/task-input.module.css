@@ -37,3 +37,11 @@
   font-family: inherit;
   color: #1c1c1c;
 }
+
+.limitIndicator {
+  position: absolute;
+  right: 10;
+  bottom: -15px;
+  font-size: 9px;
+  color: #8a8a8a;
+}

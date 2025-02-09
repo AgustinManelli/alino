@@ -153,6 +153,7 @@ export function ListInput() {
             />
           </div>
           <motion.input
+            maxLength={30}
             initial={{ backgroundColor: "#00000000" }}
             animate={{ backgroundColor: "#0000000d" }}
             transition={{
