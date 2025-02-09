@@ -146,7 +146,7 @@ export default function Manager({
         </div>
       </section>
       <section className={styles.section2}>
-        <div className={styles.tasksSection}>
+        <div className={styles.tasksSection} id={"task-section-scroll-area"}>
           {h && !setList ? (
             <div className={styles.tasks}>
               {tasks.map((task) => (

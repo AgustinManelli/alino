@@ -1,178 +1,33 @@
-// "use client";
-
-// import type { Database } from "@/lib/schemas/todo-schema";
-// import { motion } from "framer-motion";
-// import { Checkbox } from "@/components/ui/checkbox";
-// import { useState, useRef, useEffect } from "react";
-// import { DeleteIcon } from "@/components/ui/icons/icons";
-// import { useTodoDataStore } from "@/store/useTodoDataStore";
-// import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
-// import styles from "./task-card.module.css";
-
-// type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
-
-// export function TaskCard({ task }: { task: TaskType }) {
-//   const [completed, setCompleted] = useState<boolean>(task.completed);
-//   const [hover, setHover] = useState<boolean>(false);
-//   const [lines, setLines] = useState<
-//     { width: number; top: number; left: number }[]
-//   >([]);
-//   const textRef = useRef<HTMLParagraphElement>(null);
-
-//   const deleteTask = useTodoDataStore((state) => state.deleteTask);
-//   const updateTaskCompleted = useTodoDataStore(
-//     (status) => status.updateTaskCompleted
-//   );
-//   const { isMobile } = usePlatformInfoStore();
-
-//   useEffect(() => {
-//     const calculateLines = () => {
-//       if (!textRef.current) return;
-
-//       const range = document.createRange();
-//       const textNodes: Node[] = [];
-
-//       function findTextNodes(node: Node) {
-//         if (node.nodeType === Node.TEXT_NODE) {
-//           textNodes.push(node);
-//         } else {
-//           node.childNodes.forEach(findTextNodes);
-//         }
-//       }
-
-//       findTextNodes(textRef.current);
-
-//       const newLines: { width: number; top: number; left: number }[] = [];
-//       const containerRect = textRef.current.getBoundingClientRect();
-
-//       textNodes.forEach((textNode) => {
-//         range.selectNodeContents(textNode);
-//         const rects = Array.from(range.getClientRects());
-
-//         rects.forEach((rect) => {
-//           newLines.push({
-//             width: rect.width,
-//             top: rect.top - containerRect.top + rect.height / 2,
-//             left: rect.left - containerRect.left,
-//           });
-//         });
-//       });
-
-//       setLines(newLines);
-//     };
-
-//     calculateLines();
-//     window.addEventListener("resize", calculateLines);
-
-//     return () => {
-//       window.removeEventListener("resize", calculateLines);
-//     };
-//   }, []); // Recalcular cuando cambie el texto
-
-//   const handleDelete = () => {
-//     deleteTask(task.id);
-//   };
-
-//   const handleUpdateStatus = () => {
-//     setCompleted(!completed);
-//     updateTaskCompleted(task.id, !completed);
-//   };
-
-//   return (
-//     <div
-//       className={styles.cardContainer}
-//       onMouseEnter={() => setHover(true)}
-//       onMouseLeave={() => setHover(false)}
-//     >
-//       <div className={styles.leftContainer}>
-//         <Checkbox
-//           status={completed}
-//           handleUpdateStatus={handleUpdateStatus}
-//           id={task.id}
-//         />
-//         <div style={{ position: "relative" }}>
-//           <p
-//             ref={textRef}
-//             className={styles.text}
-//             style={{ opacity: completed ? 0.3 : 1 }}
-//           >
-//             {task.name}
-//           </p>
-//           {lines.map((line, index) => (
-//             <motion.div
-//               key={index}
-//               style={{
-//                 position: "absolute",
-//                 pointerEvents: "none",
-//                 top: line.top,
-//                 left: line.left,
-//                 width: line.width,
-//               }}
-//             >
-//               <motion.svg
-//                 width="100%"
-//                 height="6"
-//                 viewBox={`0 0 ${line.width} 6`}
-//                 style={{ display: "block" }}
-//               >
-//                 <motion.path
-//                   d={`
-//                     M 0 3
-//                     Q ${line.width * 0.1} 0, ${line.width * 0.2} 3
-//                     Q ${line.width * 0.3} 6, ${line.width * 0.4} 3
-//                     Q ${line.width * 0.5} 0, ${line.width * 0.6} 3
-//                     Q ${line.width * 0.7} 6, ${line.width * 0.8} 3
-//                     Q ${line.width * 0.9} 0, ${line.width} 3
-//                   `}
-//                   stroke="#1c1c1c"
-//                   strokeWidth="2"
-//                   fill="none"
-//                   initial={{ pathLength: 0 }}
-//                   animate={{ pathLength: completed ? 1 : 0 }}
-//                   transition={{
-//                     duration: 0.2,
-//                     delay: index * 0.1,
-//                     ease: "easeInOut",
-//                   }}
-//                 />
-//               </motion.svg>
-//             </motion.div>
-//           ))}
-//         </div>
-//       </div>
-//       <button
-//         className={styles.deleteButton}
-//         style={{ opacity: hover || isMobile ? "1" : "0" }}
-//         onClick={handleDelete}
-//       >
-//         <DeleteIcon
-//           style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "2" }}
-//         />
-//       </button>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import type { Database } from "@/lib/schemas/todo-schema";
 import { motion } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState, useRef, useEffect } from "react";
-import { DeleteIcon } from "@/components/ui/icons/icons";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Check, DeleteIcon, Edit } from "@/components/ui/icons/icons";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import styles from "./task-card.module.css";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { ConfigMenu } from "@/components/ui/config-menu";
+import { ConfigCard } from "@/components/ui/config-menu/config-card";
 
 type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
 
 export function TaskCard({ task }: { task: TaskType }) {
   const [completed, setCompleted] = useState<boolean>(task.completed);
   const [hover, setHover] = useState<boolean>(false);
+  const [editing, setEditing] = useState<boolean>(false);
+  const [inputName, setInputName] = useState<string>(task.name);
   const [lines, setLines] = useState<
     { width: number; top: number; left: number }[]
   >([]);
   const textRef = useRef<HTMLParagraphElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const animations = useUserPreferencesStore((store) => store.animations);
+  const updateTaskName = useTodoDataStore((state) => state.updateTaskName);
 
   const deleteTask = useTodoDataStore((state) => state.deleteTask);
   const updateTaskCompleted = useTodoDataStore(
@@ -207,7 +62,7 @@ export function TaskCard({ task }: { task: TaskType }) {
         rects.forEach((rect) => {
           newLines.push({
             width: rect.width,
-            top: rect.top - containerRect.top + rect.height / 2,
+            top: rect.top - containerRect.top + rect.height / 2 - 2,
             left: rect.left - containerRect.left,
           });
         });
@@ -248,70 +103,217 @@ export function TaskCard({ task }: { task: TaskType }) {
     updateTaskCompleted(task.id, !completed);
   };
 
+  const handleSaveName = async () => {
+    if (task.name === inputName || completed) {
+      setEditing(false);
+      setInputName(task.name);
+      return;
+    }
+
+    setEditing(false);
+
+    const { error } = await updateTaskName(task.id, inputName);
+
+    if (error) {
+      setInputName(task.name);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node) &&
+        cardRef.current &&
+        !cardRef.current.contains(event.target as Node)
+      ) {
+        setEditing(false);
+        setInputName(task.name);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [task]);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      const length = inputRef.current.value.length;
+      inputRef.current.setSelectionRange(length, length); // Coloca el cursor al final
+      inputRef.current.focus(); // Enfoca el textarea
+    }
+    // inputRef.current?.focus();
+  }, [editing]);
+
+  const handleEdit = () => {
+    setEditing(true);
+  };
+
+  function autoResize(textarea: any) {
+    // Resetamos la altura para obtener el scrollHeight correcto
+    textarea.style.height = "auto";
+    // Ajustamos la altura según el contenido
+    textarea.style.height = textarea.scrollHeight + "px";
+  }
+
+  useEffect(() => {
+    if (!inputRef.current) return;
+    // Resetamos la altura para obtener el scrollHeight correcto
+    inputRef.current.style.height = "auto";
+    // Ajustamos la altura según el contenido
+    inputRef.current.style.height = inputRef.current.scrollHeight + "px";
+  }, [editing]);
+
+  const configOptions = [
+    {
+      name: "Editar",
+      icon: (
+        <Edit
+          style={{
+            width: "14px",
+            height: "auto",
+            stroke: "#1c1c1c",
+            strokeWidth: 2,
+          }}
+        />
+      ),
+      action: handleEdit,
+    },
+    {
+      name: "Eliminar",
+      icon: (
+        <DeleteIcon
+          style={{
+            stroke: "#1c1c1c",
+            width: "14px",
+            height: "auto",
+            strokeWidth: 2,
+          }}
+        />
+      ),
+      action: handleDelete,
+    },
+  ];
+
+  const filteredOptions = completed
+    ? configOptions.slice(1) // Si completed es true, elimina el primer elemento
+    : configOptions; // Si completed es false, mantiene el array original
+
   return (
     <div
       className={styles.cardContainer}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      ref={cardRef}
     >
-      <div className={styles.leftContainer}>
-        <Checkbox
-          status={completed}
-          handleUpdateStatus={handleUpdateStatus}
-          id={task.id}
-        />
-        <div style={{ position: "relative" }}>
-          <p
-            ref={textRef}
-            className={styles.text}
-            style={{ opacity: completed ? 0.3 : 1 }}
-          >
-            {task.name}
-          </p>
-          {lines.map((line, index) => (
-            <motion.div
-              key={index}
+      <Checkbox
+        status={completed}
+        handleUpdateStatus={handleUpdateStatus}
+        id={task.id}
+      />
+      <div className={styles.textContainer} style={{ position: "relative" }}>
+        {editing ? (
+          <motion.textarea
+            rows={1}
+            initial={animations ? { backgroundColor: "#00000000" } : undefined}
+            animate={animations ? { backgroundColor: "#0000000d" } : undefined}
+            transition={{
+              backgroundColor: {
+                duration: 0.3,
+              },
+            }}
+            className={styles.nameChangerInput}
+            value={inputName}
+            ref={inputRef}
+            onInput={(e) => autoResize(e.target)}
+            onChange={(e) => {
+              setInputName(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (!inputRef.current) return;
+              if (e.key === "Enter") {
+                handleSaveName();
+              }
+              if (e.key === "Escape") {
+                setEditing(false);
+                setInputName(task.name);
+              }
+            }}
+          />
+        ) : (
+          <>
+            <p
+              ref={textRef}
+              className={styles.text}
               style={{
-                position: "absolute",
-                pointerEvents: "none",
-                top: line.top,
-                left: line.left,
-                width: line.width,
+                opacity: completed ? 0.3 : 1,
+                backgroundColor: editing ? "rgb(240, 240, 240)" : "trasnparent",
               }}
             >
-              <motion.svg
-                width="100%"
-                height="6"
-                viewBox={`0 0 ${line.width} 6`}
-                style={{ display: "block" }}
+              {task.name}
+            </p>
+            {lines.map((line, index) => (
+              <motion.div
+                key={index}
+                style={{
+                  position: "absolute",
+                  pointerEvents: "none",
+                  top: line.top,
+                  left: line.left,
+                  width: line.width,
+                }}
               >
-                <motion.path
-                  d={generateWavePath(line.width)}
-                  stroke="#1c1c1c"
-                  strokeWidth="2"
-                  fill="none"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: completed ? 1 : 0 }}
-                  transition={{
-                    duration: 0.2,
-                    delay: index * 0.1,
-                    ease: "easeInOut",
-                  }}
-                />
-              </motion.svg>
-            </motion.div>
-          ))}
-        </div>
+                <motion.svg
+                  width="100%"
+                  height="6"
+                  viewBox={`0 0 ${line.width} 6`}
+                  style={{ display: "block" }}
+                >
+                  <motion.path
+                    d={generateWavePath(line.width)}
+                    stroke="#1c1c1c"
+                    strokeWidth="2"
+                    fill="none"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: completed ? 1 : 0 }}
+                    transition={{
+                      duration: 0.2,
+                      delay: index * 0.1,
+                      ease: "easeInOut",
+                    }}
+                  />
+                </motion.svg>
+              </motion.div>
+            ))}
+          </>
+        )}
       </div>
-      <button
-        className={styles.deleteButton}
-        style={{ opacity: hover || isMobile ? "1" : "0" }}
-        onClick={handleDelete}
-      >
-        <DeleteIcon
-          style={{ stroke: "#1c1c1c", width: "15px", strokeWidth: "2" }}
-        />
-      </button>
+      <div className={styles.editingButtons}>
+        {editing ? (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSaveName();
+            }}
+            className={styles.checkButton}
+          >
+            <Check
+              style={{
+                width: "100%",
+                height: "auto",
+                stroke: "#1c1c1c",
+                strokeWidth: 2,
+              }}
+            />
+          </button>
+        ) : (
+          <ConfigMenu iconWidth={"100%"} configOptions={filteredOptions} />
+        )}
+      </div>
     </div>
   );
 }

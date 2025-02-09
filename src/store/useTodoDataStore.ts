@@ -16,6 +16,7 @@ import {
   updateCompletedTask,
   updatePinnedList,
   updateIndexList,
+  updateNameTask,
   updateAllIndexLists,
   deleteAllLists,
   deleteAllTasks,
@@ -54,6 +55,10 @@ type TodoStore = {
   updateTaskCompleted: (id: string, completed: boolean) => Promise<void>;
   updatePinnedList: (id: string, pinned: boolean) => Promise<void>;
   updateIndexList: (id: string, index: number) => Promise<void>;
+  updateTaskName: (
+    id: string,
+    name: string
+  ) => Promise<{ error: string | null }>;
   deleteAllTasks: () => Promise<void>;
   getTaskCountByListId: (listId: string) => number;
 };
@@ -514,6 +519,45 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       },
       set
     );
+  },
+
+  updateTaskName: async (id, name) => {
+    let errorResult: string | null = null;
+    const taskIndex = get().tasks.findIndex((t) => t.id === id);
+    if (taskIndex === -1) return;
+
+    const originalName = get().tasks[taskIndex].name;
+
+    const revert = () => {
+      set(
+        produce((draft) => {
+          draft.tasks[taskIndex].name = originalName;
+        })
+      );
+    };
+
+    await createCRUDHandler(TaskSchema.pick({ id: true, name: true }))
+      .interact(
+        { id, name },
+        {
+          optimisticUpdate: (draft) => {
+            draft.tasks[taskIndex].name = name;
+          },
+          apiCall: async (validated) => {
+            const { error } = await updateNameTask(
+              validated.id,
+              validated.name
+            );
+            if (error) throw new Error(error);
+          },
+          rollback: revert,
+        },
+        set
+      )
+      .catch((error) => {
+        errorResult = error;
+      });
+    return { error: errorResult };
   },
 
   deleteAllTasks: async () => {
