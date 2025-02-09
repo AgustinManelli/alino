@@ -76,10 +76,6 @@ export default function RootLayout({
             src="//unpkg.com/react-scan/dist/auto.global.js"
           />
         )} */}
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
       </head>
       <body style={{ height: "100%" }} className={`${inter.className}`}>
         <MobileSizeListener />
