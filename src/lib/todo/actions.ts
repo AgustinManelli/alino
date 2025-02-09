@@ -425,6 +425,42 @@ export const updateCompletedTask = async (id: string, completed: boolean) => {
   }
 };
 
+export const updateNameTask = async (id: string, name: string) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const pickSchema = TaskSchema.pick({
+      id: true,
+      name: true,
+    });
+    const validatedData = pickSchema.parse({ id, name });
+
+    const { data, error } = await supabase
+      .from("tasks")
+      .update({ name: validatedData.name })
+      .eq("id", validatedData.id)
+      .eq("user_id", user.id);
+
+    if (error) {
+      throw new Error(
+        "Failed to update the task status. Please try again later."
+      );
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors.map((err) => err.message).join(". ") };
+    }
+
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
 export const deleteAllTasks = async () => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
