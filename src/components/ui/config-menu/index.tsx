@@ -16,12 +16,11 @@ interface ConfigOption {
 interface props {
   iconWidth: string;
   configOptions: ConfigOption[];
-  children?: React.ReactNode;
+  optionalState?: (value: boolean) => void;
 }
 
-export function ConfigMenu({ iconWidth, configOptions, children }: props) {
+export function ConfigMenu({ iconWidth, configOptions, optionalState }: props) {
   const [open, setOpen] = useState<boolean>(false);
-  const [hover, setHover] = useState<boolean>(false);
 
   const Ref = useRef<HTMLDivElement>(null);
   const sRef = useRef<HTMLDivElement>(null);
@@ -81,18 +80,13 @@ export function ConfigMenu({ iconWidth, configOptions, children }: props) {
           style={{
             width: `${iconWidth}`,
             height: `${iconWidth}`,
-            backgroundColor: hover || open ? "rgb(240,240,240)" : "transparent",
+            backgroundColor: open ? "rgb(240,240,240)" : "transparent",
           }}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             setOpen(!open);
-          }}
-          onMouseEnter={() => {
-            setHover(true);
-          }}
-          onMouseLeave={() => {
-            setHover(false);
+            optionalState && optionalState(!open);
           }}
         >
           <MoreVertical
@@ -110,6 +104,7 @@ export function ConfigMenu({ iconWidth, configOptions, children }: props) {
                 e.preventDefault();
                 e.stopPropagation();
               }}
+              id="config-menu-container"
             >
               <section className={styles.optionsContainer}>
                 {configOptions.map((option, index) => (

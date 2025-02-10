@@ -11,15 +11,15 @@ export const hexColorSchema = z.string().refine(
 
 export const shortcodeEmojiSchema = z
   .string()
-  .refine(
-    (value) => {
-      // Regex que valida la estructura :palabra:
-      return /^:[a-z0-9_]+(?:(?:-[a-z0-9_]+)+)?:$/.test(value);
-    },
-    {
-      message: "Formato inválido. Debe ser: :ejemplo: o :ejemplo_123:",
-    }
-  )
+  // .refine(
+  //   (value) => {
+  //     // Regex que valida la estructura :palabra:
+  //     return /^:[a-z0-9_]+(?:(?:-[a-z0-9_]+)+)?:$/.test(value);
+  //   },
+  //   {
+  //     message: "Formato inválido. Debe ser: :ejemplo: o :ejemplo_123:",
+  //   }
+  // )
   .nullable();
 
 export const ListSchema = z.object({
