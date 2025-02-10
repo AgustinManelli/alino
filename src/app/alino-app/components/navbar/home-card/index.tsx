@@ -1,85 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
-import { Database } from "@/lib/schemas/todo-schema";
 
 import { CounterAnimation } from "@/components/ui/counter-animation";
-
 import { HomeIcon2 } from "@/components/ui/icons/icons";
-import styles from "../list-card/ListCard.module.css";
+import styles from "./HomeCard.module.css";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
-export function HomeCard({
-  handleCloseNavbar,
-}: {
+interface props {
   handleCloseNavbar: () => void;
-}) {
-  const [hover, setHover] = useState<boolean>(false);
+}
 
+export const HomeCard = memo(({ handleCloseNavbar }: props) => {
   const tasks = useTodoDataStore((state) => state.tasks);
-  const { isMobile } = usePlatformInfoStore();
   const { animations } = useUserPreferencesStore();
-
   const pathname = usePathname();
 
-  return (
-    <Link
-      className={styles.container}
-      onMouseEnter={!isMobile ? () => setHover(true) : undefined}
-      onMouseLeave={() => {
-        if (!isMobile) setHover(false);
-      }}
-      style={{
-        backgroundColor:
-          hover || pathname === `/alino-app`
-            ? "rgb(250, 250, 250)"
-            : "transparent",
-        pointerEvents: "auto",
-        padding: "7px 10px 7px 15px",
-      }}
-      href={`/alino-app`}
-      onClick={() => {
-        handleCloseNavbar();
-      }}
-    >
-      <div
-        className={styles.cardFx}
-        style={{
-          boxShadow:
-            hover || pathname === `/alino-app`
-              ? `rgb(106, 195, 255) 100px 50px 50px`
-              : `initial`,
-        }}
-      ></div>
+  const isActive = pathname === "/alino-app";
 
-      <div className={styles.colorPickerContainer} style={{ minWidth: "16px" }}>
-        <HomeIcon2
+  const content = useMemo(() => {
+    return (
+      <>
+        <div
+          className={styles.cardFx}
           style={{
-            stroke: "#000",
-            width: "12px",
-            height: "auto",
-            strokeWidth: "2.5",
+            boxShadow: isActive
+              ? "rgb(106, 195, 255) 100px 50px 50px"
+              : "initial",
           }}
-        />
-      </div>
+        ></div>
 
-      {/* IMPLEMENTAR INPUT PARA CAMBIAR DE NOMBRE CON SU RESPECTIVO BOTÓN */}
-      <div className={styles.textContainer}>
-        <p
-          className={styles.listName}
-          style={{
-            color: "#1c1c1c",
-          }}
+        <div
+          className={styles.colorPickerContainer}
+          style={{ minWidth: "16px" }}
         >
-          home
-        </p>
-      </div>
+          <HomeIcon2
+            style={{
+              stroke: "#000",
+              width: "12px",
+              height: "auto",
+              strokeWidth: "2.5",
+            }}
+          />
+        </div>
 
+        <div className={styles.textContainer}>
+          <p
+            className={styles.listName}
+            style={{
+              color: "#1c1c1c",
+            }}
+          >
+            home
+          </p>
+        </div>
+      </>
+    );
+  }, [isActive]);
+
+  const counter = useMemo(() => {
+    return (
       <div className={styles.listManagerContainer}>
         <div className={styles.configsContainer}>
           <p className={`${styles.counter} ${styles.Mobile}`}>
@@ -91,8 +75,20 @@ export function HomeCard({
           </p>
         </div>
       </div>
+    );
+  }, [tasks.length]);
+
+  return (
+    <Link
+      className={`${styles.container}`}
+      style={{
+        backgroundColor: isActive ? "rgb(250, 250, 250)" : "transparent",
+      }}
+      href="/alino-app"
+      onClick={handleCloseNavbar}
+    >
+      {content}
+      {counter}
     </Link>
   );
-}
-
-type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
+});

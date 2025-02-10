@@ -21,8 +21,8 @@
   height: 200px;
   position: absolute;
   left: -200px;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+  opacity: 0.05;
+  transition: box-shadow 0.3s ease-in-out;
   z-index: 0;
 }
 
@@ -31,7 +31,7 @@
 }
 
 .container:hover .cardFx {
-  opacity: 0.05 !important;
+  box-shadow: rgb(106, 195, 255) 100px 50px 50px !important;
 }
 
 .colorPickerContainer {
@@ -63,22 +63,6 @@
   padding-left: 5px;
 }
 
-.nameChangerInput {
-  width: 100%;
-  height: 100%;
-  border: none;
-  color: #1c1c1c;
-  outline: none;
-  background-color: transparent;
-  font-size: 14px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  background-color: #0000000d;
-  border-radius: 10px;
-  padding-left: 5px;
-}
-
 .listManagerContainer {
   position: relative;
   display: flex;
@@ -87,27 +71,6 @@
   gap: 5px;
   width: fit-content;
   height: 100%;
-}
-
-.pinContainer {
-  width: 14px;
-  height: 14px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.checkButton {
-  position: relative;
-  width: 23px;
-  height: 23px;
-  border: none;
-  background-color: transparent;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  padding: 2px;
 }
 
 .configsContainer {
@@ -121,24 +84,7 @@
   border-radius: 5px;
 }
 
-.configButtonContainer,
-.configButtonContainerDesktop {
-  border: none;
-  cursor: pointer;
-  background-color: transparent;
-  transition: opacity 0.2s ease-in-out;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1;
-}
-
-.container:hover .configButtonContainerDesktop {
-  opacity: 1 !important;
-}
-
-.counter,
-.counterDesktop {
+.counter {
   transition: opacity 0.2s ease-in-out;
   width: 23px;
   height: 23px;
@@ -147,10 +93,6 @@
   align-items: center;
   color: rgb(210, 210, 210);
   font-size: 12px;
-}
-
-.container:hover .counterDesktop {
-  opacity: 0 !important;
 }
 
 .Desktop {

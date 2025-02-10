@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
@@ -13,11 +13,10 @@ import styles from "./ListInput.module.css";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useUIStore } from "@/store/useUIStore";
 
-export function ListInput() {
+export const ListInput = memo(() => {
   const [input, setInput] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
   const [color, setColor] = useState<string>("#87189d");
-  const [hover, setHover] = useState<boolean>(false);
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
   const [emoji, setEmoji] = useState<string | null>(null);
 
@@ -68,7 +67,6 @@ export function ListInput() {
 
   const handleSubmit = () => {
     setInput(false);
-    setHover(false);
     setIsCreating(false);
     if (input) {
       if (inputRef.current !== null) {
@@ -99,7 +97,6 @@ export function ListInput() {
             setInput(false);
             setIsCreating(false);
           }
-          setHover(false);
         }
       }
     }
@@ -112,132 +109,127 @@ export function ListInput() {
     };
   });
 
-  return (
-    <motion.div className={styles.formContainer} layout>
-      {input || value !== "" ? (
-        <motion.div
-          className={styles.form}
-          transition={{
-            type: "spring",
-            stiffness: 700,
-            damping: 40,
-          }}
-          initial={
-            animations
-              ? { scale: 0, opacity: 0, filter: "blur(30px)" }
-              : undefined
-          }
-          animate={{
-            scale: 1,
-            opacity: 1,
-            filter: "blur(0px)",
-            transition: { duration: 0.2 },
-          }}
-          exit={
-            animations
-              ? { scale: 0, opacity: 0, filter: "blur(30px)" }
-              : undefined
-          }
-          ref={divRef}
-        >
-          <div className={styles.colorPickerContainer}>
-            <ColorPicker
-              portalRef={portalRef}
-              isOpenPicker={isOpenPicker}
-              setIsOpenPicker={setIsOpenPicker}
-              color={color}
-              setColor={handleSetColor}
-              emoji={emoji}
-              setEmoji={handleSetEmoji}
-              setOriginalColor={setOriginalColor}
-            />
-          </div>
-          <motion.input
-            maxLength={30}
-            initial={{ backgroundColor: "#00000000" }}
-            animate={{ backgroundColor: "#0000000d" }}
+  const content = useMemo(() => {
+    return (
+      <motion.div className={styles.formContainer} layout>
+        {input || value !== "" ? (
+          <motion.div
+            className={styles.form}
             transition={{
-              backgroundColor: {
-                duration: 0.3,
-              },
+              type: "spring",
+              stiffness: 700,
+              damping: 40,
             }}
-            type="text"
-            placeholder="cree una lista nueva"
-            value={value}
-            ref={inputRef}
-            onChange={(e) => {
-              setValue(e.target.value);
+            initial={
+              animations
+                ? { scale: 0, opacity: 0, filter: "blur(30px)" }
+                : undefined
+            }
+            animate={{
+              scale: 1,
+              opacity: 1,
+              filter: "blur(0px)",
+              transition: { duration: 0.2 },
             }}
-            className={styles.inputText}
-            onKeyDown={(e) => {
-              if (!inputRef.current) return;
-              if (e.key === "Enter") {
-                handleSubmit();
-              }
-              if (e.key === "Escape") {
-                setInput(false);
-              }
-            }}
-          ></motion.input>
-
-          <button
-            style={{
-              border: "none",
-              backgroundColor: "transparent",
-              cursor: "pointer",
-              display: "flex",
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
+            exit={
+              animations
+                ? { scale: 0, opacity: 0, filter: "blur(30px)" }
+                : undefined
+            }
+            ref={divRef}
           >
-            <SendIcon
+            <div className={styles.colorPickerContainer}>
+              <ColorPicker
+                portalRef={portalRef}
+                isOpenPicker={isOpenPicker}
+                setIsOpenPicker={setIsOpenPicker}
+                color={color}
+                setColor={handleSetColor}
+                emoji={emoji}
+                setEmoji={handleSetEmoji}
+                setOriginalColor={setOriginalColor}
+              />
+            </div>
+            <motion.input
+              maxLength={30}
+              initial={{ backgroundColor: "#00000000" }}
+              animate={{ backgroundColor: "#0000000d" }}
+              transition={{
+                backgroundColor: {
+                  duration: 0.3,
+                },
+              }}
+              type="text"
+              placeholder="cree una lista nueva"
+              value={value}
+              ref={inputRef}
+              onChange={(e) => {
+                setValue(e.target.value);
+              }}
+              className={styles.inputText}
+              onKeyDown={(e) => {
+                if (!inputRef.current) return;
+                if (e.key === "Enter") {
+                  handleSubmit();
+                }
+                if (e.key === "Escape") {
+                  setInput(false);
+                }
+              }}
+            ></motion.input>
+
+            <button
               style={{
-                width: "18px",
+                border: "none",
+                backgroundColor: "transparent",
+                cursor: "pointer",
+                display: "flex",
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+            >
+              <SendIcon
+                style={{
+                  width: "18px",
+                  stroke: "#1c1c1c",
+                  strokeWidth: "2",
+                }}
+              />
+            </button>
+          </motion.div>
+        ) : (
+          <motion.button
+            onClick={() => {
+              setInput(true);
+              setIsCreating(true);
+            }}
+            className={styles.button}
+            transition={{
+              type: "spring",
+              stiffness: 700,
+              damping: 40,
+            }}
+            initial={animations ? { scale: 0, opacity: 0 } : undefined}
+            animate={{
+              scale: 1,
+              opacity: 1,
+            }}
+            exit={animations ? { scale: 0, opacity: 0 } : undefined}
+          >
+            <PlusBoxIcon
+              style={{
                 stroke: "#1c1c1c",
-                strokeWidth: "2",
+                strokeWidth: "1.5",
+                width: "20px",
               }}
             />
-          </button>
-        </motion.div>
-      ) : (
-        <motion.button
-          onClick={() => {
-            setInput(true);
-            setIsCreating(true);
-          }}
-          className={styles.button}
-          style={{
-            backgroundColor: hover ? "rgb(240, 240, 240)" : "transparent",
-          }}
-          onMouseEnter={() => {
-            setHover(true);
-          }}
-          onMouseLeave={() => {
-            setHover(false);
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 700,
-            damping: 40,
-          }}
-          initial={animations ? { scale: 0, opacity: 0 } : undefined}
-          animate={{
-            scale: 1,
-            opacity: 1,
-          }}
-          exit={animations ? { scale: 0, opacity: 0 } : undefined}
-        >
-          <PlusBoxIcon
-            style={{
-              stroke: "#1c1c1c",
-              strokeWidth: "1.5",
-              width: "20px",
-            }}
-          />
-        </motion.button>
-      )}
-    </motion.div>
-  );
-}
+          </motion.button>
+        )}
+      </motion.div>
+    );
+  }, [input, value, color, isOpenPicker, emoji, animations]);
+
+  return <>{content}</>;
+});
