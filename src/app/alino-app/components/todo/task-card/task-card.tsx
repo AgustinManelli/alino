@@ -3,20 +3,17 @@
 import type { Database } from "@/lib/schemas/todo-schema";
 import { motion } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Check, DeleteIcon, Edit } from "@/components/ui/icons/icons";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import styles from "./task-card.module.css";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { ConfigMenu } from "@/components/ui/config-menu";
-import { ConfigCard } from "@/components/ui/config-menu/config-card";
 
 type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
 
 export function TaskCard({ task }: { task: TaskType }) {
   const [completed, setCompleted] = useState<boolean>(task.completed);
-  const [hover, setHover] = useState<boolean>(false);
   const [editing, setEditing] = useState<boolean>(false);
   const [inputName, setInputName] = useState<string>(task.name);
   const [lines, setLines] = useState<
@@ -33,7 +30,6 @@ export function TaskCard({ task }: { task: TaskType }) {
   const updateTaskCompleted = useTodoDataStore(
     (status) => status.updateTaskCompleted
   );
-  const { isMobile } = usePlatformInfoStore();
 
   useEffect(() => {
     const calculateLines = () => {
@@ -265,18 +261,23 @@ export function TaskCard({ task }: { task: TaskType }) {
     const month = MONTHS_SHORT[date.getMonth()];
     const year = date.getFullYear();
     const showYear = date.getFullYear() !== now.getFullYear();
-    const time = hasTimeComponent(date) ? `, ${formatTime(date)}` : "";
 
     return `${day} ${month}${showYear ? ` ${year}` : ""}`;
   };
 
+  // const [dateState, setDateState] = useState<string | null>();
+
+  // useEffect(() => {
+  //   const intervalId = setInterval(() => {
+  //     if (task.target_date === null) return;
+  //     const temp = formatDate(task.target_date);
+  //     setDateState(temp);
+  //   });
+  //   return () => clearInterval(intervalId);
+  // }, [task.target_date]);
+
   return (
-    <div
-      className={styles.cardContainer}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      ref={cardRef}
-    >
+    <div className={styles.cardContainer} ref={cardRef}>
       <Checkbox
         status={completed}
         handleUpdateStatus={handleUpdateStatus}
