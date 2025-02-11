@@ -313,7 +313,8 @@ export const deleteAllLists = async () => {
 export const insertTask = async (
   category_id: string,
   name: string,
-  id: string
+  id: string,
+  combinedDate: string | null
 ) => {
   try {
     const pickSchema = TaskSchema.pick({
@@ -333,6 +334,7 @@ export const insertTask = async (
         user_id: user.id,
         name: validatedData.name,
         description: "",
+        target_date: combinedDate,
       })
       .select()
       .single();

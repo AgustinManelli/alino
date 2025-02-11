@@ -198,9 +198,77 @@ export function TaskCard({ task }: { task: TaskType }) {
     },
   ];
 
-  const filteredOptions = completed
-    ? configOptions.slice(1) // Si completed es true, elimina el primer elemento
-    : configOptions; // Si completed es false, mantiene el array original
+  const filteredOptions = completed ? configOptions.slice(1) : configOptions;
+
+  const formatDate = (dateString: string | Date): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+
+    // Configuración localizada
+    const LOCALE = "es-ES";
+    const MONTHS_SHORT = [
+      "Ene",
+      "Feb",
+      "Mar",
+      "Abr",
+      "May",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dic",
+    ];
+
+    // Helpers reutilizables
+    const isToday = (date: Date, now: Date): boolean => {
+      return (
+        date.getDate() === now.getDate() &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear()
+      );
+    };
+
+    const isTomorrow = (date: Date, now: Date): boolean => {
+      const tomorrow = new Date(now);
+      tomorrow.setDate(now.getDate() + 1);
+      return (
+        date.getDate() === tomorrow.getDate() &&
+        date.getMonth() === tomorrow.getMonth() &&
+        date.getFullYear() === tomorrow.getFullYear()
+      );
+    };
+
+    const formatTime = (date: Date): string => {
+      return date
+        .toLocaleTimeString(LOCALE, {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+        .replace(/^24:/, "00:");
+    };
+
+    const hasTimeComponent = (date: Date): boolean => {
+      return date.getHours() > 0 || date.getMinutes() > 0;
+    };
+
+    // Lógica principal
+    if (isToday(date, now))
+      return "Hoy" + (hasTimeComponent(date) ? `, ${formatTime(date)}` : "");
+    if (isTomorrow(date, now))
+      return "Mañana" + (hasTimeComponent(date) ? `, ${formatTime(date)}` : "");
+
+    // Formateo de fecha base
+    const day = date.getDate();
+    const month = MONTHS_SHORT[date.getMonth()];
+    const year = date.getFullYear();
+    const showYear = date.getFullYear() !== now.getFullYear();
+    const time = hasTimeComponent(date) ? `, ${formatTime(date)}` : "";
+
+    return `${day} ${month}${showYear ? ` ${year}` : ""}`;
+  };
 
   return (
     <div
@@ -312,7 +380,14 @@ export function TaskCard({ task }: { task: TaskType }) {
             />
           </button>
         ) : (
-          <ConfigMenu iconWidth={"100%"} configOptions={filteredOptions} />
+          <div className={styles.configTaskSection}>
+            {task.target_date && (
+              <div className={styles.timeTargetContainer}>
+                <p>{formatDate(task.target_date)}</p>
+              </div>
+            )}
+            <ConfigMenu iconWidth={"25px"} configOptions={filteredOptions} />
+          </div>
         )}
       </div>
     </div>
