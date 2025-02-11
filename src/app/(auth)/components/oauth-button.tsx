@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/client";
 
 import { LoadingIcon } from "@/components/ui/icons/icons";
 import styles from "./OauthButton.module.css";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 interface props {
@@ -33,100 +33,113 @@ export function OauthButton({
 }: props) {
   const [isPending, setIsPending] = useState<boolean>(false);
 
-  const [popup, setPopup] = useState<Window | null>(null);
-  const router = useRouter();
+  // const [popup, setPopup] = useState<Window | null>(null);
+  // const router = useRouter();
 
-  useEffect(() => {
-    if (!popup) return;
+  // useEffect(() => {
+  //   if (!popup) return;
 
-    const channel = new BroadcastChannel("popup-channel");
-    channel.addEventListener("message", getDataFromPopup);
+  //   const channel = new BroadcastChannel("popup-channel");
+  //   channel.addEventListener("message", getDataFromPopup);
 
-    const checkPopupClosed = setInterval(() => {
-      if (popup.closed) {
-        setPopup(null);
-        setIsPending(false);
-        setOauthPending(false);
-        clearInterval(checkPopupClosed);
-      }
-    }, 500);
+  //   const checkPopupClosed = setInterval(() => {
+  //     if (popup.closed) {
+  //       setPopup(null);
+  //       setIsPending(false);
+  //       setOauthPending(false);
+  //       clearInterval(checkPopupClosed);
+  //     }
+  //   }, 500);
 
-    return () => {
-      clearInterval(checkPopupClosed);
-      channel.removeEventListener("message", getDataFromPopup);
-      setPopup(null);
-      setIsPending(false);
-      setOauthPending(false);
-    };
-  }, [popup]);
+  //   return () => {
+  //     clearInterval(checkPopupClosed);
+  //     channel.removeEventListener("message", getDataFromPopup);
+  //     setPopup(null);
+  //     setIsPending(false);
+  //     setOauthPending(false);
+  //   };
+  // }, [popup]);
 
   const login = async () => {
     setIsPending(true);
     setOauthPending(true);
     const isPWA = window.matchMedia("(display-mode: standalone)").matches;
     const supabase = await createClient();
-    if (isPWA) {
-      const href = window.location.origin;
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: providerType,
-        options: {
-          redirectTo: `${href}/api/auth/callback`,
-        },
-      });
-      if (error) {
-        toast.error("Hubo un error al iniciar sesión");
-        setIsPending(false);
-        setOauthPending(false);
-        return;
-      }
-    } else {
-      const origin = location.origin;
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: providerType,
-        options: {
-          redirectTo: `${origin}/api/auth/popup-callback`,
-          queryParams: { prompt: "select_account" },
-          skipBrowserRedirect: true,
-        },
-      });
-      if (error || !data) {
-        setIsPending(false);
-        setOauthPending(false);
-        return console.error(error);
-      }
-      const popup = openPopup(data.url);
-      setPopup(popup);
+    const href = window.location.origin;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: providerType,
+      options: {
+        redirectTo: `${href}/api/auth/callback`,
+      },
+    });
+    if (error) {
+      toast.error("Hubo un error al iniciar sesión");
+      setIsPending(false);
+      setOauthPending(false);
+      return;
     }
+    // if (isPWA) {
+    //   const href = window.location.origin;
+    //   const { error } = await supabase.auth.signInWithOAuth({
+    //     provider: providerType,
+    //     options: {
+    //       redirectTo: `${href}/api/auth/callback`,
+    //     },
+    //   });
+    //   if (error) {
+    //     toast.error("Hubo un error al iniciar sesión");
+    //     setIsPending(false);
+    //     setOauthPending(false);
+    //     return;
+    //   }
+    // } else {
+    //   const origin = location.origin;
+    //   const { data, error } = await supabase.auth.signInWithOAuth({
+    //     provider: providerType,
+    //     options: {
+    //       redirectTo: `${origin}/api/auth/popup-callback`,
+    //       queryParams: { prompt: "select_account" },
+    //       skipBrowserRedirect: true,
+    //     },
+    //   });
+    //   if (error || !data) {
+    //     setIsPending(false);
+    //     setOauthPending(false);
+    //     return console.error(error);
+    //   }
+    //   const popup = openPopup(data.url);
+    //   setPopup(popup);
+    // }
   };
 
-  const openPopup = (url: string) => {
-    const width = 500;
-    const height = 600;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
+  // const openPopup = (url: string) => {
+  //   const width = 500;
+  //   const height = 600;
+  //   const left = window.screen.width / 2 - width / 2;
+  //   const top = window.screen.height / 2 - height / 2;
 
-    const windowFeatures = `scrollbars=no, resizable=no, copyhistory=no, width=${width}, height=${height}, top=${top}, left=${left}`;
-    const popup = window.open(url, "popup", windowFeatures);
+  //   const windowFeatures = `scrollbars=no, resizable=no, copyhistory=no, width=${width}, height=${height}, top=${top}, left=${left}`;
+  //   const popup = window.open(url, "popup", windowFeatures);
 
-    if (!popup) {
-      toast.error(
-        "No se pudo abrir la ventana emergente. Revisa los bloqueadores de pop-ups."
-      );
-      return null;
-    }
+  //   if (!popup) {
+  //     toast.error(
+  //       "No se pudo abrir la ventana emergente. Revisa los bloqueadores de pop-ups."
+  //     );
+  //     return null;
+  //   }
 
-    return popup;
-  };
+  //   return popup;
+  // };
 
-  const getDataFromPopup = (e: MessageEvent) => {
-    if (e.origin !== window.location.origin) return;
+  // const getDataFromPopup = (e: MessageEvent) => {
+  //   if (e.origin !== window.location.origin) return;
 
-    const { authResultCode } = e.data as { authResultCode?: string };
-    if (!authResultCode) return;
+  //   const { authResultCode } = e.data as { authResultCode?: string };
+  //   if (!authResultCode) return;
 
-    setPopup(null);
-    router.replace(`/api/auth/callback?code=${authResultCode}`);
-  };
+  //   setPopup(null);
+  //   router.replace(`/api/auth/callback?code=${authResultCode}`);
+  // };
 
   return (
     <button
