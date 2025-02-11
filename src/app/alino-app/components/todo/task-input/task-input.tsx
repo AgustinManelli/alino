@@ -43,11 +43,12 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   }
 
   const handleAdd = () => {
+    if (!setList) return;
     const combinedDate = combineDateAndTime(selected, hour);
+    console.log(selected, hour);
     setTask("");
     setSelected(undefined);
     setHour(undefined);
-    if (!setList) return;
     addTask(setList.id, task, combinedDate);
   };
 

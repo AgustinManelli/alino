@@ -10,8 +10,6 @@ import "./DayPicker.css";
 import { Hour } from "./hour";
 import { AnimatePresence, motion } from "motion/react";
 
-import { useSwipeable } from "react-swipeable";
-
 interface props {
   selected: Date | undefined;
   setSelected: (value: Date | undefined) => void;
@@ -94,18 +92,6 @@ export function Calendar({ selected, setSelected, hour, setHour }: props) {
       }, 150);
   };
 
-  const handlers = useSwipeable({
-    onSwipedLeft: () =>
-      setSelected(
-        selected && new Date(selected.getFullYear(), selected.getMonth() + 1, 1)
-      ),
-    onSwipedRight: () =>
-      setSelected(
-        selected && new Date(selected.getFullYear(), selected.getMonth() - 1, 1)
-      ),
-    trackMouse: true,
-  });
-
   return (
     <>
       <button
@@ -159,7 +145,7 @@ export function Calendar({ selected, setSelected, hour, setHour }: props) {
                   {step ? "Hora" : "Fecha"} límite para tu tarea
                 </p>
                 <div className={styles.divisor}></div>
-                <div className={styles.optionsContainer} {...handlers}>
+                <div className={styles.optionsContainer}>
                   {step ? (
                     <div className={styles.hourPicker}>
                       <Hour value={hour} onChange={setHour} />
@@ -183,13 +169,15 @@ export function Calendar({ selected, setSelected, hour, setHour }: props) {
                             e.stopPropagation();
                             setOpen(false);
                             setStep(false);
-                            setHour(
-                              new Date().toLocaleTimeString("es-AR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: false,
-                              })
-                            );
+                            if (!hour) {
+                              setHour(
+                                new Date().toLocaleTimeString("es-AR", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: false,
+                                })
+                              );
+                            }
                           }}
                         >
                           siguiente
