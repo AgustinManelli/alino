@@ -926,7 +926,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
                   className={`${styles.configButtonContainer} ${styles.Mobile}`}
                 >
                   <ConfigMenu
-                    iconWidth={"100%"}
+                    iconWidth={"23px"}
                     configOptions={configOptions}
                     optionalState={handleConfigMenu}
                   />
@@ -947,7 +947,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
                 }}
               >
                 <ConfigMenu
-                  iconWidth={"100%"}
+                  iconWidth={"23px"}
                   configOptions={configOptions}
                   optionalState={handleConfigMenu}
                 />

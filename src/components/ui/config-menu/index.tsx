@@ -80,7 +80,7 @@ export function ConfigMenu({ iconWidth, configOptions, optionalState }: props) {
           style={{
             width: `${iconWidth}`,
             height: `${iconWidth}`,
-            backgroundColor: open ? "rgb(240,240,240)" : "transparent",
+            backgroundColor: open ? "rgb(240,240,240)" : " rgb(250, 250, 250)",
           }}
           onClick={(e) => {
             e.preventDefault();
@@ -90,7 +90,12 @@ export function ConfigMenu({ iconWidth, configOptions, optionalState }: props) {
           }}
         >
           <MoreVertical
-            style={{ stroke: "#1c1c1c", width: "20px", strokeWidth: "3" }}
+            style={{
+              stroke: "#1c1c1c",
+              width: "20px",
+              strokeWidth: "3",
+              display: "flex",
+            }}
           />
         </button>
       </div>

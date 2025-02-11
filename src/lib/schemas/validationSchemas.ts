@@ -51,4 +51,5 @@ export const TaskSchema = z.object({
       "Hubo un problema con la validación de la ID de la lista, intentalo nuevamente"
     ),
   completed: z.boolean(),
+  target_date: z.string().datetime({ offset: true }).nullable(),
 });

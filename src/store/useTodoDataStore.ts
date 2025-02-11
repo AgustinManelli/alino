@@ -50,7 +50,11 @@ type TodoStore = {
     emoji: string | null
   ) => Promise<{ error: string | null }>;
   deleteAllLists: () => Promise<void>;
-  addTask: (category_id: string, task: string) => Promise<void>;
+  addTask: (
+    category_id: string,
+    task: string,
+    combinedDate: string | null
+  ) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   updateTaskCompleted: (id: string, completed: boolean) => Promise<void>;
   updatePinnedList: (id: string, pinned: boolean) => Promise<void>;
@@ -406,7 +410,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
 
   //ACCIONES DE TAREAS
 
-  addTask: async (category_id, task) => {
+  addTask: async (category_id, task, combinedDate) => {
     const id = uuidv4();
 
     const revert = () => {
@@ -418,9 +422,14 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     };
 
     await createCRUDHandler(
-      TaskSchema.pick({ id: true, category_id: true, name: true })
+      TaskSchema.pick({
+        id: true,
+        category_id: true,
+        name: true,
+        target_date: true,
+      })
     ).interact(
-      { id, category_id, name: task },
+      { id, category_id, name: task, target_date: combinedDate },
       {
         optimisticUpdate: (draft) => {
           draft.tasks.unshift({
@@ -431,6 +440,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             user_id: "",
+            target_date: combinedDate,
             category_id,
             description: "",
           });
@@ -439,7 +449,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
           const { data, error } = await insertTask(
             validated.category_id,
             validated.name,
-            validated.id
+            validated.id,
+            validated.target_date
           );
           if (error) throw new Error(error);
           set(
