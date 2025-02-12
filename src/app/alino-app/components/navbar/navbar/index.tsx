@@ -505,6 +505,7 @@ export function Navbar({
   const isCreating = useUIStore((state) => state.isCreating);
   const animations = useUserPreferencesStore((state) => state.animations);
   const lists = useTodoDataStore((state) => state.lists);
+  const [prevLength, setPrevLength] = useState(lists.length);
   const setLists = useTodoDataStore((state) => state.setLists);
   const updateIndexList = useTodoDataStore((state) => state.updateIndexList);
 
@@ -518,6 +519,16 @@ export function Navbar({
   //ref's
   const Ref = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (scrollRef.current && lists.length > prevLength) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+      setPrevLength(lists.length);
+    }
+  }, [lists.length, prevLength]);
 
   //function
   const handleDragStart = (event: DragStartEvent) => {
