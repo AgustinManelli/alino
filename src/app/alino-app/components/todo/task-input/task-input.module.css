@@ -41,8 +41,47 @@
 
 .limitIndicator {
   position: absolute;
-  right: 10;
+  right: 10px;
   bottom: -15px;
   font-size: 9px;
   color: #8a8a8a;
+}
+
+.dropdownItemContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.dropdownItemContainer p {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 100%;
+  overflow: hidden;
+  color: #1c1c1c;
+}
+
+.taskSendButton {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  outline: none;
+  background-color: transparent;
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.inputManagerContainer {
+  position: relative;
+  width: fit-content;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
 }

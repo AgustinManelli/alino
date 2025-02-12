@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Calendar as Icon } from "@/components/ui/icons/icons";
-import styles from "./Calendar.module.css";
 import { createPortal } from "react-dom";
 import { DayPicker } from "react-day-picker";
 import { es } from "react-day-picker/locale";
-import "./DayPicker.css";
-import { Hour } from "./hour";
 import { AnimatePresence, motion } from "motion/react";
+
+import { Hour } from "./hour";
+
+import { Calendar as Icon } from "@/components/ui/icons/icons";
+import styles from "./Calendar.module.css";
+import "./DayPicker.css";
 
 interface props {
   selected: Date | undefined;
@@ -125,18 +127,32 @@ export function Calendar({ selected, setSelected, hour, setHour }: props) {
           <AnimatePresence mode="wait">
             {open && (
               <motion.section
-                initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+                initial={{
+                  opacity: 0,
+                  filter: "blur(10px)",
+                  z: -50,
+                  rotateX: 10,
+                  rotateY: -25,
+                }}
                 animate={{
-                  scale: 1,
                   opacity: 1,
                   filter: "blur(0px)",
-                  transition: { duration: "0.2" },
+                  z: 0,
+                  rotateX: 0,
+                  rotateY: 0,
                 }}
-                exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
+                exit={{
+                  opacity: 0,
+                  filter: "blur(10px)",
+                  z: -50,
+                  rotateX: 10,
+                  rotateY: -25,
+                }}
                 transition={{
                   type: "spring",
-                  stiffness: 700,
-                  damping: 40,
+                  stiffness: 150,
+                  damping: 25,
+                  duration: 0.3,
                 }}
                 className={styles.container}
                 ref={sRef}
@@ -149,9 +165,6 @@ export function Calendar({ selected, setSelected, hour, setHour }: props) {
                   {step ? (
                     <div className={styles.hourPicker}>
                       <Hour value={hour} onChange={setHour} />
-                      {/* <p className={styles.hourParaph}>
-                        *Puedes omitir el horario
-                      </p> */}
                       <div className={styles.hourButtonsContainer}>
                         <button
                           className={styles.hourButtons}
