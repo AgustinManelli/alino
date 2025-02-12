@@ -1,20 +1,49 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import styles from "./task-input.module.css";
 import { Database } from "@/lib/schemas/todo-schema";
 import { Calendar } from "@/components/ui/calendar";
 import { Dropdown } from "@/components/ui/dropdown";
 import { usePathname } from "next/navigation";
+import { AnimatePresence } from "motion/react";
+import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
+import {
+  LoadingIcon,
+  NoList,
+  SendIcon,
+  SquircleIcon,
+} from "@/components/ui/icons/icons";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 export default function TaskInput({ setList }: { setList?: ListsType }) {
+  const lists = useTodoDataStore((state) => state.lists);
   const [task, setTask] = useState<string>("");
   const [inputFocus, setInputFocus] = useState<boolean>(false);
   const [selected, setSelected] = useState<Date>();
   const [hour, setHour] = useState<string | undefined>();
+  const executedRef = useRef(false);
+  const [selectedListHome, setSelectedListHome] = useState<
+    ListsType | undefined
+  >(lists[0]);
+
+  useEffect(() => {
+    // if (executedRef.current) return;
+    executedRef.current = true;
+    if (
+      (lists.length > 0 && !selectedListHome) ||
+      (lists.length > 0 &&
+        !lists.find((list) => list.id === selectedListHome?.id))
+    ) {
+      setSelectedListHome(lists[0]);
+    } else if (selectedListHome) {
+      setSelectedListHome(
+        lists[lists.findIndex((list) => list.id === selectedListHome.id)]
+      );
+    }
+  }, [lists]);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -45,17 +74,101 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   }
 
   const handleAdd = () => {
-    if (!setList) return;
     const combinedDate = combineDateAndTime(selected, hour);
     console.log(selected, hour);
     setTask("");
     setSelected(undefined);
     setHour(undefined);
-    addTask(setList.id, task, combinedDate);
+    if (setList) {
+      addTask(setList.id, task, combinedDate);
+    } else {
+      if (!selectedListHome) return;
+      addTask(selectedListHome.id, task, combinedDate);
+    }
   };
 
   const pathname = usePathname();
   const isHome = pathname === "/alino-app";
+
+  const renderItem = (list: ListsType) => {
+    return (
+      <div
+        className={styles.dropdownItemContainer}
+        style={{ justifyContent: "start" }}
+      >
+        {list && (list.icon !== null || list.icon === "") ? (
+          <div
+            style={{
+              width: "16px",
+              height: "16px",
+            }}
+          >
+            <EmojiMartComponent shortcodes={list.icon} size="16px" />
+          </div>
+        ) : (
+          <SquircleIcon
+            style={{
+              width: "12px",
+              fill: `${list?.color}`,
+              transition: "fill 0.2s ease-in-out",
+            }}
+          />
+        )}
+        <p>{list.name}</p>
+      </div>
+    );
+  };
+
+  const triggerLabel = () => {
+    return (
+      <div className={styles.dropdownItemContainer}>
+        {selectedListHome ? (
+          selectedListHome.icon !== null || selectedListHome.icon === "" ? (
+            <div
+              style={{
+                width: "16px",
+                height: "16px",
+              }}
+            >
+              <EmojiMartComponent
+                shortcodes={selectedListHome.icon}
+                size="16px"
+              />
+            </div>
+          ) : (
+            <SquircleIcon
+              style={{
+                width: "12px",
+                fill: `${selectedListHome?.color}`,
+                transition: "fill 0.2s ease-in-out",
+              }}
+            />
+          )
+        ) : executedRef.current ? (
+          <NoList
+            style={{
+              width: "15px",
+              height: "auto",
+              stroke: "#000",
+              strokeWidth: 3,
+              opacity: 0.3,
+            }}
+          />
+        ) : (
+          <LoadingIcon
+            style={{
+              width: "15px",
+              height: "auto",
+              stroke: "#000",
+              strokeWidth: 3,
+              opacity: 0.3,
+            }}
+          />
+        )}
+        {/* <p>{selectedListHome?.name}</p> */}
+      </div>
+    );
+  };
 
   return (
     <section className={styles.container}>
@@ -80,15 +193,36 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                 inputRef.current?.blur();
               }
             }}
-            disabled={!setList}
           ></input>
-          {/* {isHome && <Dropdown />} */}
-          <Calendar
-            selected={selected}
-            setSelected={setSelected}
-            hour={hour}
-            setHour={setHour}
-          />
+          <div className={styles.inputManagerContainer}>
+            <AnimatePresence>
+              {isHome && (
+                <Dropdown
+                  items={lists}
+                  renderItem={renderItem}
+                  triggerLabel={triggerLabel}
+                  selectedListHome={selectedListHome}
+                  setSelectedListHome={setSelectedListHome}
+                />
+              )}
+            </AnimatePresence>
+            <Calendar
+              selected={selected}
+              setSelected={setSelected}
+              hour={hour}
+              setHour={setHour}
+            />
+            <button className={styles.taskSendButton}>
+              <SendIcon
+                style={{
+                  width: "20px",
+                  height: "auto",
+                  stroke: "#1c1c1c",
+                  strokeWidth: 2,
+                }}
+              />
+            </button>
+          </div>
           {task.length > 0 && (
             <p
               className={styles.limitIndicator}

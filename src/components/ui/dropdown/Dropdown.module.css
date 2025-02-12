@@ -1,0 +1,59 @@
+/* Dropdown.module.css */
+.dropdownContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.triggerButton {
+  position: relative;
+  background-color: #007bff;
+  color: #1c1c1c;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.triggerButton:hover {
+  background-color: #0056b3;
+}
+
+.dropdownMenu {
+  position: absolute;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow:
+    0 4px 12px #0c144205,
+    0 30px 80px #0c144214,
+    inset 0 0 #e6e9ed;
+  z-index: 1000;
+  overflow: hidden;
+  width: 150px;
+  max-height: 222px;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.dropdownMenu::-webkit-scrollbar {
+  display: none;
+}
+
+.dropdownItem {
+  width: 100%;
+  padding: 10px 15px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.dropdownItem:hover {
+  background-color: #f1f1f1;
+}
