@@ -5,6 +5,8 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import styles from "./task-input.module.css";
 import { Database } from "@/lib/schemas/todo-schema";
 import { Calendar } from "@/components/ui/calendar";
+import { Dropdown } from "@/components/ui/dropdown";
+import { usePathname } from "next/navigation";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -52,6 +54,9 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     addTask(setList.id, task, combinedDate);
   };
 
+  const pathname = usePathname();
+  const isHome = pathname === "/alino-app";
+
   return (
     <section className={styles.container}>
       <div className={styles.formContainer}>
@@ -77,6 +82,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             }}
             disabled={!setList}
           ></input>
+          {/* {isHome && <Dropdown />} */}
           <Calendar
             selected={selected}
             setSelected={setSelected}
