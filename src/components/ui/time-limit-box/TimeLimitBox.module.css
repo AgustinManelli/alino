@@ -1,0 +1,45 @@
+.timeTargetContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 10px;
+  height: 25px;
+  background-color: rgb(250, 250, 250);
+  border-radius: 5px;
+  width: fit-content;
+  text-wrap: nowrap;
+  border: 1px solid rgb(245, 245, 245);
+}
+
+.timeTargetContainer p {
+  font-size: 14px;
+}
+
+.timeTargetContainerWarning {
+  background-color: #fff8e4 !important; /* Amarillo suave */
+  border: 1px solid #fff6de;
+}
+
+.timeTargetContainerDanger {
+  background-color: #ffeef0 !important; /* Rojo suave */
+  border: 1px solid #ffeaed;
+}
+
+.taskNotCompleted {
+  opacity: 0.5;
+}
+
+.completed {
+  width: 85%;
+  height: 1px;
+  position: absolute;
+}
+
+.waiting {
+  background-color: transparent;
+}
+
+.notCompleted {
+  background-color: #1c1c1c;
+}

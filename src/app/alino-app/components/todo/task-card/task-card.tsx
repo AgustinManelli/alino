@@ -9,6 +9,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import styles from "./task-card.module.css";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { ConfigMenu } from "@/components/ui/config-menu";
+import { TimeLimitBox } from "@/components/ui/time-limit-box";
 
 type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
 
@@ -192,93 +193,15 @@ export function TaskCard({ task }: { task: TaskType }) {
 
   const filteredOptions = completed ? configOptions.slice(1) : configOptions;
 
-  const formatDate = (dateString: string | Date): string => {
-    const date = new Date(dateString);
-    const now = new Date();
-
-    // Configuración localizada
-    const LOCALE = "es-ES";
-    const MONTHS_SHORT = [
-      "Ene",
-      "Feb",
-      "Mar",
-      "Abr",
-      "May",
-      "Jun",
-      "Jul",
-      "Ago",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dic",
-    ];
-
-    // Helpers reutilizables
-    const isToday = (date: Date, now: Date): boolean => {
-      return (
-        date.getDate() === now.getDate() &&
-        date.getMonth() === now.getMonth() &&
-        date.getFullYear() === now.getFullYear()
-      );
-    };
-
-    const isTomorrow = (date: Date, now: Date): boolean => {
-      const tomorrow = new Date(now);
-      tomorrow.setDate(now.getDate() + 1);
-      return (
-        date.getDate() === tomorrow.getDate() &&
-        date.getMonth() === tomorrow.getMonth() &&
-        date.getFullYear() === tomorrow.getFullYear()
-      );
-    };
-
-    const formatTime = (date: Date): string => {
-      return date
-        .toLocaleTimeString(LOCALE, {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        })
-        .replace(/^24:/, "00:");
-    };
-
-    const hasTimeComponent = (date: Date): boolean => {
-      return date.getHours() > 0 || date.getMinutes() > 0;
-    };
-
-    // Lógica principal
-    if (isToday(date, now))
-      return "Hoy" + (hasTimeComponent(date) ? `, ${formatTime(date)}` : "");
-    if (isTomorrow(date, now))
-      return "Mañana" + (hasTimeComponent(date) ? `, ${formatTime(date)}` : "");
-
-    // Formateo de fecha base
-    const day = date.getDate();
-    const month = MONTHS_SHORT[date.getMonth()];
-    const year = date.getFullYear();
-    const showYear = date.getFullYear() !== now.getFullYear();
-
-    return `${day} ${month}${showYear ? ` ${year}` : ""}`;
-  };
-
-  // const [dateState, setDateState] = useState<string | null>();
-
-  // useEffect(() => {
-  //   const intervalId = setInterval(() => {
-  //     if (task.target_date === null) return;
-  //     const temp = formatDate(task.target_date);
-  //     setDateState(temp);
-  //   });
-  //   return () => clearInterval(intervalId);
-  // }, [task.target_date]);
-
   return (
     <div className={styles.cardContainer} ref={cardRef}>
-      <Checkbox
-        status={completed}
-        handleUpdateStatus={handleUpdateStatus}
-        id={task.id}
-      />
+      <div className={styles.checkboxContainer}>
+        <Checkbox
+          status={completed}
+          handleUpdateStatus={handleUpdateStatus}
+          id={task.id}
+        />
+      </div>
       <div className={styles.textContainer} style={{ position: "relative" }}>
         {editing ? (
           <motion.textarea
@@ -378,12 +301,17 @@ export function TaskCard({ task }: { task: TaskType }) {
           </button>
         ) : (
           <div className={styles.configTaskSection}>
-            {task.target_date && (
+            {/* {task.target_date && (
               <div className={styles.timeTargetContainer}>
                 <p>{formatDate(task.target_date)}</p>
               </div>
-            )}
-            <ConfigMenu iconWidth={"25px"} configOptions={filteredOptions} />
+            )} */}
+            <TimeLimitBox target_date={task.target_date} />
+            <ConfigMenu
+              iconWidth={"25px"}
+              configOptions={filteredOptions}
+              idScrollArea={"task-section-scroll-area"}
+            />
           </div>
         )}
       </div>
