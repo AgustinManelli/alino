@@ -11,8 +11,9 @@
 
 .section1 {
   position: absolute;
+  top: 40px;
   width: 100%;
-  height: 180px;
+  height: fit-content;
   display: flex;
   justify-content: end;
   align-items: center;
@@ -174,7 +175,8 @@
   }
 
   .section1 {
-    height: 220px;
+    /* height: 220px; */
+    top: 80px;
   }
 
   .section1::before {

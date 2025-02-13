@@ -149,17 +149,13 @@ export function TaskCard({ task }: { task: TaskType }) {
   };
 
   function autoResize(textarea: any) {
-    // Resetamos la altura para obtener el scrollHeight correcto
     textarea.style.height = "auto";
-    // Ajustamos la altura según el contenido
     textarea.style.height = textarea.scrollHeight + "px";
   }
 
   useEffect(() => {
     if (!inputRef.current) return;
-    // Resetamos la altura para obtener el scrollHeight correcto
     inputRef.current.style.height = "auto";
-    // Ajustamos la altura según el contenido
     inputRef.current.style.height = inputRef.current.scrollHeight + "px";
   }, [editing]);
 

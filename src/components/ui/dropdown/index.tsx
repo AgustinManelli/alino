@@ -94,7 +94,7 @@ export function Dropdown<T>({
         className={styles.triggerButton}
         style={{
           height: "30px",
-          width: "auto",
+          width: "30px",
           aspectRatio: "1 / 1",
           backgroundColor: open ? "rgb(240, 240, 240)" : "rgb(250,250,250)",
         }}
