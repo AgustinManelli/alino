@@ -17,9 +17,15 @@ interface props {
   iconWidth: string;
   configOptions: ConfigOption[];
   optionalState?: (value: boolean) => void;
+  idScrollArea?: string;
 }
 
-export function ConfigMenu({ iconWidth, configOptions, optionalState }: props) {
+export function ConfigMenu({
+  iconWidth,
+  configOptions,
+  optionalState,
+  idScrollArea,
+}: props) {
   const [open, setOpen] = useState<boolean>(false);
 
   const Ref = useRef<HTMLDivElement>(null);
@@ -32,7 +38,7 @@ export function ConfigMenu({ iconWidth, configOptions, optionalState }: props) {
       const parentRect = Ref.current!.getBoundingClientRect();
       const sRect = sRef.current!.getBoundingClientRect();
 
-      sRef.current.style.top = `${parentRect.top + parentRect.width + 10}px`;
+      sRef.current.style.top = `${parentRect.top + parentRect.width + 5}px`;
       sRef.current.style.left = `${parentRect.right - sRect.width}px`;
 
       if (Ref.current.getBoundingClientRect().top > window.innerHeight / 2) {
@@ -64,7 +70,7 @@ export function ConfigMenu({ iconWidth, configOptions, optionalState }: props) {
       setOpen(false);
     };
 
-    const scrollContainer = document.getElementById("task-section-scroll-area");
+    const scrollContainer = document.getElementById(`${idScrollArea}`);
     scrollContainer?.addEventListener("scroll", handleScroll);
 
     return () => {
