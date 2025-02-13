@@ -33,9 +33,7 @@
   white-space: pre-wrap;
   word-break: break-word;
   height: auto;
-
-  /* Nuevos ajustes */
-  box-sizing: border-box; /* Incluye padding en la altura total */
+  box-sizing: border-box;
 }
 
 .text {

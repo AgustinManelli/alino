@@ -15,6 +15,8 @@ import {
   SendIcon,
   SquircleIcon,
 } from "@/components/ui/icons/icons";
+import { motion } from "motion/react";
+import { easeInOut } from "motion";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -45,7 +47,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     }
   }, [lists]);
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const addTask = useTodoDataStore((state) => state.addTask);
 
@@ -74,8 +76,8 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   }
 
   const handleAdd = () => {
+    if (task.length === 0) return;
     const combinedDate = combineDateAndTime(selected, hour);
-    console.log(selected, hour);
     setTask("");
     setSelected(undefined);
     setHour(undefined);
@@ -96,24 +98,25 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
         className={styles.dropdownItemContainer}
         style={{ justifyContent: "start" }}
       >
-        {list && (list.icon !== null || list.icon === "") ? (
-          <div
-            style={{
-              width: "16px",
-              height: "16px",
-            }}
-          >
-            <EmojiMartComponent shortcodes={list.icon} size="16px" />
-          </div>
-        ) : (
-          <SquircleIcon
-            style={{
-              width: "12px",
-              fill: `${list?.color}`,
-              transition: "fill 0.2s ease-in-out",
-            }}
-          />
-        )}
+        {list &&
+          (list.icon !== null ? (
+            <div
+              style={{
+                width: "16px",
+                height: "16px",
+              }}
+            >
+              <EmojiMartComponent shortcodes={list.icon} size="16px" />
+            </div>
+          ) : (
+            <SquircleIcon
+              style={{
+                width: "12px",
+                fill: `${list.color}`,
+                transition: "fill 0.2s ease-in-out",
+              }}
+            />
+          ))}
         <p>{list.name}</p>
       </div>
     );
@@ -123,22 +126,22 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     return (
       <div className={styles.dropdownItemContainer}>
         {selectedListHome ? (
-          selectedListHome.icon !== null || selectedListHome.icon === "" ? (
+          selectedListHome.icon !== null ? (
             <div
               style={{
-                width: "16px",
-                height: "16px",
+                width: "18px",
+                height: "18px",
               }}
             >
               <EmojiMartComponent
                 shortcodes={selectedListHome.icon}
-                size="16px"
+                size="18px"
               />
             </div>
           ) : (
             <SquircleIcon
               style={{
-                width: "12px",
+                width: "18px",
                 fill: `${selectedListHome?.color}`,
                 transition: "fill 0.2s ease-in-out",
               }}
@@ -170,30 +173,52 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     );
   };
 
+  const [height, setHeight] = useState("auto");
+  const tempRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (tempRef.current && inputRef.current) {
+      // Reiniciamos la altura para que el scrollHeight se actualice correctamente
+
+      tempRef.current.style.height = "auto";
+
+      // tempRef.current.style.height = inputRef.current.scrollHeight + "px";
+      const newHeight = inputRef.current.scrollHeight + 13 + "px";
+      setHeight(newHeight);
+    }
+  }, [task]);
+
   return (
     <section className={styles.container}>
       <div className={styles.formContainer}>
         <div className={styles.form}>
-          <input
-            ref={inputRef}
-            maxLength={200}
-            className={styles.input}
-            type="text"
-            placeholder="ingrese una tarea"
-            value={task}
-            onChange={(e) => {
-              setTask(e.target.value);
-            }}
-            onKeyUp={(e) => {
-              if (e.key === "Enter") {
-                handleAdd();
-              }
-              if (e.key === "Escape") {
-                setTask("");
-                inputRef.current?.blur();
-              }
-            }}
-          ></input>
+          <motion.div
+            className={styles.inputContainer}
+            ref={tempRef}
+            animate={{ height }}
+            transition={{ duration: 0.2 }}
+          >
+            <textarea
+              ref={inputRef}
+              maxLength={200}
+              rows={1}
+              className={styles.input}
+              placeholder="ingrese una tarea"
+              value={task}
+              onChange={(e) => {
+                setTask(e.target.value);
+              }}
+              onKeyUp={(e) => {
+                if (e.key === "Enter") {
+                  handleAdd();
+                }
+                if (e.key === "Escape") {
+                  setTask("");
+                  inputRef.current?.blur();
+                }
+              }}
+            ></textarea>
+          </motion.div>
           <div className={styles.inputManagerContainer}>
             <AnimatePresence>
               {isHome && (
@@ -212,13 +237,20 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               hour={hour}
               setHour={setHour}
             />
-            <button className={styles.taskSendButton}>
+            <div
+              style={{
+                width: "1px",
+                height: "70%",
+                backgroundColor: "rgb(250, 250, 250)",
+              }}
+            ></div>
+            <button className={styles.taskSendButton} onClick={handleAdd}>
               <SendIcon
                 style={{
                   width: "20px",
                   height: "auto",
                   stroke: "#1c1c1c",
-                  strokeWidth: 2,
+                  strokeWidth: 1.5,
                 }}
               />
             </button>
