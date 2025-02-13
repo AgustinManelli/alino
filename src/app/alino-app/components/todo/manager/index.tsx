@@ -4,7 +4,7 @@ import styles from "./manager.module.css";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { TaskCard } from "../task-card/task-card";
 import { Database } from "@/lib/schemas/todo-schema";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useBlurBackgroundStore } from "@/store/useBlurBackgroundStore";
 import TaskInput from "../task-input/task-input";
 import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
@@ -48,6 +48,19 @@ export default function Manager({
       day: "numeric",
     });
   };
+
+  const [prevLength, setPrevLength] = useState(tasks.length);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (scrollRef.current && tasks.length > prevLength) {
+      scrollRef.current.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+      setPrevLength(tasks.length);
+    }
+  }, [tasks.length, prevLength]);
 
   return (
     <div className={styles.container}>
@@ -146,7 +159,11 @@ export default function Manager({
         </div>
       </section>
       <section className={styles.section2}>
-        <div className={styles.tasksSection} id={"task-section-scroll-area"}>
+        <div
+          className={styles.tasksSection}
+          id={"task-section-scroll-area"}
+          ref={scrollRef}
+        >
           {h && !setList ? (
             <div className={styles.tasks}>
               {tasks.map((task) => (

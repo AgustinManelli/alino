@@ -17,9 +17,16 @@ interface props {
   setSelected: (value: Date | undefined) => void;
   hour: string | undefined;
   setHour: (value: string | undefined) => void;
+  focusToParentInput?: () => void;
 }
 
-export function Calendar({ selected, setSelected, hour, setHour }: props) {
+export function Calendar({
+  selected,
+  setSelected,
+  hour,
+  setHour,
+  focusToParentInput,
+}: props) {
   const [open, setOpen] = useState<boolean>(false);
   const [step, setStep] = useState<boolean>(false);
 
@@ -191,6 +198,7 @@ export function Calendar({ selected, setSelected, hour, setHour }: props) {
                                 })
                               );
                             }
+                            focusToParentInput && focusToParentInput();
                           }}
                         >
                           siguiente
@@ -204,6 +212,7 @@ export function Calendar({ selected, setSelected, hour, setHour }: props) {
                           setOpen(false);
                           setStep(false);
                           setHour(undefined);
+                          focusToParentInput && focusToParentInput();
                         }}
                       >
                         omitir
