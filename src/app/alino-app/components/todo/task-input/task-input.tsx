@@ -89,6 +89,10 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     }
   };
 
+  const handleSetHour = (value: string | undefined) => {
+    setHour(value);
+  };
+
   const pathname = usePathname();
   const isHome = pathname === "/alino-app";
 
@@ -173,7 +177,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     );
   };
 
-  const [height, setHeight] = useState("auto");
+  const [height, setHeight] = useState("40px");
   const tempRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -188,6 +192,10 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     }
   }, [task]);
 
+  const handleFocusToParentInput = () => {
+    if (inputRef) inputRef.current?.focus();
+  };
+
   return (
     <section className={styles.container}>
       <div className={styles.formContainer}>
@@ -195,6 +203,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
           <motion.div
             className={styles.inputContainer}
             ref={tempRef}
+            initial={{ height: 40 }}
             animate={{ height }}
             transition={{ duration: 0.2 }}
           >
@@ -208,8 +217,9 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               onChange={(e) => {
                 setTask(e.target.value);
               }}
-              onKeyUp={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === "Enter") {
+                  e.preventDefault();
                   handleAdd();
                 }
                 if (e.key === "Escape") {
@@ -228,6 +238,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   triggerLabel={triggerLabel}
                   selectedListHome={selectedListHome}
                   setSelectedListHome={setSelectedListHome}
+                  handleFocusToParentInput={handleFocusToParentInput}
                 />
               )}
             </AnimatePresence>
@@ -235,7 +246,8 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               selected={selected}
               setSelected={setSelected}
               hour={hour}
-              setHour={setHour}
+              setHour={handleSetHour}
+              focusToParentInput={handleFocusToParentInput}
             />
             <div
               style={{

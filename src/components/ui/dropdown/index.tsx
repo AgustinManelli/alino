@@ -10,6 +10,7 @@ interface DropdownProps<T> {
   triggerLabel: () => ReactNode;
   selectedListHome: T | undefined;
   setSelectedListHome: (value: T) => void;
+  handleFocusToParentInput?: () => void;
 }
 
 export function Dropdown<T>({
@@ -18,6 +19,7 @@ export function Dropdown<T>({
   triggerLabel,
   selectedListHome,
   setSelectedListHome,
+  handleFocusToParentInput,
 }: DropdownProps<T>) {
   const [open, setOpen] = useState<boolean>(false);
 
@@ -143,9 +145,12 @@ export function Dropdown<T>({
                     <motion.button
                       key={index}
                       className={styles.dropdownItem}
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         closeDropdown();
                         setSelectedListHome(item);
+                        handleFocusToParentInput && handleFocusToParentInput();
                       }}
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
