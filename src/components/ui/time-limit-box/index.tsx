@@ -105,7 +105,7 @@ export function TimeLimitBox({ target_date }: props) {
     };
 
     const hasTimeComponent = (date: Date): boolean => {
-      return date.getHours() > 0 || date.getMinutes() > 0;
+      return date.getHours() !== 23 && date.getMinutes() !== 59;
     };
 
     // Lógica principal
