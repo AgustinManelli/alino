@@ -13,17 +13,17 @@
 }
 
 .timeTargetContainer p {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .timeTargetContainerWarning {
-  background-color: #fff8e4 !important; /* Amarillo suave */
-  border: 1px solid #fff6de;
+  background-color: #fffbe4 !important; /* Amarillo suave */
+  border: 1px solid #fff7c7;
 }
 
 .timeTargetContainerDanger {
-  background-color: #ffeef0 !important; /* Rojo suave */
-  border: 1px solid #ffeaed;
+  background-color: #ffdede !important; /* Rojo suave */
+  border: 1px solid #ffd2d2;
 }
 
 .taskNotCompleted {

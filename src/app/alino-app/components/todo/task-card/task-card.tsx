@@ -10,6 +10,8 @@ import styles from "./task-card.module.css";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { ConfigMenu } from "@/components/ui/config-menu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
+import { ListIcon } from "./list-icon";
+import { usePathname } from "next/navigation";
 
 type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
 
@@ -26,6 +28,9 @@ export function TaskCard({ task }: { task: TaskType }) {
 
   const animations = useUserPreferencesStore((store) => store.animations);
   const updateTaskName = useTodoDataStore((state) => state.updateTaskName);
+
+  const pathname = usePathname();
+  const isHome = pathname === "/alino-app";
 
   const deleteTask = useTodoDataStore((state) => state.deleteTask);
   const updateTaskCompleted = useTodoDataStore(
@@ -307,6 +312,7 @@ export function TaskCard({ task }: { task: TaskType }) {
               </div>
             )} */}
             <TimeLimitBox target_date={task.target_date} />
+            {/* {isHome && <ListIcon list_id={task.category_id} />} */}
             <ConfigMenu
               iconWidth={"25px"}
               configOptions={filteredOptions}

@@ -120,7 +120,10 @@ export function TimeLimitBox({ target_date }: props) {
     const year = date.getFullYear();
     const showYear = date.getFullYear() !== now.getFullYear();
 
-    return `${day} ${month}${showYear ? ` ${year}` : ""}`;
+    return (
+      `${day} ${month}${showYear ? ` ${year}` : ""}` +
+      (hasTimeComponent(date) ? `, ${formatTime(date)}` : "")
+    );
   };
 
   return (
