@@ -182,11 +182,8 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
 
   useEffect(() => {
     if (tempRef.current && inputRef.current) {
-      // Reiniciamos la altura para que el scrollHeight se actualice correctamente
-
       tempRef.current.style.height = "auto";
 
-      // tempRef.current.style.height = inputRef.current.scrollHeight + "px";
       const newHeight = inputRef.current.scrollHeight + 13 + "px";
       setHeight(newHeight);
     }
@@ -252,8 +249,8 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             <div
               style={{
                 width: "1px",
-                height: "70%",
-                backgroundColor: "rgb(250, 250, 250)",
+                height: "30px",
+                backgroundColor: "rgb(240, 240, 240)",
               }}
             ></div>
             <button className={styles.taskSendButton} onClick={handleAdd}>
