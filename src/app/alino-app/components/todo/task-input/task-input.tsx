@@ -63,7 +63,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     const combined = new Date(selected);
 
     // Dividir la cadena 'hour' en horas y minutos
-    const [hours, minutes] = (hour ? hour : "00:00").split(":").map(Number);
+    const [hours, minutes] = (hour ? hour : "23:59").split(":").map(Number);
 
     // Establecer las horas y minutos en la nueva fecha
     combined.setHours(hours);
