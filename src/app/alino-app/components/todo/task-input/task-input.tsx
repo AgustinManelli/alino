@@ -151,23 +151,13 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               }}
             />
           )
-        ) : executedRef.current ? (
+        ) : (
           <NoList
             style={{
               width: "15px",
               height: "auto",
-              stroke: "#000",
-              strokeWidth: 3,
-              opacity: 0.3,
-            }}
-          />
-        ) : (
-          <LoadingIcon
-            style={{
-              width: "15px",
-              height: "auto",
-              stroke: "#000",
-              strokeWidth: 3,
+              stroke: "#1c1c1c",
+              strokeWidth: 2,
               opacity: 0.3,
             }}
           />
