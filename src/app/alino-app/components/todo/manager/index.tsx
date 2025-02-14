@@ -166,9 +166,15 @@ export default function Manager({
         >
           {h && !setList ? (
             <div className={styles.tasks}>
-              {tasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
-              ))}
+              {tasks
+                // .sort(
+                //   (a, b) =>
+                //     new Date(b.created_at).getTime() -
+                //     new Date(a.created_at).getTime()
+                // )
+                .map((task) => (
+                  <TaskCard key={task.id} task={task} />
+                ))}
             </div>
           ) : filteredTasks.length > 0 ? (
             <div className={styles.tasks}>
