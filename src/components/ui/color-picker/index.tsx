@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { generatePalette } from "emoji-palette";
 
 import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
 import { EmojiMartPicker } from "@/components/ui/emoji-mart/emoji-mart-picker";
+import colorsData from "./colors.json";
 
 import {
   ArrowThin,
@@ -18,39 +19,40 @@ import {
 import styles from "./ColorPicker.module.css";
 import { hexColorSchema } from "@/lib/schemas/validationSchemas";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { useModalUbication } from "@/hooks/useModalUbication";
 
 interface ColorPickerInterface {
-  portalRef: React.RefObject<HTMLDivElement>;
-  isOpenPicker: boolean;
-  setIsOpenPicker: (value: boolean) => void;
   color: string;
   setColor: (value: string, typing?: boolean) => void;
   emoji: string | null;
   setEmoji: (value: string | null) => void;
   active?: boolean;
   setOriginalColor: () => void;
+  uniqueId?: string;
+  big?: boolean;
 }
 
 export function ColorPicker({
-  portalRef, //importamos un ref para el portal
-  isOpenPicker, //estado para abrir/cerrar modal
-  setIsOpenPicker, //set para el estado de abrir/cerrar modal
   color, //indica el color que está seleccionado en ese momento, no corresponde al original
   setColor, //corresponde a la función para cambiar el valor de los colores temporales, no cambia valor de color original
   emoji, //corresponde al valor del emoji temporal, no al original
   setEmoji, //corresponde a la función para cambiar el valor del emoji temporal, similar a la de color
-  active = true, //activar o desactivar funcion de cambiar de color
+  active = true, //activar o desactivar funcion de cambiar de color (estatico o color-picker)
   setOriginalColor,
+  uniqueId = "",
+  big = false,
 }: ColorPickerInterface) {
   //estados locales
+
+  const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false); //estado para abrir o cerrar color-picker-container
   const [type, setType] = useState<string>("color"); //modo color o emoji picker en la modal
-  const [flagColor, setFlagColor] = useState<string>(color);
 
   //estados globales
   const { animations } = useUserPreferencesStore();
 
   //ref's
   const pickerRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
 
   //funciones
   const onEmojiSelect = (selectedEmoji: emoji) => {
@@ -61,73 +63,13 @@ export function ColorPicker({
     setIsOpenPicker(false);
   };
 
-  const ubication = useCallback(() => {
-    if (!pickerRef.current || !portalRef.current) return;
-    const parentRect = pickerRef.current!.getBoundingClientRect();
-    const scrollY = window.scrollY || document.documentElement.scrollTop;
-
-    portalRef.current.style.top = `${parentRect.top + scrollY + parentRect.height + 5}px`;
-    portalRef.current.style.left = `${parentRect.left}px`;
-
-    if (
-      pickerRef.current.getBoundingClientRect().top >
-      window.innerHeight / 2
-    ) {
-      portalRef.current.style.top = `${parentRect.top + scrollY - portalRef.current.offsetHeight - 5}px`;
+  useModalUbication(pickerRef, portalRef, () => {
+    const validation = hexColorSchema.safeParse(color);
+    if (!validation.success) {
+      setOriginalColor();
     }
-  }, []);
-
-  //useEffect's
-  useEffect(() => {
-    if (!pickerRef.current) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      ubication();
-    });
-
-    const scrollHandler = () => {
-      ubication();
-    };
-
-    resizeObserver.observe(pickerRef.current);
-
-    window.addEventListener("scroll", scrollHandler, true);
-    window.addEventListener("resize", scrollHandler, true);
-
-    ubication();
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener("scroll", scrollHandler, true);
-      window.removeEventListener("resize", scrollHandler, true);
-    };
-  }, [ubication]);
-
-  useEffect(function mount() {
-    function divOnClick(event: MouseEvent | TouchEvent) {
-      if (portalRef.current !== null && pickerRef.current !== null) {
-        if (
-          !portalRef.current.contains(event.target as Node) &&
-          !pickerRef.current.contains(event.target as Node)
-        ) {
-          const validation = hexColorSchema.safeParse(color);
-          if (!validation.success) {
-            setOriginalColor();
-          }
-          setIsOpenPicker(false);
-          setType("color");
-        }
-      }
-    }
-
-    window.addEventListener("mousedown", divOnClick);
-    window.addEventListener("mouseup", divOnClick);
-    ubication();
-
-    return function unMount() {
-      window.removeEventListener("mousedown", divOnClick);
-      window.removeEventListener("mouseup", divOnClick);
-    };
+    setIsOpenPicker(false);
+    setType("color");
   });
 
   const renderIcon = () => (
@@ -137,12 +79,17 @@ export function ColorPicker({
           style={{
             fill: `${color}`,
             transition: "fill 0.1s ease-in-out",
-            width: "12px",
+            width: big ? "16px" : "12px",
           }}
         />
       ) : (
-        <div style={{ width: "16px", height: "16px" }}>
-          <EmojiMartComponent shortcodes={emoji} size="16px" />
+        <div
+          style={{
+            width: big ? "20px" : "16px",
+            height: big ? "20px" : "16px",
+          }}
+        >
+          <EmojiMartComponent shortcodes={emoji} size={big ? "20px" : "16px"} />
         </div>
       )}
     </div>
@@ -152,16 +99,11 @@ export function ColorPicker({
     <button
       className={styles.title}
       style={{
-        boxShadow:
-          type === typeSelected
-            ? "0px 1px 1px 0px rgb(0,0,0, 0.1), inset 0 -1px 0 0 rgb(0,0,0,0.05), inset 0 1px 1px 0 rgb(255,255,255, 0.05), 0 1px 2px 0 rgb(0,0,0,0.03)"
-            : "none",
-        backgroundColor:
-          type === typeSelected ? "rgb(245,245,245)" : "transparent",
-        color: type === typeSelected ? "rgb(130,130,130)" : "rgb(200,200,200)",
+        color: type === typeSelected ? "#1c1c1c" : "rgb(210,210,210)",
       }}
       onClick={(e) => {
         e.preventDefault();
+        e.stopPropagation();
         setType(typeSelected);
       }}
     >
@@ -284,19 +226,28 @@ export function ColorPicker({
                 stiffness: 700,
                 damping: 40,
               }}
+              id={`color-picker-container-${uniqueId}`}
             >
               <section className={styles.titleSection}>
-                <div className={styles.titleButtons}>
+                <div
+                  className={styles.titleButtons}
+                  style={{
+                    justifyContent:
+                      "flex-" + (type === "color" ? "start" : "end"),
+                  }}
+                >
+                  <motion.div className={styles.titleSelector} layout />
                   {titleButtons("color", "color")}
                   {titleButtons("emoji", "emoji")}
                 </div>
-                <div className={styles.separator}></div>
               </section>
+
+              <div className={styles.separator}></div>
 
               {type === "color" ? (
                 <div className={styles.colorSelectorContainer}>
                   <section className={styles.buttonSection}>
-                    {COLORS.map((colorHex, index) => (
+                    {colorsData.COLORS.map((colorHex, index) => (
                       <SquircleColorSelector
                         color={color}
                         setColor={setColor}
@@ -304,7 +255,6 @@ export function ColorPicker({
                         setIsOpenPicker={setIsOpenPicker}
                         index={index}
                         setEmoji={setEmoji}
-                        setFlagColor={setFlagColor}
                       />
                     ))}
                   </section>
@@ -331,7 +281,7 @@ export function ColorPicker({
                               <SquircleIcon
                                 style={{ fill: `${color}`, width: "18px" }}
                               />
-                              {COLORS.includes(color) && (
+                              {colorsData.COLORS.includes(color) && (
                                 <SquircleIcon
                                   style={{
                                     fill: "transparent",
@@ -360,37 +310,34 @@ export function ColorPicker({
                         value={`${color}`}
                         onChange={(e) => {
                           setColor(e.target.value, true);
-                          setFlagColor(e.target.value);
                         }}
                         onKeyDown={(e) => {
                           const target = e.target as HTMLInputElement;
                           if (e.key === "Enter" || e.key === "Escape") {
                             setIsOpenPicker(false);
                             setColor(target.value);
-                            setFlagColor(target.value);
                           }
                         }}
                         onBlur={(e) => {
                           setColor(e.target.value);
-                          setFlagColor(e.target.value);
                         }}
                       ></input>
-                    </div>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(color);
-                        toast("color copiado al portapapeles");
-                      }}
-                      className={styles.copyButton}
-                    >
-                      <CopyToClipboardIcon
-                        style={{
-                          strokeWidth: "1.5",
-                          stroke: "#1c1c1c",
-                          width: "20px",
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(color);
+                          toast("color copiado al portapapeles");
                         }}
-                      />
-                    </button>
+                        className={styles.copyButton}
+                      >
+                        <CopyToClipboardIcon
+                          style={{
+                            strokeWidth: "1.5",
+                            stroke: "#1c1c1c",
+                            width: "20px",
+                          }}
+                        />
+                      </button>
+                    </div>
                   </footer>
                 </div>
               ) : (
@@ -409,6 +356,7 @@ export function ColorPicker({
                     searchPosition={"static"}
                     skin={1}
                     emojiSize={24}
+                    dynamicWidth
                     set={"apple"}
                     noCountryFlags={false}
                     navPosition={"none"}
@@ -424,21 +372,6 @@ export function ColorPicker({
     </>
   );
 }
-
-export const COLORS = [
-  "#f54275",
-  "#ff00ea",
-  "#87189d",
-  "#0693e3",
-  "#2ccce4",
-  "#7ed321",
-  "#a6ff00",
-  "#ffdd00",
-  "#ffae00",
-  "#ff6900",
-  "#ff3300",
-  "#ff0004",
-];
 
 interface emoji {
   id: string;
@@ -456,7 +389,6 @@ interface SquircleColorButonType {
   setIsOpenPicker: (value: boolean) => void;
   index: number;
   setEmoji: (value: string | null) => void;
-  setFlagColor: (value: string) => void;
 }
 
 function SquircleColorSelector({
@@ -466,7 +398,6 @@ function SquircleColorSelector({
   setIsOpenPicker,
   index,
   setEmoji,
-  setFlagColor,
 }: SquircleColorButonType) {
   const [hoverColor, setHoverColor] = useState<boolean>(false);
   return (
@@ -477,7 +408,6 @@ function SquircleColorSelector({
           e.preventDefault();
           e.stopPropagation();
           setColor(colorHex);
-          setFlagColor(colorHex);
           setEmoji(null);
           setIsOpenPicker(false);
         }}

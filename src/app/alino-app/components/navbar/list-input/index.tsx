@@ -12,12 +12,12 @@ import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useUIStore } from "@/store/useUIStore";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
 export const ListInput = memo(() => {
   const [input, setInput] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
   const [color, setColor] = useState<string>("#87189d");
-  const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
   const [emoji, setEmoji] = useState<string | null>(null);
 
   const setIsCreating = useUIStore((state) => state.setIsCreating);
@@ -87,26 +87,16 @@ export const ListInput = memo(() => {
     }
   }, [input]);
 
-  useEffect(() => {
-    function divOnClick(event: MouseEvent | TouchEvent) {
-      if (divRef.current !== null) {
-        if (!divRef.current.contains(event.target as Node)) {
-          if (value === "" && !isOpenPicker) {
-            setEmoji("");
-            setColor("#87189d");
-            setInput(false);
-            setIsCreating(false);
-          }
-        }
-      }
+  useOnClickOutside(divRef, () => {
+    const colorPickerContainer = document.getElementById(
+      "color-picker-container-list-input"
+    );
+    if (value === "" && !colorPickerContainer) {
+      setEmoji("");
+      setColor("#87189d");
+      setInput(false);
+      setIsCreating(false);
     }
-    window.addEventListener("mousedown", divOnClick);
-    window.addEventListener("mouseup", divOnClick);
-
-    return () => {
-      window.removeEventListener("mousedown", divOnClick);
-      window.removeEventListener("mouseup", divOnClick);
-    };
   });
 
   const content = useMemo(() => {
@@ -140,14 +130,12 @@ export const ListInput = memo(() => {
           >
             <div className={styles.colorPickerContainer}>
               <ColorPicker
-                portalRef={portalRef}
-                isOpenPicker={isOpenPicker}
-                setIsOpenPicker={setIsOpenPicker}
                 color={color}
                 setColor={handleSetColor}
                 emoji={emoji}
                 setEmoji={handleSetEmoji}
                 setOriginalColor={setOriginalColor}
+                uniqueId="list-input"
               />
             </div>
             <motion.input
@@ -229,7 +217,7 @@ export const ListInput = memo(() => {
         )}
       </motion.div>
     );
-  }, [input, value, color, isOpenPicker, emoji, animations]);
+  }, [input, value, color, emoji, animations]);
 
   return <>{content}</>;
 });

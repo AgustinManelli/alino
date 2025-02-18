@@ -6,7 +6,8 @@ const withPWA = withPWAInit({
   skipWaiting: true,
 });
 
-export default withPWA({
+const nextConfig = {
   reactStrictMode: true,
-  experimental: { appDir: true },
-});
+};
+
+export default withPWA(nextConfig);
