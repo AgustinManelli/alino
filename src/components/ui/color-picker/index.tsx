@@ -152,16 +152,11 @@ export function ColorPicker({
     <button
       className={styles.title}
       style={{
-        boxShadow:
-          type === typeSelected
-            ? "0px 1px 1px 0px rgb(0,0,0, 0.1), inset 0 -1px 0 0 rgb(0,0,0,0.05), inset 0 1px 1px 0 rgb(255,255,255, 0.05), 0 1px 2px 0 rgb(0,0,0,0.03)"
-            : "none",
-        backgroundColor:
-          type === typeSelected ? "rgb(245,245,245)" : "transparent",
-        color: type === typeSelected ? "rgb(130,130,130)" : "rgb(200,200,200)",
+        color: type === typeSelected ? "#1c1c1c" : "rgb(210,210,210)",
       }}
       onClick={(e) => {
         e.preventDefault();
+        e.stopPropagation();
         setType(typeSelected);
       }}
     >
@@ -286,12 +281,20 @@ export function ColorPicker({
               }}
             >
               <section className={styles.titleSection}>
-                <div className={styles.titleButtons}>
+                <div
+                  className={styles.titleButtons}
+                  style={{
+                    justifyContent:
+                      "flex-" + (type === "color" ? "start" : "end"),
+                  }}
+                >
+                  <motion.div className={styles.titleSelector} layout />
                   {titleButtons("color", "color")}
                   {titleButtons("emoji", "emoji")}
                 </div>
-                <div className={styles.separator}></div>
               </section>
+
+              <div className={styles.separator}></div>
 
               {type === "color" ? (
                 <div className={styles.colorSelectorContainer}>
@@ -375,22 +378,22 @@ export function ColorPicker({
                           setFlagColor(e.target.value);
                         }}
                       ></input>
-                    </div>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(color);
-                        toast("color copiado al portapapeles");
-                      }}
-                      className={styles.copyButton}
-                    >
-                      <CopyToClipboardIcon
-                        style={{
-                          strokeWidth: "1.5",
-                          stroke: "#1c1c1c",
-                          width: "20px",
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(color);
+                          toast("color copiado al portapapeles");
                         }}
-                      />
-                    </button>
+                        className={styles.copyButton}
+                      >
+                        <CopyToClipboardIcon
+                          style={{
+                            strokeWidth: "1.5",
+                            stroke: "#1c1c1c",
+                            width: "20px",
+                          }}
+                        />
+                      </button>
+                    </div>
                   </footer>
                 </div>
               ) : (
@@ -409,6 +412,7 @@ export function ColorPicker({
                     searchPosition={"static"}
                     skin={1}
                     emojiSize={24}
+                    dynamicWidth
                     set={"apple"}
                     noCountryFlags={false}
                     navPosition={"none"}
@@ -426,18 +430,24 @@ export function ColorPicker({
 }
 
 export const COLORS = [
-  "#f54275",
-  "#ff00ea",
-  "#87189d",
-  "#0693e3",
-  "#2ccce4",
-  "#7ed321",
-  "#a6ff00",
-  "#ffdd00",
-  "#ffae00",
-  "#ff6900",
-  "#ff3300",
-  "#ff0004",
+  "#ff0048", // Carmesí
+  "#f54275", // Rosa fuerte
+  "#ff00ea", // Magenta
+  "#c800ff", // Púrpura
+  "#87189d", // Violeta oscuro
+  "#0000ff", // Azul puro
+  "#0693e3", // Azul medio
+  "#2ccce4", // Azul celeste
+  "#00ffbf", // Verde agua
+  "#00ff00", // Verde puro
+  "#7ed321", // Verde lima
+  "#a6ff00", // Verde amarillo
+  "#d4ff00", // Amarillo claro
+  "#ffdd00", // Amarillo
+  "#ffae00", // Naranja
+  "#ff6900", // Naranja fuerte
+  "#ff4500", // Rojo anaranjado
+  "#ff0000", // Rojo puro
 ];
 
 interface emoji {
