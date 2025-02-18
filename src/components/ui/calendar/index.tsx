@@ -163,6 +163,7 @@ export function Calendar({
                 }}
                 className={styles.container}
                 ref={sRef}
+                id="calendar-component"
               >
                 <p className={styles.title}>
                   {step ? "Hora" : "Fecha"} límite para tu tarea

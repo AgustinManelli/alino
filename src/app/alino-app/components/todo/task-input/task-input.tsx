@@ -17,15 +17,18 @@ import {
 } from "@/components/ui/icons/icons";
 import { motion } from "motion/react";
 import { easeInOut } from "motion";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
 export default function TaskInput({ setList }: { setList?: ListsType }) {
   const lists = useTodoDataStore((state) => state.lists);
   const [task, setTask] = useState<string>("");
-  const [inputFocus, setInputFocus] = useState<boolean>(false);
+  const [focus, setFocus] = useState<boolean>(false);
   const [selected, setSelected] = useState<Date>();
   const [hour, setHour] = useState<string | undefined>();
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const executedRef = useRef(false);
   const [selectedListHome, setSelectedListHome] = useState<
     ListsType | undefined
@@ -102,25 +105,26 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
         className={styles.dropdownItemContainer}
         style={{ justifyContent: "start" }}
       >
-        {list &&
-          (list.icon !== null ? (
-            <div
-              style={{
-                width: "16px",
-                height: "16px",
-              }}
-            >
+        <div
+          style={{
+            width: "16px",
+            height: "16px",
+          }}
+        >
+          {list &&
+            (list.icon !== null ? (
               <EmojiMartComponent shortcodes={list.icon} size="16px" />
-            </div>
-          ) : (
-            <SquircleIcon
-              style={{
-                width: "12px",
-                fill: `${list.color}`,
-                transition: "fill 0.2s ease-in-out",
-              }}
-            />
-          ))}
+            ) : (
+              <SquircleIcon
+                style={{
+                  width: "16px",
+                  fill: `${list.color}`,
+                  transition: "fill 0.2s ease-in-out",
+                  display: "flex",
+                }}
+              />
+            ))}
+        </div>
         <p>{list.name}</p>
       </div>
     );
@@ -183,8 +187,25 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     if (inputRef) inputRef.current?.focus();
   };
 
+  const Ref = useRef<HTMLDivElement>(null);
+
+  useOnClickOutside(Ref, () => {
+    const calendarComponent = document.getElementById("calendar-component");
+    const dropdownComponent = document.getElementById("dropdown-component");
+    if (calendarComponent || dropdownComponent) return;
+    setFocus(false);
+  });
+
   return (
-    <section className={styles.container}>
+    <section
+      className={styles.container}
+      ref={Ref}
+      onClick={() => {
+        setFocus(true);
+        if (inputRef) inputRef.current?.focus();
+      }}
+      style={{ cursor: "text" }}
+    >
       <div className={styles.formContainer}>
         <div className={styles.form}>
           <motion.div
@@ -214,45 +235,69 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   inputRef.current?.blur();
                 }
               }}
-            ></textarea>
+              style={{ cursor: "text" }}
+            />
           </motion.div>
           <div className={styles.inputManagerContainer}>
             <AnimatePresence>
               {isHome && (
-                <Dropdown
-                  items={lists}
-                  renderItem={renderItem}
-                  triggerLabel={triggerLabel}
-                  selectedListHome={selectedListHome}
-                  setSelectedListHome={setSelectedListHome}
-                  handleFocusToParentInput={handleFocusToParentInput}
-                />
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: focus || isMobile ? 1 : 0 }}
+                  exit={{ scale: 0 }}
+                >
+                  <Dropdown
+                    items={lists}
+                    renderItem={renderItem}
+                    triggerLabel={triggerLabel}
+                    selectedListHome={selectedListHome}
+                    setSelectedListHome={setSelectedListHome}
+                    handleFocusToParentInput={handleFocusToParentInput}
+                  />
+                </motion.div>
               )}
-            </AnimatePresence>
-            <Calendar
-              selected={selected}
-              setSelected={setSelected}
-              hour={hour}
-              setHour={handleSetHour}
-              focusToParentInput={handleFocusToParentInput}
-            />
-            <div
-              style={{
-                width: "1px",
-                height: "30px",
-                backgroundColor: "rgb(240, 240, 240)",
-              }}
-            ></div>
-            <button className={styles.taskSendButton} onClick={handleAdd}>
-              <SendIcon
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: focus || isMobile ? 1 : 0 }}
+                exit={{ scale: 0 }}
+                transition={{ delay: 0.05 }}
+              >
+                <Calendar
+                  selected={selected}
+                  setSelected={setSelected}
+                  hour={hour}
+                  setHour={handleSetHour}
+                  focusToParentInput={handleFocusToParentInput}
+                />
+              </motion.div>
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: focus || isMobile ? 30 : 0 }}
+                exit={{ height: 0 }}
                 style={{
-                  width: "20px",
-                  height: "auto",
-                  stroke: "#1c1c1c",
-                  strokeWidth: 1.5,
+                  width: "1px",
+                  height: "30px",
+                  backgroundColor: "rgb(240, 240, 240)",
                 }}
-              />
-            </button>
+              ></motion.div>
+              <motion.button
+                className={styles.taskSendButton}
+                onClick={handleAdd}
+                initial={{ scale: 0 }}
+                animate={{ scale: focus || isMobile ? 1 : 0 }}
+                exit={{ scale: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <SendIcon
+                  style={{
+                    width: "20px",
+                    height: "auto",
+                    stroke: "#1c1c1c",
+                    strokeWidth: 1.5,
+                  }}
+                />
+              </motion.button>
+            </AnimatePresence>
           </div>
           {task.length > 0 && (
             <p

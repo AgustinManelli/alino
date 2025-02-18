@@ -18,6 +18,7 @@ interface props {
   configOptions: ConfigOption[];
   optionalState?: (value: boolean) => void;
   idScrollArea?: string;
+  uniqueId?: string;
 }
 
 export function ConfigMenu({
@@ -25,6 +26,7 @@ export function ConfigMenu({
   configOptions,
   optionalState,
   idScrollArea,
+  uniqueId = "",
 }: props) {
   const [open, setOpen] = useState<boolean>(false);
 
@@ -53,6 +55,7 @@ export function ConfigMenu({
         ) {
           //functions
           setOpen(false);
+          optionalState && optionalState(false);
         }
       }
     }
@@ -115,7 +118,7 @@ export function ConfigMenu({
                 e.preventDefault();
                 e.stopPropagation();
               }}
-              id="config-menu-container"
+              id={`config-menu-container-${uniqueId}`}
             >
               <section className={styles.optionsContainer}>
                 {configOptions.map((option, index) => (
