@@ -18,6 +18,7 @@ import {
 import { motion } from "motion/react";
 import { easeInOut } from "motion";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -27,6 +28,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   const [focus, setFocus] = useState<boolean>(false);
   const [selected, setSelected] = useState<Date>();
   const [hour, setHour] = useState<string | undefined>();
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const executedRef = useRef(false);
   const [selectedListHome, setSelectedListHome] = useState<
     ListsType | undefined
@@ -103,25 +105,26 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
         className={styles.dropdownItemContainer}
         style={{ justifyContent: "start" }}
       >
-        {list &&
-          (list.icon !== null ? (
-            <div
-              style={{
-                width: "16px",
-                height: "16px",
-              }}
-            >
+        <div
+          style={{
+            width: "16px",
+            height: "16px",
+          }}
+        >
+          {list &&
+            (list.icon !== null ? (
               <EmojiMartComponent shortcodes={list.icon} size="16px" />
-            </div>
-          ) : (
-            <SquircleIcon
-              style={{
-                width: "12px",
-                fill: `${list.color}`,
-                transition: "fill 0.2s ease-in-out",
-              }}
-            />
-          ))}
+            ) : (
+              <SquircleIcon
+                style={{
+                  width: "16px",
+                  fill: `${list.color}`,
+                  transition: "fill 0.2s ease-in-out",
+                  display: "flex",
+                }}
+              />
+            ))}
+        </div>
         <p>{list.name}</p>
       </div>
     );
@@ -194,7 +197,15 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   });
 
   return (
-    <section className={styles.container} ref={Ref}>
+    <section
+      className={styles.container}
+      ref={Ref}
+      onClick={() => {
+        setFocus(true);
+        if (inputRef) inputRef.current?.focus();
+      }}
+      style={{ cursor: "text" }}
+    >
       <div className={styles.formContainer}>
         <div className={styles.form}>
           <motion.div
@@ -211,9 +222,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               className={styles.input}
               placeholder="ingrese una tarea"
               value={task}
-              onFocus={() => {
-                setFocus(true);
-              }}
               onChange={(e) => {
                 setTask(e.target.value);
               }}
@@ -227,14 +235,15 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   inputRef.current?.blur();
                 }
               }}
-            ></textarea>
+              style={{ cursor: "text" }}
+            />
           </motion.div>
           <div className={styles.inputManagerContainer}>
             <AnimatePresence>
               {isHome && (
                 <motion.div
                   initial={{ scale: 0 }}
-                  animate={{ scale: focus ? 1 : 0 }}
+                  animate={{ scale: focus || isMobile ? 1 : 0 }}
                   exit={{ scale: 0 }}
                 >
                   <Dropdown
@@ -249,7 +258,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               )}
               <motion.div
                 initial={{ scale: 0 }}
-                animate={{ scale: focus ? 1 : 0 }}
+                animate={{ scale: focus || isMobile ? 1 : 0 }}
                 exit={{ scale: 0 }}
                 transition={{ delay: 0.05 }}
               >
@@ -263,7 +272,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               </motion.div>
               <motion.div
                 initial={{ height: 0 }}
-                animate={{ height: focus ? 30 : 0 }}
+                animate={{ height: focus || isMobile ? 30 : 0 }}
                 exit={{ height: 0 }}
                 style={{
                   width: "1px",
@@ -275,7 +284,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                 className={styles.taskSendButton}
                 onClick={handleAdd}
                 initial={{ scale: 0 }}
-                animate={{ scale: focus ? 1 : 0 }}
+                animate={{ scale: focus || isMobile ? 1 : 0 }}
                 exit={{ scale: 0 }}
                 transition={{ delay: 0.1 }}
               >

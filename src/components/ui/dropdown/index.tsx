@@ -140,34 +140,37 @@ export function Dropdown<T>({
                 ref={sRef}
                 id="dropdown-component"
               >
-                {items
-                  .filter((item) => item !== selectedListHome)
-                  .map((item, index) => (
-                    <motion.button
-                      key={index}
-                      className={styles.dropdownItem}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        closeDropdown();
-                        setSelectedListHome(item);
-                        handleFocusToParentInput && handleFocusToParentInput();
-                      }}
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0 }}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{
-                        delay: index * 0.05,
-                        type: "spring",
-                        stiffness: 100,
-                        damping: 15,
-                      }}
-                    >
-                      {renderItem(item, index)}
-                    </motion.button>
-                  ))}
+                <p className={styles.title}>listas</p>
+                <div className={styles.separator} />
+                <div className={styles.items}>
+                  {items
+                    .filter((item) => item !== selectedListHome)
+                    .map((item, index) => (
+                      <motion.button
+                        key={index}
+                        className={styles.dropdownItem}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          closeDropdown();
+                          setSelectedListHome(item);
+                          handleFocusToParentInput &&
+                            handleFocusToParentInput();
+                        }}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0 }}
+                        transition={{
+                          delay: index * 0.05,
+                          type: "spring",
+                          stiffness: 100,
+                          damping: 15,
+                        }}
+                      >
+                        {renderItem(item, index)}
+                      </motion.button>
+                    ))}
+                </div>
               </motion.section>
             )}
           </AnimatePresence>
