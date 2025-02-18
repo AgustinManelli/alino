@@ -138,6 +138,7 @@ export function Dropdown<T>({
                 }}
                 className={styles.dropdownMenu}
                 ref={sRef}
+                id="dropdown-component"
               >
                 {items
                   .filter((item) => item !== selectedListHome)
