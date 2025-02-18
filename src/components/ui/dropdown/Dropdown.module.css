@@ -35,23 +35,47 @@
   overflow: hidden;
   width: 150px;
   max-height: 222px;
-  overflow: auto;
   scrollbar-width: none;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.dropdownMenu::-webkit-scrollbar {
+.title {
+  color: #c8c8c8;
+  font-size: 12px;
+  font-weight: 500;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.separator {
+  width: 100%;
+  height: 1px;
+  background-color: #f0f0f0;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.items::-webkit-scrollbar {
   display: none;
 }
 
 .dropdownItem {
   width: 100%;
-  padding: 10px 15px;
+  padding: 5px 10px;
   border: none;
   background: none;
   text-align: left;
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.2s ease;
+  border-radius: 5px;
 }
 
 .dropdownItem:hover {
