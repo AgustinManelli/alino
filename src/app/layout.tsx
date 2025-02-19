@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { Loader } from "@/components/ui/loader";
 import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
 import { MobileSizeListener } from "@/components/useMobileSizeListener";
+import Pwa from "@/components/pwa";
 
 const APP_NAME = "Alino";
 const APP_DEFAULT_TITLE = "Alino";
@@ -23,13 +24,6 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: APP_DEFAULT_TITLE,
-    startupImage: [
-      "/apple-touch-startup-image-1024-768.png",
-      {
-        url: "/apple-touch-startup-image-1024-768.png",
-        media: "(device-width: 768px) and (device-height: 1024px)",
-      },
-    ],
   },
   formatDetection: {
     telephone: false,
@@ -76,6 +70,11 @@ export default function RootLayout({
             src="//unpkg.com/react-scan/dist/auto.global.js"
           />
         )}
+        <link
+          rel="preload"
+          href="/public/apple-touch-startup-image-1024-768.png"
+          as="image"
+        />
       </head>
       <body style={{ height: "100%" }} className={`${inter.className}`}>
         <MobileSizeListener />
@@ -84,6 +83,7 @@ export default function RootLayout({
         <div id="modal-root">
           <WpaDownloadModal />
         </div>
+        <Pwa />
         {children}
       </body>
     </html>
