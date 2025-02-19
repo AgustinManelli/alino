@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/client";
+import { createClient as createClientServer } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
 import { z } from "zod";
 
@@ -15,7 +16,7 @@ interface AuthClient {
 }
 
 const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
-  const supabase = createClient();
+  const supabase = createClientServer();
   const { data: sessionData, error: sessionError } =
     await supabase.auth.getSession();
 
