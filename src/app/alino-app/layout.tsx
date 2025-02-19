@@ -27,21 +27,6 @@ export default async function appLayout({
           name={result.data?.user.user_metadata.name}
         />
         <Navbar />
-        {/* <p
-          style={{
-            position: "absolute",
-            right: "0",
-            bottom: "0",
-            backgroundColor: "#fff",
-            borderRadius: "10px",
-            padding: "5px 10px",
-            fontSize: "12px",
-            color: "#1c1c1c",
-            opacity: "0.5",
-          }}
-        >
-          pre-alpha version
-        </p> */}
         {children}
       </div>
     </section>

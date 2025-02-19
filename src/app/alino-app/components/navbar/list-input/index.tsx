@@ -89,7 +89,7 @@ export const ListInput = memo(() => {
 
   useOnClickOutside(divRef, () => {
     const colorPickerContainer = document.getElementById(
-      "color-picker-container-list-input"
+      "color-picker-container-navbar-list-card"
     );
     if (value === "" && !colorPickerContainer) {
       setEmoji("");
@@ -135,7 +135,7 @@ export const ListInput = memo(() => {
                 emoji={emoji}
                 setEmoji={handleSetEmoji}
                 setOriginalColor={setOriginalColor}
-                uniqueId="list-input"
+                uniqueId="navbar-list-card"
               />
             </div>
             <motion.input

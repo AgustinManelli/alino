@@ -6,8 +6,8 @@ const withPWA = withPWAInit({
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
   scope: "/",
-  cacheStartUrl: true,
-  dynamicStartUrl: true,
+  // cacheStartUrl: true,
+  // dynamicStartUrl: true,
 });
 
 /** @type {import('next').NextConfig} */
