@@ -15,6 +15,8 @@ export default function Todo({ params }: { params: { list: string } }) {
     (elemento) => elemento.id === params.list
   ) as ListsType;
 
+  if (!setList) console.log("si");
+
   return (
     <div className={styles.todoContainerPage}>
       <Manager setList={setList} />
