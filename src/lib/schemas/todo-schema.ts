@@ -59,10 +59,10 @@ export type Database = {
       todos_data: {
         Row: {
           color: string;
+          created_at: string;
           icon: string | null;
           id: string;
           index: number | null;
-          created_at: string;
           name: string;
           pinned: boolean;
           updated_at: string | null;
@@ -70,10 +70,10 @@ export type Database = {
         };
         Insert: {
           color?: string;
+          created_at?: string;
           icon?: string | null;
           id?: string;
           index?: number | null;
-          created_at?: string;
           name: string;
           pinned?: boolean;
           updated_at?: string | null;
@@ -81,14 +81,62 @@ export type Database = {
         };
         Update: {
           color?: string;
+          created_at?: string;
           icon?: string | null;
           id?: string;
           index?: number | null;
-          created_at?: string;
           name?: string;
           pinned?: boolean;
           updated_at?: string | null;
           user_id?: string;
+        };
+        Relationships: [];
+      };
+      users: {
+        Row: {
+          avatar_url: string | null;
+          bio: string | null;
+          created_at: string | null;
+          email: string;
+          full_name: string;
+          id: string;
+          is_pro: boolean | null;
+          metadata: Json | null;
+          pro_expiration: string | null;
+          pro_since: string | null;
+          provider: string;
+          updated_at: string | null;
+          user_name: string;
+        };
+        Insert: {
+          avatar_url?: string | null;
+          bio?: string | null;
+          created_at?: string | null;
+          email: string;
+          full_name: string;
+          id?: string;
+          is_pro?: boolean | null;
+          metadata?: Json | null;
+          pro_expiration?: string | null;
+          pro_since?: string | null;
+          provider: string;
+          updated_at?: string | null;
+          user_name: string;
+        };
+        Update: {
+          avatar_url?: string | null;
+          bio?: string | null;
+          created_at?: string | null;
+          email?: string;
+          full_name?: string;
+          id?: string;
+          is_pro?: boolean | null;
+          metadata?: Json | null;
+          pro_expiration?: string | null;
+          pro_since?: string | null;
+          provider?: string;
+          updated_at?: string | null;
+          user_name?: string;
         };
         Relationships: [];
       };
