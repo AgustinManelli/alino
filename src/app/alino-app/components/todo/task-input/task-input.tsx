@@ -174,7 +174,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
       const newHeight = inputRef.current.scrollHeight + 13 + "px";
       setHeight(newHeight);
     }
-  }, [task]);
+  }, [task, focus]);
 
   const handleFocusToParentInput = () => {
     if (inputRef) inputRef.current?.focus();
@@ -270,6 +270,8 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   }
                   if (e.key === "Escape") {
                     setTask("");
+                    setFocus(false);
+                    setHeight("40px");
                     inputRef.current?.blur();
                   }
                 }}
