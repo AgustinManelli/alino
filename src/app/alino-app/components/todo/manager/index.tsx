@@ -147,6 +147,23 @@ export default function Manager({
     },
   ];
 
+  const section1Ref = useRef<HTMLDivElement>(null);
+  const [sectionHeight, setSectionHeight] = useState<number>(0);
+
+  useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      if (section1Ref.current && scrollRef.current) {
+        scrollRef.current.style.paddingTop = `${section1Ref.current.offsetHeight}px`;
+      }
+    });
+
+    if (section1Ref.current) {
+      observer.observe(section1Ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       {deleteConfirm && (
@@ -158,7 +175,7 @@ export default function Manager({
         />
       )}
       <div className={styles.container}>
-        <section className={styles.section1}>
+        <section className={styles.section1} ref={section1Ref}>
           <div className={styles.header}>
             {h ? (
               <section className={styles.homeContainer}>
@@ -227,6 +244,7 @@ export default function Manager({
         <section className={styles.section2}>
           <div
             className={styles.tasksSection}
+            // style={{ paddingTop: sectionHeight }}
             id={"task-section-scroll-area"}
             ref={scrollRef}
           >

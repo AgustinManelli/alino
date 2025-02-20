@@ -20,10 +20,12 @@ export function Checkbox({
   status,
   handleUpdateStatus,
   id,
+  active = true,
 }: {
   status: boolean;
   handleUpdateStatus: () => void;
   id: string;
+  active?: boolean;
 }) {
   const [tempStatus, setTempStatus] = useState(status);
 
@@ -78,6 +80,8 @@ export function Checkbox({
         togglePath();
         handleUpdateStatus();
       }}
+      disabled={active}
+      style={{ opacity: active ? 0.3 : 1 }}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

@@ -3,15 +3,13 @@
 import type { Database } from "@/lib/schemas/todo-schema";
 import { motion } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Check, DeleteIcon, Edit } from "@/components/ui/icons/icons";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import styles from "./task-card.module.css";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { ConfigMenu } from "@/components/ui/config-menu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
-import { ListIcon } from "./list-icon";
-import { usePathname } from "next/navigation";
 
 type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
 
@@ -28,9 +26,6 @@ export function TaskCard({ task }: { task: TaskType }) {
 
   const animations = useUserPreferencesStore((store) => store.animations);
   const updateTaskName = useTodoDataStore((state) => state.updateTaskName);
-
-  const pathname = usePathname();
-  const isHome = pathname === "/alino-app";
 
   const deleteTask = useTodoDataStore((state) => state.deleteTask);
   const updateTaskCompleted = useTodoDataStore(
@@ -125,9 +120,10 @@ export function TaskCard({ task }: { task: TaskType }) {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (
         inputRef.current &&
-        !inputRef.current.contains(event.target as Node) &&
-        cardRef.current &&
-        !cardRef.current.contains(event.target as Node)
+        !inputRef.current.contains(event.target as Node)
+        // &&
+        // cardRef.current &&
+        // !cardRef.current.contains(event.target as Node)
       ) {
         setEditing(false);
         setInputName(task.name);
@@ -139,13 +135,13 @@ export function TaskCard({ task }: { task: TaskType }) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [task]);
+  }, []);
 
   useEffect(() => {
     if (inputRef.current) {
       const length = inputRef.current.value.length;
-      inputRef.current.setSelectionRange(length, length); // Coloca el cursor al final
-      inputRef.current.focus(); // Enfoca el textarea
+      inputRef.current.setSelectionRange(length, length);
+      inputRef.current.focus();
     }
     // inputRef.current?.focus();
   }, [editing]);
@@ -205,6 +201,7 @@ export function TaskCard({ task }: { task: TaskType }) {
           status={completed}
           handleUpdateStatus={handleUpdateStatus}
           id={task.id}
+          active={editing ? true : false}
         />
       </div>
       <div className={styles.textContainer} style={{ position: "relative" }}>
@@ -286,6 +283,10 @@ export function TaskCard({ task }: { task: TaskType }) {
         )}
       </div>
       <div className={styles.editingButtons}>
+        <TimeLimitBox
+          target_date={task.target_date}
+          idScrollArea={"task-section-scroll-area"}
+        />
         {editing ? (
           <button
             onClick={(e) => {
@@ -305,20 +306,11 @@ export function TaskCard({ task }: { task: TaskType }) {
             />
           </button>
         ) : (
-          <div className={styles.configTaskSection}>
-            {/* {task.target_date && (
-              <div className={styles.timeTargetContainer}>
-                <p>{formatDate(task.target_date)}</p>
-              </div>
-            )} */}
-            <TimeLimitBox target_date={task.target_date} />
-            {/* {isHome && <ListIcon list_id={task.category_id} />} */}
-            <ConfigMenu
-              iconWidth={"25px"}
-              configOptions={filteredOptions}
-              idScrollArea={"task-section-scroll-area"}
-            />
-          </div>
+          <ConfigMenu
+            iconWidth={"25px"}
+            configOptions={filteredOptions}
+            idScrollArea={"task-section-scroll-area"}
+          />
         )}
       </div>
     </div>

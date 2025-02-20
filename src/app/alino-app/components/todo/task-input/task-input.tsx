@@ -9,14 +9,8 @@ import { Dropdown } from "@/components/ui/dropdown";
 import { usePathname } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
-import {
-  LoadingIcon,
-  NoList,
-  SendIcon,
-  SquircleIcon,
-} from "@/components/ui/icons/icons";
+import { NoList, SendIcon, SquircleIcon } from "@/components/ui/icons/icons";
 import { motion } from "motion/react";
-import { easeInOut } from "motion";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 
@@ -194,6 +188,9 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     const dropdownComponent = document.getElementById("dropdown-component");
     if (calendarComponent || dropdownComponent) return;
     setFocus(false);
+    setTask("");
+    setHour(undefined);
+    setSelected(undefined);
   });
 
   const handleOnClick = () => {
@@ -247,6 +244,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             <AnimatePresence>
               {isHome && (
                 <motion.div
+                  key="dropdown"
                   initial={{ scale: 0 }}
                   animate={{ scale: focus || isMobile ? 1 : 0 }}
                   exit={{ scale: 0 }}
@@ -266,6 +264,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                 animate={{ scale: focus || isMobile ? 1 : 0 }}
                 exit={{ scale: 0 }}
                 transition={{ delay: 0.05 }}
+                key="calendar"
               >
                 <Calendar
                   selected={selected}
@@ -276,6 +275,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                 />
               </motion.div>
               <motion.div
+                key="separator"
                 initial={{ height: 0 }}
                 animate={{ height: focus || isMobile ? 30 : 0 }}
                 exit={{ height: 0 }}
@@ -286,8 +286,13 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                 }}
               ></motion.div>
               <motion.button
+                key="send-button"
                 className={styles.taskSendButton}
-                onClick={handleAdd}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleAdd();
+                }}
                 initial={{ scale: 0 }}
                 animate={{ scale: focus || isMobile ? 1 : 0 }}
                 exit={{ scale: 0 }}
