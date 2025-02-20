@@ -22,6 +22,7 @@ export function TextAnimation({
         flexWrap: "wrap",
         justifyContent: "start",
         gap: "0.3em",
+        alignItems: "center",
       }}
     >
       {words.map((word, i) => (
