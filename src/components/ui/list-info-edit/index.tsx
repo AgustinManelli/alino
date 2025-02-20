@@ -156,10 +156,12 @@ export function ListInfoEdit({
             className={styles.listName}
             style={gradientStyle}
             initial={
-              animations ? { backgroundPosition: "200% center" } : undefined
+              animations && !big
+                ? { backgroundPosition: "200% center" }
+                : undefined
             }
             animate={
-              animations
+              animations && !big
                 ? {
                     backgroundPosition: ["200% center", "0% center"],
                   }

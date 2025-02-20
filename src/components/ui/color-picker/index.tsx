@@ -33,7 +33,7 @@ interface ColorPickerInterface {
 }
 
 export function ColorPicker({
-  color, //indica el color que está seleccionado en ese momento, no corresponde al original
+  color = "#1c1c1c", //indica el color que está seleccionado en ese momento, no corresponde al original
   setColor, //corresponde a la función para cambiar el valor de los colores temporales, no cambia valor de color original
   emoji, //corresponde al valor del emoji temporal, no al original
   setEmoji, //corresponde a la función para cambiar el valor del emoji temporal, similar a la de color
@@ -78,7 +78,7 @@ export function ColorPicker({
         <SquircleIcon
           style={{
             fill: `${color}`,
-            transition: "fill 0.1s ease-in-out",
+            transition: "fill 0.3s ease-in-out",
             width: big ? "16px" : "12px",
           }}
         />

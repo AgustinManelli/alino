@@ -29,7 +29,7 @@ export default function Manager({
 }) {
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
 
-  const [colorTemp, setColorTemp] = useState<string>("transparent");
+  const [colorTemp, setColorTemp] = useState<string>(setList?.color ?? "");
   const [emoji, setEmoji] = useState<string | null>(null);
   const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
 
