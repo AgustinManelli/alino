@@ -1,0 +1,43 @@
+.toasterContainer {
+  position: relative;
+  min-width: 356px;
+  /* min-height: 70px; */
+  height: fit-content;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow:
+    0 4px 12px #0c144205,
+    0 30px 80px #0c144214,
+    inset 0 0 #e6e9ed;
+  z-index: 10000;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.iconSection {
+  height: 100%;
+  width: 42px;
+  min-height: 42px;
+  min-width: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.textSection {
+  width: 100%;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1c1c1c;
+}
+
+.text {
+  font-size: 16px;
+  color: #1c1c1c;
+}

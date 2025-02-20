@@ -33,12 +33,14 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { Database } from "@/lib/schemas/todo-schema";
 
 import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
-import { MenuIcon } from "@/components/ui/icons/icons";
+import { AlinoLogo, MenuIcon } from "@/components/ui/icons/icons";
 import styles from "./navbar.module.css";
 
 //INIT EMOJI-MART
 import { init } from "emoji-mart";
 import data from "@/components/ui/emoji-mart/apple.json";
+import { toast } from "sonner";
+import { NormalToaster } from "@/components/ui/toaster/normal-toaster";
 
 init({ data });
 

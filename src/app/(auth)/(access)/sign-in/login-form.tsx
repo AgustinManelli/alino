@@ -11,6 +11,8 @@ import { signInWithEmailAndPassword } from "@/lib/auth/actions";
 
 import { AuthForm } from "../../components/auth-form";
 import { useNavigationLoader } from "@/hooks/useNavigationLoader";
+import { NormalToaster } from "@/components/ui/toaster/normal-toaster";
+import { AlinoLogo } from "@/components/ui/icons/icons";
 
 export function LoginForm() {
   const [isPending, startTransition] = useTransition();
@@ -47,7 +49,24 @@ export function LoginForm() {
             ? "Hola, bienvenido nuevamente a Alino"
             : `Hola ${user.user_metadata.name}, bienvenido nuevamente a Alino`;
 
-        toast.success(message);
+        toast.custom(
+          () => (
+            <NormalToaster
+              title={"Inicio de sesión exitoso"}
+              text={message}
+              icon={
+                <AlinoLogo
+                  style={{
+                    width: "100%",
+                  }}
+                />
+              }
+            />
+          ),
+          {
+            duration: 5000000,
+          }
+        );
       }
       router.push("/alino-app");
       setLoading(true);
