@@ -17,6 +17,7 @@
   width: 100%;
   text-wrap: nowrap;
   /* border: 1px solid rgb(245, 245, 245); */
+  stroke: #1c1c1c;
   transition:
     stroke 0.3s ease-in-out,
     color 0.3s ease-in-out,
@@ -33,7 +34,7 @@
   /* border: 1px solid #fff7c7; */
   stroke: rgb(180, 112, 26);
   color: rgb(180, 112, 26);
-  background-color: rgba(234, 179, 8, 0.1) !important;
+  background-color: rgb(250, 235, 204) !important;
 }
 
 .timeTargetContainerDanger {
@@ -41,7 +42,7 @@
   /* border: 1px solid #ffd2d2; */
   stroke: rgb(156, 30, 40);
   color: rgb(156, 30, 40);
-  background-color: rgba(220, 38, 38, 0.1) !important;
+  background-color: rgb(250, 220, 220) !important;
 }
 
 .taskNotCompleted {
@@ -73,7 +74,6 @@
   border-radius: 10px;
   font-size: 14px;
   box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
-  z-index: 30;
   text-wrap: nowrap;
   opacity: 1 !important;
 }
