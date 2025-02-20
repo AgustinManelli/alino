@@ -171,36 +171,40 @@ export function TimeLimitBox({ target_date, idScrollArea }: props) {
     <>
       {target_date && (
         <div
-          className={`${styles.timeTargetContainer} ${getStatusClass()}`}
-          style={{
-            padding: isMobile ? 0 : "0px 10px",
-            width: isMobile ? 25 : "fit-content",
-          }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsTooltip((prev) => !prev);
-          }}
-          ref={timeLimitRef}
+          className={styles.container}
+          style={{ width: isMobile ? 25 : "fit-content" }}
         >
           {isMobile && isTooltip && (
             <div className={styles.tooltip}>{formatDate(target_date)}</div>
           )}
-          {!isMobile && (
-            <div className={`${styles.completed} ${getIsCompleted()}`} />
-          )}
-          {isMobile ? (
-            <Clock
-              style={{
-                stroke: "#1c1c1c",
-                strokeWidth: "1.5",
-                width: "auto",
-                height: "20px",
-              }}
-            />
-          ) : (
-            <p>{formatDate(target_date)}</p>
-          )}
+          <div
+            className={`${styles.timeTargetContainer} ${getStatusClass()}`}
+            style={{
+              padding: isMobile ? 0 : "0px 10px",
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsTooltip((prev) => !prev);
+            }}
+            ref={timeLimitRef}
+          >
+            {!isMobile && (
+              <div className={`${styles.completed} ${getIsCompleted()}`} />
+            )}
+            {isMobile ? (
+              <Clock
+                style={{
+                  stroke: "#1c1c1c",
+                  strokeWidth: "1.5",
+                  width: "auto",
+                  height: "20px",
+                }}
+              />
+            ) : (
+              <p>{formatDate(target_date)}</p>
+            )}
+          </div>
         </div>
       )}
     </>

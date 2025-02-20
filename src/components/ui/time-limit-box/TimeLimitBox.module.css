@@ -1,13 +1,20 @@
+.container {
+  position: relative;
+  height: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .timeTargetContainer {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0px 10px;
-  height: 25px;
+  height: 100%;
   background-color: rgb(250, 250, 250);
   border-radius: 5px;
-  width: fit-content;
+  width: 100%;
   text-wrap: nowrap;
   border: 1px solid rgb(245, 245, 245);
   -webkit-tap-highlight-color: transparent;
@@ -29,6 +36,10 @@
 
 .taskNotCompleted {
   opacity: 0.3;
+}
+
+.taskNotCompleted .tooltip {
+  opacity: 1 !important;
 }
 
 .completed {
@@ -57,4 +68,5 @@
   font-size: 14px;
   box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
   z-index: 30;
+  text-wrap: nowrap;
 }
