@@ -175,7 +175,9 @@ export function TimeLimitBox({ target_date, idScrollArea }: props) {
           style={{ width: isMobile ? 25 : "fit-content" }}
         >
           {isMobile && isTooltip && (
-            <div className={styles.tooltip}>{formatDate(target_date)}</div>
+            <div className={`${styles.tooltip} ${getStatusClass()}`}>
+              {formatDate(target_date)}
+            </div>
           )}
           <div
             className={`${styles.timeTargetContainer} ${getStatusClass()}`}
