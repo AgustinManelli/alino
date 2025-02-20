@@ -210,8 +210,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     "Planificar las vacaciones",
     "Sacar a pasear al perro 🐶",
     "Estudiar para el examen",
-    "Pensar en alguna excusa para no ir a clases",
-    "Limpiar departamento antes del fin de semana",
     "Ponerme al día con mis estudios 🥱",
     "Pagar las facturas de servicios",
     "Lavar la ropa",
@@ -254,7 +252,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             animate={{ height }}
             transition={{ duration: 0.2 }}
           >
-            {focus ? (
+            {focus && (
               <textarea
                 ref={inputRef}
                 maxLength={200}
@@ -277,16 +275,17 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                 }}
                 style={{ cursor: "text" }}
               />
-            ) : (
-              <div className={styles.placeholder}>
-                <TextAnimation
-                  style={{ fontSize: "14px" }}
-                  text={currentText}
-                  textColor="#8e8e8e"
-                />
-              </div>
             )}
           </motion.div>
+          {!focus && (
+            <div className={styles.placeholder}>
+              <TextAnimation
+                style={{ fontSize: "14px" }}
+                text={currentText}
+                textColor="#8e8e8e"
+              />
+            </div>
+          )}
           <div className={styles.inputManagerContainer}>
             <AnimatePresence>
               {isHome && (
