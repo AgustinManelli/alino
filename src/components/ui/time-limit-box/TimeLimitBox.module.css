@@ -21,7 +21,8 @@
   transition:
     stroke 0.3s ease-in-out,
     color 0.3s ease-in-out,
-    background-color 0.3s ease-in-out;
+    background-color 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -53,9 +54,11 @@
   width: 85%;
   height: 1px;
   position: absolute;
+  transition: width 0.3s ease-in-out;
 }
 
 .waiting {
+  width: 0%;
   background-color: transparent;
 }
 

@@ -8,9 +8,14 @@ import { Clock } from "../icons/icons";
 interface props {
   target_date: string | null;
   idScrollArea?: string;
+  completed?: boolean;
 }
 
-export function TimeLimitBox({ target_date, idScrollArea }: props) {
+export function TimeLimitBox({
+  target_date,
+  idScrollArea,
+  completed = false,
+}: props) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isTooltip, setIsTooltip] = useState<boolean>(false);
 
@@ -34,7 +39,7 @@ export function TimeLimitBox({ target_date, idScrollArea }: props) {
 
   const getStatusClass = () => {
     const remaining = getRemainingTime();
-    if (Math.sign(remaining) === -1) {
+    if (Math.sign(remaining) === -1 || completed) {
       return styles.taskNotCompleted;
     }
     if (remaining > 0) {
@@ -53,7 +58,7 @@ export function TimeLimitBox({ target_date, idScrollArea }: props) {
   const getIsCompleted = () => {
     const remaining = getRemainingTime();
 
-    if (Math.sign(remaining) === -1) {
+    if (Math.sign(remaining) === -1 || completed) {
       return styles.notCompleted;
     } else {
       return styles.waiting;
