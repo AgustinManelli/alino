@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { Hour } from "./hour";
 
-import { Calendar as Icon } from "@/components/ui/icons/icons";
+import { ArrowThin, Calendar as Icon } from "@/components/ui/icons/icons";
 import styles from "./Calendar.module.css";
 import "./DayPicker.css";
 
@@ -29,6 +29,7 @@ export function Calendar({
 }: props) {
   const [open, setOpen] = useState<boolean>(false);
   const [step, setStep] = useState<boolean>(false);
+  const [tempMonth, setTempMonth] = useState<Date | undefined>(new Date());
 
   const Ref = useRef<HTMLButtonElement>(null);
   const sRef = useRef<HTMLDivElement>(null);
@@ -95,10 +96,11 @@ export function Calendar({
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelected(date);
-    date &&
-      setTimeout(() => {
-        setStep(true);
-      }, 150);
+    setTempMonth(date);
+    // date &&
+    //   setTimeout(() => {
+    //     setStep(true);
+    //   }, 150);
   };
 
   return (
@@ -112,7 +114,9 @@ export function Calendar({
           aspectRatio: "1 / 1",
           backgroundColor: open ? "rgb(240, 240, 240)" : "rgb(250,250,250)",
         }}
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
           setOpen((prev) => !prev);
         }}
       >
@@ -165,25 +169,86 @@ export function Calendar({
                 ref={sRef}
                 id="calendar-component"
               >
-                <p className={styles.title}>
-                  {step ? "Hora" : "Fecha"} límite para tu tarea
-                </p>
-                <div className={styles.divisor}></div>
                 <div className={styles.optionsContainer}>
                   {step ? (
                     <div className={styles.hourPicker}>
-                      <Hour value={hour} onChange={setHour} />
-                      <div className={styles.hourButtonsContainer}>
+                      <div className={styles.supportButtons}>
                         <button
-                          className={styles.hourButtons}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setHour("09:00");
+                          }}
+                          style={{
+                            borderColor:
+                              hour === "09:00" ? "#87189d" : "rgb(245,245,245)",
+                          }}
+                        >
+                          9 am
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setHour("12:00");
+                          }}
+                          style={{
+                            borderColor:
+                              hour === "12:00" ? "#87189d" : "rgb(245,245,245)",
+                          }}
+                        >
+                          12 pm
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setHour("17:00");
+                          }}
+                          style={{
+                            borderColor:
+                              hour === "17:00" ? "#87189d" : "rgb(245,245,245)",
+                          }}
+                        >
+                          5 pm
+                        </button>
+                      </div>
+
+                      <Hour value={hour} onChange={setHour} />
+
+                      <div className={styles.footerButtonsContainer}>
+                        <button
+                          className={`${styles.footerButton} ${styles.fb1}`}
                           onClick={() => {
                             setStep(false);
                           }}
                         >
-                          atras
+                          <ArrowThin
+                            style={{
+                              width: "auto",
+                              height: "15px",
+                              stroke: "#1c1c1c",
+                              strokeWidth: "2",
+                              transform: "rotate(90deg)",
+                            }}
+                          />
+                          atrás
                         </button>
                         <button
-                          className={styles.hourButtons}
+                          className={styles.hourButtonOmit}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setOpen(false);
+                            setStep(false);
+                            setHour(undefined);
+                            focusToParentInput && focusToParentInput();
+                          }}
+                        >
+                          omitir
+                        </button>
+                        <button
+                          className={`${styles.footerButton} ${styles.fb2}`}
                           style={{ backgroundColor: "#87189d", color: "#fff" }}
                           onClick={(e) => {
                             e.preventDefault();
@@ -202,29 +267,23 @@ export function Calendar({
                             focusToParentInput && focusToParentInput();
                           }}
                         >
-                          siguiente
+                          aplicar
                         </button>
                       </div>
-                      <button
-                        className={styles.hourButtonOmit}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setOpen(false);
-                          setStep(false);
-                          setHour(undefined);
-                          focusToParentInput && focusToParentInput();
-                        }}
-                      >
-                        omitir
-                      </button>
                     </div>
                   ) : (
                     <>
-                      <div className={styles.supporButtons}>
+                      <div className={styles.supportButtons}>
                         <button
                           onClick={() => {
                             handleDateSelect(new Date());
+                          }}
+                          style={{
+                            borderColor:
+                              selected?.toDateString() ===
+                              new Date().toDateString()
+                                ? "#87189d"
+                                : "rgb(245,245,245)",
                           }}
                         >
                           Hoy
@@ -235,6 +294,15 @@ export function Calendar({
                             date.setDate(date.getDate() + 7);
                             handleDateSelect(date);
                           }}
+                          style={{
+                            borderColor:
+                              selected?.toDateString() ===
+                              new Date(
+                                new Date().setDate(new Date().getDate() + 7)
+                              ).toDateString()
+                                ? "#87189d"
+                                : "rgb(245,245,245)",
+                          }}
                         >
                           7 días
                         </button>
@@ -244,33 +312,66 @@ export function Calendar({
                             date.setMonth(date.getMonth() + 1);
                             handleDateSelect(date);
                           }}
+                          style={{
+                            borderColor:
+                              selected?.toDateString() ===
+                              new Date(
+                                new Date().setMonth(new Date().getMonth() + 1)
+                              ).toDateString()
+                                ? "#87189d"
+                                : "rgb(245,245,245)",
+                          }}
                         >
                           1 mes
                         </button>
                       </div>
                       <DayPicker
-                        disabled={{ before: new Date() }}
+                        // disabled={{ before: new Date() }}
                         timeZone="America/Buenos_Aires"
                         mode="single"
                         locale={es}
                         selected={selected}
                         onSelect={handleDateSelect}
-                        startMonth={new Date()}
+                        month={tempMonth}
+                        onMonthChange={setTempMonth}
+                        // startMonth={new Date()}
                         defaultMonth={selected}
-                        //   footer={
-                        //     selected
-                        //       ? `Selección: ${selected.toLocaleDateString()}`
-                        //       : "Pick a day."
-                        //   }
                       />
+                      <div className={styles.footerButtonsContainer}>
+                        <button
+                          className={`${styles.footerButton} ${styles.fb1}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setOpen(false);
+                          }}
+                        >
+                          cancelar
+                        </button>
+                        <button
+                          className={`${styles.footerButton} ${styles.fb2}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setStep(true);
+                            if (!selected) {
+                              setSelected(new Date());
+                            }
+                          }}
+                        >
+                          siguiente
+                          <ArrowThin
+                            style={{
+                              width: "auto",
+                              height: "15px",
+                              stroke: "#fff",
+                              strokeWidth: "3",
+                              transform: "rotate(-90deg)",
+                            }}
+                          />
+                        </button>
+                      </div>
                     </>
-                  )}
-                  {selected && (
-                    <div className={styles.limitDateContainer}>
-                      <p>
-                        Fecha límite: {selected?.toLocaleDateString()} {hour}
-                      </p>
-                    </div>
                   )}
                 </div>
               </motion.section>

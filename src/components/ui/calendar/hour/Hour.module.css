@@ -1,18 +1,21 @@
 .container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   width: fit-content;
   height: fit-content;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  width: 100%;
 }
 
 .timeUnit {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .button {
@@ -41,11 +44,11 @@
 }
 
 .input {
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
   border: none;
   background-color: transparent;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
   text-align: center;
   color: #1c1c1c;
@@ -55,6 +58,9 @@
   justify-content: center;
   align-items: center;
   user-select: none;
+  background-color: rgb(250, 250, 250);
+  border: 1px solid rgb(245, 245, 245);
+  border-radius: 10px;
   -webkit-user-select: none;
 }
 

@@ -2,13 +2,13 @@
   --rdp-accent-color: #87189d; /* The accent color used for selected days and UI elements. */
   --rdp-accent-background-color: #f0f0ff; /* The accent background color used for selected days and UI elements. */
 
-  --rdp-day-height: 30px; /* The height of the day cells. */
-  --rdp-day-width: 30px; /* The width of the day cells. */
+  --rdp-day-height: 28px; /* The height of the day cells. */
+  --rdp-day-width: 28px; /* The width of the day cells. */
 
   --rdp-day_button-border-radius: 10px; /* The border radius of the day cells. */
   --rdp-day_button-border: 2px solid transparent; /* The border of the day cells. */
-  --rdp-day_button-height: 30px; /* The height of the day cells. */
-  --rdp-day_button-width: 30px; /* The width of the day cells. */
+  --rdp-day_button-height: 28px; /* The height of the day cells. */
+  --rdp-day_button-width: 28px; /* The width of the day cells. */
 
   --rdp-selected-border: 1px solid var(--rdp-accent-color); /* The border of the selected days. */
   --rdp-disabled-opacity: 0.5; /* The opacity of the disabled days. */
@@ -21,7 +21,7 @@
 
   --rdp-months-gap: 2rem; /* The gap between the months in the multi-month view. */
 
-  --rdp-nav_button-disabled-opacity: 0.5; /* The opacity of the disabled navigation buttons. */
+  --rdp-nav_button-disabled-opacity: 0.3; /* The opacity of the disabled navigation buttons. */
   --rdp-nav_button-height: 2rem; /* The height of the navigation buttons. */
   --rdp-nav_button-width: 2rem; /* The width of the navigation buttons. */
   --rdp-nav-height: 2rem; /* The height of the navigation bar. */
@@ -64,7 +64,7 @@
   --rdp-weeknumber-text-align: center; /* The text alignment of the weekday cells. */
 
   --rdp-weekday-opacity: 0.75; /* The opacity of the weekday. */
-  --rdp-weekday-padding: 0.5rem 0rem; /* The padding of the weekday. */
+  --rdp-weekday-padding: 0.5rem 0rem 0.3rem 0rem; /* The padding of the weekday. */
   --rdp-weekday-text-align: center; /* The text alignment of the weekday cells. */
 
   --rdp-gradient-direction: 90deg;
@@ -93,6 +93,7 @@
   height: var(--rdp-day-height);
   text-align: center;
   color: #1c1c1c;
+  padding: 2px;
 }
 
 .rdp-day_button {
@@ -112,6 +113,7 @@
   height: var(--rdp-day_button-height);
   border: var(--rdp-day_button-border);
   border-radius: var(--rdp-day_button-border-radius);
+  font-size: 14px;
 }
 
 .rdp-day_button:disabled {
@@ -152,7 +154,8 @@
   position: relative;
   appearance: none;
 
-  background-color: rgb(245, 245, 245);
+  background-color: rgb(250, 250, 250);
+  border: solid 1px rgb(240, 240, 240);
   border-radius: 10px;
 
   -webkit-tap-highlight-color: transparent;
@@ -171,7 +174,7 @@
 .rdp-chevron {
   display: inline-block;
   fill: var(--rdp-accent-color);
-  width: 20px;
+  width: 15px;
   height: auto;
 }
 
@@ -223,7 +226,7 @@
   align-content: center;
   justify-content: center;
   height: var(--rdp-nav-height);
-  font-weight: bold;
+  font-weight: 600;
   font-size: 16px;
 }
 
@@ -277,13 +280,19 @@
   color: var(--rdp-today-color);
 }
 
+.rdp-today .rdp-day_button {
+  background-color: rgb(250, 250, 250);
+}
+
 .rdp-selected {
-  font-weight: bold;
-  font-size: large;
+  /* font-weight: bold; */
+  /* font-size: large; */
+  color: #fff !important;
 }
 
 .rdp-selected .rdp-day_button {
-  border: var(--rdp-selected-border);
+  /* border: var(--rdp-selected-border); */
+  background-color: var(--rdp-today-color);
 }
 
 .rdp-outside {

@@ -83,7 +83,7 @@ export default function RootLayout({
         <div id="modal-root">
           <WpaDownloadModal />
         </div>
-        <Pwa />
+        {/* <Pwa /> */}
         {children}
       </body>
     </html>

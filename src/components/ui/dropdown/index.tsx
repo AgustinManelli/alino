@@ -140,8 +140,6 @@ export function Dropdown<T>({
                 ref={sRef}
                 id="dropdown-component"
               >
-                <p className={styles.title}>listas</p>
-                <div className={styles.separator} />
                 <div className={styles.items}>
                   {items
                     .filter((item) => item !== selectedListHome)

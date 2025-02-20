@@ -117,7 +117,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             ) : (
               <SquircleIcon
                 style={{
-                  width: "16px",
+                  width: "14px",
                   fill: `${list.color}`,
                   transition: "fill 0.2s ease-in-out",
                   display: "flex",
@@ -149,7 +149,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
           ) : (
             <SquircleIcon
               style={{
-                width: "18px",
+                width: "14px",
                 fill: `${selectedListHome?.color}`,
                 transition: "fill 0.2s ease-in-out",
               }}
@@ -196,14 +196,19 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     setFocus(false);
   });
 
+  const handleOnClick = () => {
+    setFocus(true);
+    const calendarComponent = document.getElementById("calendar-component");
+    const dropdownComponent = document.getElementById("dropdown-component");
+    if (!inputRef || calendarComponent || dropdownComponent) return;
+    inputRef.current?.focus();
+  };
+
   return (
     <section
       className={styles.container}
       ref={Ref}
-      onClick={() => {
-        setFocus(true);
-        if (inputRef) inputRef.current?.focus();
-      }}
+      onClick={handleOnClick}
       style={{ cursor: "text" }}
     >
       <div className={styles.formContainer}>
