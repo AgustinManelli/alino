@@ -73,6 +73,19 @@
   background-color: transparent;
 }
 
+.input::placeholder {
+  color: #8e8e8e;
+}
+
+.placeholder {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  padding: 5px 10px;
+}
+
 .limitIndicator {
   position: absolute;
   right: 10px;

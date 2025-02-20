@@ -13,6 +13,7 @@ import { NoList, SendIcon, SquircleIcon } from "@/components/ui/icons/icons";
 import { motion } from "motion/react";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+import { TextAnimation } from "@/components/ui/text-animation";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -201,6 +202,44 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     inputRef.current?.focus();
   };
 
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [focus]);
+
+  const texts = [
+    "Planificar las vacaciones",
+    "Sacar a pasear al perro 🐶",
+    "Estudiar para el examen",
+    "Pensar en alguna excusa para no ir a clases",
+    "Limpiar departamento antes del fin de semana",
+    "Ponerme al día con mis estudios 🥱",
+    "Pagar las facturas de servicios",
+    "Lavar la ropa",
+    "Hacer la compra semanal",
+    "Regar las plantas 🪴",
+    "Organizar mi semana escolar",
+    "Entregar trabajo",
+    "Comprar pan 🥖",
+  ];
+
+  const randomIndex = Math.floor(Math.random() * texts.length);
+  const [currentText, setCurrentText] = useState(texts[randomIndex]);
+
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * texts.length);
+    setCurrentText(texts[randomIndex]);
+    const interval = setInterval(() => {
+      setCurrentText((prev) => {
+        const currentIndex = texts.indexOf(prev);
+        return texts[(currentIndex + 1) % texts.length];
+      });
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, [focus]);
+
   return (
     <section
       className={styles.container}
@@ -217,28 +256,38 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             animate={{ height }}
             transition={{ duration: 0.2 }}
           >
-            <textarea
-              ref={inputRef}
-              maxLength={200}
-              rows={1}
-              className={styles.input}
-              placeholder="ingrese una tarea"
-              value={task}
-              onChange={(e) => {
-                setTask(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleAdd();
-                }
-                if (e.key === "Escape") {
-                  setTask("");
-                  inputRef.current?.blur();
-                }
-              }}
-              style={{ cursor: "text" }}
-            />
+            {focus ? (
+              <textarea
+                ref={inputRef}
+                maxLength={200}
+                rows={1}
+                className={styles.input}
+                // placeholder="ingrese una tarea"
+                value={task}
+                onChange={(e) => {
+                  setTask(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAdd();
+                  }
+                  if (e.key === "Escape") {
+                    setTask("");
+                    inputRef.current?.blur();
+                  }
+                }}
+                style={{ cursor: "text" }}
+              />
+            ) : (
+              <div className={styles.placeholder}>
+                <TextAnimation
+                  style={{ fontSize: "14px" }}
+                  text={currentText}
+                  textColor="#8e8e8e"
+                />
+              </div>
+            )}
           </motion.div>
           <div className={styles.inputManagerContainer}>
             <AnimatePresence>
