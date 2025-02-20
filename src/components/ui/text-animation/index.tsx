@@ -1,8 +1,6 @@
 "use client";
 import { motion } from "motion/react";
 
-import styles from "./TextAnimation.module.css";
-
 export function TextAnimation({
   text,
   style,
@@ -21,8 +19,8 @@ export function TextAnimation({
         display: "flex",
         flexWrap: "wrap",
         justifyContent: "start",
-        gap: "0.3em",
         alignItems: "center",
+        gap: "0.3em",
       }}
     >
       {words.map((word, i) => (
@@ -41,12 +39,11 @@ export function TextAnimation({
               "#95b8d1",
               `${textColor ? textColor : "#1c1c1c"}`,
             ],
-            // color: ["#f2f2f2", "#e8d5f5", "#b8e9fa", "#a2d2ff", "#1c1c1c"],
           }}
+          exit={{ opacity: 0 }}
           transition={{
             duration: 1,
-            delay: i * 0.05, // Espaciado más sutil
-            // ease: "easeInOut",
+            delay: i * 0.05,
             y: {
               delay: i * 0.05,
               type: "spring",
