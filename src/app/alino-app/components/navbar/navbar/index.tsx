@@ -33,14 +33,12 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { Database } from "@/lib/schemas/todo-schema";
 
 import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
-import { AlinoLogo, MenuIcon } from "@/components/ui/icons/icons";
+import { MenuIcon } from "@/components/ui/icons/icons";
 import styles from "./navbar.module.css";
 
 //INIT EMOJI-MART
 import { init } from "emoji-mart";
 import data from "@/components/ui/emoji-mart/apple.json";
-import { toast } from "sonner";
-import { NormalToaster } from "@/components/ui/toaster/normal-toaster";
 
 init({ data });
 
@@ -381,8 +379,8 @@ export function Navbar({
       <motion.div
         className={styles.container}
         ref={Ref}
-        initial={{ x: 0 }}
-        animate={{ x: navbarOpened || !isMobile ? 0 : "-150%" }}
+        initial={{ x: "-150%" }}
+        animate={{ x: !navbarOpened && isMobile ? "-150%" : 0 }}
         transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
       >
         {NavbarContent}
