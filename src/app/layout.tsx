@@ -76,10 +76,13 @@ export default function RootLayout({
           as="image"
         />
       </head>
-      <body style={{ height: "100%" }} className={`${inter.className}`}>
+      <body
+        style={{ height: "100%", overflow: "hidden" }}
+        className={`${inter.className}`}
+      >
         <MobileSizeListener />
         <Loader />
-        <Toaster richColors />
+        <Toaster />
         <div id="modal-root">
           <WpaDownloadModal />
         </div>
