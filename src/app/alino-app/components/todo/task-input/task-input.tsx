@@ -12,7 +12,6 @@ import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-compon
 import { NoList, SendIcon, SquircleIcon } from "@/components/ui/icons/icons";
 import { motion } from "motion/react";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { TextAnimation } from "@/components/ui/text-animation";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
@@ -23,7 +22,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   const [focus, setFocus] = useState<boolean>(false);
   const [selected, setSelected] = useState<Date>();
   const [hour, setHour] = useState<string | undefined>();
-  const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const executedRef = useRef(false);
   const [selectedListHome, setSelectedListHome] = useState<
     ListsType | undefined
@@ -295,7 +293,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                 <motion.div
                   key="dropdown"
                   initial={{ scale: 0 }}
-                  animate={{ scale: focus || isMobile ? 1 : 0 }}
+                  animate={{ scale: focus ? 1 : 0 }}
                   exit={{ scale: 0 }}
                 >
                   <Dropdown
@@ -310,7 +308,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               )}
               <motion.div
                 initial={{ scale: 0 }}
-                animate={{ scale: focus || isMobile ? 1 : 0 }}
+                animate={{ scale: focus ? 1 : 0 }}
                 exit={{ scale: 0 }}
                 transition={{ delay: 0.05 }}
                 key="calendar"
@@ -326,7 +324,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               <motion.div
                 key="separator"
                 initial={{ height: 0 }}
-                animate={{ height: focus || isMobile ? 30 : 0 }}
+                animate={{ height: focus ? 30 : 0 }}
                 exit={{ height: 0 }}
                 style={{
                   width: "1px",
@@ -343,7 +341,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   handleAdd();
                 }}
                 initial={{ scale: 0 }}
-                animate={{ scale: focus || isMobile ? 1 : 0 }}
+                animate={{ scale: focus ? 1 : 0 }}
                 exit={{ scale: 0 }}
                 transition={{ delay: 0.1 }}
               >
