@@ -1,14 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./TimeLimitBox.module.css";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+import { Clock } from "../icons/icons";
 
 interface props {
   target_date: string | null;
+  idScrollArea?: string;
 }
 
-export function TimeLimitBox({ target_date }: props) {
+export function TimeLimitBox({ target_date, idScrollArea }: props) {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isTooltip, setIsTooltip] = useState<boolean>(false);
+
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
 
   useEffect(() => {
     if (!target_date) return;
@@ -126,12 +132,75 @@ export function TimeLimitBox({ target_date }: props) {
     );
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsTooltip(false);
+    };
+
+    const scrollContainer = document.getElementById(`${idScrollArea}`);
+    scrollContainer?.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollContainer?.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  const timeLimitRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const close = (event: MouseEvent) => {
+      if (
+        timeLimitRef.current &&
+        timeLimitRef.current.contains(event.target as Node)
+      ) {
+        return;
+      }
+      setIsTooltip(false);
+    };
+
+    window.addEventListener("mousedown", close);
+    window.addEventListener("mouseup", close);
+
+    return () => {
+      window.removeEventListener("mousedown", close);
+      window.removeEventListener("mouseup", close);
+    };
+  }, []);
+
   return (
     <>
       {target_date && (
-        <div className={`${styles.timeTargetContainer} ${getStatusClass()}`}>
-          <div className={`${styles.completed} ${getIsCompleted()}`}></div>
-          <p>{formatDate(target_date)}</p>
+        <div
+          className={`${styles.timeTargetContainer} ${getStatusClass()}`}
+          style={{
+            padding: isMobile ? 0 : "0px 10px",
+            width: isMobile ? 25 : "fit-content",
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsTooltip((prev) => !prev);
+          }}
+          ref={timeLimitRef}
+        >
+          {isMobile && isTooltip && (
+            <div className={styles.tooltip}>{formatDate(target_date)}</div>
+          )}
+          {!isMobile && (
+            <div className={`${styles.completed} ${getIsCompleted()}`} />
+          )}
+          {isMobile ? (
+            <Clock
+              style={{
+                stroke: "#1c1c1c",
+                strokeWidth: "1.5",
+                width: "auto",
+                height: "20px",
+              }}
+            />
+          ) : (
+            <p>{formatDate(target_date)}</p>
+          )}
         </div>
       )}
     </>

@@ -145,7 +145,7 @@ export function Dropdown<T>({
                     .filter((item) => item !== selectedListHome)
                     .map((item, index) => (
                       <motion.button
-                        key={index}
+                        key={`dropdown-index-${index}`}
                         className={styles.dropdownItem}
                         onClick={(e) => {
                           e.preventDefault();

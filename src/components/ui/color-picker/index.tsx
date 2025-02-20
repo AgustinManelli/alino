@@ -127,6 +127,7 @@ export function ColorPicker({
             style={{
               backgroundColor: active ? "rgb(0,0,0, 0.05)" : "transparent",
               paddingLeft: animations ? undefined : active ? "10px" : "5px",
+              cursor: active ? "pointer" : "default",
             }}
             onClick={(e) => {
               e.preventDefault();
