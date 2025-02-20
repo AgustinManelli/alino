@@ -190,6 +190,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     setTask("");
     setHour(undefined);
     setSelected(undefined);
+    setHeight("40px");
   });
 
   const handleOnClick = () => {
@@ -207,17 +208,16 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   }, [focus]);
 
   const texts = [
-    "Planificar las vacaciones",
-    "Sacar a pasear al perro",
+    "Planificar las vacaciones 🏖️",
+    "Sacar a pasear al perro 🐶❣️",
     "Estudiar para el examen",
-    "Ponerme al día con mis estudios",
-    "Pagar las facturas de servicios",
-    "Lavar la ropa",
+    "Ponerme al día con los estudios",
+    "Pagar las facturas de servicios 💸",
+    "Lavar la ropa 🫧",
     "Hacer la compra semanal",
-    "Regar las plantas",
+    "Regar las plantas 🪴",
     "Organizar mi semana escolar",
     "Entregar trabajo",
-    "Comprar pan",
   ];
 
   const randomIndex = Math.floor(Math.random() * texts.length);
@@ -282,7 +282,13 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
           {!focus && (
             <div className={styles.placeholder}>
               <TextAnimation
-                style={{ fontSize: "14px" }}
+                style={{
+                  fontSize: "14px",
+                  height: "17px",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
                 text={currentText}
                 textColor="#8e8e8e"
               />
