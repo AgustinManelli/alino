@@ -69,7 +69,7 @@ export function OauthButton({
     const { error } = await supabase.auth.signInWithOAuth({
       provider: providerType,
       options: {
-        redirectTo: `${href}/api/auth/callback`,
+        redirectTo: `${href}/auth/callback`,
       },
     });
     if (error) {
