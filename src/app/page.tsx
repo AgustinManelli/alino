@@ -5,6 +5,7 @@ import Faq from "@/components/pages/home/faq";
 import { Cards } from "@/components/pages/home/cards";
 import Image from "next/image";
 import navbar_blur from "../../public/navbar_blur.webp";
+// import { AppInformation } from "@/components/pages/home/app-information";
 
 export default function Home() {
   return (
@@ -26,6 +27,7 @@ export default function Home() {
       <Navbar />
       <Header />
       <Cards />
+      {/* <AppInformation /> */}
       <Faq />
       <Footer />
     </main>

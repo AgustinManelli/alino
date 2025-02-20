@@ -87,7 +87,6 @@ export function ConfigSection({ userAvatarUrl, name }: props) {
         {active && (
           <ModalBox
             title={name ? name : "User"}
-            footer={`alino · ${new Date().getFullYear()}`}
             onClose={handleClose}
             iconRef={iconRef}
           >

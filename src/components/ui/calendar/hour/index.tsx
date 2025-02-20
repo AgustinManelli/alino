@@ -4,17 +4,16 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { ArrowThin } from "../../icons/icons";
 import styles from "./Hour.module.css";
 import { CounterAnimation } from "../../counter-animation";
-import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 
 interface TimePickerProps {
-  value: string | undefined; // format "HH:mm"
+  value?: string; // Formato "HH:mm"
   onChange: (time: string) => void;
   disabled?: boolean;
 }
 
 export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
-  const [time, setTime] = useState(
-    value ??
+  const [internalTime, setInternalTime] = useState(
+    value ||
       new Date().toLocaleTimeString("es-AR", {
         hour: "2-digit",
         minute: "2-digit",
@@ -24,234 +23,234 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isTouchEventRef = useRef(false);
 
-  const [hours, minutes] = (value ? value : time).split(":").map(Number);
-  const currentHoursRef = useRef(hours);
-  const currentMinutesRef = useRef(minutes);
+  // Valor controlado o el interno
+  const currentTime = value || internalTime;
+  const [hours, minutes] = currentTime.split(":").map(Number);
 
-  const isMobile = usePlatformInfoStore((state) => state.isMobile);
+  // Refs
+  const hoursRef = useRef(hours);
+  const minutesRef = useRef(minutes);
 
   useEffect(() => {
-    currentHoursRef.current = hours;
-    currentMinutesRef.current = minutes;
+    hoursRef.current = hours;
+    minutesRef.current = minutes;
   }, [hours, minutes]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!value) {
-        // Solo actualiza el tiempo interno si no es controlado
-        setTime(
-          new Date().toLocaleTimeString("es-AR", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          })
-        );
-      }
-    }, 1000);
+  // Actualización del tiempo interno si no está controlado
+  // useEffect(() => {
+  //   if (!value) {
+  //     const interval = setInterval(() => {
+  //       setInternalTime(
+  //         new Date().toLocaleTimeString("es-AR", {
+  //           hour: "2-digit",
+  //           minute: "2-digit",
+  //           hour12: false,
+  //         })
+  //       );
+  //     }, 1000);
 
-    return () => clearInterval(interval);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [value]);
+
+  useEffect(() => {
+    const getCurrentTime = () => {
+      const now = new Date();
+      return now.toLocaleTimeString("es-AR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    };
+
+    const shouldUpdate = () => {
+      const currentTime = getCurrentTime();
+      return !value || value === currentTime;
+    };
+
+    if (shouldUpdate()) {
+      const interval = setInterval(() => {
+        const newTime = getCurrentTime();
+
+        // Actualizar solo si estamos en modo no controlado o el value coincide
+        if (!value) {
+          setInternalTime(newTime);
+        }
+
+        // Si tenemos value pero ya no coincide, detener el intervalo
+        if (value && value !== newTime) {
+          clearInterval(interval);
+        }
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
   }, [value]);
 
   const stopAction = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
+    timeoutRef.current && clearTimeout(timeoutRef.current);
+    intervalRef.current && clearInterval(intervalRef.current);
+    timeoutRef.current = null;
+    intervalRef.current = null;
   }, []);
 
-  useEffect(() => {
-    return () => stopAction();
-  }, [stopAction]);
+  const updateTime = useCallback(
+    (newHours: number, newMinutes: number) => {
+      const formattedTime = `${String(newHours).padStart(2, "0")}:${String(
+        newMinutes
+      ).padStart(2, "0")}`;
 
-  const handleHourChange = useCallback(
-    (newHour: number) => {
-      const validHour = Math.max(0, Math.min(23, newHour));
-      onChange(
-        `${validHour.toString().padStart(2, "0")}:${minutes
-          .toString()
-          .padStart(2, "0")}`
-      );
+      if (!value) setInternalTime(formattedTime);
+      onChange(formattedTime);
     },
-    [minutes, onChange]
+    [onChange, value]
   );
 
-  const handleMinuteChange = useCallback(
-    (newMinute: number) => {
-      const validMinute = Math.max(0, Math.min(59, newMinute));
-      onChange(
-        `${hours.toString().padStart(2, "0")}:${validMinute
-          .toString()
-          .padStart(2, "0")}`
-      );
-    },
-    [hours, onChange]
-  );
+  const handleTimeChange = useCallback(
+    (type: "hour" | "minute", delta: number) => {
+      if (disabled) return;
 
-  type HandlerEvent =
-    | React.TouchEvent<HTMLButtonElement>
-    | React.MouseEvent<HTMLButtonElement>;
+      const currentValue =
+        type === "hour" ? hoursRef.current : minutesRef.current;
+      const max = type === "hour" ? 24 : 60;
+
+      // Cálculo seguro con módulo
+      const newValue = (currentValue + delta + max) % max;
+
+      if (type === "hour") {
+        updateTime(newValue, minutesRef.current);
+      } else {
+        updateTime(hoursRef.current, newValue);
+      }
+    },
+    [disabled, updateTime]
+  );
 
   const createStartHandler = useCallback(
-    (type: "hour" | "minute", delta: number) => (e?: HandlerEvent) => {
-      e?.preventDefault();
-      stopAction();
+    (type: "hour" | "minute", delta: number) =>
+      (e?: React.TouchEvent | React.MouseEvent) => {
+        e?.preventDefault();
+        stopAction();
 
-      const updateFunction =
-        type === "hour" ? handleHourChange : handleMinuteChange;
-      const currentValue =
-        type === "hour" ? currentHoursRef.current : currentMinutesRef.current;
+        // Primer cambio inmediato
+        handleTimeChange(type, delta);
 
-      updateFunction(currentValue + delta);
-
-      timeoutRef.current = setTimeout(() => {
-        intervalRef.current = setInterval(() => {
-          const current =
-            type === "hour"
-              ? currentHoursRef.current
-              : currentMinutesRef.current;
-          updateFunction(current + delta);
-        }, 100);
-      }, 300);
-    },
-    [handleHourChange, handleMinuteChange, stopAction]
+        // Configurar repetición después de 300ms
+        timeoutRef.current = setTimeout(() => {
+          intervalRef.current = setInterval(() => {
+            handleTimeChange(type, delta);
+          }, 100);
+        }, 300);
+      },
+    [handleTimeChange, stopAction]
   );
 
-  const isTouchEventRef = useRef(false);
+  // Limpieza al desmontar
+  useEffect(() => stopAction, [stopAction]);
 
   return (
-    <div className={styles.container} aria-label="Time picker">
-      <div className={styles.timeUnit}>
-        <button
-          type="button"
-          className={styles.button}
-          onMouseDown={(e) => {
-            if (!isTouchEventRef.current) {
-              createStartHandler("hour", -1)(e);
-            }
-          }}
-          onTouchStart={(e) => {
-            isTouchEventRef.current = true;
-            createStartHandler("hour", -1)(e);
-          }}
-          onMouseUp={stopAction}
-          onMouseLeave={stopAction}
-          onTouchEnd={stopAction}
-          disabled={disabled || hours <= 0}
-          aria-label="Increase hours"
-        >
-          <ArrowThin
-            style={{
-              width: "30px",
-              height: "auto",
-              stroke: "#87189d",
-              strokeWidth: "2",
-              transform: "rotate(90deg)",
-            }}
-          />
-        </button>
-
-        <p className={styles.input}>
-          <CounterAnimation tasksLength={hours} format />
-        </p>
-        <button
-          type="button"
-          className={styles.button}
-          onMouseDown={(e) => {
-            if (!isTouchEventRef.current) {
-              createStartHandler("hour", 1)(e);
-            }
-          }}
-          onTouchStart={(e) => {
-            isTouchEventRef.current = true;
-            createStartHandler("hour", 1)(e);
-          }}
-          onMouseUp={stopAction}
-          onMouseLeave={stopAction}
-          onTouchEnd={stopAction}
-          disabled={disabled || hours >= 23}
-          aria-label="Decrease hours"
-        >
-          <ArrowThin
-            style={{
-              width: "30px",
-              height: "auto",
-              stroke: "#87189d",
-              strokeWidth: "2",
-              transform: "rotate(-90deg)",
-            }}
-          />
-        </button>
-      </div>
+    <div className={styles.container} aria-label="Selector de hora">
+      <TimeUnit
+        type="hour"
+        value={hours}
+        disabled={disabled}
+        createStartHandler={createStartHandler}
+      />
 
       <div className={styles.separator}>:</div>
 
-      <div className={styles.timeUnit}>
-        <button
-          type="button"
-          className={styles.button}
-          onMouseDown={(e) => {
-            if (!isTouchEventRef.current) {
-              createStartHandler("minute", -1)(e);
-            }
-          }}
-          onTouchStart={(e) => {
-            isTouchEventRef.current = true;
-            createStartHandler("minute", -1)(e);
-          }}
-          onMouseUp={stopAction}
-          onMouseLeave={stopAction}
-          onTouchEnd={stopAction}
-          disabled={disabled || minutes <= 0}
-          aria-label="Increase minutes"
-        >
-          <ArrowThin
-            style={{
-              width: "30px",
-              height: "auto",
-              stroke: "#87189d",
-              strokeWidth: "2",
-              transform: "rotate(90deg)",
-            }}
-          />
-        </button>
-
-        <p className={styles.input}>
-          <CounterAnimation tasksLength={minutes} format />
-        </p>
-        <button
-          type="button"
-          className={styles.button}
-          onMouseDown={(e) => {
-            if (!isTouchEventRef.current) {
-              createStartHandler("minute", 1)(e);
-            }
-          }}
-          onTouchStart={(e) => {
-            isTouchEventRef.current = true;
-            createStartHandler("minute", 1)(e);
-          }}
-          onMouseUp={stopAction}
-          onMouseLeave={stopAction}
-          onTouchEnd={stopAction}
-          disabled={disabled || minutes >= 59}
-          aria-label="Decrease minutes"
-        >
-          <ArrowThin
-            style={{
-              width: "30px",
-              height: "auto",
-              stroke: "#87189d",
-              strokeWidth: "2",
-              transform: "rotate(-90deg)",
-            }}
-          />
-        </button>
-      </div>
+      <TimeUnit
+        type="minute"
+        value={minutes}
+        disabled={disabled}
+        createStartHandler={createStartHandler}
+      />
     </div>
   );
 }
+
+// Componente auxiliar para unidades de tiempo
+const TimeUnit = ({
+  type,
+  value,
+  disabled,
+  createStartHandler,
+}: {
+  type: "hour" | "minute";
+  value: number;
+  disabled: boolean;
+  createStartHandler: (
+    type: "hour" | "minute",
+    delta: number
+  ) => (e?: any) => void;
+}) => {
+  const isTouchEventRef = useRef(false);
+
+  return (
+    <div className={styles.timeUnit}>
+      <button
+        type="button"
+        disabled={disabled}
+        className={styles.button}
+        onMouseDown={(e) => {
+          if (!isTouchEventRef.current) {
+            createStartHandler(type, -1)(e);
+          }
+        }}
+        onTouchStart={(e) => {
+          isTouchEventRef.current = true;
+          createStartHandler(type, -1)(e);
+        }}
+        onMouseUp={createStartHandler(type, 0)}
+        onMouseLeave={createStartHandler(type, 0)}
+        onTouchEnd={createStartHandler(type, 0)}
+        aria-label={`Disminuir ${type === "hour" ? "horas" : "minutos"}`}
+      >
+        <ArrowThin
+          style={{
+            width: "25px",
+            height: "auto",
+            stroke: disabled ? "#ccc" : "#87189d",
+            strokeWidth: "2",
+            transform: "rotate(90deg)",
+          }}
+        />
+      </button>
+
+      <p className={styles.input}>
+        <CounterAnimation tasksLength={value} format />
+      </p>
+
+      <button
+        type="button"
+        disabled={disabled}
+        className={styles.button}
+        onMouseDown={(e) => {
+          if (!isTouchEventRef.current) {
+            createStartHandler(type, 1)(e);
+          }
+        }}
+        onTouchStart={(e) => {
+          isTouchEventRef.current = true;
+          createStartHandler(type, 1)(e);
+        }}
+        onMouseUp={createStartHandler(type, 0)}
+        onMouseLeave={createStartHandler(type, 0)}
+        onTouchEnd={createStartHandler(type, 0)}
+        aria-label={`Aumentar ${type === "hour" ? "horas" : "minutos"}`}
+      >
+        <ArrowThin
+          style={{
+            width: "25px",
+            height: "auto",
+            stroke: disabled ? "#ccc" : "#87189d",
+            strokeWidth: "2",
+            transform: "rotate(-90deg)",
+          }}
+        />
+      </button>
+    </div>
+  );
+};

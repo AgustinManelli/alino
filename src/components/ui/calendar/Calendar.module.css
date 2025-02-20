@@ -44,33 +44,18 @@
     rgb(230, 233, 237) 0px 0px 0px 0px inset;
   user-select: none;
   -webkit-user-drag: none;
+  overflow: hidden;
 }
 
 .optionsContainer {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
   width: 100%;
   height: 100%;
   flex-direction: column;
-  padding: 10px 15px 5px 15px;
-}
-
-.title {
-  width: 100%;
-  text-wrap: wrap;
-  color: #1c1c1c;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 5px 15px 10px 15px;
-  text-align: left;
-}
-
-.divisor {
-  width: 100%;
-  height: 1px;
-  background-color: #f0f0f0;
+  padding: 10px 10px 10px 10px;
 }
 
 .hourPicker {
@@ -79,49 +64,18 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: 5px;
-}
-
-.hourParaph {
-  color: #8a8a8a;
-  font-size: 12px;
-}
-
-.hourButtonsContainer {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding-top: 5px;
-}
-
-.hourButtons {
-  border: none;
-  background-color: rgb(240, 240, 240);
-  color: #1c1c1c;
-  font-size: 14px;
-  width: 100%;
-  padding: 8px 0px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.hourButtons:hover {
-  background-color: rgb(230, 230, 230);
+  gap: 15px;
 }
 
 .hourButtonOmit {
   border: none;
   background-color: transparent;
   color: #1c1c1c;
-  text-decoration: underline;
   font-size: 16px;
   cursor: pointer;
   transition: color 0.3s ease-in-out;
   -webkit-tap-highlight-color: transparent;
+  padding: 0px 10px;
 }
 
 .hourButtonOmit:hover {
@@ -136,7 +90,7 @@
   color: #8a8a8a;
 }
 
-.supporButtons {
+.supportButtons {
   width: 100%;
   display: flex;
   justify-content: center;
@@ -144,19 +98,57 @@
   gap: 10px;
 }
 
-.supporButtons button {
-  background-color: rgb(245, 245, 245);
+.supportButtons button {
+  background-color: rgb(250, 250, 250);
   width: fit-content;
-  padding: 5px 10px;
-  border-radius: 15px;
-  border: solid 1px rgb(235, 235, 235);
+  padding: 6px 13px;
+  border-radius: 10px;
+  border: solid 1px rgb(245, 245, 245);
   font-size: 11px;
   cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
   color: #1c1c1c;
   -webkit-tap-highlight-color: transparent;
+  transition:
+    border 0.2s ease-in-out,
+    background-color 0.3s ease-in-out;
 }
 
-.supporButtons button:hover {
+.supportButtons button:hover {
   background-color: rgb(235, 235, 235);
+}
+
+.footerButtonsContainer {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}
+
+.footerButton {
+  border: none;
+  font-size: 14px;
+  width: 100%;
+  padding: 7px 0px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+}
+
+.fb1 {
+  background-color: rgb(250, 250, 250);
+  color: #1c1c1c;
+  border: 1px solid rgb(245, 245, 245);
+}
+
+.fb1:hover {
+  background-color: rgb(245, 245, 245);
+}
+
+.fb2 {
+  background-color: #87189d;
+  color: #fff;
+  border: 1px solid transparent;
 }
