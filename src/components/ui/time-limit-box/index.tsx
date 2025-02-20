@@ -197,10 +197,9 @@ export function TimeLimitBox({ target_date, idScrollArea }: props) {
             {isMobile ? (
               <Clock
                 style={{
-                  stroke: "#1c1c1c",
                   strokeWidth: "1.5",
                   width: "auto",
-                  height: "20px",
+                  height: "19px",
                 }}
               />
             ) : (
