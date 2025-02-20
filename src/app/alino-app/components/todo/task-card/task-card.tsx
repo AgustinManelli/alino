@@ -3,7 +3,7 @@
 import type { Database } from "@/lib/schemas/todo-schema";
 import { motion } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Check, DeleteIcon, Edit } from "@/components/ui/icons/icons";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import styles from "./task-card.module.css";
@@ -256,18 +256,18 @@ export function TaskCard({ task }: { task: TaskType }) {
                   position: "absolute",
                   pointerEvents: "none",
                   top: line.top,
-                  left: line.left,
-                  width: line.width,
+                  left: line.left - 10,
+                  width: line.width + 20,
                 }}
               >
                 <motion.svg
                   width="100%"
                   height="6"
-                  viewBox={`0 0 ${line.width} 6`}
+                  viewBox={`0 0 ${line.width + 15} 6`}
                   style={{ display: "block" }}
                 >
                   <motion.path
-                    d={generateWavePath(line.width)}
+                    d={generateWavePath(line.width + 15)}
                     stroke="#1c1c1c"
                     strokeWidth="2"
                     fill="none"
@@ -275,7 +275,9 @@ export function TaskCard({ task }: { task: TaskType }) {
                     animate={{ pathLength: completed ? 1 : 0 }}
                     transition={{
                       duration: 0.2,
-                      delay: index * 0.1,
+                      delay: completed
+                        ? index * 0.1
+                        : (lines.length - index - 1) * 0.1,
                       ease: "easeInOut",
                     }}
                   />
@@ -289,6 +291,7 @@ export function TaskCard({ task }: { task: TaskType }) {
         <TimeLimitBox
           target_date={task.target_date}
           idScrollArea={"task-section-scroll-area"}
+          completed={completed}
         />
         {editing ? (
           <button
