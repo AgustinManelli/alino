@@ -23,6 +23,7 @@ export function TaskCard({ task }: { task: TaskType }) {
   const textRef = useRef<HTMLParagraphElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const checkButtonRef = useRef<HTMLButtonElement>(null);
 
   const animations = useUserPreferencesStore((store) => store.animations);
   const updateTaskName = useTodoDataStore((state) => state.updateTaskName);
@@ -120,10 +121,12 @@ export function TaskCard({ task }: { task: TaskType }) {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (
         inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
+        !inputRef.current.contains(event.target as Node) &&
         // &&
         // cardRef.current &&
         // !cardRef.current.contains(event.target as Node)
+        checkButtonRef.current &&
+        !checkButtonRef.current.contains(event.target as Node)
       ) {
         setEditing(false);
         setInputName(task.name);
@@ -290,11 +293,10 @@ export function TaskCard({ task }: { task: TaskType }) {
         {editing ? (
           <button
             onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
               handleSaveName();
             }}
             className={styles.checkButton}
+            ref={checkButtonRef}
           >
             <Check
               style={{

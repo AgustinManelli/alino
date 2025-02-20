@@ -379,7 +379,7 @@ export function Navbar({
       <motion.div
         className={styles.container}
         ref={Ref}
-        initial={{ x: "-150%" }}
+        initial={{ x: window.innerWidth <= 850 ? "-150%" : 0 }}
         animate={{ x: !navbarOpened && isMobile ? "-150%" : 0 }}
         transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
       >

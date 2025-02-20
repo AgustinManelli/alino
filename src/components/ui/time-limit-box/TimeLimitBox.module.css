@@ -16,7 +16,11 @@
   border-radius: 5px;
   width: 100%;
   text-wrap: nowrap;
-  border: 1px solid rgb(245, 245, 245);
+  /* border: 1px solid rgb(245, 245, 245); */
+  transition:
+    stroke 0.3s ease-in-out,
+    color 0.3s ease-in-out,
+    background-color 0.3s ease-in-out;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -25,13 +29,19 @@
 }
 
 .timeTargetContainerWarning {
-  background-color: #fffbe4 !important; /* Amarillo suave */
-  border: 1px solid #fff7c7;
+  /* background-color: #fff8d4 !important; */
+  /* border: 1px solid #fff7c7; */
+  stroke: rgb(180, 112, 26);
+  color: rgb(180, 112, 26);
+  background-color: rgba(234, 179, 8, 0.1) !important;
 }
 
 .timeTargetContainerDanger {
-  background-color: #ffdede !important; /* Rojo suave */
-  border: 1px solid #ffd2d2;
+  /* background-color: #ffdede !important; */
+  /* border: 1px solid #ffd2d2; */
+  stroke: rgb(156, 30, 40);
+  color: rgb(156, 30, 40);
+  background-color: rgba(220, 38, 38, 0.1) !important;
 }
 
 .taskNotCompleted {
