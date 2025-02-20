@@ -208,16 +208,16 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
 
   const texts = [
     "Planificar las vacaciones",
-    "Sacar a pasear al perro 🐶",
+    "Sacar a pasear al perro",
     "Estudiar para el examen",
-    "Ponerme al día con mis estudios 🥱",
+    "Ponerme al día con mis estudios",
     "Pagar las facturas de servicios",
     "Lavar la ropa",
     "Hacer la compra semanal",
-    "Regar las plantas 🪴",
+    "Regar las plantas",
     "Organizar mi semana escolar",
     "Entregar trabajo",
-    "Comprar pan 🥖",
+    "Comprar pan",
   ];
 
   const randomIndex = Math.floor(Math.random() * texts.length);
