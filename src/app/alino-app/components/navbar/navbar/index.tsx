@@ -183,7 +183,7 @@ export function Navbar({
             style={{
               height: "20px",
               width: "auto",
-              fill: "#1c1c1c",
+              fill: "var(--text)",
               opacity: "0.2",
               overflow: "visible",
             }}

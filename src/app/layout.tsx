@@ -5,7 +5,9 @@ import { Toaster } from "sonner";
 import { Loader } from "@/components/ui/loader";
 import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
 import { MobileSizeListener } from "@/components/useMobileSizeListener";
+import { cookies } from "next/headers";
 import Pwa from "@/components/pwa";
+import ThemeInitializer from "@/components/theme-inicializer";
 
 const APP_NAME = "Alino";
 const APP_DEFAULT_TITLE = "Alino";
@@ -61,8 +63,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookie = cookies().get("theme-storage");
+  const initialTheme = cookie?.value || "system";
   return (
-    <html lang="en">
+    <html lang="en" data-theme={initialTheme}>
       <head>
         {process.env.NODE_ENV === "development" && (
           <script
@@ -80,6 +84,7 @@ export default function RootLayout({
         style={{ height: "100%", overflow: "hidden" }}
         className={`${inter.className}`}
       >
+        <ThemeInitializer />
         <MobileSizeListener />
         <Loader />
         <Toaster />

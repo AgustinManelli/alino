@@ -13,6 +13,7 @@ import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
 import { AnimatePresence } from "motion/react";
 import { useNavigationLoader } from "@/hooks/useNavigationLoader";
+import useThemeStore from "@/store/useThemeStore";
 
 interface props {
   userAvatarUrl: string;
@@ -23,6 +24,8 @@ export function ConfigSection({ userAvatarUrl, name }: props) {
   const [active, setActive] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
   const { setLoading } = useNavigationLoader();
+
+  const toggleTheme = useThemeStore((store) => store.toggleTheme);
 
   const iconRef = useRef<HTMLDivElement>(null);
 
@@ -123,6 +126,13 @@ export function ConfigSection({ userAvatarUrl, name }: props) {
                 />
               </OptionBox>
             </div>
+            <button
+              onClick={() => {
+                toggleTheme();
+              }}
+            >
+              theme
+            </button>
           </ModalBox>
         )}
       </div>
