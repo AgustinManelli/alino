@@ -1,7 +1,7 @@
 .app {
   height: 100svh;
   position: relative;
-  background-color: rgb(240, 240, 240);
+  background-color: var(--background-alino-app);
   width: 100vw;
   padding: 15px;
   overflow: hidden;

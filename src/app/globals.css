@@ -1,3 +1,16 @@
+:root {
+  --background-alino-app: rgb(240, 240, 240);
+  --background-container: rgb(255, 255, 255);
+  --text: #1c1c1c;
+}
+
+/* Variables para tema oscuro */
+[data-theme="dark"] {
+  --background-alino-app: rgb(30, 30, 30);
+  --background-container: rgb(50, 50, 50);
+  --text: #ffffff;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -7,6 +20,7 @@
 
 html,
 body {
+  background-color: var(--background-alino-app);
   position: relative;
   max-width: 100vw;
   height: 100%;
