@@ -34,7 +34,7 @@
   mask-image: linear-gradient(rgb(0, 0, 0) 85%, transparent);
   backdrop-filter: blur(10px);
   z-index: 25;
-  background-color: rgba(240, 240, 240, 0.5);
+  background-color: var(--background-alino-app-translucent);
 }
 
 .header {
@@ -95,7 +95,7 @@
 
 .homeTimeContainer {
   font-size: 14px;
-  color: rgb(200, 200, 200);
+  color: var(--text-not-available);
   user-select: none;
   text-align: start;
 }
@@ -130,14 +130,14 @@
 }
 
 .listTitle {
-  color: #1c1c1c;
+  color: var(--text);
   font-size: 20px;
   font-weight: 600;
 }
 
 .listSubtitle {
   font-size: 14px;
-  color: rgb(200, 200, 200);
+  color: var(--text-not-available);
   user-select: none;
   text-align: start;
   padding-left: 5px;
@@ -194,9 +194,5 @@
 @media only screen and (max-width: 850px) {
   .section1 {
     padding-top: 80px;
-  }
-
-  .tasksSection {
-    /* padding-top: 220px; */
   }
 }

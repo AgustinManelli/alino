@@ -14,13 +14,14 @@ export default async function appLayout({
   children: React.ReactNode;
 }) {
   const result = await getUser();
-  if (result.error) {
+  if (result.error || !result.data?.user) {
     return redirect("/sign-in");
   }
 
   return (
     <section className={styles.app}>
       <BlurredFx />
+
       <div className={styles.appContainer}>
         <ConfigSection
           userAvatarUrl={result.data?.user.user_metadata.avatar_url}

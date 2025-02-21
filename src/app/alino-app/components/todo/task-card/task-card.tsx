@@ -172,7 +172,7 @@ export function TaskCard({ task }: { task: TaskType }) {
           style={{
             width: "14px",
             height: "auto",
-            stroke: "#1c1c1c",
+            stroke: "var(--text)",
             strokeWidth: 2,
           }}
         />
@@ -184,7 +184,7 @@ export function TaskCard({ task }: { task: TaskType }) {
       icon: (
         <DeleteIcon
           style={{
-            stroke: "#1c1c1c",
+            stroke: "var(--text)",
             width: "14px",
             height: "auto",
             strokeWidth: 2,
@@ -212,8 +212,12 @@ export function TaskCard({ task }: { task: TaskType }) {
           <motion.textarea
             rows={1}
             maxLength={200}
-            initial={animations ? { backgroundColor: "#00000000" } : undefined}
-            animate={animations ? { backgroundColor: "#0000000d" } : undefined}
+            initial={{
+              backgroundColor: "var(--background-over-container)",
+            }}
+            animate={{
+              backgroundColor: "var(--background-over-container)",
+            }}
             transition={{
               backgroundColor: {
                 duration: 0.3,
@@ -244,7 +248,6 @@ export function TaskCard({ task }: { task: TaskType }) {
               className={styles.text}
               style={{
                 opacity: completed ? 0.3 : 1,
-                backgroundColor: editing ? "rgb(240, 240, 240)" : "trasnparent",
               }}
             >
               {task.name}
@@ -268,7 +271,7 @@ export function TaskCard({ task }: { task: TaskType }) {
                 >
                   <motion.path
                     d={generateWavePath(line.width + 15)}
-                    stroke="#1c1c1c"
+                    stroke="var(--text)"
                     strokeWidth="2"
                     fill="none"
                     initial={{ pathLength: 0 }}
@@ -305,7 +308,7 @@ export function TaskCard({ task }: { task: TaskType }) {
               style={{
                 width: "100%",
                 height: "auto",
-                stroke: "#1c1c1c",
+                stroke: "var(--icon-color)",
                 strokeWidth: 2,
               }}
             />

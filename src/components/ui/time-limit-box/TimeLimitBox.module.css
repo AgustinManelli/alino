@@ -12,12 +12,12 @@
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-color: rgb(250, 250, 250);
+  background-color: var(--background-over-container);
   border-radius: 5px;
   width: 100%;
   text-wrap: nowrap;
   /* border: 1px solid rgb(245, 245, 245); */
-  stroke: #1c1c1c;
+  stroke: var(--icon-color);
   transition:
     stroke 0.3s ease-in-out,
     color 0.3s ease-in-out,
@@ -28,22 +28,25 @@
 
 .timeTargetContainer p {
   font-size: 12px;
+  color: var(--text);
 }
 
 .timeTargetContainerWarning {
   /* background-color: #fff8d4 !important; */
   /* border: 1px solid #fff7c7; */
-  stroke: rgb(180, 112, 26);
-  color: rgb(180, 112, 26);
-  background-color: rgb(250, 235, 204) !important;
+  stroke: rgb(224, 133, 14);
+  color: rgb(224, 133, 14) !important;
+  background-color: rgba(255, 170, 0, 0.15) !important;
+  /* border: 1px solid rgb(104, 64, 9) !important; */
 }
 
 .timeTargetContainerDanger {
   /* background-color: #ffdede !important; */
   /* border: 1px solid #ffd2d2; */
-  stroke: rgb(156, 30, 40);
-  color: rgb(156, 30, 40);
-  background-color: rgb(250, 220, 220) !important;
+  stroke: rgb(202, 24, 39);
+  color: rgb(202, 24, 39) !important;
+  background-color: rgba(255, 0, 0, 0.15) !important;
+  /* border: 1px solid rgb(173, 18, 18) !important; */
 }
 
 .taskNotCompleted {
@@ -72,11 +75,28 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 5px 10px;
-  background-color: #fff;
+
+  background-color: var(--background-container);
+  color: var(--text);
   border-radius: 10px;
   font-size: 14px;
-  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 5px rgb(0, 0, 0, 0.1);
   text-wrap: nowrap;
   opacity: 1 !important;
+  z-index: 1;
+  width: fit-content;
+  height: fit-content;
+}
+
+.tooltipBack {
+  padding: 5px 10px;
+  border-radius: 10px;
+  z-index: 0;
+  background-color: var(--background-over-container);
+  /* border: 1px solid var(--border-container-color); */
+  opacity: 1 !important;
+}
+
+.tooltip p {
+  z-index: 1;
 }

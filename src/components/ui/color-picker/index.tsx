@@ -99,7 +99,8 @@ export function ColorPicker({
     <button
       className={styles.title}
       style={{
-        color: type === typeSelected ? "#1c1c1c" : "rgb(210,210,210)",
+        color:
+          type === typeSelected ? "var(--text)" : "var(--text-not-available)",
       }}
       onClick={(e) => {
         e.preventDefault();
@@ -125,7 +126,9 @@ export function ColorPicker({
               animations ? { paddingLeft: { duration: 0.2 } } : undefined
             }
             style={{
-              backgroundColor: active ? "rgb(0,0,0, 0.05)" : "transparent",
+              backgroundColor: active
+                ? "var(--background-over-container)"
+                : "transparent",
               paddingLeft: animations ? undefined : active ? "10px" : "5px",
               cursor: active ? "pointer" : "default",
             }}
@@ -159,7 +162,7 @@ export function ColorPicker({
                       ? {
                           opacity: 1,
                           width: "16px",
-                          marginRight: "5px",
+                          marginRight: "10px",
                           scale: 1,
                         }
                       : undefined
@@ -195,7 +198,7 @@ export function ColorPicker({
                   >
                     <ArrowThin
                       style={{
-                        stroke: "#000",
+                        stroke: "var(--icon-color)",
                         strokeWidth: "1.5",
                         width: "18px",
                         height: "auto",
@@ -298,7 +301,7 @@ export function ColorPicker({
                             <Cross
                               style={{
                                 width: "18px",
-                                stroke: "#999999",
+                                stroke: "var(--icon-color)",
                                 strokeWidth: "3",
                               }}
                             />
@@ -333,7 +336,7 @@ export function ColorPicker({
                         <CopyToClipboardIcon
                           style={{
                             strokeWidth: "1.5",
-                            stroke: "#1c1c1c",
+                            stroke: "var(--icon-color)",
                             width: "20px",
                           }}
                         />
@@ -432,7 +435,7 @@ function SquircleColorSelector({
                 ? `${colorHex}`
                 : hoverColor
                   ? `${colorHex}`
-                  : "rgb(245,245,245)",
+                  : "var(--border-container-color)",
             transition: "stroke 0.3s ease-in-out",
           }}
         />

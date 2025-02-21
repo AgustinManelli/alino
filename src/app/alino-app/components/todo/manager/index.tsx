@@ -244,7 +244,6 @@ export default function Manager({
         <section className={styles.section2}>
           <div
             className={styles.tasksSection}
-            // style={{ paddingTop: sectionHeight }}
             id={"task-section-scroll-area"}
             ref={scrollRef}
           >

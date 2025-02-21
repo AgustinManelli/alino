@@ -3,7 +3,7 @@
   position: relative;
   justify-content: center;
   align-items: center;
-  background-color: rgb(240, 240, 240);
+  background-color: var(--background-over-container);
   border-radius: 15px;
   padding: 7px 10px 7px 10px;
   gap: 5px;
@@ -24,9 +24,13 @@
   background-color: transparent;
   font-size: 14px;
   font-family: inherit;
-  color: #1c1c1c;
+  color: var(--text);
   border-radius: 10px;
   padding-left: 10px;
+}
+
+.inputText::placeholder {
+  color: var(--placeholder-text-color);
 }
 
 .colorButton {
@@ -36,6 +40,7 @@
   border: none;
   cursor: pointer;
 }
+
 .colorInput {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -46,22 +51,26 @@
   cursor: pointer;
   background-color: transparent;
 }
+
 .colorInput::-webkit-color-swatch {
   border-radius: 5px;
   border: none;
   margin: 0;
   padding: 0;
 }
+
 .colorInput::-webkit-color-swatch-wrapper {
   border: none;
   margin: 0;
   padding: 0;
 }
+
 .colorInput::-moz-color-swatch-wrapper {
   border: none;
   margin: 0;
   padding: 0;
 }
+
 .colorInput::-moz-color-swatch {
   border-radius: 5px;
   border: none;
@@ -82,5 +91,5 @@
 }
 
 .button:hover {
-  background-color: rgb(250, 250, 250);
+  background-color: var(--hover-over-container);
 }

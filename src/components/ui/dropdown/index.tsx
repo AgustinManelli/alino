@@ -4,6 +4,7 @@ import { useState, ReactNode, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import styles from "./Dropdown.module.css";
 import { createPortal } from "react-dom";
+import ClientOnlyPortal from "../client-only-portal";
 interface DropdownProps<T> {
   items: T[];
   renderItem: (item: T, index: number) => ReactNode;
@@ -104,77 +105,73 @@ export function Dropdown<T>({
       >
         {triggerLabel()}
       </button>
-      {createPortal(
-        <>
-          <AnimatePresence mode="wait">
-            {open && (
-              <motion.section
-                initial={{
-                  opacity: 0,
-                  filter: "blur(10px)",
-                  z: -50,
-                  rotateX: 10,
-                  rotateY: -25,
-                }}
-                animate={{
-                  opacity: 1,
-                  filter: "blur(0px)",
-                  z: 0,
-                  rotateX: 0,
-                  rotateY: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  filter: "blur(10px)",
-                  z: -50,
-                  rotateX: 10,
-                  rotateY: -25,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 150,
-                  damping: 25,
-                  duration: 0.3,
-                }}
-                className={styles.dropdownMenu}
-                ref={sRef}
-                id="dropdown-component"
-              >
-                <div className={styles.items}>
-                  {items
-                    .filter((item) => item !== selectedListHome)
-                    .map((item, index) => (
-                      <motion.button
-                        key={`dropdown-index-${index}`}
-                        className={styles.dropdownItem}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          closeDropdown();
-                          setSelectedListHome(item);
-                          handleFocusToParentInput &&
-                            handleFocusToParentInput();
-                        }}
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0 }}
-                        transition={{
-                          delay: index * 0.05,
-                          type: "spring",
-                          stiffness: 100,
-                          damping: 15,
-                        }}
-                      >
-                        {renderItem(item, index)}
-                      </motion.button>
-                    ))}
-                </div>
-              </motion.section>
-            )}
-          </AnimatePresence>
-        </>,
-        document.body
-      )}
+      <ClientOnlyPortal>
+        <AnimatePresence mode="wait">
+          {open && (
+            <motion.section
+              initial={{
+                opacity: 0,
+                filter: "blur(10px)",
+                z: -50,
+                rotateX: 10,
+                rotateY: -25,
+              }}
+              animate={{
+                opacity: 1,
+                filter: "blur(0px)",
+                z: 0,
+                rotateX: 0,
+                rotateY: 0,
+              }}
+              exit={{
+                opacity: 0,
+                filter: "blur(10px)",
+                z: -50,
+                rotateX: 10,
+                rotateY: -25,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 150,
+                damping: 25,
+                duration: 0.3,
+              }}
+              className={styles.dropdownMenu}
+              ref={sRef}
+              id="dropdown-component"
+            >
+              <div className={styles.items}>
+                {items
+                  .filter((item) => item !== selectedListHome)
+                  .map((item, index) => (
+                    <motion.button
+                      key={`dropdown-index-${index}`}
+                      className={styles.dropdownItem}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeDropdown();
+                        setSelectedListHome(item);
+                        handleFocusToParentInput && handleFocusToParentInput();
+                      }}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0 }}
+                      transition={{
+                        delay: index * 0.05,
+                        type: "spring",
+                        stiffness: 100,
+                        damping: 15,
+                      }}
+                    >
+                      {renderItem(item, index)}
+                    </motion.button>
+                  ))}
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
+      </ClientOnlyPortal>
     </>
   );
 }

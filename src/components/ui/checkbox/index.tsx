@@ -88,10 +88,10 @@ export function Checkbox({
         viewBox="0 0 24 24"
         style={{
           width: "15px",
-          stroke: "#1c1c1c",
+          stroke: "var(--icon-colorv2)",
           strokeWidth: "2",
           overflow: "visible",
-          fill: tempStatus ? "#1c1c1c" : "transparent",
+          fill: tempStatus ? "var(--icon-colorv2)" : "transparent",
           transition: "fill 0.1s ease-in-out",
           transform: "scale(1)",
         }}
@@ -102,7 +102,7 @@ export function Checkbox({
           initial={{ pathLength: 0 }}
           animate={{ pathLength: tempStatus ? 1 : 0 }}
           id={`check-${id}`}
-          style={{ stroke: "#fff", strokeWidth: 2 }}
+          style={{ stroke: "var(--icon-color-inside)", strokeWidth: 2 }}
           strokeLinejoin="round"
           d="m6.68,13.58s1.18,0,2.76,2.76c0,0,3.99-7.22,7.88-8.67"
         />

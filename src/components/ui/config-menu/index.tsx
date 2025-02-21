@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { MoreVertical } from "@/components/ui/icons/icons";
 import styles from "./ConfigMenu.module.css";
 import { ConfigCard } from "./config-card";
+import ClientOnlyPortal from "../client-only-portal";
 
 interface ConfigOption {
   name: string;
@@ -72,7 +73,6 @@ export function ConfigMenu({
     const handleScroll = () => {
       setOpen(false);
     };
-
     const scrollContainer = document.getElementById(`${idScrollArea}`);
     scrollContainer?.addEventListener("scroll", handleScroll);
 
@@ -89,7 +89,9 @@ export function ConfigMenu({
           style={{
             width: `${iconWidth}`,
             height: `${iconWidth}`,
-            backgroundColor: open ? "rgb(240,240,240)" : " rgb(250, 250, 250)",
+            backgroundColor: open
+              ? "var(--background-over-container-hover)"
+              : " var(--background-over-container)",
           }}
           onClick={(e) => {
             e.preventDefault();
@@ -100,7 +102,7 @@ export function ConfigMenu({
         >
           <MoreVertical
             style={{
-              stroke: "#1c1c1c",
+              stroke: "var(--text)",
               width: "20px",
               strokeWidth: "3",
               display: "flex",
@@ -108,39 +110,29 @@ export function ConfigMenu({
           />
         </button>
       </div>
-      {createPortal(
-        <>
-          {open ? (
-            <section
-              ref={sRef}
-              className={styles.container}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              id={`config-menu-container-${uniqueId}`}
-            >
-              <section className={styles.optionsContainer}>
-                {configOptions.map((option, index) => (
-                  <ConfigCard
-                    key={index}
-                    name={option.name}
-                    icon={option.icon}
-                    action={() => {
-                      option.action();
-                      setOpen(false);
-                    }}
-                  />
-                ))}
-              </section>
+      <ClientOnlyPortal>
+        {open && (
+          <section
+            ref={sRef}
+            className={styles.container}
+            id={`config-menu-container-${uniqueId}`}
+          >
+            <section className={styles.optionsContainer}>
+              {configOptions.map((option, index) => (
+                <ConfigCard
+                  key={index}
+                  name={option.name}
+                  icon={option.icon}
+                  action={() => {
+                    option.action();
+                    setOpen(false);
+                  }}
+                />
+              ))}
             </section>
-          ) : (
-            ""
-          )}
-        </>,
-        document.body
-        // document.getElementById("app") as HTMLElement
-      )}
+          </section>
+        )}
+      </ClientOnlyPortal>
     </>
   );
 }

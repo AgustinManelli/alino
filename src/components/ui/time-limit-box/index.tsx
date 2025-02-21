@@ -180,8 +180,10 @@ export function TimeLimitBox({
           style={{ width: isMobile ? 25 : "fit-content" }}
         >
           {isMobile && isTooltip && (
-            <div className={`${styles.tooltip} ${getStatusClass()}`}>
-              {formatDate(target_date)}
+            <div className={styles.tooltip}>
+              <div className={`${styles.tooltipBack} ${getStatusClass()}`}>
+                <p>{formatDate(target_date)}</p>
+              </div>
             </div>
           )}
           <div

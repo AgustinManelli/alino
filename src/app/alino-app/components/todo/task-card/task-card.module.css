@@ -1,7 +1,7 @@
 .cardContainer {
   position: relative;
   width: 100%;
-  background-color: #fff;
+  background-color: var(--background-container);
   height: fit-content;
   border-radius: 15px;
   display: flex;
@@ -30,7 +30,7 @@
   border-radius: 10px;
   border: none;
   outline: none;
-  background-color: rgb(245, 245, 245);
+  background-color: var(--background-over-container);
   padding: 5px 10px;
   font-size: 16px;
   width: 100%;
@@ -41,6 +41,7 @@
   height: auto;
   height: 100%;
   box-sizing: border-box;
+  color: var(--text);
 }
 
 .text {
@@ -54,6 +55,7 @@
   border-radius: 10px;
   padding: 5px 10px 5px 10px;
   font-size: 16px;
+  color: var(--text);
 }
 
 .editingButtons {
