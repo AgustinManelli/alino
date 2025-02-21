@@ -16,19 +16,19 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgb(250, 250, 250);
+  background-color: var(--background-over-container);
   transition: background-color 0.3s ease-in-out;
 }
 
 .mainButton:hover {
-  background-color: rgb(240, 240, 240) !important;
+  background-color: var(--background-over-container-hover) !important;
 }
 
 .container {
   right: -150px;
   position: absolute;
-  background-color: #fff;
-  border: 1px solid rgb(240, 240, 240);
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
   min-width: 150px;
   width: fit-content;
   /* height: fit-content; */

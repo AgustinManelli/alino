@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "motion/react";
+import { useEffect, useState } from "react";
 
 export function TextAnimation({
   text,
@@ -10,6 +11,14 @@ export function TextAnimation({
   style?: React.CSSProperties;
   textColor?: string;
 }) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
+
   const words = text.split(" ");
 
   return (

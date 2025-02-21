@@ -132,7 +132,9 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
     pointerEvents: isDragging ? "none" : "auto",
     zIndex: isDragging ? 99 : 1,
     opacity: isDragging ? 0.2 : 1,
-    backgroundColor: isActive ? "rgb(250, 250, 250)" : "transparent",
+    backgroundColor: isActive
+      ? "var(--background-over-container)"
+      : "transparent",
   } as CSSProperties;
 
   const configOptions = [
@@ -143,7 +145,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
           style={{
             width: "14px",
             height: "auto",
-            stroke: "#1c1c1c",
+            stroke: "var(--text)",
             strokeWidth: 2,
           }}
         />
@@ -157,7 +159,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
           style={{
             width: "14px",
             height: "auto",
-            stroke: "#1c1c1c",
+            stroke: "var(--text)",
             strokeWidth: 2,
           }}
         />
@@ -166,7 +168,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
           style={{
             width: "14px",
             height: "auto",
-            stroke: "#1c1c1c",
+            stroke: "var(--text)",
             strokeWidth: 2,
           }}
         />
@@ -178,7 +180,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
       icon: (
         <DeleteIcon
           style={{
-            stroke: "#1c1c1c",
+            stroke: "var(--text)",
             width: "14px",
             height: "auto",
             strokeWidth: 2,
@@ -213,8 +215,9 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
                 style={{
                   width: "100%",
                   height: "auto",
-                  stroke: "rgb(210, 210, 210)",
+                  stroke: "var(--icon-color)",
                   strokeWidth: 2,
+                  opacity: 0.4,
                 }}
               />
             </div>
@@ -313,7 +316,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
             className={styles.cardFx}
             style={{
               boxShadow: `${colorTemp} 100px 50px 50px`,
-              opacity: isActive ? 0.05 : 0,
+              opacity: isActive ? 0.1 : 0,
             }}
           ></div>
           {content}

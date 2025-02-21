@@ -140,8 +140,12 @@ export const ListInput = memo(() => {
             </div>
             <motion.input
               maxLength={30}
-              initial={{ backgroundColor: "#00000000" }}
-              animate={{ backgroundColor: "#0000000d" }}
+              initial={{
+                backgroundColor: "var(--background-over-container)",
+              }}
+              animate={{
+                backgroundColor: "var(--background-over-container)",
+              }}
               transition={{
                 backgroundColor: {
                   duration: 0.3,
@@ -181,7 +185,7 @@ export const ListInput = memo(() => {
               <SendIcon
                 style={{
                   width: "18px",
-                  stroke: "#1c1c1c",
+                  stroke: "var(--icon-color)",
                   strokeWidth: "2",
                 }}
               />
@@ -208,7 +212,7 @@ export const ListInput = memo(() => {
           >
             <PlusBoxIcon
               style={{
-                stroke: "#1c1c1c",
+                stroke: "var(--icon-color)",
                 strokeWidth: "1.5",
                 width: "20px",
               }}

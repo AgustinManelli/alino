@@ -11,6 +11,7 @@ import { Hour } from "./hour";
 import { ArrowThin, Calendar as Icon } from "@/components/ui/icons/icons";
 import styles from "./Calendar.module.css";
 import "./DayPicker.css";
+import ClientOnlyPortal from "../client-only-portal";
 
 interface props {
   selected: Date | undefined;
@@ -133,253 +134,250 @@ export function Calendar({
           }}
         />
       </button>
-      {createPortal(
-        <>
-          <AnimatePresence mode="wait">
-            {open && (
-              <motion.section
-                initial={{
-                  opacity: 0,
-                  filter: "blur(10px)",
-                  z: -50,
-                  rotateX: 10,
-                  rotateY: -25,
-                }}
-                animate={{
-                  opacity: 1,
-                  filter: "blur(0px)",
-                  z: 0,
-                  rotateX: 0,
-                  rotateY: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  filter: "blur(10px)",
-                  z: -50,
-                  rotateX: 10,
-                  rotateY: -25,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 150,
-                  damping: 25,
-                  duration: 0.3,
-                }}
-                className={styles.container}
-                ref={sRef}
-                id="calendar-component"
-              >
-                <div className={styles.optionsContainer}>
-                  {step ? (
-                    <div className={styles.hourPicker}>
-                      <div className={styles.supportButtons}>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setHour("09:00");
-                          }}
-                          style={{
-                            borderColor:
-                              hour === "09:00" ? "#87189d" : "rgb(245,245,245)",
-                          }}
-                        >
-                          9 am
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setHour("12:00");
-                          }}
-                          style={{
-                            borderColor:
-                              hour === "12:00" ? "#87189d" : "rgb(245,245,245)",
-                          }}
-                        >
-                          12 pm
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setHour("17:00");
-                          }}
-                          style={{
-                            borderColor:
-                              hour === "17:00" ? "#87189d" : "rgb(245,245,245)",
-                          }}
-                        >
-                          5 pm
-                        </button>
-                      </div>
-
-                      <Hour value={hour} onChange={setHour} />
-
-                      <div className={styles.footerButtonsContainer}>
-                        <button
-                          className={`${styles.footerButton} ${styles.fb1}`}
-                          onClick={() => {
-                            setStep(false);
-                          }}
-                        >
-                          <ArrowThin
-                            style={{
-                              width: "auto",
-                              height: "15px",
-                              stroke: "#1c1c1c",
-                              strokeWidth: "2",
-                              transform: "rotate(90deg)",
-                            }}
-                          />
-                          atrás
-                        </button>
-                        <button
-                          className={styles.hourButtonOmit}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setOpen(false);
-                            setStep(false);
-                            setHour(undefined);
-                            focusToParentInput && focusToParentInput();
-                          }}
-                        >
-                          omitir
-                        </button>
-                        <button
-                          className={`${styles.footerButton} ${styles.fb2}`}
-                          style={{ backgroundColor: "#87189d", color: "#fff" }}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setOpen(false);
-                            setStep(false);
-                            if (!hour) {
-                              setHour(
-                                new Date().toLocaleTimeString("es-AR", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: false,
-                                })
-                              );
-                            }
-                            focusToParentInput && focusToParentInput();
-                          }}
-                        >
-                          aplicar
-                        </button>
-                      </div>
+      <ClientOnlyPortal>
+        <AnimatePresence mode="wait">
+          {open && (
+            <motion.section
+              initial={{
+                opacity: 0,
+                filter: "blur(10px)",
+                z: -50,
+                rotateX: 10,
+                rotateY: -25,
+              }}
+              animate={{
+                opacity: 1,
+                filter: "blur(0px)",
+                z: 0,
+                rotateX: 0,
+                rotateY: 0,
+              }}
+              exit={{
+                opacity: 0,
+                filter: "blur(10px)",
+                z: -50,
+                rotateX: 10,
+                rotateY: -25,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 150,
+                damping: 25,
+                duration: 0.3,
+              }}
+              className={styles.container}
+              ref={sRef}
+              id="calendar-component"
+            >
+              <div className={styles.optionsContainer}>
+                {step ? (
+                  <div className={styles.hourPicker}>
+                    <div className={styles.supportButtons}>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setHour("09:00");
+                        }}
+                        style={{
+                          borderColor:
+                            hour === "09:00" ? "#87189d" : "rgb(245,245,245)",
+                        }}
+                      >
+                        9 am
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setHour("12:00");
+                        }}
+                        style={{
+                          borderColor:
+                            hour === "12:00" ? "#87189d" : "rgb(245,245,245)",
+                        }}
+                      >
+                        12 pm
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setHour("17:00");
+                        }}
+                        style={{
+                          borderColor:
+                            hour === "17:00" ? "#87189d" : "rgb(245,245,245)",
+                        }}
+                      >
+                        5 pm
+                      </button>
                     </div>
-                  ) : (
-                    <>
-                      <div className={styles.supportButtons}>
-                        <button
-                          onClick={() => {
-                            handleDateSelect(new Date());
-                          }}
+
+                    <Hour value={hour} onChange={setHour} />
+
+                    <div className={styles.footerButtonsContainer}>
+                      <button
+                        className={`${styles.footerButton} ${styles.fb1}`}
+                        onClick={() => {
+                          setStep(false);
+                        }}
+                      >
+                        <ArrowThin
                           style={{
-                            borderColor:
-                              selected?.toDateString() ===
-                              new Date().toDateString()
-                                ? "#87189d"
-                                : "rgb(245,245,245)",
+                            width: "auto",
+                            height: "15px",
+                            stroke: "#1c1c1c",
+                            strokeWidth: "2",
+                            transform: "rotate(90deg)",
                           }}
-                        >
-                          Hoy
-                        </button>
-                        <button
-                          onClick={() => {
-                            const date = new Date();
-                            date.setDate(date.getDate() + 7);
-                            handleDateSelect(date);
-                          }}
+                        />
+                        atrás
+                      </button>
+                      <button
+                        className={styles.hourButtonOmit}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOpen(false);
+                          setStep(false);
+                          setHour(undefined);
+                          focusToParentInput && focusToParentInput();
+                        }}
+                      >
+                        omitir
+                      </button>
+                      <button
+                        className={`${styles.footerButton} ${styles.fb2}`}
+                        style={{ backgroundColor: "#87189d", color: "#fff" }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOpen(false);
+                          setStep(false);
+                          if (!hour) {
+                            setHour(
+                              new Date().toLocaleTimeString("es-AR", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              })
+                            );
+                          }
+                          focusToParentInput && focusToParentInput();
+                        }}
+                      >
+                        aplicar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className={styles.supportButtons}>
+                      <button
+                        onClick={() => {
+                          handleDateSelect(new Date());
+                        }}
+                        style={{
+                          borderColor:
+                            selected?.toDateString() ===
+                            new Date().toDateString()
+                              ? "#87189d"
+                              : "rgb(245,245,245)",
+                        }}
+                      >
+                        Hoy
+                      </button>
+                      <button
+                        onClick={() => {
+                          const date = new Date();
+                          date.setDate(date.getDate() + 7);
+                          handleDateSelect(date);
+                        }}
+                        style={{
+                          borderColor:
+                            selected?.toDateString() ===
+                            new Date(
+                              new Date().setDate(new Date().getDate() + 7)
+                            ).toDateString()
+                              ? "#87189d"
+                              : "rgb(245,245,245)",
+                        }}
+                      >
+                        7 días
+                      </button>
+                      <button
+                        onClick={() => {
+                          const date = new Date();
+                          date.setMonth(date.getMonth() + 1);
+                          handleDateSelect(date);
+                        }}
+                        style={{
+                          borderColor:
+                            selected?.toDateString() ===
+                            new Date(
+                              new Date().setMonth(new Date().getMonth() + 1)
+                            ).toDateString()
+                              ? "#87189d"
+                              : "rgb(245,245,245)",
+                        }}
+                      >
+                        1 mes
+                      </button>
+                    </div>
+                    <DayPicker
+                      // disabled={{ before: new Date() }}
+                      timeZone="America/Buenos_Aires"
+                      mode="single"
+                      locale={es}
+                      selected={selected}
+                      onSelect={handleDateSelect}
+                      month={tempMonth}
+                      onMonthChange={setTempMonth}
+                      // startMonth={new Date()}
+                      defaultMonth={selected}
+                    />
+                    <div className={styles.footerButtonsContainer}>
+                      <button
+                        className={`${styles.footerButton} ${styles.fb1}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOpen(false);
+                        }}
+                      >
+                        cancelar
+                      </button>
+                      <button
+                        className={`${styles.footerButton} ${styles.fb2}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setStep(true);
+                          if (!selected) {
+                            setSelected(new Date());
+                          }
+                        }}
+                      >
+                        siguiente
+                        <ArrowThin
                           style={{
-                            borderColor:
-                              selected?.toDateString() ===
-                              new Date(
-                                new Date().setDate(new Date().getDate() + 7)
-                              ).toDateString()
-                                ? "#87189d"
-                                : "rgb(245,245,245)",
+                            width: "auto",
+                            height: "15px",
+                            stroke: "#fff",
+                            strokeWidth: "3",
+                            transform: "rotate(-90deg)",
                           }}
-                        >
-                          7 días
-                        </button>
-                        <button
-                          onClick={() => {
-                            const date = new Date();
-                            date.setMonth(date.getMonth() + 1);
-                            handleDateSelect(date);
-                          }}
-                          style={{
-                            borderColor:
-                              selected?.toDateString() ===
-                              new Date(
-                                new Date().setMonth(new Date().getMonth() + 1)
-                              ).toDateString()
-                                ? "#87189d"
-                                : "rgb(245,245,245)",
-                          }}
-                        >
-                          1 mes
-                        </button>
-                      </div>
-                      <DayPicker
-                        // disabled={{ before: new Date() }}
-                        timeZone="America/Buenos_Aires"
-                        mode="single"
-                        locale={es}
-                        selected={selected}
-                        onSelect={handleDateSelect}
-                        month={tempMonth}
-                        onMonthChange={setTempMonth}
-                        // startMonth={new Date()}
-                        defaultMonth={selected}
-                      />
-                      <div className={styles.footerButtonsContainer}>
-                        <button
-                          className={`${styles.footerButton} ${styles.fb1}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setOpen(false);
-                          }}
-                        >
-                          cancelar
-                        </button>
-                        <button
-                          className={`${styles.footerButton} ${styles.fb2}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setStep(true);
-                            if (!selected) {
-                              setSelected(new Date());
-                            }
-                          }}
-                        >
-                          siguiente
-                          <ArrowThin
-                            style={{
-                              width: "auto",
-                              height: "15px",
-                              stroke: "#fff",
-                              strokeWidth: "3",
-                              transform: "rotate(-90deg)",
-                            }}
-                          />
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </motion.section>
-            )}
-          </AnimatePresence>
-        </>,
-        document.body
-      )}
+                        />
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
+      </ClientOnlyPortal>
     </>
   );
 }

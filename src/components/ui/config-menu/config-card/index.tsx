@@ -8,19 +8,16 @@ type props = {
   name: string;
   icon: React.ReactNode;
   action: () => void;
-  hoverColor?: string | null;
 };
 
-export function ConfigCard({ name, icon, action, hoverColor }: props) {
+export function ConfigCard({ name, icon, action }: props) {
   const [optionHover, setOptionHover] = useState<boolean>(false);
   return (
     <div
       className={styles.options}
       style={{
         backgroundColor: optionHover
-          ? hoverColor
-            ? `${hoverColor}`
-            : "rgb(245,245,245)"
+          ? "var(--background-over-container)"
           : "transparent",
       }}
       onMouseEnter={() => {

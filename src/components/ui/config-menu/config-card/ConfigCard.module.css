@@ -2,7 +2,6 @@
   position: relative;
   width: 100%;
   height: 30px;
-  background-color: rgb(245, 245, 245);
   border-radius: 5px;
   display: flex;
   justify-content: start;
@@ -16,4 +15,5 @@
 .options p {
   font-size: 14px;
   text-wrap: nowrap;
+  color: var(--text);
 }

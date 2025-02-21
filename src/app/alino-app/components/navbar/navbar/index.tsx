@@ -66,11 +66,11 @@ const containerFMVariant = {
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
-export function Navbar({
-  initialFetching = false,
-}: {
+interface props {
   initialFetching?: boolean;
-}) {
+}
+
+export function Navbar({ initialFetching }: props) {
   //estados locales
   const [navbarOpened, setNavbarOpened] = useState<boolean>(false); //Estado para abrir la navbar
   const [draggedItem, setDraggedItem] = useState<ListsType | null>(null); //Estado para el item arrastrado
@@ -292,7 +292,7 @@ export function Navbar({
                       style={{
                         width: "100%",
                         height: "2px",
-                        background: `linear-gradient(to right,rgb(250,250,250) 80%, rgb(240,240,240) 100%) 0% center / 200% no-repeat`,
+                        background: `linear-gradient(to right,var(--hover-over-container) 80%, var(--border-container-color) 100%) 0% center / 200% no-repeat`,
                         backgroundSize: "200% auto",
                         backgroundRepeat: "no-repeat",
                       }}
@@ -379,8 +379,8 @@ export function Navbar({
       <motion.div
         className={styles.container}
         ref={Ref}
-        initial={{ x: window.innerWidth <= 850 ? "-150%" : 0 }}
-        animate={{ x: !navbarOpened && isMobile ? "-150%" : 0 }}
+        // initial={{ left: isMobile ? "-150%" : 0 }}
+        animate={{ left: !navbarOpened && isMobile ? "-150%" : 0 }}
         transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
       >
         {NavbarContent}
@@ -427,7 +427,7 @@ function Button({
             style={{
               width: "25px",
               height: "auto",
-              stroke: "#1c1c1c",
+              stroke: "var(--text)",
               strokeWidth: "2",
             }}
           />

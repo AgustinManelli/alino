@@ -68,17 +68,12 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme={initialTheme}>
       <head>
-        {process.env.NODE_ENV === "development" && (
+        {/* {process.env.NODE_ENV === "development" && (
           <script
             crossOrigin="anonymous"
             src="//unpkg.com/react-scan/dist/auto.global.js"
           />
-        )}
-        <link
-          rel="preload"
-          href="/public/apple-touch-startup-image-1024-768.png"
-          as="image"
-        />
+        )} */}
       </head>
       <body
         style={{ height: "100%", overflow: "hidden" }}

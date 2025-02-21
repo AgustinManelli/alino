@@ -40,7 +40,7 @@ export const HomeCard = memo(({ handleCloseNavbar }: props) => {
         >
           <HomeIcon2
             style={{
-              stroke: "#000",
+              stroke: "rgb(106, 195, 255)",
               width: "12px",
               height: "auto",
               strokeWidth: "2.5",
@@ -52,7 +52,7 @@ export const HomeCard = memo(({ handleCloseNavbar }: props) => {
           <p
             className={styles.listName}
             style={{
-              color: "#1c1c1c",
+              color: "var(--text)",
             }}
           >
             home
@@ -82,7 +82,9 @@ export const HomeCard = memo(({ handleCloseNavbar }: props) => {
     <Link
       className={`${styles.container}`}
       style={{
-        backgroundColor: isActive ? "rgb(250, 250, 250)" : "transparent",
+        backgroundColor: isActive
+          ? "var(--background-over-container)"
+          : "transparent",
       }}
       href="/alino-app"
       onClick={handleCloseNavbar}

@@ -119,9 +119,11 @@ export async function getSession() {
 export async function getUser() {
   const supabase = createClient();
   const { data, error } = await supabase.auth.getUser();
-  if (error) {
-    return { error: error.message };
-  }
 
-  return { data };
+  return {
+    data: {
+      user: data.user,
+    },
+    error: error?.message || null,
+  };
 }

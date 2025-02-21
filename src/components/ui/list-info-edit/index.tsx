@@ -97,14 +97,14 @@ export function ListInfoEdit({
   };
 
   const gradientStyle = {
-    background: `linear-gradient(to right,#1c1c1c 80%, ${list.color} 90%, transparent 95%) 0% center / 200% no-repeat text`,
+    background: `linear-gradient(to right,var(--text) 80%, ${list.color} 90%, transparent 95%) 0% center / 200% no-repeat text`,
     backgroundSize: "200% auto" as const,
     backgroundRepeat: "no-repeat" as const,
     WebkitBackgroundClip: "text" as const,
     WebkitTextFillColor: "transparent" as const,
     backgroundClip: "text" as const,
     fontSize: big ? "18px" : "14px",
-    fontWeight: big ? "600" : "initial",
+    fontWeight: big ? "600" : "500",
   };
 
   return (
@@ -129,8 +129,12 @@ export function ListInfoEdit({
               fontWeight: big ? "600" : "initial",
             }}
             maxLength={30}
-            initial={animations ? { backgroundColor: "#00000000" } : undefined}
-            animate={animations ? { backgroundColor: "#0000000d" } : undefined}
+            initial={{
+              backgroundColor: "var(--background-over-container)",
+            }}
+            animate={{
+              backgroundColor: "var(--background-over-container)",
+            }}
             transition={{
               backgroundColor: {
                 duration: 0.3,
@@ -190,7 +194,7 @@ export function ListInfoEdit({
             style={{
               width: "23px",
               height: "auto",
-              stroke: "#1c1c1c",
+              stroke: "var(--icon-color)",
               strokeWidth: 2,
             }}
           />
