@@ -6,19 +6,25 @@
 }
 
 .authFormHeader {
-  text-align: left;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
 }
 
 .authFormTitle {
   color: #1c1c1c;
-  font-size: 22px;
+  font-size: 18px;
   margin-bottom: 8px;
   font-weight: 600;
 }
 
 .authFormDescription {
   color: #7a7a7a;
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 500;
+  max-width: 300px;
 }
 
 .authForm {

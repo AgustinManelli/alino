@@ -58,8 +58,9 @@ export default async function AuthLayout({
               left: "0",
               width: "100%",
               height: "auto",
-              opacity: 1,
-              transform: "scaleX(-1)",
+              opacity: 0.5,
+              filter: "saturate(200%)",
+              transform: "translateY(-40px)",
               pointerEvents: "none",
             }}
           />
