@@ -64,9 +64,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookie = cookies().get("theme-storage");
-  const initialTheme = cookie?.value || "system";
+  const initialTheme = cookie?.value || "device";
   return (
-    <html lang="en" data-theme={initialTheme}>
+    <html lang="en" data-theme={initialTheme} suppressHydrationWarning>
       <head>
         {/* {process.env.NODE_ENV === "development" && (
           <script
@@ -74,6 +74,27 @@ export default function RootLayout({
             src="//unpkg.com/react-scan/dist/auto.global.js"
           />
         )} */}
+        <script
+          id="theme-init"
+          dangerouslySetInnerHTML={{
+            __html: `
+          (function() {
+            try {
+              var storedTheme = document.cookie.match(/theme-storage=([^;]+)/)?.[1];
+              var initialTheme = storedTheme === "device" 
+                ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+                : (storedTheme || "device");
+              
+              if (initialTheme === "device") {
+                initialTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+              }
+              
+              document.documentElement.setAttribute("data-theme", initialTheme);
+            } catch (e) {}
+          })();
+        `,
+          }}
+        />
       </head>
       <body
         style={{ height: "100%", overflow: "hidden" }}
