@@ -124,7 +124,7 @@ export default function Manager({
           style={{
             width: "14px",
             height: "auto",
-            stroke: "#1c1c1c",
+            stroke: "var(--text)",
             strokeWidth: 2,
           }}
         />
@@ -136,7 +136,7 @@ export default function Manager({
       icon: (
         <DeleteIcon
           style={{
-            stroke: "#1c1c1c",
+            stroke: "var(--text)",
             width: "14px",
             height: "auto",
             strokeWidth: 2,

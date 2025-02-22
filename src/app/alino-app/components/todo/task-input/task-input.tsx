@@ -290,7 +290,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   alignItems: "center",
                 }}
                 text={currentText}
-                textColor="#8e8e8e"
+                textColor="var(--placeholder-text-color)"
               />
             </div>
           )}

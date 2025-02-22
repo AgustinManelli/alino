@@ -99,7 +99,9 @@ export function Dropdown<T>({
           height: "30px",
           width: "30px",
           aspectRatio: "1 / 1",
-          backgroundColor: open ? "rgb(240, 240, 240)" : "rgb(250,250,250)",
+          backgroundColor: open
+            ? "var(--background-over-container-hover)"
+            : "var(--background-over-container)",
         }}
         onClick={toggleDropdown}
       >

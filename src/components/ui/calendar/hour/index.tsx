@@ -212,7 +212,7 @@ const TimeUnit = ({
           style={{
             width: "25px",
             height: "auto",
-            stroke: disabled ? "#ccc" : "#87189d",
+            stroke: "#87189d",
             strokeWidth: "2",
             transform: "rotate(90deg)",
           }}
@@ -245,7 +245,7 @@ const TimeUnit = ({
           style={{
             width: "25px",
             height: "auto",
-            stroke: disabled ? "#ccc" : "#87189d",
+            stroke: "#87189d",
             strokeWidth: "2",
             transform: "rotate(-90deg)",
           }}

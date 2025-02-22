@@ -1,6 +1,6 @@
 .subjectAddCardSkeletonContainer {
   position: relative;
-  background-color: rgb(240, 240, 240);
+  background-color: var(--background-over-container);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -11,7 +11,7 @@
   width: 100px;
   height: 100%;
   position: absolute;
-  background-color: rgb(255, 255, 255);
+  background-color: var(--skeleton);
   filter: blur(30px);
   animation: skeleton 1.5s ease-in-out infinite;
 }

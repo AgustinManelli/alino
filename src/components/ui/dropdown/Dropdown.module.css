@@ -6,8 +6,7 @@
 
 .triggerButton {
   position: relative;
-  background-color: #007bff;
-  color: #1c1c1c;
+  color: var(--text);
   padding: 5px 10px;
   border: none;
   border-radius: 4px;
@@ -20,13 +19,14 @@
 }
 
 .triggerButton:hover {
-  background-color: rgb(240, 240, 240) !important;
+  background-color: var(--background-over-container-hover) !important;
 }
 
 .dropdownMenu {
   position: absolute;
-  background: #fff;
+  background: var(--background-container);
   border-radius: 10px;
+  border: 1px solid var(--border-container-color);
   box-shadow:
     0 4px 12px #0c144205,
     0 30px 80px #0c144214,
@@ -40,20 +40,6 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-}
-
-.title {
-  color: #c8c8c8;
-  font-size: 12px;
-  font-weight: 500;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-.separator {
-  width: 100%;
-  height: 1px;
-  background-color: #f0f0f0;
 }
 
 .items {
@@ -79,5 +65,5 @@
 }
 
 .dropdownItem:hover {
-  background-color: #f1f1f1;
+  background-color: var(--background-over-container);
 }
