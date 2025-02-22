@@ -60,6 +60,7 @@ export default async function AuthLayout({
               height: "auto",
               opacity: 1,
               transform: "scaleX(-1)",
+              pointerEvents: "none",
             }}
           />
           {children}
