@@ -71,6 +71,7 @@ export function ConfigSection({ userAvatarUrl, name }: props) {
             className={styles.configUserIcon}
             style={{
               backgroundImage: userAvatarUrl ? `url('${userAvatarUrl}')` : "",
+              opacity: userAvatarUrl ? 1 : 0.3,
             }}
           >
             {!userAvatarUrl && (
