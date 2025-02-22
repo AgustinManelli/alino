@@ -9,7 +9,7 @@
   background-repeat: repeat;
   background-position: top left;
   background-size: 200px;
-  background-color: #fff;
+  background-color: rgb(240, 240, 240);
 }
 
 .contentContainer {
@@ -36,11 +36,17 @@
   position: relative;
   min-width: 400px;
   max-width: 400px;
-  background-color: rgb(240, 240, 240);
+  background-color: rgb(255, 255, 255);
   padding: 40px 30px;
   border-radius: 15px;
   display: flex;
   flex-direction: column;
+  border: 1px solid rgb(240, 240, 240);
+  overflow: hidden;
+  box-shadow:
+    0 4px 12px rgba(12, 20, 66, 0.02),
+    0 30px 80px rgba(12, 20, 66, 0.08),
+    inset 0 0 0 0 #e6e9ed;
 }
 
 @media (max-width: 640px) {

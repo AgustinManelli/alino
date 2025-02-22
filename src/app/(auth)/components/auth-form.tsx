@@ -56,7 +56,40 @@ export function AuthForm({
         <p className={styles.authFormDescription}>{description}</p>
       </header>
 
-      <form className={styles.authForm} onSubmit={onSubmit}>
+      {showOAuth && (
+        <nav className={styles.authFormOAuthButtons}>
+          <OauthButton
+            providerName="Google"
+            providerType="google"
+            style={{
+              backgroundColor: "rgb(255,255,255)",
+              color: "#1c1c1c",
+              border: "1px solid rgb(245, 245, 245)",
+            }}
+            loadColor="#1c1c1c"
+            disabled={isPending}
+            oauthPending={oauthPending}
+            setOauthPending={setOauthPending}
+            text
+          >
+            <GoogleIcon style={{ width: "25px" }} />
+          </OauthButton>
+          <OauthButton
+            providerName="Github"
+            providerType="github"
+            style={{ backgroundColor: "#1c1c1c", color: "#fff" }}
+            loadColor="#ffffff"
+            disabled={isPending}
+            oauthPending={oauthPending}
+            setOauthPending={setOauthPending}
+            text
+          >
+            <GithubIcon style={{ width: "25px" }} />
+          </OauthButton>
+        </nav>
+      )}
+
+      {/* <form className={styles.authForm} onSubmit={onSubmit}>
         <div className={styles.authFormFields}>
           {fields.map((field) => (
             <div key={field.name} className={styles.authFormFieldGroup}>
@@ -103,37 +136,10 @@ export function AuthForm({
             )}
             <span>{submitButtonText}</span>
           </button>
-
-          {showOAuth && (
-            <nav className={styles.authFormOAuthButtons}>
-              <OauthButton
-                providerName="Github"
-                providerType="github"
-                style={{ backgroundColor: "#1c1c1c", color: "#fff" }}
-                loadColor="#ffffff"
-                disabled={isPending}
-                oauthPending={oauthPending}
-                setOauthPending={setOauthPending}
-              >
-                <GithubIcon style={{ width: "25px" }} />
-              </OauthButton>
-              <OauthButton
-                providerName="Google"
-                providerType="google"
-                style={{ backgroundColor: "#fff", color: "#1c1c1c" }}
-                loadColor="#1c1c1c"
-                disabled={isPending}
-                oauthPending={oauthPending}
-                setOauthPending={setOauthPending}
-              >
-                <GoogleIcon style={{ width: "25px" }} />
-              </OauthButton>
-            </nav>
-          )}
         </div>
-      </form>
+      </form> */}
 
-      <footer className={styles.authFormFooter}>
+      {/* <footer className={styles.authFormFooter}>
         {footerLinks.map((link, index) => (
           <Link
             key={index}
@@ -143,7 +149,7 @@ export function AuthForm({
             {link.text}
           </Link>
         ))}
-      </footer>
+      </footer> */}
     </motion.article>
   );
 }

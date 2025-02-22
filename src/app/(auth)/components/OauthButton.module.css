@@ -4,9 +4,10 @@
   height: 50px;
   border: none;
   font-weight: 600;
-  border-radius: 10px;
+  border-radius: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
+  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.05);
 }
