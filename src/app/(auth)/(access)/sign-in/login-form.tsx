@@ -76,7 +76,7 @@ export function LoginForm() {
   return (
     <AuthForm
       title="Iniciar sesión en Alino"
-      description="Accede a tu cuenta alino."
+      description="Tu organización en un solo lugar. Fácil, rápido y sin complicaciones."
       fields={[
         { name: "email", type: "email", placeholder: "Email" },
         { name: "password", type: "password", placeholder: "Contraseña" },

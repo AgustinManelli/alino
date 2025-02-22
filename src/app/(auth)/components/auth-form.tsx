@@ -40,7 +40,6 @@ export function AuthForm({
   isPending,
   submitButtonText,
   showOAuth = false,
-  footerLinks,
 }: AuthFormProps) {
   const [oauthPending, setOauthPending] = useState<boolean>(false);
   return (
