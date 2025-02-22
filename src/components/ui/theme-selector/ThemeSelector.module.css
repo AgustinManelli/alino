@@ -1,0 +1,36 @@
+.container {
+  position: relative;
+  background-color: transparent;
+  width: 100%;
+  height: 35px;
+  border: 1px solid var(--background-over-container-hover);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 5px;
+}
+
+.selector {
+  position: absolute;
+  width: calc((100% / 3) - 7px);
+  height: calc(100% - 10px);
+  background-color: var(--hover-over-container);
+  border-radius: 5px;
+  z-index: 0;
+}
+
+.button {
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2px 0px;
+}

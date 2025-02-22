@@ -13,7 +13,7 @@ import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
 import { AnimatePresence } from "motion/react";
 import { useNavigationLoader } from "@/hooks/useNavigationLoader";
-import useThemeStore from "@/store/useThemeStore";
+import { ThemeSelector } from "@/components/ui/theme-selector";
 
 interface props {
   userAvatarUrl: string;
@@ -24,8 +24,6 @@ export function ConfigSection({ userAvatarUrl, name }: props) {
   const [active, setActive] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
   const { setLoading } = useNavigationLoader();
-
-  const toggleTheme = useThemeStore((store) => store.toggleTheme);
 
   const iconRef = useRef<HTMLDivElement>(null);
 
@@ -78,10 +76,10 @@ export function ConfigSection({ userAvatarUrl, name }: props) {
             {!userAvatarUrl && (
               <UserIcon
                 style={{
-                  stroke: "rgb(225, 225, 225)",
+                  stroke: "var(--icon-colorv2)",
                   strokeWidth: "1.5",
-                  width: "70%",
-                  height: "70%",
+                  width: "60%",
+                  height: "60%",
                 }}
               />
             )}
@@ -105,13 +103,14 @@ export function ConfigSection({ userAvatarUrl, name }: props) {
                 minWidth: "200px",
               }}
             >
+              <ThemeSelector />
               <OptionBox text={"Configuración"} action={handleOpenConfig}>
                 <Config
                   style={{
                     width: "18px",
                     height: "18px",
                     strokeWidth: "2",
-                    stroke: "#1c1c1c",
+                    stroke: "var(--text)",
                   }}
                 />
               </OptionBox>
@@ -121,18 +120,11 @@ export function ConfigSection({ userAvatarUrl, name }: props) {
                     width: "18px",
                     height: "18px",
                     strokeWidth: "2",
-                    stroke: "#1c1c1c",
+                    stroke: "var(--text)",
                   }}
                 />
               </OptionBox>
             </div>
-            <button
-              onClick={() => {
-                toggleTheme();
-              }}
-            >
-              theme
-            </button>
           </ModalBox>
         )}
       </div>

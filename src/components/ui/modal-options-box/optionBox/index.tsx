@@ -18,10 +18,14 @@ export function OptionBox({ children, text, action }: props) {
       onClick={action}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      style={{ backgroundColor: hover ? "rgb(240, 240, 240)" : "transparent" }}
+      style={{
+        backgroundColor: hover
+          ? "var(--background-over-container)"
+          : "transparent",
+      }}
     >
       {children}
-      {text}
+      <p>{text}</p>
     </div>
   );
 }
