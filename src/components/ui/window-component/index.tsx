@@ -77,7 +77,7 @@ export function WindowComponent({ children, windowName, crossAction }: props) {
                   width: "24px",
                   height: "24px",
                   strokeWidth: "1.5",
-                  stroke: "rgb(200, 200, 200)",
+                  stroke: "var(--text-not-available)",
                 }}
               />
             </button>

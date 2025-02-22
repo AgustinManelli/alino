@@ -2,7 +2,7 @@
   position: relative;
   border-radius: 5px;
   border: none;
-  background-color: rgb(250, 250, 250);
+  background-color: var(--background-over-container);
   padding: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease-in-out;
@@ -10,7 +10,7 @@
 }
 
 .button:hover {
-  background-color: rgb(240, 240, 240) !important;
+  background-color: var(--background-over-container-hover) !important;
 }
 
 .notification {
@@ -21,14 +21,14 @@
   height: 15px;
   border-radius: 50%;
   background-color: #87189d;
-  border: solid 3px #fff;
+  border: solid 3px var(--background-container);
   transition: opacity 0.3s ease-in-out;
 }
 
 .container {
   position: absolute;
-  background-color: #ffffff;
-  border: 1px solid rgb(240, 240, 240);
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
   width: fit-content;
   width: 252px;
   min-height: fit-content;
@@ -70,7 +70,7 @@
 .hourButtonOmit {
   border: none;
   background-color: transparent;
-  color: #1c1c1c;
+  color: var(--text);
   font-size: 16px;
   cursor: pointer;
   transition: color 0.3s ease-in-out;
@@ -82,14 +82,6 @@
   color: #87189d;
 }
 
-.limitDateContainer {
-  width: 100%;
-  height: fit-content;
-  font-size: 12px;
-  text-align: center;
-  color: #8a8a8a;
-}
-
 .supportButtons {
   width: 100%;
   display: flex;
@@ -99,14 +91,14 @@
 }
 
 .supportButtons button {
-  background-color: rgb(250, 250, 250);
+  background-color: var(--background-over-container);
   width: fit-content;
   padding: 6px 13px;
   border-radius: 10px;
-  border: solid 1px rgb(245, 245, 245);
+  border: solid 1px var(--border-container-color);
   font-size: 11px;
   cursor: pointer;
-  color: #1c1c1c;
+  color: var(--text);
   -webkit-tap-highlight-color: transparent;
   transition:
     border 0.2s ease-in-out,
@@ -114,7 +106,7 @@
 }
 
 .supportButtons button:hover {
-  background-color: rgb(235, 235, 235);
+  background-color: var(--background-over-container-hover);
 }
 
 .footerButtonsContainer {
@@ -138,13 +130,13 @@
 }
 
 .fb1 {
-  background-color: rgb(250, 250, 250);
-  color: #1c1c1c;
-  border: 1px solid rgb(245, 245, 245);
+  background-color: var(--background-over-container);
+  color: var(--text);
+  border: 1px solid var(--border-container-color);
 }
 
 .fb1:hover {
-  background-color: rgb(245, 245, 245);
+  background-color: var(--background-over-container-hover);
 }
 
 .fb2 {

@@ -84,8 +84,8 @@ export default function AccountConfigSection({
                               height: "100%",
                               padding: "0 10px",
                               borderRadius: "5px",
-                              backgroundColor: "rgb(255, 231, 230)",
-                              color: "#1c1c1c",
+                              backgroundColor: "rgba(255, 0, 0, 0.1)",
+                              color: "rgba(255, 0, 0, 1)",
                               fontSize: "14px",
                             }}
                             setAllowClose={setAllowClose}
@@ -117,8 +117,8 @@ export default function AccountConfigSection({
                               padding: "0 10px",
                               border: "none",
                               borderRadius: "5px",
-                              backgroundColor: "rgb(255, 231, 230)",
-                              color: "#1c1c1c",
+                              backgroundColor: "rgba(255, 0, 0, 0.1)",
+                              color: "rgba(255, 0, 0, 1)",
                               fontSize: "14px",
                             }}
                             setAllowClose={setAllowClose}

@@ -186,6 +186,9 @@ export function TimeLimitBox({
               </div>
             </div>
           )}
+          {!isMobile && (
+            <div className={`${styles.completed} ${getIsCompleted()}`} />
+          )}
           <div
             className={`${styles.timeTargetContainer} ${getStatusClass()}`}
             style={{
@@ -198,9 +201,6 @@ export function TimeLimitBox({
             }}
             ref={timeLimitRef}
           >
-            {!isMobile && (
-              <div className={`${styles.completed} ${getIsCompleted()}`} />
-            )}
             {isMobile ? (
               <Clock
                 style={{

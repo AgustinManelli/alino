@@ -37,7 +37,7 @@ export function CloudIndicator() {
             position: "absolute",
             left: "-35px",
             strokeWidth: "1.5",
-            stroke: "#1c1c1c",
+            stroke: "var(--text)",
             display: "flex",
             zIndex: 0,
           }}

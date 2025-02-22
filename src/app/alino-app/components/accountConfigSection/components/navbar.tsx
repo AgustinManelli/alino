@@ -14,11 +14,10 @@ export default function NavbarConfig({ type, setType }: props) {
           setType("app");
         }}
         style={{
-          backgroundColor: type === "app" ? "rgb(245, 245, 245)" : "#fff",
-          boxShadow:
+          backgroundColor:
             type === "app"
-              ? "rgba(0, 0, 0, 0.1) 0px 1px 1px 0px, rgba(0, 0, 0, 0.05) 0px -1px 0px 0px inset, rgba(255, 255, 255, 0.05) 0px 1px 1px 0px inset, rgba(0, 0, 0, 0.03) 0px 1px 2px 0px"
-              : "none",
+              ? "var(--background-over-container)"
+              : "var(--background-container)",
         }}
       >
         <p className={styles.optionText}>aplicación</p>
@@ -29,11 +28,10 @@ export default function NavbarConfig({ type, setType }: props) {
           setType("account");
         }}
         style={{
-          backgroundColor: type === "account" ? "rgb(245, 245, 245)" : "#fff",
-          boxShadow:
+          backgroundColor:
             type === "account"
-              ? "rgba(0, 0, 0, 0.1) 0px 1px 1px 0px, rgba(0, 0, 0, 0.05) 0px -1px 0px 0px inset, rgba(255, 255, 255, 0.05) 0px 1px 1px 0px inset, rgba(0, 0, 0, 0.03) 0px 1px 2px 0px"
-              : "none",
+              ? "var(--background-over-container)"
+              : "var(--background-container)",
         }}
       >
         <p className={styles.optionText}>cuenta</p>

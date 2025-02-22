@@ -22,7 +22,7 @@
 
 .optionText {
   font-size: 16px;
-  color: #1c1c1c;
+  color: var(--text);
 }
 
 @media only screen and (max-width: 850px) {

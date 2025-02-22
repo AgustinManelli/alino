@@ -30,7 +30,9 @@ export function Switch({ value, action, width = 40 }: props) {
         justifyContent: "flex-" + (value ? "end" : "start"),
         width: `${width}px`,
         padding: `${width / 20}px`,
-        backgroundColor: value ? "#2FD159" : "rgb(230, 230, 230)",
+        backgroundColor: value
+          ? "#2FD159"
+          : "var(--background-over-container-hover)",
         overflow: "hidden",
         WebkitTapHighlightColor: "transparent",
         touchAction: "manipulation",

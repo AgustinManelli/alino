@@ -10,8 +10,9 @@
   --text-not-available: #bbbbbb;
   --icon-color: #1c1c1c;
   --icon-colorv2: #1c1c1c;
-  --icon-colo-inside: #fff;
+  --icon-color-inside: #fff;
   --placeholder-text-color: rgb(142, 142, 142);
+  --skeleton: rgb(255, 255, 255);
 }
 
 /* Variables para tema oscuro */
@@ -21,7 +22,7 @@
   --background-container: rgb(44, 47, 53);
   --background-over-container: rgba(255, 255, 255, 0.05);
   --background-over-container-hover: rgba(255, 255, 255, 0.1);
-  --border-container-color: rgb(54, 57, 63);
+  --border-container-color: rgb(60, 63, 69);
   --hover-over-container: rgb(54, 57, 63);
   --text: #ffffff;
   --text-not-available: #7a7a7a;
@@ -29,6 +30,7 @@
   --icon-colorv2: #fff;
   --icon-color-inside: #1c1c1c;
   --placeholder-text-color: rgb(142, 142, 142);
+  --skeleton: rgb(44, 47, 53);
 }
 
 * {
@@ -40,7 +42,6 @@
 
 html,
 body {
-  background-color: BLACK;
   position: relative;
   max-width: 100vw;
   height: 100%;

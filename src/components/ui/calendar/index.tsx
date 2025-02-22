@@ -113,7 +113,9 @@ export function Calendar({
           height: "30px",
           width: "auto",
           aspectRatio: "1 / 1",
-          backgroundColor: open ? "rgb(240, 240, 240)" : "rgb(250,250,250)",
+          backgroundColor: open
+            ? "var(--background-over-container-hover)"
+            : "var(--background-over-container)",
         }}
         onClick={(e) => {
           e.preventDefault();
@@ -129,7 +131,7 @@ export function Calendar({
           style={{
             width: "100%",
             height: "auto",
-            stroke: "#1c1c1c",
+            stroke: "var(--icon-color)",
             strokeWidth: "1.5",
           }}
         />
@@ -181,7 +183,9 @@ export function Calendar({
                         }}
                         style={{
                           borderColor:
-                            hour === "09:00" ? "#87189d" : "rgb(245,245,245)",
+                            hour === "09:00"
+                              ? "#87189d"
+                              : "var(--border-container-color)",
                         }}
                       >
                         9 am
@@ -194,7 +198,9 @@ export function Calendar({
                         }}
                         style={{
                           borderColor:
-                            hour === "12:00" ? "#87189d" : "rgb(245,245,245)",
+                            hour === "12:00"
+                              ? "#87189d"
+                              : "var(--border-container-color)",
                         }}
                       >
                         12 pm
@@ -207,7 +213,9 @@ export function Calendar({
                         }}
                         style={{
                           borderColor:
-                            hour === "17:00" ? "#87189d" : "rgb(245,245,245)",
+                            hour === "17:00"
+                              ? "#87189d"
+                              : "var(--border-container-color)",
                         }}
                       >
                         5 pm
@@ -227,7 +235,7 @@ export function Calendar({
                           style={{
                             width: "auto",
                             height: "15px",
-                            stroke: "#1c1c1c",
+                            stroke: "var(--text)",
                             strokeWidth: "2",
                             transform: "rotate(90deg)",
                           }}
@@ -283,7 +291,7 @@ export function Calendar({
                             selected?.toDateString() ===
                             new Date().toDateString()
                               ? "#87189d"
-                              : "rgb(245,245,245)",
+                              : "var(--border-container-color)",
                         }}
                       >
                         Hoy
@@ -301,7 +309,7 @@ export function Calendar({
                               new Date().setDate(new Date().getDate() + 7)
                             ).toDateString()
                               ? "#87189d"
-                              : "rgb(245,245,245)",
+                              : "var(--border-container-color)",
                         }}
                       >
                         7 días
@@ -319,7 +327,7 @@ export function Calendar({
                               new Date().setMonth(new Date().getMonth() + 1)
                             ).toDateString()
                               ? "#87189d"
-                              : "rgb(245,245,245)",
+                              : "var(--border-container-color)",
                         }}
                       >
                         1 mes
