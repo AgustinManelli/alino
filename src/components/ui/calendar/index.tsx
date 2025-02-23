@@ -81,6 +81,7 @@ export function Calendar({
           !Ref.current.contains(event.target as Node)
         ) {
           setOpen(false);
+          setStep(false);
         }
       }
     }

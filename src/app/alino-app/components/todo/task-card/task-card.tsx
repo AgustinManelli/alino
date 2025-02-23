@@ -102,15 +102,17 @@ export function TaskCard({ task }: { task: TaskType }) {
   };
 
   const handleSaveName = async () => {
-    if (task.name === inputName || completed) {
+    const formatText = inputName.replace(/\s+/g, " ").trim();
+    if (task.name === inputName || completed || formatText.length < 1) {
       setEditing(false);
       setInputName(task.name);
       return;
     }
 
     setEditing(false);
+    setInputName(formatText);
 
-    const { error } = await updateTaskName(task.id, inputName);
+    const { error } = await updateTaskName(task.id, formatText);
 
     if (error) {
       setInputName(task.name);

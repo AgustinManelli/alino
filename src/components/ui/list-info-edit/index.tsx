@@ -11,6 +11,7 @@ import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import styles from "./ListInfoEdit.module.css";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { Check } from "../icons/icons";
+import { TextTitlesAnimation } from "../text-titles-animation";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
@@ -74,7 +75,22 @@ export function ListInfoEdit({
 
   const handleSaveName = async () => {
     if (
-      list.name === inputRef.current?.value &&
+      !inputRef.current ||
+      inputRef.current === null ||
+      inputRef.current.value.length < 1
+    ) {
+      return;
+    }
+
+    const formatText = inputRef.current.value.replace(/\s+/g, " ").trim();
+
+    if (formatText.length < 1) {
+      setIsNameChange(false);
+      return;
+    }
+
+    if (
+      list.name === inputRef.current.value &&
       list.color === colorTemp &&
       list.icon === emoji
     ) {
@@ -82,11 +98,13 @@ export function ListInfoEdit({
       return;
     }
 
+    inputRef.current.value = formatText;
+
     setIsNameChange(false);
 
     const { error } = await updateDataList(
       list.id,
-      inputRef.current?.value || "",
+      formatText,
       colorTemp,
       emoji
     );
@@ -97,14 +115,9 @@ export function ListInfoEdit({
   };
 
   const gradientStyle = {
-    background: `linear-gradient(to right,var(--text) 80%, ${list.color} 90%, transparent 95%) 0% center / 200% no-repeat text`,
-    backgroundSize: "200% auto" as const,
-    backgroundRepeat: "no-repeat" as const,
-    WebkitBackgroundClip: "text" as const,
-    WebkitTextFillColor: "transparent" as const,
-    backgroundClip: "text" as const,
     fontSize: big ? "18px" : "14px",
     fontWeight: big ? "600" : "500",
+    color: "var(--text)",
   };
 
   return (
@@ -156,29 +169,38 @@ export function ListInfoEdit({
             id={`list-info-edit-container-${uniqueId}`}
           />
         ) : (
-          <motion.p
-            className={styles.listName}
-            style={gradientStyle}
-            initial={
-              animations && !big
-                ? { backgroundPosition: "200% center" }
-                : undefined
-            }
-            animate={
-              animations && !big
-                ? {
-                    backgroundPosition: ["200% center", "0% center"],
-                  }
-                : undefined
-            }
-            transition={{
-              duration: 2,
-              ease: "linear",
-              delay: 0.2,
-            }}
-          >
-            {list.name}
-          </motion.p>
+          // <motion.p
+          //   className={styles.listName}
+          //   style={gradientStyle}
+          //   initial={
+          //     animations && !big
+          //       ? { backgroundPosition: "200% center" }
+          //       : undefined
+          //   }
+          //   animate={
+          //     animations && !big
+          //       ? {
+          //           backgroundPosition: ["200% center", "0% center"],
+          //         }
+          //       : undefined
+          //   }
+          //   transition={{
+          //     duration: 2,
+          //     ease: "linear",
+          //     delay: 0.2,
+          //   }}
+          // >
+          //   {list.name}
+          // </motion.p>
+          <TextTitlesAnimation
+            text={list.name}
+            delay={0.3}
+            duration={0.1}
+            stagger={0.03}
+            color={"var(--text)"}
+            colorEffect={list.color}
+            charSize={"14px"}
+          />
         )}
       </div>
       {isNameChange && (

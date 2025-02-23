@@ -1,0 +1,11 @@
+.wrapper {
+  display: inline-block;
+  /* overflow: hidden; */
+  position: relative;
+}
+
+.character {
+  display: inline-block;
+  white-space: pre;
+  will-change: transform, opacity;
+}

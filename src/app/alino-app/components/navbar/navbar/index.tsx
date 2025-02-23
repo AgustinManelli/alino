@@ -152,7 +152,15 @@ export function Navbar({ initialFetching }: props) {
     const listEdit = document.getElementById(
       "list-info-edit-container-list-card"
     );
-    if (configMenuContainer || colorPickerContainer || listEdit) return;
+    const confirmationModal = document.getElementById("confirmation-modal");
+    if (
+      configMenuContainer ||
+      colorPickerContainer ||
+      listEdit ||
+      confirmationModal
+    ) {
+      return;
+    }
     setNavbarOpened(false);
   });
 

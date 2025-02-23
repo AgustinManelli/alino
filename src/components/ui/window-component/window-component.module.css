@@ -19,6 +19,7 @@
     rgba(12, 20, 66, 0.08) 0px 30px 80px,
     rgb(230, 233, 237) 0px 0px 0px 0px inset;
   width: 50%;
+  max-width: 600px;
   min-width: 300px;
   height: 450px;
   display: flex;

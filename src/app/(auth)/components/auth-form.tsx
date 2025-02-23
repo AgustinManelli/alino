@@ -74,7 +74,7 @@ export function AuthForm({
             <GoogleIcon style={{ width: "25px" }} />
           </OauthButton>
           <OauthButton
-            providerName="Github"
+            providerName="GitHub"
             providerType="github"
             style={{ backgroundColor: "#1c1c1c", color: "#fff" }}
             loadColor="#ffffff"
