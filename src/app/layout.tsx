@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
+import { Toaster } from "sonner";
+
+import ThemeInitializer from "@/components/useThemeInicializer";
+import { MobileSizeListener } from "@/components/useMobileSizeListener";
+import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
+import { Loader } from "@/components/ui/loader";
+
 import { inter } from "../lib/fonts";
 import "./globals.css";
-import { toast, Toaster } from "sonner";
-import { Loader } from "@/components/ui/loader";
-import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
-import { MobileSizeListener } from "@/components/useMobileSizeListener";
-import { cookies } from "next/headers";
-import Pwa from "@/components/pwa";
-import ThemeInitializer from "@/components/theme-inicializer";
 
 const APP_NAME = "Alino";
 const APP_DEFAULT_TITLE = "Alino";
@@ -64,9 +65,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookie = cookies().get("theme-storage");
-  const initialTheme = cookie?.value || "device";
+  const initialTheme = cookie?.value || "light";
   return (
-    <html lang="en" data-theme={initialTheme} suppressHydrationWarning>
+    <html lang="es" data-theme={initialTheme} suppressHydrationWarning>
       <head>
         {/* {process.env.NODE_ENV === "development" && (
           <script
@@ -81,11 +82,11 @@ export default function RootLayout({
           (function() {
             try {
               var storedTheme = document.cookie.match(/theme-storage=([^;]+)/)?.[1];
-              var initialTheme = storedTheme === "device" 
+              var initialTheme = storedTheme === "system" 
                 ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-                : (storedTheme || "device");
+                : (storedTheme || "system");
               
-              if (initialTheme === "device") {
+              if (initialTheme === "system") {
                 initialTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
               }
               
@@ -96,7 +97,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body style={{ height: "100%" }} className={`${inter.className}`}>
+      <body className={`${inter.className}`}>
         <ThemeInitializer />
         <MobileSizeListener />
         <Loader />
@@ -105,7 +106,7 @@ export default function RootLayout({
         <div id="modal-root">
           <WpaDownloadModal />
         </div>
-        {/* <Pwa /> */}
+
         {children}
       </body>
     </html>

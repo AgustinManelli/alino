@@ -1,7 +1,8 @@
 "use client";
 
-import useThemeStore from "@/store/useThemeStore";
 import { useEffect } from "react";
+
+import useThemeStore from "@/store/useThemeStore";
 
 const ThemeInitializer = () => {
   const { theme, appliedTheme, setAppliedTheme } = useThemeStore();
@@ -11,7 +12,7 @@ const ThemeInitializer = () => {
   }, [appliedTheme]);
 
   useEffect(() => {
-    if (theme !== "device") return;
+    if (theme !== "system") return;
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 

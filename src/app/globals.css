@@ -48,6 +48,7 @@ body {
   width: 100%;
   font-family: var(--font-inter), sans-serif;
   perspective: 1000px;
+  overflow: hidden !important;
 }
 
 a {

@@ -11,7 +11,7 @@ export const MobileSizeListener = () => {
       setIsMobile(window.innerWidth < 850);
     };
 
-    handleResize(); // se ejecuta inmediatamente
+    handleResize();
     window.addEventListener("resize", handleResize);
 
     return () => {

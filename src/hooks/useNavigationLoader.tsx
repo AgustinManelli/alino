@@ -9,23 +9,9 @@ export const useNavigationLoader = () => {
   const pathname = usePathname();
 
   useEffect(() => {
-    const enableScroll = () => {
-      document.documentElement.style.overflow = "auto";
-      document.body.style.overflow = "auto";
-    };
-
-    const disableScroll = () => {
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
-    };
-
     const timer = setTimeout(() => {
+      //close loader
       setLoading(false);
-      if (pathname === "/") {
-        enableScroll();
-      } else {
-        disableScroll();
-      }
     }, 300);
 
     return () => {

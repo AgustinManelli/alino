@@ -10,5 +10,5 @@ export default function Home() {
     router.replace("/sign-in");
   }, [router]);
 
-  return null; // No renderiza nada en esta página
+  return null;
 }

@@ -3,13 +3,13 @@
 import { create } from "zustand";
 const Cookies = require("js-cookie");
 
-interface ThemeState {
-  theme: "light" | "dark" | "device";
+interface theme_interface {
+  theme: "light" | "dark" | "system";
   appliedTheme: "light" | "dark";
   toggleTheme: () => void;
-  setThemeDark: () => void;
-  setThemeLight: () => void;
-  setThemeDevice: () => void;
+  setDarkTheme: () => void;
+  setLightTheme: () => void;
+  setSystemTheme: () => void;
   setAppliedTheme: (value: "light" | "dark") => void;
 }
 
@@ -22,14 +22,14 @@ const getSystemTheme = (): "light" | "dark" => {
     : "light";
 };
 
-const getInitialTheme = (): "light" | "dark" | "device" => {
+const getInitialTheme = (): "light" | "dark" | "system" => {
   const data = Cookies.get("theme-storage");
-  return data === "device" || data === "light" || data === "dark"
+  return data === "system" || data === "light" || data === "dark"
     ? data
-    : "device";
+    : "system";
 };
 
-const useThemeStore = create<ThemeState>()((set) => ({
+const useThemeStore = create<theme_interface>()((set) => ({
   theme: getInitialTheme(),
   appliedTheme: getSystemTheme(),
 
@@ -40,24 +40,24 @@ const useThemeStore = create<ThemeState>()((set) => ({
       return { theme: newTheme, appliedTheme: newTheme };
     }),
 
-  setThemeDark: () =>
+  setDarkTheme: () =>
     set(() => {
       Cookies.set("theme-storage", "dark");
       return { theme: "dark", appliedTheme: "dark" };
     }),
 
-  setThemeLight: () =>
+  setLightTheme: () =>
     set(() => {
       Cookies.set("theme-storage", "light");
       return { theme: "light", appliedTheme: "light" };
     }),
 
-  setThemeDevice: () =>
+  setSystemTheme: () =>
     set(() => {
-      Cookies.set("theme-storage", "device");
+      Cookies.set("theme-storage", "system");
       const systemTheme = getSystemTheme();
       return {
-        theme: "device",
+        theme: "system",
         appliedTheme: systemTheme,
       };
     }),
