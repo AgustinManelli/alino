@@ -33,7 +33,7 @@ export default async function AuthLayout({
             background="rgb(255, 255, 255)"
             hover="rgb(250, 250, 250)"
             letterColor="#000"
-            to="/"
+            to="alino.online"
           >
             <HomeIcon
               style={{

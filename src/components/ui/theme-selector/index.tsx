@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import styles from "./ThemeSelector.module.css";
 
 export function ThemeSelector() {
-  const { theme, setThemeDark, setThemeLight, setThemeDevice } =
+  const { theme, setDarkTheme, setLightTheme, setSystemTheme } =
     useThemeStore();
 
   const isDark = theme === "dark";
@@ -207,7 +207,7 @@ export function ThemeSelector() {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setThemeLight();
+          setLightTheme();
         }}
       >
         <SunIcon isLight={isLight} />
@@ -217,7 +217,7 @@ export function ThemeSelector() {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setThemeDark();
+          setDarkTheme();
         }}
       >
         <MoonIcon isDark={isDark} />
@@ -227,7 +227,7 @@ export function ThemeSelector() {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setThemeDevice();
+          setSystemTheme();
         }}
       >
         <ComputerIcon />

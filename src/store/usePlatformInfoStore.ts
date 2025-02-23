@@ -4,13 +4,13 @@
 
 import { create } from "zustand";
 
-interface PlatformInfo {
+interface platform_interface {
   isMobile: boolean;
   isStandalone: boolean;
   setIsMobile: (value: boolean) => void;
 }
 
-export const usePlatformInfoStore = create<PlatformInfo>((set) => ({
+export const usePlatformInfoStore = create<platform_interface>((set) => ({
   isMobile: false,
   isStandalone:
     typeof window !== "undefined" &&

@@ -4,46 +4,42 @@
   left: 0;
   width: 100svw;
   height: 100svh;
-  background-color: rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  user-select: none;
+  background-color: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
-}
-
-.icon {
-  width: 20px;
-  height: auto;
-  stroke: #1c1c1c;
-  stroke-width: 3;
+  user-select: none;
+  z-index: 1000;
 }
 
 .tooltip {
-  background-color: rgb(250, 250, 250);
-  border: 1px solid rgb(240, 240, 240);
-  width: fit-content;
-  height: fit-content;
   position: absolute;
-  padding: 15px 20px 10px 20px;
+  width: fit-content;
+  width: 400px;
+  height: fit-content;
+  height: fit-content;
   bottom: 10%;
-  max-width: 300px;
-  border-radius: 10px;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  padding: 20px 30px 20px 30px;
+  border-radius: 20px;
 }
 
 .tooltipHeader {
   font-size: 14px;
   position: absolute;
-  top: -16px;
+  top: -20px;
   left: 10px;
-  background-color: rgb(240, 240, 240);
-  border: 1px solid rgb(240, 240, 240);
-  padding: 3px 6px;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  padding: 5px 15px;
   border-radius: 10px;
+  color: var(--text);
+  box-shadow: 0px 5px 10px rgb(0, 0, 0, 0.2);
 }
 
 .text {
-  color: #1c1c1c;
+  color: var(--text);
   font-size: 16px;
 }
