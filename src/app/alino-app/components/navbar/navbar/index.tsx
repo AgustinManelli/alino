@@ -152,7 +152,9 @@ export function Navbar({ initialFetching }: props) {
     const listEdit = document.getElementById(
       "list-info-edit-container-list-card"
     );
-    const confirmationModal = document.getElementById("confirmation-modal");
+    const confirmationModal = document.getElementById(
+      "confirmation-modal-list-card"
+    );
     if (
       configMenuContainer ||
       colorPickerContainer ||

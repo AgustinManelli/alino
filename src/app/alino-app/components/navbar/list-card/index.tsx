@@ -293,8 +293,9 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
         <ConfirmationModal
           text={`¿Desea eliminar la lista "${list.name}"?`}
           aditionalText="Esta acción es irreversible y eliminará todas las tareas de la lista."
-          isDeleteConfirm={isDeleteConfirm}
           handleDelete={handleDelete}
+          isDeleteConfirm={isDeleteConfirm}
+          id={"list-card"}
         />
       )}
       <div ref={setNodeRef}>

@@ -108,6 +108,8 @@ export default function RootLayout({
         </div>
 
         {children}
+
+        <div id="portal-root"></div>
       </body>
     </html>
   );

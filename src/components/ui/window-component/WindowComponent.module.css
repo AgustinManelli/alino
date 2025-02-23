@@ -1,4 +1,4 @@
-.container {
+.windowContainer {
   position: absolute;
   top: 0;
   left: 0;
@@ -10,54 +10,59 @@
   z-index: 100;
 }
 
-.window {
+.windowModal {
   position: relative;
+  width: 50%;
+  min-width: 300px;
+  max-width: 600px;
+  height: 450px;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
   background-color: var(--background-container);
   border-radius: 20px;
   box-shadow:
     rgba(12, 20, 66, 0.02) 0px 4px 12px,
     rgba(12, 20, 66, 0.08) 0px 30px 80px,
     rgb(230, 233, 237) 0px 0px 0px 0px inset;
-  width: 50%;
-  max-width: 600px;
-  min-width: 300px;
-  height: 450px;
-  display: flex;
-  justify-content: start;
-  align-items: center;
-  flex-direction: column;
   overflow: hidden;
-  padding: 20px 30px;
+  padding: 20px 13px 20px 30px;
 }
 
-.header {
+.windowHeader {
   width: 100%;
   height: 25%;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  padding-right: 17px;
 }
-.headerTitle {
+
+.windowTitle {
   width: 100%;
   height: 100%;
   display: flex;
   justify-content: start;
   align-items: center;
 }
-.headerParaph {
+
+.windowParaph {
   font-size: 24px;
   font-weight: 600;
   color: var(--text-not-available);
 }
-.headerCross {
+
+.windowCrossContainer {
   width: fit-content;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.crossButton {
+
+.windowCrossButton {
   border: none;
   background-color: transparent;
   cursor: pointer;
@@ -66,56 +71,51 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.body {
+.windowContent {
   width: 100%;
   height: 100%;
   overflow: auto;
   overflow-y: scroll;
+  padding-right: 13px;
 }
 
-.body {
-  --sb-track-color: var(--background-container);
-  --sb-thumb-color: var(--background-over-container);
-  --sb-size: 6px;
+.windowContent::-webkit-scrollbar {
+  width: 4px;
 }
 
-.body::-webkit-scrollbar {
-  width: var(--sb-size);
-  display: none;
-}
-
-.body::-webkit-scrollbar-track {
-  background: var(--sb-track-color);
+.windowContent::-webkit-scrollbar-track {
+  background: transparent;
   border-radius: 20px;
 }
 
-.body::-webkit-scrollbar-thumb {
-  background: var(--sb-thumb-color);
+.windowContent::-webkit-scrollbar-thumb {
+  background: var(--background-over-container);
   border-radius: 20px;
 }
 
 @supports not selector(::-webkit-scrollbar) {
-  .body {
-    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  .windowContent {
+    scrollbar-color: var(--background-over-container)
+      var(--background-container);
   }
 }
 
 @media only screen and (max-width: 850px) {
-  .window {
+  .windowModal {
     width: 90%;
     min-width: none;
     height: 80%;
   }
-  .header {
+  .windowHeader {
     height: 15%;
   }
 }
 
 @media only screen and (max-width: 850px) and (display-mode: standalone) {
-  .container {
+  .windowContainer {
     height: 100vh;
   }
-  .window {
+  .windowModal {
     height: 70%;
   }
 }
