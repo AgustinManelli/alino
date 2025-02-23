@@ -1,26 +1,26 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { AnimatePresence } from "motion/react";
 
 import { signOutLocal } from "@/lib/auth/actions";
+import { useNavigationLoader } from "@/hooks/useNavigationLoader";
 
 import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
 import { OptionBox } from "@/components/ui/modal-options-box/optionBox";
-import AccountConfigSection from "../accountConfigSection";
+import ConfigModal from "../config-modal";
 import { CloudIndicator } from "./cloud-indicator";
+import { ThemeSelector } from "@/components/ui/theme-selector";
 
 import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
-import { AnimatePresence } from "motion/react";
-import { useNavigationLoader } from "@/hooks/useNavigationLoader";
-import { ThemeSelector } from "@/components/ui/theme-selector";
 
 interface props {
-  userAvatarUrl: string;
   name: string;
+  userAvatarUrl: string;
 }
 
-export function ConfigSection({ userAvatarUrl, name }: props) {
+export function ConfigSection({ name, userAvatarUrl }: props) {
   const [active, setActive] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
   const { setLoading } = useNavigationLoader();
@@ -52,14 +52,9 @@ export function ConfigSection({ userAvatarUrl, name }: props) {
   return (
     <>
       <AnimatePresence>
-        {configActive && (
-          <AccountConfigSection
-            name={name ? name : "User"}
-            userAvatarUrl={userAvatarUrl}
-            handleCloseConfig={handleCloseConfig}
-          />
-        )}
+        {configActive && <ConfigModal handleCloseConfig={handleCloseConfig} />}
       </AnimatePresence>
+
       <div className={styles.configSection}>
         <CloudIndicator />
         <div

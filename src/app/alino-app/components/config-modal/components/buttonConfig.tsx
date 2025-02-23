@@ -1,45 +1,50 @@
 "use client";
 
 import { useState } from "react";
+
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
-interface props {
+interface ButtonConfigProps {
   name: string;
   action: () => void;
-  setAllowClose: (value: boolean) => void;
   stylesProp?: React.CSSProperties;
-  deleteModalText: string;
-  additionalDeleteModalText: string;
+  modalText: string;
+  explainText: string;
 }
 export function ButtonConfig({
   name,
   action,
-  setAllowClose,
   stylesProp,
-  deleteModalText,
-  additionalDeleteModalText,
-}: props) {
+  modalText,
+  explainText,
+}: ButtonConfigProps) {
   const [isDeleteConfirm, setIsDeleteConfirm] = useState<boolean>(false);
 
   return (
     <>
       {isDeleteConfirm && (
         <ConfirmationModal
-          text={deleteModalText}
-          aditionalText={additionalDeleteModalText}
-          isDeleteConfirm={setIsDeleteConfirm}
+          text={modalText}
+          aditionalText={explainText}
           handleDelete={action}
-          setAllowCloseNavbar={setAllowClose}
+          isDeleteConfirm={setIsDeleteConfirm}
+          withBackground={false}
+          id={"config-modal"}
         />
       )}
       <button
         onClick={() => {
           setIsDeleteConfirm(true);
-          setAllowClose(false);
         }}
         style={{
           cursor: "pointer",
           border: "none",
+          fontSize: "14px",
+          width: "fit-content",
+          height: "100%",
+          padding: "0 10px",
+          borderRadius: "5px",
+          backgroundColor: "var(--background-over-container)",
           WebkitTapHighlightColor: "transparent",
           ...stylesProp,
         }}

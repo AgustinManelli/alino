@@ -1,8 +1,8 @@
 .app {
-  height: 100svh;
   position: relative;
-  background-color: var(--background-alino-app);
+  height: 100svh;
   width: 100vw;
+  background-color: var(--background-alino-app);
   padding: 15px;
   overflow: hidden;
   touch-action: none;

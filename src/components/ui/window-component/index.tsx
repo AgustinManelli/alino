@@ -1,34 +1,50 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useEffect, useRef } from "react";
+import { motion } from "motion/react";
 
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
 import { Cross } from "@/components/ui/icons/icons";
-import styles from "./window-component.module.css";
+import styles from "./WindowComponent.module.css";
 
-interface props {
+const crossIconStyle = {
+  width: "24px",
+  height: "24px",
+  strokeWidth: "1.5",
+  stroke: "var(--text-not-available)",
+} as React.CSSProperties;
+
+interface WindowComponentProps {
   children?: React.ReactNode;
-  windowName: string;
-  crossAction: () => void;
+  windowTitle?: string;
+  id?: string;
+  crossAction?: () => void;
 }
 
-export function WindowComponent({ children, windowName, crossAction }: props) {
+export function WindowComponent({
+  children,
+  windowTitle = "window_title",
+  id = "default",
+  crossAction = () => {},
+}: WindowComponentProps) {
   const windowRef = useRef<HTMLDivElement>(null);
 
-  useOnClickOutside(
-    windowRef,
-    () => {
-      crossAction();
-    },
-    windowRef
-  );
+  useOnClickOutside(windowRef, () => {
+    crossAction();
+  });
+
+  const portalRoot = document.getElementById("portal-root");
+
+  if (!portalRoot) {
+    return null;
+  }
 
   return createPortal(
     <motion.div
-      key={"window-component-container"}
+      key={`window-component-${id}`}
+      id={`window-component-${id}`}
       initial={{
         backgroundColor: "rgba(0, 0, 0, 0)",
       }}
@@ -40,10 +56,10 @@ export function WindowComponent({ children, windowName, crossAction }: props) {
         duration: 0.3,
         ease: "easeInOut",
       }}
-      className={styles.container}
+      className={styles.windowContainer}
     >
-      <motion.div
-        className={styles.window}
+      <motion.section
+        className={styles.windowModal}
         ref={windowRef}
         key={"window-component-modal"}
         initial={{
@@ -66,26 +82,19 @@ export function WindowComponent({ children, windowName, crossAction }: props) {
           opacity: { duration: 0.2 },
         }}
       >
-        <section className={styles.header}>
-          <div className={styles.headerTitle}>
-            <p className={styles.headerParaph}>{windowName}</p>
+        <section className={styles.windowHeader}>
+          <div className={styles.windowTitle}>
+            <p className={styles.windowParaph}>{windowTitle}</p>
           </div>
-          <div className={styles.headerCross}>
-            <button className={styles.crossButton} onClick={crossAction}>
-              <Cross
-                style={{
-                  width: "24px",
-                  height: "24px",
-                  strokeWidth: "1.5",
-                  stroke: "var(--text-not-available)",
-                }}
-              />
+          <div className={styles.windowCrossContainer}>
+            <button className={styles.windowCrossButton} onClick={crossAction}>
+              <Cross style={crossIconStyle} />
             </button>
           </div>
         </section>
-        <section className={styles.body}>{children}</section>
-      </motion.div>
+        <section className={styles.windowContent}>{children}</section>
+      </motion.section>
     </motion.div>,
-    document.body
+    portalRoot
   );
 }

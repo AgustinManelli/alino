@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getUser } from "@/lib/auth/actions";
 
-import BlurredFx from "./components/blurredFx";
+import TopBlurEffect from "@/components/ui/top-blur-effect";
 import { ConfigSection } from "./components/config-section";
 import Navbar from "./components/navbar";
 
@@ -20,12 +20,12 @@ export default async function appLayout({
 
   return (
     <section className={styles.app}>
-      <BlurredFx />
+      <TopBlurEffect />
 
       <div className={styles.appContainer}>
         <ConfigSection
-          userAvatarUrl={result.data?.user.user_metadata.avatar_url}
           name={result.data?.user.user_metadata.name}
+          userAvatarUrl={result.data?.user.user_metadata.avatar_url}
         />
         <Navbar />
         {children}

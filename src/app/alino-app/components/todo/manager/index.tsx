@@ -170,8 +170,9 @@ export default function Manager({
         <ConfirmationModal
           text={`¿Desea eliminar la lista "${setList?.name}"?`}
           aditionalText="Esta acción es irreversible y eliminará todas las tareas de la lista."
-          isDeleteConfirm={isDeleteConfirm}
           handleDelete={handleDelete}
+          isDeleteConfirm={isDeleteConfirm}
+          id={"manager"}
         />
       )}
       <div className={styles.container}>
