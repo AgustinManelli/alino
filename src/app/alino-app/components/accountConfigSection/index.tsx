@@ -51,8 +51,9 @@ export default function AccountConfigSection({
               </div>
             </section>
             <p className={styles.configSectionDescription}>
-              Desactivar animaciones si experimenta bajo rendimiento o retrasos
-              en la aplicación.
+              Desactiva las animaciones si experimenta bajo rendimiento o
+              retrasos en la aplicación. Esta configuración no desactiva
+              animaciones esenciales.
             </p>
           </div>
           <div className={styles.sectionContainer}>
@@ -143,6 +144,18 @@ export default function AccountConfigSection({
                       ayuda@alino.online
                     </a>
                     .
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+          <div className={styles.sectionContainer}>
+            <p className={styles.sectionTitle}>Versión</p>
+            <section className={styles.configSection}>
+              <div className={styles.configElement}>
+                <div>
+                  <p className={styles.configSectionTitle}>
+                    v0.1.0 (pre-alpha)
                   </p>
                 </div>
               </div>

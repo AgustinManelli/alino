@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { inter } from "../lib/fonts";
 import "./globals.css";
-import { Toaster } from "sonner";
+import { toast, Toaster } from "sonner";
 import { Loader } from "@/components/ui/loader";
 import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
 import { MobileSizeListener } from "@/components/useMobileSizeListener";
@@ -96,14 +96,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body
-        style={{ height: "100%", overflow: "hidden" }}
-        className={`${inter.className}`}
-      >
+      <body style={{ height: "100%" }} className={`${inter.className}`}>
         <ThemeInitializer />
         <MobileSizeListener />
         <Loader />
         <Toaster />
+
         <div id="modal-root">
           <WpaDownloadModal />
         </div>

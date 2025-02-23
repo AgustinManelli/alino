@@ -200,6 +200,7 @@ export function ListInfoEdit({
             color={"var(--text)"}
             colorEffect={list.color}
             charSize={big ? "18px" : "14px"}
+            fontWeight={big ? "600" : "initial"}
             onceAnimation={isNameChange}
           />
         )}

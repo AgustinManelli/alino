@@ -64,7 +64,7 @@ export function LoginForm() {
             />
           ),
           {
-            duration: 5000000,
+            duration: 5000,
           }
         );
       }

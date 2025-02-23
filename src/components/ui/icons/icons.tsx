@@ -9,7 +9,7 @@ export const AlinoLogo = ({
 }) => {
   return (
     <svg
-      style={style}
+      style={{ fill: style.fill ? style.fill : "#1c1c1c", ...style }}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 723.83 308.33"
       className={styles.alinoLogoIcon}

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, Variants, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import GraphemeSplitter from "grapheme-splitter";
 
 import styles from "./TextTitlesAnimation.module.css";
@@ -14,6 +14,7 @@ interface AnimatedTextProps {
   stagger?: number;
   color?: string;
   charSize?: string;
+  fontWeight?: string;
   colorEffect?: string;
   onceAnimation?: boolean;
   limitLenght?: number;
@@ -27,6 +28,7 @@ export const TextTitlesAnimation = ({
   stagger = 0.03,
   color = "#1c1c1c",
   charSize = "14px",
+  fontWeight = "500",
   colorEffect = "#1c1c1c",
   onceAnimation = false,
   limitLenght = 30,
@@ -72,7 +74,7 @@ export const TextTitlesAnimation = ({
                   delay: delay + index * stagger + duration,
                 },
               }}
-              style={{ fontSize: charSize }}
+              style={{ fontSize: charSize, fontWeight }}
               layout
             >
               {char}

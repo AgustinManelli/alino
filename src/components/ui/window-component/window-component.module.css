@@ -29,6 +29,7 @@
   overflow: hidden;
   padding: 20px 30px;
 }
+
 .header {
   width: 100%;
   height: 25%;
@@ -64,9 +65,39 @@
   height: fit-content;
   -webkit-tap-highlight-color: transparent;
 }
+
 .body {
   width: 100%;
   height: 100%;
+  overflow: auto;
+  overflow-y: scroll;
+}
+
+.body {
+  --sb-track-color: var(--background-container);
+  --sb-thumb-color: var(--background-over-container);
+  --sb-size: 6px;
+}
+
+.body::-webkit-scrollbar {
+  width: var(--sb-size);
+  display: none;
+}
+
+.body::-webkit-scrollbar-track {
+  background: var(--sb-track-color);
+  border-radius: 20px;
+}
+
+.body::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 20px;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .body {
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  }
 }
 
 @media only screen and (max-width: 850px) {
