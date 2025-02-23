@@ -72,16 +72,22 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   }
 
   const handleAdd = () => {
-    if (task.length === 0) return;
+    const formatText = task.replace(/\s+/g, " ").trim();
+    if (formatText.length < 1) {
+      setTask("");
+      setSelected(undefined);
+      setHour(undefined);
+      return;
+    }
     const combinedDate = combineDateAndTime(selected, hour);
     setTask("");
     setSelected(undefined);
     setHour(undefined);
     if (setList) {
-      addTask(setList.id, task, combinedDate);
+      addTask(setList.id, formatText, combinedDate);
     } else {
       if (!selectedListHome) return;
-      addTask(selectedListHome.id, task, combinedDate);
+      addTask(selectedListHome.id, formatText, combinedDate);
     }
   };
 
@@ -336,7 +342,8 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                 style={{
                   width: "1px",
                   height: "30px",
-                  backgroundColor: "rgb(240, 240, 240)",
+                  backgroundColor: "var(--icon-color)",
+                  opacity: 0.2,
                 }}
               ></motion.div>
               <motion.button
@@ -346,6 +353,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   e.preventDefault();
                   e.stopPropagation();
                   handleAdd();
+                  setFocus(false);
                 }}
                 initial={{ scale: 0 }}
                 animate={{ scale: focus ? 1 : 0 }}
@@ -356,7 +364,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   style={{
                     width: "20px",
                     height: "auto",
-                    stroke: "#1c1c1c",
+                    stroke: "var(--icon-color)",
                     strokeWidth: 1.5,
                   }}
                 />

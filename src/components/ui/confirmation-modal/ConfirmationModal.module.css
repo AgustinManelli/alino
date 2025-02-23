@@ -72,6 +72,10 @@
   background-color: var(--background-over-container-hover);
 }
 
+.delete {
+  color: rgb(255, 43, 43);
+}
+
 @media only screen and (max-width: 850px) and (display-mode: standalone) {
   .backgroundModal {
     height: 100vh;

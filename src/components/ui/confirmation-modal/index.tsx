@@ -4,6 +4,8 @@ import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 
 import styles from "./ConfirmationModal.module.css";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { useRef } from "react";
 
 interface props {
   text: string;
@@ -20,6 +22,8 @@ export function ConfirmationModal({
   handleDelete,
   setAllowCloseNavbar,
 }: props) {
+  const ref = useRef<HTMLDivElement>(null);
+
   const handleAccept = () => {
     isDeleteConfirm(false);
     setAllowCloseNavbar && setAllowCloseNavbar(true);
@@ -29,8 +33,13 @@ export function ConfirmationModal({
     isDeleteConfirm(false);
     setAllowCloseNavbar && setAllowCloseNavbar(true);
   };
+
+  useOnClickOutside(ref, () => {
+    isDeleteConfirm(false);
+  });
+
   return createPortal(
-    <div className={styles.backgroundModal}>
+    <div className={styles.backgroundModal} id="confirmation-modal">
       <motion.div
         transition={{
           type: "spring",
@@ -45,6 +54,7 @@ export function ConfirmationModal({
         }}
         exit={{ scale: 0, opacity: 0 }}
         className={styles.modalContainer}
+        ref={ref}
       >
         <section className={styles.modalTexts}>
           <p className={styles.modalTitle}>{text}</p>
@@ -57,15 +67,15 @@ export function ConfirmationModal({
               handleCancel();
             }}
           >
-            cancelar
+            Cancelar
           </button>
           <button
-            className={styles.modalButton}
+            className={`${styles.modalButton} ${styles.delete}`}
             onClick={() => {
               handleAccept();
             }}
           >
-            aceptar
+            Eliminar
           </button>
         </section>
       </motion.div>

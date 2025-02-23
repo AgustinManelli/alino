@@ -73,7 +73,16 @@ export const ListInput = memo(() => {
         inputRef.current.focus();
       }
     }
-    insertList(color, value, emoji as string);
+    const formatText = value.replace(/\s+/g, " ").trim();
+
+    if (formatText.length < 1) {
+      setValue("");
+      setEmoji(null);
+      setColor("#87189d");
+      return;
+    }
+
+    insertList(color, formatText, emoji as string);
     setValue("");
     setEmoji(null);
     setColor("#87189d");
