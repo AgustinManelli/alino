@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
 import { LoadingIcon } from "@/components/ui/icons/icons";
 import styles from "./OauthButton.module.css";
-// import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 interface props {
@@ -36,7 +35,6 @@ export function OauthButton({
   const login = async () => {
     setIsPending(true);
     setOauthPending(true);
-    const isPWA = window.matchMedia("(display-mode: standalone)").matches;
     const supabase = await createClient();
     const href = window.location.origin;
     const { error } = await supabase.auth.signInWithOAuth({
@@ -45,6 +43,7 @@ export function OauthButton({
         redirectTo: `${href}/auth/callback`,
       },
     });
+
     if (error) {
       toast.error("Hubo un error al iniciar sesión");
       setIsPending(false);

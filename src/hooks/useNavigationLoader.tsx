@@ -19,23 +19,19 @@ export const useNavigationLoader = () => {
       document.body.style.overflow = "hidden";
     };
 
-    // Habilitar scroll en la ruta "/"
-    if (pathname === "/") {
-      enableScroll();
-    } else {
-      // Deshabilitar scroll en otras rutas
-      disableScroll();
-    }
-
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 500);
+      if (pathname === "/") {
+        enableScroll();
+      } else {
+        disableScroll();
+      }
+    }, 300);
 
     return () => {
       clearTimeout(timer);
-      enableScroll();
     };
-  }, [pathname]);
+  }, [pathname, setLoading]);
 
   return { setLoading };
 };

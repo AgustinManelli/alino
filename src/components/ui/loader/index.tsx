@@ -57,7 +57,7 @@ export function Loader() {
           style={{
             width: "20px",
             height: "auto",
-            stroke: "#1c1c1c",
+            stroke: "#fff",
             strokeWidth: "3",
           }}
         />
