@@ -199,7 +199,8 @@ export function ListInfoEdit({
             stagger={0.03}
             color={"var(--text)"}
             colorEffect={list.color}
-            charSize={"14px"}
+            charSize={big ? "18px" : "14px"}
+            onceAnimation={isNameChange}
           />
         )}
       </div>

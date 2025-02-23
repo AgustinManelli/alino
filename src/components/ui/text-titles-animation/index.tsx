@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import GraphemeSplitter from "grapheme-splitter";
 
@@ -15,6 +15,8 @@ interface AnimatedTextProps {
   color?: string;
   charSize?: string;
   colorEffect?: string;
+  onceAnimation?: boolean;
+  limitLenght?: number;
 }
 
 export const TextTitlesAnimation = ({
@@ -26,15 +28,17 @@ export const TextTitlesAnimation = ({
   color = "#1c1c1c",
   charSize = "14px",
   colorEffect = "#1c1c1c",
+  onceAnimation = false,
+  limitLenght = 30,
 }: AnimatedTextProps) => {
   const [characters, setCharacters] = useState<string[]>([]);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState<boolean>(false);
   const splitter = new GraphemeSplitter();
 
   useEffect(() => {
     const normalizedText = text.replace(/\s+/g, " ");
     setCharacters(splitter.splitGraphemes(normalizedText));
-    const timer = setTimeout(() => setIsVisible(true), delay * 1000);
+    const timer = setTimeout(() => setIsVisible(true), delay * 500);
     return () => clearTimeout(timer);
   }, [text, delay]);
 
@@ -42,8 +46,8 @@ export const TextTitlesAnimation = ({
     <AnimatePresence>
       {isVisible && (
         <span className={`${styles.wrapper} ${className}`}>
-          {characters.map((char, index) => (
-            <motion.p
+          {characters.slice(0, limitLenght).map((char, index) => (
+            <motion.span
               key={`${char}-${index}`}
               className={styles.character}
               initial={{
@@ -72,7 +76,7 @@ export const TextTitlesAnimation = ({
               layout
             >
               {char}
-            </motion.p>
+            </motion.span>
           ))}
         </span>
       )}
