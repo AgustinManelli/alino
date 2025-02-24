@@ -233,7 +233,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
                       iconWidth={"23px"}
                       configOptions={configOptions}
                       optionalState={handleConfigMenu}
-                      idScrollArea={"listContainer"}
+                      idScrollArea={"list-container"}
                       uniqueId={"navbar-list-card"}
                     />
                   </div>
@@ -256,7 +256,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
                     iconWidth={"23px"}
                     configOptions={configOptions}
                     optionalState={handleConfigMenu}
-                    idScrollArea={"listContainer"}
+                    idScrollArea={"list-container"}
                     uniqueId={"navbar-list-card"}
                   />
                 </div>

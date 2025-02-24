@@ -151,7 +151,6 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     const { lists } = get();
     const id = uuidv4();
     const newIndex = calculateNewIndex(lists);
-    console.error(shortcodeemoji);
 
     await createCRUDHandler(
       ListSchema.pick({
