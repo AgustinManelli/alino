@@ -1,7 +1,8 @@
 "use client";
 
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
+import { useShallow } from "zustand/shallow";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 
@@ -11,23 +12,21 @@ import { hexColorSchema } from "@/lib/schemas/validationSchemas";
 import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
-import { useUIStore } from "@/store/useUIStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
-export const ListInput = memo(() => {
-  const [input, setInput] = useState<boolean>(false);
-  const [value, setValue] = useState<string>("");
+export const ListInput = () => {
+  const [activeInput, setActiveInput] = useState<boolean>(false);
+  const [inputValue, setInputValue] = useState<string>("");
   const [color, setColor] = useState<string>("#87189d");
   const [emoji, setEmoji] = useState<string | null>(null);
 
-  const setIsCreating = useUIStore((state) => state.setIsCreating);
-
   const { insertList } = useTodoDataStore();
-  const { animations } = useUserPreferencesStore();
+  const animations = useUserPreferencesStore(
+    useShallow((state) => state.animations)
+  );
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const divRef = useRef<HTMLDivElement>(null);
-  const portalRef = useRef<HTMLDivElement>(null);
 
   const handleSetColor = (color: string, typing?: boolean) => {
     setColor(color);
@@ -46,7 +45,7 @@ export const ListInput = memo(() => {
       }
     }
 
-    if (input) {
+    if (activeInput) {
       if (inputRef.current !== null) {
         inputRef.current.focus();
       }
@@ -66,52 +65,62 @@ export const ListInput = memo(() => {
   };
 
   const handleSubmit = () => {
-    setInput(false);
-    setIsCreating(false);
-    if (input) {
+    setActiveInput(false);
+    if (activeInput) {
       if (inputRef.current !== null) {
         inputRef.current.focus();
       }
     }
-    const formatText = value.replace(/\s+/g, " ").trim();
+    const formatText = inputValue.replace(/\s+/g, " ").trim();
 
     if (formatText.length < 1) {
-      setValue("");
+      setInputValue("");
       setEmoji(null);
       setColor("#87189d");
       return;
     }
 
     insertList(color, formatText, emoji as string);
-    setValue("");
+
+    const scrollElement = document.getElementById("list-container");
+
+    if (scrollElement) {
+      setTimeout(() => {
+        scrollElement.scrollTo({
+          top: scrollElement.scrollHeight + 30,
+          behavior: "smooth",
+        });
+      }, 0);
+    }
+
+    setInputValue("");
     setEmoji(null);
     setColor("#87189d");
   };
 
   useEffect(() => {
-    if (input) {
+    if (activeInput) {
       if (inputRef.current !== null) {
         inputRef.current.focus();
       }
     }
-  }, [input]);
+  }, [activeInput]);
 
   useOnClickOutside(divRef, () => {
     const colorPickerContainer = document.getElementById(
       "color-picker-container-navbar-list-card"
     );
-    if (value === "" && !colorPickerContainer) {
+    if (inputValue === "" && !colorPickerContainer) {
       setEmoji("");
       setColor("#87189d");
-      setInput(false);
-      setIsCreating(false);
+      setActiveInput(false);
     }
   });
 
   const content = useMemo(() => {
     return (
       <motion.div className={styles.formContainer} layout>
-        {input || value !== "" ? (
+        {activeInput || inputValue !== "" ? (
           <motion.div
             className={styles.form}
             transition={{
@@ -162,10 +171,10 @@ export const ListInput = memo(() => {
               }}
               type="text"
               placeholder="cree una lista nueva"
-              value={value}
+              value={inputValue}
               ref={inputRef}
               onChange={(e) => {
-                setValue(e.target.value);
+                setInputValue(e.target.value);
               }}
               className={styles.inputText}
               onKeyDown={(e) => {
@@ -174,7 +183,7 @@ export const ListInput = memo(() => {
                   handleSubmit();
                 }
                 if (e.key === "Escape") {
-                  setInput(false);
+                  setActiveInput(false);
                 }
               }}
             ></motion.input>
@@ -203,8 +212,7 @@ export const ListInput = memo(() => {
         ) : (
           <motion.button
             onClick={() => {
-              setInput(true);
-              setIsCreating(true);
+              setActiveInput(true);
             }}
             className={styles.button}
             transition={{
@@ -230,7 +238,7 @@ export const ListInput = memo(() => {
         )}
       </motion.div>
     );
-  }, [input, value, color, emoji, animations]);
+  }, [activeInput, inputValue, color, emoji, animations]);
 
   return <>{content}</>;
-});
+};

@@ -4,17 +4,17 @@
   height: 40px;
   top: 0;
   left: 0;
-  z-index: 100;
-  border: none;
-  background-color: var(--background-over-container);
-  border-radius: 10px;
-  -webkit-tap-highlight-color: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: var(--background-over-container);
+  border: none;
+  border-radius: 10px;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 100;
 }
 
-.container {
+.sidebarContainer {
   width: 25vw;
   min-width: 400px;
   height: 100%;
@@ -102,7 +102,7 @@
 }
 
 @media only screen and (max-width: 850px) {
-  .container {
+  .sidebarContainer {
     position: absolute;
     width: 85%;
     height: 100%;
