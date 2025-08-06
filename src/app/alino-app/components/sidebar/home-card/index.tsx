@@ -15,7 +15,7 @@ interface props {
   handleCloseNavbar: () => void;
 }
 
-export const HomeCard = memo(({ handleCloseNavbar }: props) => {
+export const HomeCard = ({ handleCloseNavbar }: props) => {
   const tasks = useTodoDataStore((state) => state.tasks);
   const { animations } = useUserPreferencesStore();
   const pathname = usePathname();
@@ -93,4 +93,4 @@ export const HomeCard = memo(({ handleCloseNavbar }: props) => {
       {counter}
     </Link>
   );
-});
+};

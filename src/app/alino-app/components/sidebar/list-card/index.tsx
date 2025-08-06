@@ -11,29 +11,30 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSortable } from "@dnd-kit/sortable";
+import { useShallow } from "zustand/shallow";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { Database } from "@/lib/schemas/todo-schema";
 
+import { ConfigMenu } from "@/components/ui/config-menu";
+import { ListInfoEdit } from "@/components/ui/list-info-edit";
 import { CounterAnimation } from "@/components/ui/counter-animation";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 import { DeleteIcon, Edit, Pin, Unpin } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
-import { ConfigMenu } from "@/components/ui/config-menu";
-import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-import { ListInfoEdit } from "@/components/ui/list-info-edit";
 
 type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
 
-interface props {
+interface ListCardProps {
   list: ListsType;
   handleCloseNavbar: () => void;
 }
 
-export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
+export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
   //estados locales
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(list.color);
@@ -43,15 +44,16 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
 
   //estados globales
   const { deleteList, updatePinnedList } = useTodoDataStore();
-  const isMobile = usePlatformInfoStore((state) => state.isMobile);
-  const animations = useUserPreferencesStore((state) => state.animations);
-  const taskCount = useTodoDataStore((state) =>
-    state.getTaskCountByListId(list.id)
+  const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile));
+  const animations = useUserPreferencesStore(
+    useShallow((state) => state.animations)
+  );
+  const taskCount = useTodoDataStore(
+    useShallow((state) => state.getTaskCountByListId(list.id))
   );
 
   //ref's
   const divRef = useRef<HTMLInputElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
   //next router
   const pathname = usePathname();
@@ -62,27 +64,27 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
     () => pathname === `/alino-app/${list.id}`,
     [pathname, list.id]
   );
-  const handleConfirm = useCallback(() => {
-    isDeleteConfirm(true);
-  }, []);
 
-  const handleDelete = useCallback(() => {
+  const handleConfirm = () => {
+    isDeleteConfirm(true);
+  };
+
+  const handleDelete = () => {
     if (isActiveList) router.push(`${location.origin}/alino-app`);
     deleteList(list.id);
-  }, [isActiveList, list.id, deleteList, router]);
+  };
 
   const handleNameChange = () => {
     setIsNameChange(true);
     setIsMoreOptions(false);
   };
 
-  const handlePin = useCallback(() => {
+  const handlePin = () => {
     updatePinnedList(list.id, !list.pinned);
-  }, [list.pinned, updatePinnedList]);
+  };
 
   //useEffect's
   useEffect(() => {
-    // inputRef.current?.focus();
     const input = document.getElementById("list-info-edit-container-list-card");
     if (input) {
       input.focus();

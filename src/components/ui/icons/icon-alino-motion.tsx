@@ -3,11 +3,14 @@
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { motion, useAnimation, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
+import { useShallow } from "zustand/shallow";
 
 export const IconAlinoMotion = ({ style }: { style?: React.CSSProperties }) => {
   const [isVisible, setIsVisible] = useState(true);
   const controls = useAnimation();
-  const { animations } = useUserPreferencesStore();
+  const animations = useUserPreferencesStore(
+    useShallow((state) => state.animations)
+  );
 
   const containerVariants = {
     hidden: {},
