@@ -14,6 +14,7 @@ import {
   SquircleIcon,
   Information,
   LogOut,
+  Invite,
 } from "@/components/ui/icons/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfigMenu } from "@/components/ui/config-menu";
@@ -21,6 +22,9 @@ import { ListInfoEdit } from "@/components/ui/list-info-edit";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { useRouter } from "next/navigation";
+import { AnimatePresence } from "motion/react";
+import ListInformation from "../../list-information";
+import ListInviteModal from "../../list-invite-modal";
 
 type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
 type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
@@ -40,6 +44,8 @@ export default function Manager({
   const [colorTemp, setColorTemp] = useState<string>(setList?.list.color ?? "");
   const [emoji, setEmoji] = useState<string | null>(null);
   const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
+  const [configActive, setConfigActive] = useState<boolean>(false);
+  const [inviteActive, setInviteActive] = useState<boolean>(false);
 
   const { tasks, deleteList } = useTodoDataStore();
 
@@ -185,7 +191,9 @@ export default function Manager({
           }}
         />
       ),
-      action: () => {},
+      action: () => {
+        setConfigActive(true);
+      },
     },
   ];
 
@@ -219,6 +227,14 @@ export default function Manager({
     return () => observer.disconnect();
   }, []);
 
+  const handleCloseConfig = () => {
+    setConfigActive(false);
+  };
+
+  const handleCloseInvite = () => {
+    setInviteActive(false);
+  };
+
   return (
     <>
       {deleteConfirm && (
@@ -230,6 +246,22 @@ export default function Manager({
           id={"manager"}
         />
       )}
+      <AnimatePresence>
+        {configActive && setList && (
+          <ListInformation
+            handleCloseConfig={handleCloseConfig}
+            list={setList}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {inviteActive && setList && (
+          <ListInviteModal
+            handleCloseConfig={handleCloseInvite}
+            list={setList.list_id}
+          />
+        )}
+      </AnimatePresence>
       <div className={styles.container}>
         <section className={styles.section1} ref={section1Ref}>
           <div className={styles.header}>

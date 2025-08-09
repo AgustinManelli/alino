@@ -136,6 +136,8 @@ export type Database = {
           list_name: string;
           owner_id: string;
           updated_at: string | null;
+          is_shared: boolean;
+          non_owner_count: number;
         };
         Insert: {
           color?: string;
@@ -145,6 +147,8 @@ export type Database = {
           list_name: string;
           owner_id: string;
           updated_at?: string | null;
+          is_shared?: boolean;
+          non_owner_count?: number;
         };
         Update: {
           color?: string;
@@ -154,6 +158,8 @@ export type Database = {
           list_name?: string;
           owner_id?: string;
           updated_at?: string | null;
+          is_shared?: boolean;
+          non_owner_count?: number;
         };
         Relationships: [
           {

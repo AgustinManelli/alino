@@ -20,6 +20,8 @@ import {
   // updateAllIndexLists,
   deleteAllLists,
   // deleteAllTasks,
+  getUsersMembersList,
+  createListInvitation,
 } from "@/lib/todo/actions";
 import { Database } from "@/lib/schemas/todo-schema";
 
@@ -38,6 +40,9 @@ type TaskType = Omit<TaskRow, "created_by"> & {
 
 type UserComplete = Database["public"]["Tables"]["users"]["Row"];
 
+type MembershipInfo = Pick<MembershipRow, "role" | "shared_since">;
+export type UserWithMembershipRole = UserProfile & MembershipInfo;
+
 const POS_INDEX = 16384;
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
 
@@ -50,7 +55,7 @@ type TodoStore = {
   getLists: () => Promise<void>;
   getListById: (list_id: string) => ListsType | undefined;
   subscriptionAddList: (list: ListsType) => void;
-  subscriptionDeleteList: (listId: string) => void;
+  subscriptionDeleteList: (list: MembershipRow) => void;
   subscriptionUpdateList: (updatedList: ListsRow) => void;
   subscriptionUpdateMembership: (updatedMembership: MembershipRow) => void;
   insertList: (
@@ -79,6 +84,11 @@ type TodoStore = {
     task_id: string,
     task_content: string
   ) => Promise<{ error: string | null }>;
+  getUsersMembersList: (listId: string) => Promise<UserWithMembershipRole[]>;
+  createListInvitation: (
+    list_id: string,
+    invited_user_id: string
+  ) => Promise<{ success: boolean; message: string }>;
   // deleteAllTasks: () => Promise<void>;
   getTaskCountByListId: (listId: string) => number;
 };
@@ -127,6 +137,12 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   subscriptionAddList: (list) => {
+    const user = get().user;
+
+    if (list.user_id !== user?.user_id) {
+      return;
+    }
+
     set((state) => {
       const listExists = state.lists.some((l) => l.list_id === list.list_id);
 
@@ -144,10 +160,16 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     });
   },
 
-  subscriptionDeleteList: (listId) => {
+  subscriptionDeleteList: (list) => {
+    const user = get().user;
+
+    if (list.user_id !== user?.user_id) {
+      return;
+    }
+
     set((state) => ({
-      lists: state.lists.filter((list) => list.list_id !== listId),
-      tasks: state.tasks.filter((task) => task.list_id !== listId),
+      lists: state.lists.filter((list) => list.list_id !== list.list_id),
+      tasks: state.tasks.filter((task) => task.list_id !== list.list_id),
     }));
   },
 
@@ -223,6 +245,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         list_name: name,
         owner_id: currentUserId,
         updated_at: null,
+        is_shared: false,
+        non_owner_count: 0,
       },
     };
 
@@ -417,6 +441,46 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     }
 
     return { error: null };
+  },
+
+  getUsersMembersList: async (listId: string) => {
+    try {
+      const res = await getUsersMembersList(listId);
+      if (res.data) {
+        return res.data;
+      } else {
+        console.error("Error fetching members:", res.error);
+      }
+    } catch (err) {
+      console.error("Unexpected error fetching members:", err);
+    }
+  },
+
+  createListInvitation: async (
+    list_id: string,
+    invited_user_username: string
+  ): Promise<{ success: boolean; message: string }> => {
+    try {
+      const res = await createListInvitation(list_id, invited_user_username);
+
+      if (res.data) {
+        return {
+          success: res.data.status === "success",
+          message: res.data.message || "",
+        };
+      }
+
+      return {
+        success: false,
+        message: res.error || "Error desconocido al invitar al usuario.",
+      };
+    } catch (err) {
+      console.error("Unexpected error inviting user:", err);
+      return {
+        success: false,
+        message: "Ocurrió un error inesperado al invitar al usuario.",
+      };
+    }
   },
 
   // deleteAllTasks: async () => {

@@ -219,20 +219,6 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
       ),
       action: handleConfirm,
     },
-    {
-      name: "Información",
-      icon: (
-        <Information
-          style={{
-            stroke: "var(--text)",
-            width: "14px",
-            height: "auto",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: () => {},
-    },
   ];
 
   const configOptions = baseConfigOptions.filter((option) => {
@@ -265,7 +251,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
           setEmoji={setEmoji}
           uniqueId="list-card"
         />
-        {list.role !== "owner" && (
+        {list.list.is_shared && (
           <Colaborate
             style={{
               width: "auto",

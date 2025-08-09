@@ -433,6 +433,53 @@ export const updateNameTask = async (task_id: string, task_content: string) => {
   }
 };
 
+export const getUsersMembersList = async (list_id: string) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase.rpc("get_list_members_users", {
+      p_list_id: list_id,
+    });
+
+    if (error) {
+      throw new Error(
+        "No se pudieron obtener los miembros de la lista. Intenta más tarde."
+      );
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const createListInvitation = async (
+  list_id: string,
+  invited_user_username: string
+) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase.rpc(
+      "create_list_invitation_by_username",
+      {
+        p_list_id: list_id,
+        p_invited_username: invited_user_username,
+      }
+    );
+
+    if (error) {
+      throw new Error(`No se pudo invitar al usuario. ${error.message}`);
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: "Ocurrió un error desconocido." };
+  }
+};
+
 // export const deleteAllTasks = async () => {
 //   try {
 //     const { supabase, user } = await getAuthenticatedSupabaseClient();
