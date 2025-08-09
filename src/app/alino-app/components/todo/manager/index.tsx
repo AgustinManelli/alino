@@ -8,7 +8,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useBlurBackgroundStore } from "@/store/useBlurBackgroundStore";
 import TaskInput from "../task-input/task-input";
 import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
-import { DeleteIcon, Edit, SquircleIcon } from "@/components/ui/icons/icons";
+import {
+  DeleteIcon,
+  Edit,
+  SquircleIcon,
+  Information,
+  LogOut,
+} from "@/components/ui/icons/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfigMenu } from "@/components/ui/config-menu";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";
@@ -118,7 +124,13 @@ export default function Manager({
     deleteList(setList.list_id);
   };
 
-  const configOptions = [
+  const role = setList?.role;
+
+  const canDelete = role === "owner" || role === "admin";
+  const canEdit = role === "owner" || role === "admin";
+  const owner = role !== "owner";
+
+  const baseConfigOptions = [
     {
       name: "Editar lista",
       icon: (
@@ -147,7 +159,48 @@ export default function Manager({
       ),
       action: handleConfirm,
     },
+    {
+      name: "Salir de la lista",
+      icon: (
+        <LogOut
+          style={{
+            stroke: "var(--text)",
+            width: "14px",
+            height: "auto",
+            strokeWidth: 2,
+          }}
+        />
+      ),
+      action: () => {},
+    },
+    {
+      name: "Información",
+      icon: (
+        <Information
+          style={{
+            stroke: "var(--text)",
+            width: "14px",
+            height: "auto",
+            strokeWidth: 2,
+          }}
+        />
+      ),
+      action: () => {},
+    },
   ];
+
+  const configOptions = baseConfigOptions.filter((option) => {
+    switch (option.name) {
+      case "Editar lista":
+        return canEdit;
+      case "Eliminar lista":
+        return canDelete;
+      case "Salir de la lista":
+        return owner;
+      default:
+        return true;
+    }
+  });
 
   const section1Ref = useRef<HTMLDivElement>(null);
   const [sectionHeight, setSectionHeight] = useState<number>(0);

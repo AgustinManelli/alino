@@ -30,6 +30,8 @@ import {
   Pin,
   Unpin,
   Colaborate,
+  LogOut,
+  Information,
 } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 
@@ -147,7 +149,10 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
       : "transparent",
   } as CSSProperties;
 
-  const canEditOrDelete = list.role === "owner" || list.role === "admin";
+  const role = list?.role;
+  const canDelete = role === "owner" || role === "admin";
+  const canEdit = role === "owner" || role === "admin";
+  const owner = role !== "owner";
   const baseConfigOptions = [
     {
       name: "Editar",
@@ -187,6 +192,20 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
       action: handlePin,
     },
     {
+      name: "Salir",
+      icon: (
+        <LogOut
+          style={{
+            stroke: "var(--text)",
+            width: "14px",
+            height: "auto",
+            strokeWidth: 2,
+          }}
+        />
+      ),
+      action: () => {},
+    },
+    {
       name: "Eliminar",
       icon: (
         <DeleteIcon
@@ -200,13 +219,33 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
       ),
       action: handleConfirm,
     },
+    {
+      name: "Información",
+      icon: (
+        <Information
+          style={{
+            stroke: "var(--text)",
+            width: "14px",
+            height: "auto",
+            strokeWidth: 2,
+          }}
+        />
+      ),
+      action: () => {},
+    },
   ];
 
   const configOptions = baseConfigOptions.filter((option) => {
-    if (option.name !== "Editar" && option.name !== "Eliminar") {
-      return true;
+    switch (option.name) {
+      case "Editar":
+        return canEdit;
+      case "Eliminar":
+        return canDelete;
+      case "Salir":
+        return owner;
+      default:
+        return true;
     }
-    return canEditOrDelete;
   });
 
   const handleConfigMenu = (state: boolean) => {
