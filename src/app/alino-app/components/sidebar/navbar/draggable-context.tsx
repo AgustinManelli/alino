@@ -28,7 +28,9 @@ import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { DragListCard } from "../list-card/drag-list-card";
 import { ListCard } from "../list-card";
 
-type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
+type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
+type ListsType = MembershipRow & { list: ListsRow };
 
 const variants = {
   hidden: { opacity: 1, scale: 1 },
@@ -67,8 +69,14 @@ export function DraggableContext({ handleCloseNavbar }: DraggableContextProps) {
   const updateIndexList = useTodoDataStore((state) => state.updateIndexList);
 
   const [pinnedLists, regularLists] = useMemo(() => {
-    const pinned = lists.filter((list) => list.pinned);
-    const regular = lists.filter((list) => !list.pinned);
+    const pinned = lists
+      .filter((list) => list.pinned)
+      .sort((a, b) => a.index - b.index);
+
+    const regular = lists
+      .filter((list) => !list.pinned)
+      .sort((a, b) => a.index - b.index);
+
     return [pinned, regular];
   }, [lists]);
 
@@ -76,7 +84,7 @@ export function DraggableContext({ handleCloseNavbar }: DraggableContextProps) {
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
       const { active } = event;
-      const draggedList = lists.find((list) => list.id === active.id);
+      const draggedList = lists.find((list) => list.list_id === active.id);
       setDraggedItem(draggedList || null);
     },
     [lists]
@@ -91,8 +99,8 @@ export function DraggableContext({ handleCloseNavbar }: DraggableContextProps) {
         setDraggedItem(null);
         return;
       }
-      const oldIndex = lists.findIndex((list) => list.id === active.id);
-      const newIndex = lists.findIndex((list) => list.id === over.id);
+      const oldIndex = lists.findIndex((list) => list.list_id === active.id);
+      const newIndex = lists.findIndex((list) => list.list_id === over.id);
 
       if (oldIndex !== newIndex) {
         const newLists = arrayMove(lists, oldIndex, newIndex);
@@ -103,11 +111,11 @@ export function DraggableContext({ handleCloseNavbar }: DraggableContextProps) {
           newIndex === newLists.length - 1 ? 0 : newLists[newIndex + 1]?.index;
 
         if (prevIndex === 0 && postIndex !== null && draggedItem) {
-          updateIndexList(draggedItem.id, postIndex / 2);
+          updateIndexList(draggedItem.list_id, postIndex / 2);
         } else if (postIndex === 0 && prevIndex !== null && draggedItem) {
-          updateIndexList(draggedItem.id, prevIndex + 16384);
+          updateIndexList(draggedItem.list_id, prevIndex + 16384);
         } else if (prevIndex !== null && postIndex !== null && draggedItem) {
-          updateIndexList(draggedItem.id, (prevIndex + postIndex) / 2);
+          updateIndexList(draggedItem.list_id, (prevIndex + postIndex) / 2);
         }
       }
       setDraggedItem(null);
@@ -125,6 +133,8 @@ export function DraggableContext({ handleCloseNavbar }: DraggableContextProps) {
     })
   );
 
+  const listIds = lists.map((list) => list.list_id);
+
   return (
     <>
       <DndContext
@@ -134,7 +144,7 @@ export function DraggableContext({ handleCloseNavbar }: DraggableContextProps) {
         onDragStart={handleDragStart}
         modifiers={[restrictToVerticalAxis]}
       >
-        <SortableContext items={lists} strategy={verticalListSortingStrategy}>
+        <SortableContext items={listIds} strategy={verticalListSortingStrategy}>
           <DndContext>
             <AnimatePresence mode="popLayout">
               {pinnedLists.map((list) => (
@@ -166,8 +176,8 @@ export function DraggableContext({ handleCloseNavbar }: DraggableContextProps) {
                         }
                       : undefined
                   }
-                  key={`pinned-${list.id}`}
-                  id={`pinned-${list.id}`}
+                  key={`pinned-${list.list_id}`}
+                  id={`pinned-${list.list_id}`}
                 >
                   <ListCard list={list} handleCloseNavbar={handleCloseNavbar} />
                 </motion.div>
@@ -226,8 +236,8 @@ export function DraggableContext({ handleCloseNavbar }: DraggableContextProps) {
                       }
                     : undefined
                 }
-                key={`list-${list.id}`}
-                id={`list-${list.id}`}
+                key={`list-${list.list_id}`}
+                id={`list-${list.list_id}`}
               >
                 <ListCard list={list} handleCloseNavbar={handleCloseNavbar} />
               </motion.div>
@@ -235,7 +245,10 @@ export function DraggableContext({ handleCloseNavbar }: DraggableContextProps) {
           </AnimatePresence>
           <DragOverlay>
             {draggedItem ? (
-              <DragListCard list={draggedItem} key={`list-${draggedItem.id}`} />
+              <DragListCard
+                list={draggedItem}
+                key={`list-${draggedItem.list_id}`}
+              />
             ) : null}
           </DragOverlay>
         </SortableContext>

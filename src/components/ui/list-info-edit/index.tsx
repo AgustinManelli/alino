@@ -13,7 +13,9 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { Check } from "../icons/icons";
 import { TextTitlesAnimation } from "../text-titles-animation";
 
-type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
+type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
+type ListsType = MembershipRow & { list: ListsRow };
 
 interface props {
   list: ListsType;
@@ -54,9 +56,9 @@ export function ListInfoEdit({
     const validation = hexColorSchema.safeParse(color);
 
     if (!validation.success) {
-      setColorTemp(list.color);
+      setColorTemp(list.list.color);
       if (emoji) {
-        setEmoji(list.icon);
+        setEmoji(list.list.icon);
       }
     }
 
@@ -69,8 +71,8 @@ export function ListInfoEdit({
   };
 
   const setOriginalColor = () => {
-    setColorTemp(list.color);
-    setEmoji(list.icon);
+    setColorTemp(list.list.color);
+    setEmoji(list.list.icon);
   };
 
   const handleSaveName = async () => {
@@ -90,9 +92,9 @@ export function ListInfoEdit({
     }
 
     if (
-      list.name === inputRef.current.value &&
-      list.color === colorTemp &&
-      list.icon === emoji
+      list.list.list_name === inputRef.current.value &&
+      list.list.color === colorTemp &&
+      list.list.icon === emoji
     ) {
       setIsNameChange(false);
       return;
@@ -103,14 +105,14 @@ export function ListInfoEdit({
     setIsNameChange(false);
 
     const { error } = await updateDataList(
-      list.id,
+      list.list_id,
       formatText,
       colorTemp,
       emoji
     );
     if (error) {
-      setColorTemp(list.color);
-      setEmoji(list.icon);
+      setColorTemp(list.list.color);
+      setEmoji(list.list.icon);
     }
   };
 
@@ -155,7 +157,7 @@ export function ListInfoEdit({
             }}
             className={styles.nameChangerInput}
             type="text"
-            defaultValue={list.name}
+            defaultValue={list.list.list_name}
             ref={inputRef}
             onKeyDown={(e) => {
               if (!inputRef.current) return;
@@ -193,12 +195,12 @@ export function ListInfoEdit({
           //   {list.name}
           // </motion.p>
           <TextTitlesAnimation
-            text={list.name}
+            text={list.list.list_name}
             delay={0.3}
             duration={0.1}
             stagger={0.03}
             color={"var(--text)"}
-            colorEffect={list.color}
+            colorEffect={list.list.color}
             charSize={big ? "18px" : "14px"}
             fontWeight={big ? "600" : "initial"}
             onceAnimation={isNameChange}

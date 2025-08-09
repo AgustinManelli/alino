@@ -15,7 +15,7 @@ interface AnimatedTextProps {
   color?: string;
   charSize?: string;
   fontWeight?: string;
-  colorEffect?: string;
+  colorEffect?: string | null;
   onceAnimation?: boolean;
   limitLenght?: number;
 }

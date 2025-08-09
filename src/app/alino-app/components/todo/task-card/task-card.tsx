@@ -4,19 +4,31 @@ import type { Database } from "@/lib/schemas/todo-schema";
 import { motion } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Check, DeleteIcon, Edit } from "@/components/ui/icons/icons";
+import {
+  Check,
+  DeleteIcon,
+  Edit,
+  Information,
+} from "@/components/ui/icons/icons";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import styles from "./task-card.module.css";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { ConfigMenu } from "@/components/ui/config-menu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 
-type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
+type TaskRow = Database["public"]["Tables"]["tasks"]["Row"];
+type UserProfile = Pick<
+  Database["public"]["Tables"]["users"]["Row"],
+  "user_id" | "display_name" | "username" | "avatar_url"
+>;
+type TaskType = Omit<TaskRow, "created_by"> & {
+  created_by: UserProfile | null;
+};
 
 export function TaskCard({ task }: { task: TaskType }) {
   const [completed, setCompleted] = useState<boolean>(task.completed);
   const [editing, setEditing] = useState<boolean>(false);
-  const [inputName, setInputName] = useState<string>(task.name);
+  const [inputName, setInputName] = useState<string>(task.task_content);
   const [lines, setLines] = useState<
     { width: number; top: number; left: number }[]
   >([]);
@@ -26,6 +38,9 @@ export function TaskCard({ task }: { task: TaskType }) {
   const checkButtonRef = useRef<HTMLButtonElement>(null);
 
   const animations = useUserPreferencesStore((store) => store.animations);
+  const user = useTodoDataStore((state) => state.user);
+
+  const list = useTodoDataStore((state) => state.getListById(task.list_id));
   const updateTaskName = useTodoDataStore((state) => state.updateTaskName);
 
   const deleteTask = useTodoDataStore((state) => state.deleteTask);
@@ -93,29 +108,29 @@ export function TaskCard({ task }: { task: TaskType }) {
   };
 
   const handleDelete = () => {
-    deleteTask(task.id);
+    deleteTask(task.task_id);
   };
 
   const handleUpdateStatus = () => {
     setCompleted(!completed);
-    updateTaskCompleted(task.id, !completed);
+    updateTaskCompleted(task.task_id, !completed);
   };
 
   const handleSaveName = async () => {
     const formatText = inputName.replace(/\s+/g, " ").trim();
-    if (task.name === inputName || completed || formatText.length < 1) {
+    if (task.task_content === inputName || completed || formatText.length < 1) {
       setEditing(false);
-      setInputName(task.name);
+      setInputName(task.task_content);
       return;
     }
 
     setEditing(false);
     setInputName(formatText);
 
-    const { error } = await updateTaskName(task.id, formatText);
+    const { error } = await updateTaskName(task.task_id, formatText);
 
     if (error) {
-      setInputName(task.name);
+      setInputName(task.task_content);
     }
   };
 
@@ -131,7 +146,7 @@ export function TaskCard({ task }: { task: TaskType }) {
         !checkButtonRef.current.contains(event.target as Node)
       ) {
         setEditing(false);
-        setInputName(task.name);
+        setInputName(task.task_content);
       }
     };
 
@@ -166,7 +181,8 @@ export function TaskCard({ task }: { task: TaskType }) {
     inputRef.current.style.height = inputRef.current.scrollHeight + "px";
   }, [editing]);
 
-  const configOptions = [
+  const canEditOrDelete = list?.role !== "reader";
+  const baseConfigOptions = [
     {
       name: "Editar",
       icon: (
@@ -195,7 +211,27 @@ export function TaskCard({ task }: { task: TaskType }) {
       ),
       action: handleDelete,
     },
+    {
+      name: "Información",
+      icon: (
+        <Information
+          style={{
+            stroke: "var(--text)",
+            width: "14px",
+            height: "auto",
+            strokeWidth: 2,
+          }}
+        />
+      ),
+      action: () => {},
+    },
   ];
+  const configOptions = baseConfigOptions.filter((option) => {
+    if (option.name !== "Editar" && option.name !== "Eliminar") {
+      return true;
+    }
+    return canEditOrDelete;
+  });
 
   const filteredOptions = completed ? configOptions.slice(1) : configOptions;
 
@@ -205,7 +241,7 @@ export function TaskCard({ task }: { task: TaskType }) {
         <Checkbox
           status={completed}
           handleUpdateStatus={handleUpdateStatus}
-          id={task.id}
+          id={task.task_id}
           active={editing ? true : false}
         />
       </div>
@@ -239,7 +275,7 @@ export function TaskCard({ task }: { task: TaskType }) {
               }
               if (e.key === "Escape") {
                 setEditing(false);
-                setInputName(task.name);
+                setInputName(task.task_content);
               }
             }}
           />
@@ -252,7 +288,7 @@ export function TaskCard({ task }: { task: TaskType }) {
                 opacity: completed ? 0.3 : 1,
               }}
             >
-              {task.name}
+              {task.task_content}
             </p>
             {lines.map((line, index) => (
               <motion.div
@@ -292,6 +328,30 @@ export function TaskCard({ task }: { task: TaskType }) {
           </>
         )}
       </div>
+      {user?.user_id != task.created_by?.user_id && (
+        <div
+          style={{
+            width: "25px",
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            opacity: 0.2,
+          }}
+        >
+          <div
+            style={{
+              width: "25px",
+              height: "25px",
+              backgroundImage: `url(${task.created_by?.avatar_url})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              borderRadius: "50%",
+            }}
+          ></div>
+        </div>
+      )}
       <div className={styles.editingButtons}>
         <TimeLimitBox
           target_date={task.target_date}

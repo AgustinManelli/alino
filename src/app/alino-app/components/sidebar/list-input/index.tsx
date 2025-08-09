@@ -80,7 +80,7 @@ export const ListInput = () => {
       return;
     }
 
-    insertList(color, formatText, emoji as string);
+    insertList(formatText, color, emoji as string);
 
     const scrollElement = document.getElementById("list-container");
 
