@@ -17,7 +17,7 @@ interface props {
 
 export default function ConfigModal({ handleCloseConfig }: props) {
   const { animations, toggleAnimations } = useUserPreferencesStore();
-  const { deleteAllLists, deleteAllTasks } = useTodoDataStore();
+  const { deleteAllLists /*, deleteAllTasks*/ } = useTodoDataStore();
 
   const closeConfigModal = () => {
     const confirmationModal = document.getElementById(
@@ -74,7 +74,7 @@ export default function ConfigModal({ handleCloseConfig }: props) {
               elementAction: (
                 <ButtonConfig
                   name="Eliminar"
-                  action={deleteAllTasks}
+                  action={() => {} /*deleteAllTasks*/}
                   stylesProp={{
                     color: "rgb(255, 43, 43)",
                   }}

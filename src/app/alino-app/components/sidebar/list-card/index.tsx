@@ -24,10 +24,18 @@ import { ListInfoEdit } from "@/components/ui/list-info-edit";
 import { CounterAnimation } from "@/components/ui/counter-animation";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
-import { DeleteIcon, Edit, Pin, Unpin } from "@/components/ui/icons/icons";
+import {
+  DeleteIcon,
+  Edit,
+  Pin,
+  Unpin,
+  Colaborate,
+} from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 
-type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
+type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
+type ListsType = MembershipRow & { list: ListsRow };
 
 interface ListCardProps {
   list: ListsType;
@@ -37,19 +45,19 @@ interface ListCardProps {
 export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
   //estados locales
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
-  const [colorTemp, setColorTemp] = useState<string>(list.color);
-  const [emoji, setEmoji] = useState<string | null>(list.icon);
+  const [colorTemp, setColorTemp] = useState<string>(list.list.color);
+  const [emoji, setEmoji] = useState<string | null>(list.list.icon);
   const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
 
   //estados globales
-  const { deleteList, updatePinnedList } = useTodoDataStore();
+  const { deleteList /*, updatePinnedList*/ } = useTodoDataStore();
   const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile));
   const animations = useUserPreferencesStore(
     useShallow((state) => state.animations)
   );
   const taskCount = useTodoDataStore(
-    useShallow((state) => state.getTaskCountByListId(list.id))
+    useShallow((state) => state.getTaskCountByListId(list.list_id))
   );
 
   //ref's
@@ -61,8 +69,8 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
 
   //funciones
   const isActiveList = useMemo(
-    () => pathname === `/alino-app/${list.id}`,
-    [pathname, list.id]
+    () => pathname === `/alino-app/${list.list_id}`,
+    [pathname, list.list_id]
   );
 
   const handleConfirm = () => {
@@ -71,7 +79,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
 
   const handleDelete = () => {
     if (isActiveList) router.push(`${location.origin}/alino-app`);
-    deleteList(list.id);
+    deleteList(list.list_id);
   };
 
   const handleNameChange = () => {
@@ -80,7 +88,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
   };
 
   const handlePin = () => {
-    updatePinnedList(list.id, !list.pinned);
+    //updatePinnedList(list.id, !list.pinned);
   };
 
   //useEffect's
@@ -93,8 +101,8 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
 
   useEffect(() => {
     if (!list) return;
-    setColorTemp(list.color);
-    setEmoji(list.icon);
+    setColorTemp(list.list.color);
+    setEmoji(list.list.icon);
   }, [list]);
 
   //custom hook's
@@ -104,12 +112,12 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
     );
     if (colorPickerContainer) return;
     setIsNameChange(false);
-    setColorTemp(list.color);
-    setEmoji(list.icon);
+    setColorTemp(list.list.color);
+    setEmoji(list.list.icon);
   });
 
   //dndkit
-  const id = list.id;
+  const id = list.list_id;
   const {
     isDragging,
     attributes,
@@ -126,7 +134,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
     disabled: isMoreOptions || isNameChange || list.pinned,
   });
 
-  const isActive = pathname === `/alino-app/${list.id}`;
+  const isActive = pathname === `/alino-app/${list.list_id}`;
 
   const style = {
     transform: `translate3d(${transform?.x || 0}px, ${transform?.y || 0}px, 0)`,
@@ -139,7 +147,8 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
       : "transparent",
   } as CSSProperties;
 
-  const configOptions = [
+  const canEditOrDelete = list.role === "owner" || list.role === "admin";
+  const baseConfigOptions = [
     {
       name: "Editar",
       icon: (
@@ -193,6 +202,13 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
     },
   ];
 
+  const configOptions = baseConfigOptions.filter((option) => {
+    if (option.name !== "Editar" && option.name !== "Eliminar") {
+      return true;
+    }
+    return canEditOrDelete;
+  });
+
   const handleConfigMenu = (state: boolean) => {
     setIsMoreOptions(state);
   };
@@ -210,6 +226,17 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
           setEmoji={setEmoji}
           uniqueId="list-card"
         />
+        {list.role !== "owner" && (
+          <Colaborate
+            style={{
+              width: "auto",
+              height: "70%",
+              stroke: "var(--icon-color)",
+              strokeWidth: 2,
+              opacity: 0.4,
+            }}
+          />
+        )}
         <div className={styles.listManagerContainer}>
           {!isNameChange && list.pinned && (
             <div className={styles.pinContainer}>
@@ -293,7 +320,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
     <>
       {deleteConfirm && (
         <ConfirmationModal
-          text={`¿Desea eliminar la lista "${list.name}"?`}
+          text={`¿Desea eliminar la lista "${list.list.list_name}"?`}
           aditionalText="Esta acción es irreversible y eliminará todas las tareas de la lista."
           handleDelete={handleDelete}
           isDeleteConfirm={isDeleteConfirm}
@@ -307,7 +334,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
             e.preventDefault();
             e.stopPropagation();
             if (isNameChange) return;
-            router.push(`${location.origin}/alino-app/${list.id}`),
+            router.push(`${location.origin}/alino-app/${list.list_id}`),
               handleCloseNavbar();
           }}
           style={style}

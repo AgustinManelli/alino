@@ -16,7 +16,9 @@ import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { useRouter } from "next/navigation";
 
-type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
+type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
+type ListsType = MembershipRow & { list: ListsRow };
 
 export default function Manager({
   setList,
@@ -29,7 +31,7 @@ export default function Manager({
 }) {
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
 
-  const [colorTemp, setColorTemp] = useState<string>(setList?.color ?? "");
+  const [colorTemp, setColorTemp] = useState<string>(setList?.list.color ?? "");
   const [emoji, setEmoji] = useState<string | null>(null);
   const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
 
@@ -37,24 +39,24 @@ export default function Manager({
 
   useEffect(() => {
     if (!setList) return;
-    setColorTemp(setList.color);
-    setEmoji(setList.icon);
+    setColorTemp(setList.list.color);
+    setEmoji(setList.list.icon);
   }, [setList]);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const setBlurredFx = useBlurBackgroundStore((state) => state.setColor);
 
   useEffect(() => {
-    if (setList?.color && !h) {
-      setBlurredFx(setList.color);
+    if (setList?.list.color && !h) {
+      setBlurredFx(setList.list.color);
     } else {
       setBlurredFx("rgb(106, 195, 255)");
     }
-  }, [setList?.color, setBlurredFx]);
+  }, [setList?.list.color, setBlurredFx]);
 
   const filteredTasks = useMemo(
-    () => tasks.filter((task) => task.category_id === setList?.id),
-    [tasks, setList?.id]
+    () => tasks.filter((task) => task.list_id === setList?.list_id),
+    [tasks, setList?.list_id]
   );
 
   const formatDate = (date: Date) => {
@@ -91,8 +93,8 @@ export default function Manager({
     );
     if (colorPickerContainer) return;
     setIsNameChange(false);
-    setColorTemp(setList?.color || "rgb(106, 195, 255)");
-    setEmoji(setList?.icon || null);
+    setColorTemp(setList?.list.color || "rgb(106, 195, 255)");
+    setEmoji(setList?.list.icon || null);
   });
 
   useEffect(() => {
@@ -113,7 +115,7 @@ export default function Manager({
   const handleDelete = () => {
     if (!setList) return;
     router.push(`${location.origin}/alino-app`);
-    deleteList(setList.id);
+    deleteList(setList.list_id);
   };
 
   const configOptions = [
@@ -168,7 +170,7 @@ export default function Manager({
     <>
       {deleteConfirm && (
         <ConfirmationModal
-          text={`¿Desea eliminar la lista "${setList?.name}"?`}
+          text={`¿Desea eliminar la lista "${setList?.list.list_name}"?`}
           aditionalText="Esta acción es irreversible y eliminará todas las tareas de la lista."
           handleDelete={handleDelete}
           isDeleteConfirm={isDeleteConfirm}
@@ -224,7 +226,7 @@ export default function Manager({
                       tasks.filter(
                         (task) =>
                           task.completed !== true &&
-                          task.category_id === setList?.id
+                          task.list_id === setList?.list_id
                       ).length
                     }{" "}
                     tareas activas
@@ -257,13 +259,13 @@ export default function Manager({
                   //     new Date(a.created_at).getTime()
                   // )
                   .map((task) => (
-                    <TaskCard key={task.id} task={task} />
+                    <TaskCard key={task.task_id} task={task} />
                   ))}
               </div>
             ) : filteredTasks.length > 0 ? (
               <div className={styles.tasks}>
                 {filteredTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
+                  <TaskCard key={task.task_id} task={task} />
                 ))}
               </div>
             ) : (

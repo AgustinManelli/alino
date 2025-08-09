@@ -14,7 +14,9 @@ import { motion } from "motion/react";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { TextAnimation } from "@/components/ui/text-animation";
 
-type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
+type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
+type ListsType = MembershipRow & { list: ListsRow };
 
 export default function TaskInput({ setList }: { setList?: ListsType }) {
   const lists = useTodoDataStore((state) => state.lists);
@@ -33,12 +35,14 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     if (
       (lists.length > 0 && !selectedListHome) ||
       (lists.length > 0 &&
-        !lists.find((list) => list.id === selectedListHome?.id))
+        !lists.find((list) => list.list_id === selectedListHome?.list_id))
     ) {
       setSelectedListHome(lists[0]);
     } else if (selectedListHome) {
       setSelectedListHome(
-        lists[lists.findIndex((list) => list.id === selectedListHome.id)]
+        lists[
+          lists.findIndex((list) => list.list_id === selectedListHome.list_id)
+        ]
       );
     }
   }, [lists]);
@@ -84,10 +88,10 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     setSelected(undefined);
     setHour(undefined);
     if (setList) {
-      addTask(setList.id, formatText, combinedDate);
+      addTask(setList.list_id, formatText, combinedDate);
     } else {
       if (!selectedListHome) return;
-      addTask(selectedListHome.id, formatText, combinedDate);
+      addTask(selectedListHome.list_id, formatText, combinedDate);
     }
   };
 
@@ -111,20 +115,20 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
           }}
         >
           {list &&
-            (list.icon !== null ? (
-              <EmojiMartComponent shortcodes={list.icon} size="16px" />
+            (list.list.icon !== null ? (
+              <EmojiMartComponent shortcodes={list.list.icon} size="16px" />
             ) : (
               <SquircleIcon
                 style={{
                   width: "14px",
-                  fill: `${list.color}`,
+                  fill: `${list.list.color}`,
                   transition: "fill 0.2s ease-in-out",
                   display: "flex",
                 }}
               />
             ))}
         </div>
-        <p>{list.name}</p>
+        <p>{list.list.list_name}</p>
       </div>
     );
   };
@@ -133,7 +137,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     return (
       <div className={styles.dropdownItemContainer}>
         {selectedListHome ? (
-          selectedListHome.icon !== null ? (
+          selectedListHome.list.icon !== null ? (
             <div
               style={{
                 width: "18px",
@@ -141,7 +145,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               }}
             >
               <EmojiMartComponent
-                shortcodes={selectedListHome.icon}
+                shortcodes={selectedListHome.list.icon}
                 size="18px"
               />
             </div>
@@ -149,7 +153,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             <SquircleIcon
               style={{
                 width: "14px",
-                fill: `${selectedListHome?.color}`,
+                fill: `${selectedListHome?.list.color}`,
                 transition: "fill 0.2s ease-in-out",
               }}
             />

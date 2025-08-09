@@ -31,218 +31,69 @@ export async function getLists() {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const { data, error } = await supabase
-      .from("todos_data")
-      .select("*, tasks: tasks(*)")
+    const { data: listsData, error: listsError } = await supabase
+      .from("list_memberships")
+      .select(`*, list: lists (*)`)
       .eq("user_id", user.id)
-      .order("index", { ascending: true })
-      .limit(100)
-      .order("created_at", { ascending: false, referencedTable: "tasks" })
-      .limit(100, { referencedTable: "tasks" });
+      .order("index", { ascending: true });
 
-    if (error) {
-      throw new Error(
-        "Failed to fetch lists from the database. Please try again later."
-      );
+    if (listsError) {
+      console.error("Supabase error fetching lists:", listsError.message);
+      throw new Error("No se pudieron obtener las listas. Intenta más tarde.");
     }
 
-    const listsData = data.map(({ tasks, ...list }) => list);
-    const tasksData = data.flatMap((list) => list.tasks || []);
+    if (!listsData || listsData.length === 0) {
+      return { data: { lists: [], tasks: [] } };
+    }
 
-    return { data: { lists: listsData, tasks: tasksData } };
+    const listIds = listsData.map((membership) => membership.list.list_id);
+
+    const { data: tasksData, error: tasksError } = await supabase
+      .from("tasks")
+      .select(
+        `*,
+        created_by:users (
+        user_id,
+        display_name,
+        username,
+        avatar_url
+      )`
+      )
+      .in("list_id", listIds);
+
+    if (tasksError) {
+      console.error("Supabase error fetching tasks:", tasksError.message);
+      throw new Error("No se pudieron obtener las tareas. Intenta más tarde.");
+    }
+
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select(`*`)
+      .eq("user_id", user.id)
+      .single();
+
+    if (userError) {
+      console.error("Supabase error fetching tasks:", userError.message);
+      throw new Error("No se pudo obtener el usuario. Intenta más tarde.");
+    }
+
+    return { data: { lists: listsData, tasks: tasksData, user: userData } };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };
     }
-
     return { error: UNKNOWN_ERROR_MESSAGE };
   }
 }
-
-export const insertList = async (
-  index: number,
-  color: string,
-  name: string,
-  shortcodeemoji: string | null,
-  id: string
-) => {
-  try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
-
-    const pickSchema = ListSchema.pick({
-      index: true,
-      color: true,
-      name: true,
-      shortcodeemoji: true,
-      id: true,
-    });
-    const validatedData = pickSchema.parse({
-      index,
-      color,
-      name,
-      shortcodeemoji,
-      id,
-    });
-    const setColor =
-      validatedData.color === "" ? "#87189d" : validatedData.color;
-
-    const { data, error } = await supabase
-      .from("todos_data")
-      .insert({
-        index: validatedData.index,
-        color: setColor,
-        icon: validatedData.shortcodeemoji,
-        name: validatedData.name,
-        user_id: user.id,
-        id: validatedData.id,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(
-        "Failed to insert the list into the database. Please try again later."
-      );
-    }
-
-    return { data };
-  } catch (error: unknown) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors.map((err) => err.message).join(". ") };
-    }
-
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
-
-    return { error: UNKNOWN_ERROR_MESSAGE };
-  }
-};
-
-export const deleteList = async (id: string) => {
-  try {
-    const { supabase } = await getAuthenticatedSupabaseClient();
-
-    const pickSchema = ListSchema.pick({ id: true });
-    const validatedData = pickSchema.parse({ id });
-
-    const { error } = await supabase
-      .from("todos_data")
-      .delete()
-      .eq("id", validatedData.id);
-
-    if (error) {
-      throw new Error(
-        "Failed to delete the list from the database. Please try again later."
-      );
-    }
-  } catch (error: unknown) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
-    }
-
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
-
-    return { error: UNKNOWN_ERROR_MESSAGE };
-  }
-};
-
-export const updateDataList = async (
-  id: string,
-  name: string,
-  color: string,
-  shortcodeemoji: string | null
-) => {
-  try {
-    const { supabase } = await getAuthenticatedSupabaseClient();
-
-    const pickSchema = ListSchema.pick({
-      id: true,
-      name: true,
-      color: true,
-      shortcodeemoji: true,
-    });
-    const validatedData = pickSchema.parse({ id, name, color, shortcodeemoji });
-
-    const { data, error } = await supabase
-      .from("todos_data")
-      .update({
-        name: validatedData.name,
-        color: validatedData.color,
-        icon: validatedData.shortcodeemoji,
-      })
-      .eq("id", validatedData.id)
-      .select();
-
-    if (error) {
-      throw new Error("Failed to update the list. Please try again later.");
-    }
-
-    return { data };
-  } catch (error: unknown) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors.map((err) => err.message).join(". ") };
-    }
-
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
-
-    return { error: UNKNOWN_ERROR_MESSAGE };
-  }
-};
-
-export const updatePinnedList = async (id: string, pinned: boolean) => {
-  try {
-    const { supabase } = await getAuthenticatedSupabaseClient();
-
-    const pickSchema = ListSchema.pick({
-      id: true,
-      pinned: true,
-    });
-    const validatedData = pickSchema.parse({ id, pinned });
-
-    const { data, error } = await supabase
-      .from("todos_data")
-      .update({ pinned: validatedData.pinned })
-      .eq("id", validatedData.id)
-      .select();
-
-    if (error) {
-      throw new Error("Failed to update the list. Please try again later.");
-    }
-
-    return { data };
-  } catch (error: unknown) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
-    }
-
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
-
-    return { error: UNKNOWN_ERROR_MESSAGE };
-  }
-};
 
 export const updateIndexList = async (id: string, index: number) => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
 
-    const pickSchema = ListSchema.pick({
-      id: true,
-      index: true,
-    });
-    const validatedData = pickSchema.parse({ id, index });
-
     const { data, error } = await supabase
-      .from("todos_data")
-      .update({ index: validatedData.index })
-      .eq("id", validatedData.id)
-      .select();
+      .from("list_memberships")
+      .update({ index: index })
+      .eq("list_id", id);
 
     if (error) {
       throw new Error(
@@ -252,10 +103,6 @@ export const updateIndexList = async (id: string, index: number) => {
 
     return { data };
   } catch (error: unknown) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors.map((err) => err.message).join(". ") };
-    }
-
     if (error instanceof Error) {
       return { error: error.message };
     }
@@ -264,17 +111,28 @@ export const updateIndexList = async (id: string, index: number) => {
   }
 };
 
-export const updateAllIndexLists = async () => {
+export const insertList = async (
+  id: string,
+  name: string,
+  color: string | null,
+  icon: string | null,
+  index: number
+) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const { data, error } = await supabase.rpc("update_todos_indices", {
-      p_user_id: user.id,
+    const { data, error } = await supabase.from("lists").insert({
+      list_id: id,
+      owner_id: user.id,
+      list_name: name,
+      color: color,
+      icon: icon,
     });
 
     if (error) {
       throw new Error(
-        "Failed to update the list indices. Please try again later."
+        "Failed to insert the list into the database. Please try again later." +
+          error.message
       );
     }
 
@@ -288,14 +146,165 @@ export const updateAllIndexLists = async () => {
   }
 };
 
+export const deleteList = async (list_id: string) => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+
+    const { error } = await supabase
+      .from("lists")
+      .delete()
+      .eq("list_id", list_id);
+
+    if (error) {
+      throw new Error(
+        "Failed to delete the list from the database. Please try again later."
+      );
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const updateDataList = async (
+  list_id: string,
+  list_name: string,
+  color: string,
+  icon: string | null
+) => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase
+      .from("lists")
+      .update({
+        list_name: list_name,
+        color: color,
+        icon: icon,
+      })
+      .eq("list_id", list_id);
+
+    console.log("errores:", error, data);
+
+    if (error) {
+      throw new Error("Failed to update the list. Please try again later.");
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+// export const updatePinnedList = async (id: string, pinned: boolean) => {
+//   try {
+//     const { supabase } = await getAuthenticatedSupabaseClient();
+
+//     const pickSchema = ListSchema.pick({
+//       id: true,
+//       pinned: true,
+//     });
+//     const validatedData = pickSchema.parse({ id, pinned });
+
+//     const { data, error } = await supabase
+//       .from("todos_data")
+//       .update({ pinned: validatedData.pinned })
+//       .eq("id", validatedData.id)
+//       .select();
+
+//     if (error) {
+//       throw new Error("Failed to update the list. Please try again later.");
+//     }
+
+//     return { data };
+//   } catch (error: unknown) {
+//     if (error instanceof z.ZodError) {
+//       return { error: error.errors[0].message };
+//     }
+
+//     if (error instanceof Error) {
+//       return { error: error.message };
+//     }
+
+//     return { error: UNKNOWN_ERROR_MESSAGE };
+//   }
+// };
+
+// export const updateIndexList = async (id: string, index: number) => {
+//   try {
+//     const { supabase } = await getAuthenticatedSupabaseClient();
+
+//     const pickSchema = ListSchema.pick({
+//       id: true,
+//       index: true,
+//     });
+//     const validatedData = pickSchema.parse({ id, index });
+
+//     const { data, error } = await supabase
+//       .from("todos_data")
+//       .update({ index: validatedData.index })
+//       .eq("id", validatedData.id)
+//       .select();
+
+//     if (error) {
+//       throw new Error(
+//         "Failed to update the list index. Please try again later."
+//       );
+//     }
+
+//     return { data };
+//   } catch (error: unknown) {
+//     if (error instanceof z.ZodError) {
+//       return { error: error.errors.map((err) => err.message).join(". ") };
+//     }
+
+//     if (error instanceof Error) {
+//       return { error: error.message };
+//     }
+
+//     return { error: UNKNOWN_ERROR_MESSAGE };
+//   }
+// };
+
+// export const updateAllIndexLists = async () => {
+//   try {
+//     const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+//     const { data, error } = await supabase.rpc("update_todos_indices", {
+//       p_user_id: user.id,
+//     });
+
+//     if (error) {
+//       throw new Error(
+//         "Failed to update the list indices. Please try again later."
+//       );
+//     }
+
+//     return { data };
+//   } catch (error: unknown) {
+//     if (error instanceof Error) {
+//       return { error: error.message };
+//     }
+
+//     return { error: UNKNOWN_ERROR_MESSAGE };
+//   }
+// };
+
 export const deleteAllLists = async () => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
-      .from("todos_data")
+      .from("lists")
       .delete()
-      .eq("user_id", user.id);
+      .eq("owner_id", user.id);
 
     if (error) {
       throw new Error("Failed to delete all lists. Please try again later.");
@@ -312,30 +321,22 @@ export const deleteAllLists = async () => {
 };
 
 export const insertTask = async (
-  category_id: string,
-  name: string,
-  id: string,
-  combinedDate: string | null
+  list_id: string,
+  task_content: string,
+  task_id: string,
+  target_date: string | null
 ) => {
   try {
-    const pickSchema = TaskSchema.pick({
-      category_id: true,
-      name: true,
-      id: true,
-    });
-    const validatedData = pickSchema.parse({ category_id, name, id });
-
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("tasks")
       .insert({
-        id: validatedData.id,
-        category_id: validatedData.category_id,
-        user_id: user.id,
-        name: validatedData.name,
-        description: "",
-        target_date: combinedDate,
+        task_id,
+        list_id,
+        created_by: user.id,
+        task_content,
+        target_date,
       })
       .select()
       .single();
@@ -348,10 +349,6 @@ export const insertTask = async (
 
     return { data };
   } catch (error: unknown) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors.map((err) => err.message).join(". ") };
-    }
-
     if (error instanceof Error) {
       return { error: error.message };
     }
@@ -360,19 +357,14 @@ export const insertTask = async (
   }
 };
 
-export const deleteTask = async (id: string) => {
+export const deleteTask = async (task_id: string) => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
-
-    const pickSchema = TaskSchema.pick({
-      id: true,
-    });
-    const validatedData = pickSchema.parse({ id });
 
     const { data, error } = await supabase
       .from("tasks")
       .delete()
-      .eq("id", validatedData.id);
+      .eq("task_id", task_id);
 
     if (error) {
       throw new Error("Failed to delete the task. Please try again later.");
@@ -380,10 +372,6 @@ export const deleteTask = async (id: string) => {
 
     return { data };
   } catch (error: unknown) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
-    }
-
     if (error instanceof Error) {
       return { error: error.message };
     }
@@ -392,21 +380,17 @@ export const deleteTask = async (id: string) => {
   }
 };
 
-export const updateCompletedTask = async (id: string, completed: boolean) => {
+export const updateCompletedTask = async (
+  task_id: string,
+  completed: boolean
+) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const pickSchema = TaskSchema.pick({
-      id: true,
-      completed: true,
-    });
-    const validatedData = pickSchema.parse({ id, completed });
-
     const { data, error } = await supabase
       .from("tasks")
-      .update({ completed: validatedData.completed })
-      .eq("id", validatedData.id)
-      .eq("user_id", user.id);
+      .update({ completed: completed })
+      .eq("task_id", task_id);
 
     if (error) {
       throw new Error(
@@ -416,10 +400,6 @@ export const updateCompletedTask = async (id: string, completed: boolean) => {
 
     return { data };
   } catch (error: unknown) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors.map((err) => err.message).join(". ") };
-    }
-
     if (error instanceof Error) {
       return { error: error.message };
     }
@@ -428,21 +408,14 @@ export const updateCompletedTask = async (id: string, completed: boolean) => {
   }
 };
 
-export const updateNameTask = async (id: string, name: string) => {
+export const updateNameTask = async (task_id: string, task_content: string) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const pickSchema = TaskSchema.pick({
-      id: true,
-      name: true,
-    });
-    const validatedData = pickSchema.parse({ id, name });
-
     const { data, error } = await supabase
       .from("tasks")
-      .update({ name: validatedData.name })
-      .eq("id", validatedData.id)
-      .eq("user_id", user.id);
+      .update({ task_content: task_content })
+      .eq("task_id", task_id);
 
     if (error) {
       throw new Error(
@@ -452,10 +425,6 @@ export const updateNameTask = async (id: string, name: string) => {
 
     return { data };
   } catch (error: unknown) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors.map((err) => err.message).join(". ") };
-    }
-
     if (error instanceof Error) {
       return { error: error.message };
     }
@@ -464,25 +433,25 @@ export const updateNameTask = async (id: string, name: string) => {
   }
 };
 
-export const deleteAllTasks = async () => {
-  try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
+// export const deleteAllTasks = async () => {
+//   try {
+//     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const { data, error } = await supabase
-      .from("tasks")
-      .delete()
-      .eq("user_id", user.id);
+//     const { data, error } = await supabase
+//       .from("tasks")
+//       .delete()
+//       .eq("user_id", user.id);
 
-    if (error) {
-      throw new Error("Failed to delete all tasks. Please try again later.");
-    }
+//     if (error) {
+//       throw new Error("Failed to delete all tasks. Please try again later.");
+//     }
 
-    return { data };
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
+//     return { data };
+//   } catch (error: unknown) {
+//     if (error instanceof Error) {
+//       return { error: error.message };
+//     }
 
-    return { error: UNKNOWN_ERROR_MESSAGE };
-  }
-};
+//     return { error: UNKNOWN_ERROR_MESSAGE };
+//   }
+// };

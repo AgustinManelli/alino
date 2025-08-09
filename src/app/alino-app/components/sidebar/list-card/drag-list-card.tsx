@@ -20,8 +20,8 @@ export function DragListCard({ list }: { list: ListsType }) {
   const tasks = useTodoDataStore((state) => state.tasks);
 
   const filteredTasks = useMemo(
-    () => tasks.filter((task) => task.category_id === list.id),
-    [tasks, list.id]
+    () => tasks.filter((task) => task.list_id === list.list_id),
+    [tasks, list.list_id]
   );
 
   const style = {
@@ -45,27 +45,27 @@ export function DragListCard({ list }: { list: ListsType }) {
         className={styles.cardFx}
         style={{
           boxShadow:
-            pathname === `/alino-app/${list.id}`
-              ? `${list.color} 100px 50px 50px`
+            pathname === `/alino-app/${list.list_id}`
+              ? `${list.list.color} 100px 50px 50px`
               : `initial`,
         }}
       ></div>
 
       <div className={styles.colorPickerContainer} style={{ minWidth: "16px" }}>
-        {list.icon !== null || list.icon === "" ? (
+        {list.list.icon !== null || list.list.icon === "" ? (
           <div
             style={{
               width: "16px",
               height: "16px",
             }}
           >
-            <EmojiMartComponent shortcodes={list?.icon} size="16px" />
+            <EmojiMartComponent shortcodes={list?.list.icon} size="16px" />
           </div>
         ) : (
           <SquircleIcon
             style={{
               width: "12px",
-              fill: `${list?.color}`,
+              fill: `${list?.list.color}`,
               transition: "fill 0.2s ease-in-out",
             }}
           />
@@ -80,7 +80,7 @@ export function DragListCard({ list }: { list: ListsType }) {
             color: "#1c1c1c",
           }}
         >
-          {list.name}
+          {list.list.list_name}
         </p>
       </div>
 
@@ -127,7 +127,9 @@ export function DragListCard({ list }: { list: ListsType }) {
   );
 }
 
-type ListsType = Database["public"]["Tables"]["todos_data"]["Row"];
+type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
+type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
+type ListsType = MembershipRow & { list: ListsRow };
 
 const variants = {
   hidden: { opacity: 1 },

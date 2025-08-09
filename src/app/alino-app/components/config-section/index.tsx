@@ -54,7 +54,6 @@ export function ConfigSection({ name, userAvatarUrl }: props) {
       <AnimatePresence>
         {configActive && <ConfigModal handleCloseConfig={handleCloseConfig} />}
       </AnimatePresence>
-
       <div className={styles.configSection}>
         <CloudIndicator />
         <div
