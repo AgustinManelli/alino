@@ -90,10 +90,9 @@ export default function Sidebar() {
 
           if (payload.eventType === "DELETE") {
             const oldMembership = payload.old as MembershipRow;
-            const listIdToRemove = oldMembership.list_id;
 
-            if (listIdToRemove) {
-              subscriptionDeleteList(listIdToRemove);
+            if (oldMembership) {
+              subscriptionDeleteList(oldMembership);
             }
           }
         }
