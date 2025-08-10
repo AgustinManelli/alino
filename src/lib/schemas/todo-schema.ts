@@ -20,7 +20,7 @@ export type Database = {
           expires_at: string | null;
           invitation_id: string;
           invited_user_id: string;
-          inviter_user: string;
+          inviter_user_id: string;
           list_id: string;
           responded_at: string | null;
           role: Database["public"]["Enums"]["roles_types"];
@@ -31,7 +31,7 @@ export type Database = {
           expires_at?: string | null;
           invitation_id?: string;
           invited_user_id: string;
-          inviter_user: string;
+          inviter_user_id: string;
           list_id: string;
           responded_at?: string | null;
           role: Database["public"]["Enums"]["roles_types"];
@@ -42,7 +42,7 @@ export type Database = {
           expires_at?: string | null;
           invitation_id?: string;
           invited_user_id?: string;
-          inviter_user?: string;
+          inviter_user_id?: string;
           list_id?: string;
           responded_at?: string | null;
           role?: Database["public"]["Enums"]["roles_types"];

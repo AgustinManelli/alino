@@ -480,6 +480,37 @@ export const createListInvitation = async (
   }
 };
 
+export const getNotifications = async () => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { data: { notifications: [] } };
+    }
+
+    const { data: notificationsData, error: notificationsError } =
+      await supabase.rpc("get_my_pending_notifications");
+
+    if (notificationsError) {
+      throw new Error(
+        `No se pudieron obtener las notificaciones: ${notificationsError.message}`
+      );
+    }
+
+    if (!notificationsData) {
+      return { data: { notifications: [] } };
+    }
+
+    return { data: { notifications: notificationsData } };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: "Ocurrió un error desconocido." };
+  }
+};
+
 // export const deleteAllTasks = async () => {
 //   try {
 //     const { supabase, user } = await getAuthenticatedSupabaseClient();

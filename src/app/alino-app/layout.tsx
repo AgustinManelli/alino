@@ -7,6 +7,7 @@ import { ConfigSection } from "./components/config-section";
 import Sidebar from "./components/sidebar";
 
 import styles from "./layout.module.css";
+import { NotificationsSection } from "./components/notifications";
 
 export default async function appLayout({
   children,
@@ -27,6 +28,7 @@ export default async function appLayout({
           name={result.data?.user.user_metadata.name}
           userAvatarUrl={result.data?.user.user_metadata.avatar_url}
         />
+        <NotificationsSection />
         <Sidebar />
         {children}
       </div>
