@@ -491,20 +491,54 @@ export const getNotifications = async () => {
       return { data: { notifications: [] } };
     }
 
-    const { data: notificationsData, error: notificationsError } =
-      await supabase.rpc("get_my_pending_notifications");
+    const { data, error } = await supabase
+      .from("list_invitations")
+      .select("*")
+      .eq("invited_user_id", user.id)
+      .eq("status", "pending");
 
-    if (notificationsError) {
+    if (error) {
       throw new Error(
-        `No se pudieron obtener las notificaciones: ${notificationsError.message}`
+        `No se pudieron obtener las notificaciones: ${error.message}`
       );
     }
 
-    if (!notificationsData) {
+    if (!data) {
       return { data: { notifications: [] } };
     }
 
-    return { data: { notifications: notificationsData } };
+    return { data: { notifications: data } };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: "Ocurrió un error desconocido." };
+  }
+};
+
+export const updateInvitationList = async (status: string) => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { data: { notifications: [] } };
+    }
+
+    const { data, error } = await supabase
+      .from("list_invitations")
+      .update({ status: status })
+      .eq("invited_user_id", user.id);
+
+    if (error) {
+      throw new Error(`No se pudo aceptar la invitación: ${error.message}`);
+    }
+
+    if (!data) {
+      return { data: { notifications: [] } };
+    }
+
+    return { data: { notifications: data } };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
     return { error: "Ocurrió un error desconocido." };

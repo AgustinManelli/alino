@@ -13,21 +13,23 @@ type UserRow = Database["public"]["Tables"]["users"]["Row"];
 
 type InvitationsType = InvitationRow & {
   // campos de la lista (pueden ser null si list === null)
-  list_name: ListRow["list_name"] | null;
-  list_color: ListRow["color"] | null;
-  list_icon: ListRow["icon"] | null;
+  list_name: ListRow["list_name"];
 
   // campos del invitador (pueden ser null si inviter === null)
-  display_name: UserRow["display_name"] | null;
-  username: UserRow["username"] | null;
-  avatar_url: UserRow["avatar_url"] | null;
+  inviter_display_name: UserRow["display_name"];
+  inviter_username: UserRow["username"];
+  inviter_avatar_url: UserRow["avatar_url"] | null;
 };
 
-import { getNotifications } from "@/lib/todo/actions";
+import { getNotifications, updateInvitationList } from "@/lib/todo/actions";
 
 type UNS = {
   notifications: InvitationsType[] | [];
   getNotifications: () => Promise<void>;
+  updateInvitationList: (
+    notification_id: string,
+    status: string
+  ) => Promise<void>;
 };
 
 function handleError(err: unknown) {
@@ -45,8 +47,23 @@ export const useNotificationsStore = create<UNS>()((set, get) => ({
       return;
     }
 
-    console.log(data?.notifications);
-
     set(() => ({ notifications: data?.notifications }));
+  },
+
+  updateInvitationList: async (notification_id: string, status: string) => {
+    const { data, error } = await updateInvitationList(status);
+
+    console.log(error);
+    console.log(data);
+    if (error) {
+      handleError(error);
+      return;
+    }
+
+    set((state) => ({
+      notifications: state.notifications.filter(
+        (n) => n.invitation_id !== notification_id
+      ),
+    }));
   },
 }));

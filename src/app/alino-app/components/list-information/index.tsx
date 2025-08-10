@@ -60,12 +60,14 @@ export default function ListInformation({ handleCloseConfig, list }: props) {
       crossAction={closeConfigModal}
     >
       <div className={styles.configModalContainer}>
-        <SectionContainer
-          sectionTitle="Invitar usuario"
-          configElements={[
-            { content: <InviteUserInput list_id={list.list_id} /> },
-          ]}
-        />
+        {["owner", "admin"].includes(list.role) && (
+          <SectionContainer
+            sectionTitle="Invitar usuario"
+            configElements={[
+              { content: <InviteUserInput list_id={list.list_id} /> },
+            ]}
+          />
+        )}
         <SectionContainer
           sectionTitle="Miembros"
           configElements={

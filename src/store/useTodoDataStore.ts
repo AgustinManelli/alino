@@ -447,6 +447,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     try {
       const res = await getUsersMembersList(listId);
       if (res.data) {
+        console.log(res.data);
         return res.data;
       } else {
         console.error("Error fetching members:", res.error);

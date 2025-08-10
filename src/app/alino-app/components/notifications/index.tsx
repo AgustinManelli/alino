@@ -14,7 +14,8 @@ export function NotificationsSection() {
   const [isLoading, setIsLoading] = useState(true);
   const iconRef = useRef<HTMLDivElement>(null);
 
-  const { notifications, getNotifications } = useNotificationsStore();
+  const { notifications, getNotifications, updateInvitationList } =
+    useNotificationsStore();
 
   useEffect(() => {
     const fetchInitialNotifications = async () => {
@@ -34,18 +35,13 @@ export function NotificationsSection() {
   };
 
   const handleAccept = async (invitationId: string) => {
-    toast.success(`Lógica para aceptar la invitación ${invitationId}`);
-    // Aquí implementas la llamada a tu backend/store
-    // await acceptInvitation(invitationId);
-    // await getNotifications(); // Vuelve a cargar para reflejar cambios
-    handleClose(); // Cierra el modal después de la acción
+    await updateInvitationList(invitationId, "accepted");
+
+    handleClose();
   };
 
   const handleDecline = async (invitationId: string) => {
-    toast.info(`Lógica para rechazar la invitación ${invitationId}`);
-    // Aquí implementas la llamada a tu backend/store
-    // await declineInvitation(invitationId);
-    // await getNotifications();
+    await updateInvitationList(invitationId, "rejected");
     handleClose();
   };
 
@@ -64,8 +60,8 @@ export function NotificationsSection() {
           <li key={inv.invitation_id} className={styles.notificationItem}>
             <div className={styles.notificationInfo}>
               <span>
-                El usuario {inv.display_name || "Un usuario"} te ha nvitado a la
-                lista "{inv.list_name || "una lista"}"
+                El usuario {inv.inviter_display_name || "Un usuario"} te ha
+                invitado a la lista "{inv.list_name || "una lista"}"
               </span>
             </div>
             <div className={styles.notificationActions}>
