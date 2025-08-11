@@ -7,8 +7,6 @@ export type Json =
   | Json[];
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)";
   };
@@ -20,10 +18,13 @@ export type Database = {
           expires_at: string | null;
           invitation_id: string;
           invited_user_id: string;
+          inviter_avatar_url: string | null;
+          inviter_display_name: string;
           inviter_user_id: string;
+          inviter_username: string;
           list_id: string;
+          list_name: string;
           responded_at: string | null;
-          role: Database["public"]["Enums"]["roles_types"];
           status: Database["public"]["Enums"]["status_shared_types"];
         };
         Insert: {
@@ -31,21 +32,27 @@ export type Database = {
           expires_at?: string | null;
           invitation_id?: string;
           invited_user_id: string;
+          inviter_avatar_url?: string | null;
+          inviter_display_name: string;
           inviter_user_id: string;
+          inviter_username: string;
           list_id: string;
+          list_name: string;
           responded_at?: string | null;
-          role: Database["public"]["Enums"]["roles_types"];
-          status: Database["public"]["Enums"]["status_shared_types"];
+          status?: Database["public"]["Enums"]["status_shared_types"];
         };
         Update: {
           created_at?: string;
           expires_at?: string | null;
           invitation_id?: string;
           invited_user_id?: string;
+          inviter_avatar_url?: string | null;
+          inviter_display_name?: string;
           inviter_user_id?: string;
+          inviter_username?: string;
           list_id?: string;
+          list_name?: string;
           responded_at?: string | null;
-          role?: Database["public"]["Enums"]["roles_types"];
           status?: Database["public"]["Enums"]["status_shared_types"];
         };
         Relationships: [
@@ -58,7 +65,7 @@ export type Database = {
           },
           {
             foreignKeyName: "list_invitations_inviter_user_fkey";
-            columns: ["inviter_user"];
+            columns: ["inviter_user_id"];
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["user_id"];
@@ -80,7 +87,6 @@ export type Database = {
           role: Database["public"]["Enums"]["roles_types"];
           shared_by: string | null;
           shared_since: string;
-          status: Database["public"]["Enums"]["status_shared_types"];
           user_id: string;
         };
         Insert: {
@@ -90,7 +96,6 @@ export type Database = {
           role?: Database["public"]["Enums"]["roles_types"];
           shared_by?: string | null;
           shared_since?: string;
-          status?: Database["public"]["Enums"]["status_shared_types"];
           user_id: string;
         };
         Update: {
@@ -100,7 +105,6 @@ export type Database = {
           role?: Database["public"]["Enums"]["roles_types"];
           shared_by?: string | null;
           shared_since?: string;
-          status?: Database["public"]["Enums"]["status_shared_types"];
           user_id?: string;
         };
         Relationships: [
@@ -132,34 +136,34 @@ export type Database = {
           color: string;
           created_at: string;
           icon: string | null;
+          is_shared: boolean;
           list_id: string;
           list_name: string;
+          non_owner_count: number;
           owner_id: string;
           updated_at: string | null;
-          is_shared: boolean;
-          non_owner_count: number;
         };
         Insert: {
           color?: string;
           created_at?: string;
           icon?: string | null;
+          is_shared?: boolean;
           list_id?: string;
           list_name: string;
-          owner_id: string;
-          updated_at?: string | null;
-          is_shared?: boolean;
           non_owner_count?: number;
+          owner_id?: string;
+          updated_at?: string | null;
         };
         Update: {
           color?: string;
           created_at?: string;
           icon?: string | null;
+          is_shared?: boolean;
           list_id?: string;
           list_name?: string;
+          non_owner_count?: number;
           owner_id?: string;
           updated_at?: string | null;
-          is_shared?: boolean;
-          non_owner_count?: number;
         };
         Relationships: [
           {
@@ -243,6 +247,38 @@ export type Database = {
           },
         ];
       };
+      user_private: {
+        Row: {
+          created_at: string;
+          initial_username_prompt_shown: boolean;
+          preferences: Json | null;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          initial_username_prompt_shown?: boolean;
+          preferences?: Json | null;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Update: {
+          created_at?: string;
+          initial_username_prompt_shown?: boolean;
+          preferences?: Json | null;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_private_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
       username_history: {
         Row: {
           changed_at: string;
@@ -322,6 +358,40 @@ export type Database = {
         Args: { p_list_id: string };
         Returns: boolean;
       };
+      create_list_invitation_by_username: {
+        Args: { p_list_id: string; p_invited_username: string };
+        Returns: Json;
+      };
+      get_list_members_users: {
+        Args: { p_list_id: string };
+        Returns: {
+          user_id: string;
+          username: string;
+          display_name: string;
+          avatar_url: string;
+          role: string;
+          shared_since: string;
+        }[];
+      };
+      get_my_pending_notifications: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          invitation_id: string;
+          list_id: string;
+          inviter_user_id: string;
+          invited_user_id: string;
+          status: Database["public"]["Enums"]["status_shared_types"];
+          created_at: string;
+          list_name: string;
+          username: string;
+          display_name: string;
+          avatar_url: string;
+        }[];
+      };
+      get_setting_int: {
+        Args: { p_setting: string };
+        Returns: number;
+      };
     };
     Enums: {
       notifications_types:
@@ -339,140 +409,3 @@ export type Database = {
     };
   };
 };
-
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<
-  keyof Database,
-  "public"
->];
-
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R;
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R;
-      }
-      ? R
-      : never
-    : never;
-
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I;
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I;
-      }
-      ? I
-      : never
-    : never;
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U;
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U;
-      }
-      ? U
-      : never
-    : never;
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never;
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never;
-
-export const Constants = {
-  public: {
-    Enums: {
-      notifications_types: [
-        "share_group",
-        "share_list",
-        "role_request",
-        "general",
-        "new_version",
-      ],
-      plan_types: ["pro", "student"],
-      roles_types: ["admin", "editor", "reader", "owner"],
-      status_shared_types: ["pending", "accepted", "rejected"],
-    },
-  },
-} as const;

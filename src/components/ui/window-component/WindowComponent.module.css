@@ -12,10 +12,6 @@
 
 .windowModal {
   position: relative;
-  width: 50%;
-  min-width: 300px;
-  max-width: 600px;
-  height: 450px;
   display: flex;
   flex-direction: column;
   justify-content: start;

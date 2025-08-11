@@ -5,6 +5,7 @@ import { AnimatePresence } from "motion/react";
 
 import { signOutLocal } from "@/lib/auth/actions";
 import { useNavigationLoader } from "@/hooks/useNavigationLoader";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 
 import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
 import { OptionBox } from "@/components/ui/modal-options-box/optionBox";
@@ -16,14 +17,16 @@ import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
 
 interface props {
-  name: string;
+  display_name: string;
   userAvatarUrl: string;
 }
 
-export function ConfigSection({ name, userAvatarUrl }: props) {
+export function ConfigSection({ display_name, userAvatarUrl }: props) {
   const [active, setActive] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
   const { setLoading } = useNavigationLoader();
+
+  const { user } = useTodoDataStore();
 
   const iconRef = useRef<HTMLDivElement>(null);
 
@@ -82,7 +85,8 @@ export function ConfigSection({ name, userAvatarUrl }: props) {
         </div>
         {active && (
           <ModalBox
-            title={name ? name : "User"}
+            title={display_name ? display_name : "User"}
+            subtitle={`@${user?.username ? user.username : "user"}`}
             onClose={handleClose}
             iconRef={iconRef}
           >

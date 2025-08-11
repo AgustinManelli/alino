@@ -8,12 +8,19 @@ import styles from "./ModalBox.module.css";
 
 interface props {
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
   onClose: () => void;
   iconRef: React.RefObject<HTMLDivElement>;
 }
 
-export function ModalBox({ title, children, onClose, iconRef }: props) {
+export function ModalBox({
+  title,
+  subtitle,
+  children,
+  onClose,
+  iconRef,
+}: props) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useOnClickOutside(
@@ -26,7 +33,10 @@ export function ModalBox({ title, children, onClose, iconRef }: props) {
 
   return (
     <div className={styles.container} ref={modalRef}>
-      <p className={styles.title}>{title}</p>
+      <div className={styles.textContainer}>
+        <p className={styles.title}>{title}</p>
+        {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+      </div>
       <div className={styles.separator}></div>
       {children}
     </div>

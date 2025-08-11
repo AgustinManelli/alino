@@ -23,9 +23,24 @@
   right: 0;
 }
 
+.textContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: left;
+}
+
 .title {
   color: var(--text-not-available);
   font-size: 12px;
+  font-weight: 500;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.subtitle {
+  color: var(--text-not-available);
+  font-size: 10px;
   font-weight: 500;
   padding-left: 10px;
   padding-right: 10px;

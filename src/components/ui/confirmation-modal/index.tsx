@@ -15,6 +15,7 @@ interface ConfirmationModalProps {
   isDeleteConfirm: (value: boolean) => void;
   withBackground?: boolean;
   id?: string;
+  actionButton?: string;
 }
 
 export function ConfirmationModal({
@@ -24,6 +25,7 @@ export function ConfirmationModal({
   isDeleteConfirm,
   withBackground = true,
   id = "default",
+  actionButton = "Eliminar",
 }: ConfirmationModalProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -91,7 +93,7 @@ export function ConfirmationModal({
               handleAccept();
             }}
           >
-            Eliminar
+            {actionButton}
           </button>
         </section>
       </motion.div>

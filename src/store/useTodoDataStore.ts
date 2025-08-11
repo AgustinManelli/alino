@@ -8,8 +8,10 @@ import { toast } from "sonner";
 
 import {
   getLists,
+  getUser,
   insertList,
   deleteList,
+  leaveList,
   insertTask,
   deleteTask,
   updateDataList,
@@ -53,6 +55,7 @@ type TodoStore = {
   user: UserComplete | null;
   setLists: (list: ListsType[]) => Promise<void>;
   getLists: () => Promise<void>;
+  getUser: () => Promise<void>;
   getListById: (list_id: string) => ListsType | undefined;
   subscriptionAddList: (list: ListsType) => void;
   subscriptionDeleteList: (list: MembershipRow) => void;
@@ -64,6 +67,7 @@ type TodoStore = {
     icon: string | null
   ) => Promise<void>;
   deleteList: (list_id: string) => Promise<void>;
+  leaveList: (list_id: string) => Promise<void>;
   updateDataList: (
     list_id: string,
     list_name: string,
@@ -124,8 +128,13 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       return;
     }
 
-    set(() => ({ lists: data?.lists, tasks: data?.tasks, user: data?.user }));
+    set(() => ({ lists: data?.lists, tasks: data?.tasks }));
     set((state) => ({ ...state, loadingQueue: state.loadingQueue - 1 }));
+  },
+
+  getUser: async () => {
+    const { data, error } = await getUser();
+    set(() => ({ user: data?.user }));
   },
 
   getTaskCountByListId: (listId: string) => {
@@ -168,8 +177,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     }
 
     set((state) => ({
-      lists: state.lists.filter((list) => list.list_id !== list.list_id),
-      tasks: state.tasks.filter((task) => task.list_id !== list.list_id),
+      lists: state.lists.filter((l) => l.list_id !== list.list_id),
+      tasks: state.tasks.filter((t) => t.list_id !== list.list_id),
     }));
   },
 
@@ -235,7 +244,6 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       role: "owner",
       shared_by: null,
       shared_since: now,
-      status: "accepted",
       user_id: currentUserId,
       list: {
         color,
@@ -277,6 +285,24 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     }));
 
     const result = await deleteList(list_id);
+
+    if (result?.error) {
+      handleError(result.error);
+      set({ lists: prevLists, tasks: prevTasks });
+      return;
+    }
+  },
+
+  leaveList: async (list_id) => {
+    const prevLists = get().lists.slice();
+    const prevTasks = get().tasks.slice();
+
+    set((state) => ({
+      lists: state.lists.filter((l) => l.list_id !== list_id),
+      tasks: state.tasks.filter((t) => t.list_id !== list_id),
+    }));
+
+    const result = await leaveList(list_id);
 
     if (result?.error) {
       handleError(result.error);

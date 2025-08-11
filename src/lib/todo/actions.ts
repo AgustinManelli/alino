@@ -66,6 +66,19 @@ export async function getLists() {
       throw new Error("No se pudieron obtener las tareas. Intenta más tarde.");
     }
 
+    return { data: { lists: listsData, tasks: tasksData } };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+}
+
+export async function getUser() {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
     const { data: userData, error: userError } = await supabase
       .from("users")
       .select(`*`)
@@ -77,7 +90,7 @@ export async function getLists() {
       throw new Error("No se pudo obtener el usuario. Intenta más tarde.");
     }
 
-    return { data: { lists: listsData, tasks: tasksData, user: userData } };
+    return { data: { user: userData } };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };
@@ -158,6 +171,30 @@ export const deleteList = async (list_id: string) => {
     if (error) {
       throw new Error(
         "Failed to delete the list from the database. Please try again later."
+      );
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const leaveList = async (list_id: string) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { error } = await supabase
+      .from("list_memberships")
+      .delete()
+      .eq("list_id", list_id)
+      .eq("user_id", user.id);
+
+    if (error) {
+      throw new Error(
+        "Failed to leave the list from the database. Please try again later."
       );
     }
   } catch (error: unknown) {
