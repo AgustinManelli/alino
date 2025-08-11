@@ -44,10 +44,11 @@ export default function Manager({
   const [colorTemp, setColorTemp] = useState<string>(setList?.list.color ?? "");
   const [emoji, setEmoji] = useState<string | null>(null);
   const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
+  const [leaveConfirm, isLeaveConfirm] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
   const [inviteActive, setInviteActive] = useState<boolean>(false);
 
-  const { tasks, deleteList } = useTodoDataStore();
+  const { tasks, deleteList, leaveList } = useTodoDataStore();
 
   useEffect(() => {
     if (!setList) return;
@@ -122,12 +123,22 @@ export default function Manager({
     isDeleteConfirm(true);
   };
 
+  const handleConfirmLeave = () => {
+    isLeaveConfirm(true);
+  };
+
   const router = useRouter();
 
   const handleDelete = () => {
     if (!setList) return;
     router.push(`${location.origin}/alino-app`);
     deleteList(setList.list_id);
+  };
+
+  const handleLeave = () => {
+    if (!setList) return;
+    router.push(`${location.origin}/alino-app`);
+    leaveList(setList.list_id);
   };
 
   const role = setList?.role;
@@ -177,7 +188,7 @@ export default function Manager({
           }}
         />
       ),
-      action: () => {},
+      action: handleConfirmLeave,
     },
     {
       name: "Información",
@@ -244,6 +255,16 @@ export default function Manager({
           handleDelete={handleDelete}
           isDeleteConfirm={isDeleteConfirm}
           id={"manager"}
+        />
+      )}
+      {leaveConfirm && (
+        <ConfirmationModal
+          text={`¿Desea salir la lista "${setList?.list.list_name}"?`}
+          aditionalText="Puedes volver a unirte a ella con otra invitación luego."
+          handleDelete={handleLeave}
+          isDeleteConfirm={isLeaveConfirm}
+          id={"manager-leave"}
+          actionButton={"Salir"}
         />
       )}
       <AnimatePresence>
