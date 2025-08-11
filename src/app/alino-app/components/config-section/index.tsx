@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "motion/react";
 
 import { signOutLocal } from "@/lib/auth/actions";
@@ -26,7 +26,11 @@ export function ConfigSection({ display_name, userAvatarUrl }: props) {
   const [configActive, setConfigActive] = useState<boolean>(false);
   const { setLoading } = useNavigationLoader();
 
-  const { user } = useTodoDataStore();
+  const { user, getUser } = useTodoDataStore();
+
+  useEffect(() => {
+    getUser();
+  }, []);
 
   const iconRef = useRef<HTMLDivElement>(null);
 

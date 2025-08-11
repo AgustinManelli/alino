@@ -8,6 +8,7 @@ import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
 import { Cross } from "@/components/ui/icons/icons";
 import styles from "./WindowComponent.module.css";
+import Image from "next/image";
 
 const crossIconStyle = {
   width: "24px",
@@ -21,6 +22,7 @@ interface WindowComponentProps {
   windowTitle?: string;
   closeAction?: boolean;
   adaptative?: boolean;
+  bgBlur?: boolean;
   id?: string;
   crossAction?: () => void;
 }
@@ -30,6 +32,7 @@ export function WindowComponent({
   windowTitle = "window_title",
   closeAction = true,
   adaptative = false,
+  bgBlur = false,
   id = "default",
   crossAction = () => {},
 }: WindowComponentProps) {
@@ -79,6 +82,41 @@ export function WindowComponent({
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={styles.windowContainer}
     >
+      {bgBlur && (
+        <motion.div
+          className={styles.glow}
+          initial={{ scale: 0, rotate: 0 }}
+          animate={{
+            scale: [1, 1.05, 0.95, 1],
+            rotate: [0, 360],
+          }}
+          transition={{
+            duration: 2,
+            rotate: {
+              duration: 30,
+              repeat: Infinity,
+              ease: "linear",
+            },
+            scale: {
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+            },
+            delay: 0.5,
+          }}
+        >
+          <Image
+            src="/circle-blur.webp"
+            alt="blur circle"
+            fill
+            style={{
+              objectFit: "contain",
+              pointerEvents: "none",
+              userSelect: "none",
+            }}
+          />
+        </motion.div>
+      )}
       <motion.section
         className={styles.windowModal}
         style={{

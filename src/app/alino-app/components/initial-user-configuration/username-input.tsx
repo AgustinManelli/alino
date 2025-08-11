@@ -2,10 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import styles from "./UsernameInput.module.css";
+import { LoadingIcon } from "@/components/ui/icons/icons";
+import { motion } from "motion/react";
 
 type Props = {
   initialValue?: string;
-  onSubmit?: (username: string) => Promise<void> | void;
+  onSubmit?: (username: string) => Promise<string | null>;
   placeholder?: string;
   disabled?: boolean;
 };
@@ -26,8 +28,7 @@ export default function UsernameInput({
 
   const validate = (value: string) => {
     const v = value.trim().toLowerCase();
-    // 3-30 chars, lowercase letters, numbers and underscore
-    return /^[a-z0-9_]{3,20}$/.test(v);
+    return /^[a-z0-9_]{3,30}$/.test(v);
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -35,24 +36,15 @@ export default function UsernameInput({
     setError(null);
     const cleaned = username.trim().toLowerCase();
     if (!validate(cleaned)) {
-      setError("El nombre de usuario debe tener 3-20 caracteres: a-z, 0-9 y _");
+      setError("El nombre de usuario debe tener 3-30 caracteres: a-z, 0-9 y _");
       return;
     }
-
     setLoading(true);
-    try {
-      if (onSubmit) {
-        await onSubmit(cleaned);
-      } else {
-        // fallback: just log
-        // eslint-disable-next-line no-console
-        console.log("username submit", cleaned);
-      }
-    } catch (err: any) {
-      setError(err?.message ?? "Error al guardar el nombre de usuario");
-    } finally {
-      setLoading(false);
+    if (onSubmit) {
+      const error = await onSubmit(cleaned);
+      setError(error);
     }
+    setLoading(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -70,45 +62,64 @@ export default function UsernameInput({
         handleSubmit();
       }}
     >
-      <div
-        className={styles.alinoUsernameInput}
-        role="group"
-        aria-labelledby="username-label"
-      >
-        <span className={styles.alinoAt} aria-hidden>
-          @
-        </span>
-        <input
-          className={styles.alinoInputField}
-          value={username}
-          onChange={(ev) => setUsername(ev.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          aria-invalid={!!error}
-          aria-describedby={error ? "username-error" : undefined}
-          disabled={disabled || loading}
-          inputMode="text"
-          autoComplete="username"
-        />
-      </div>
-
-      <button
-        type="submit"
-        className={styles.alinoSubmitBtn}
-        onClick={(e) => {
-          e.preventDefault();
-          handleSubmit();
-        }}
-        disabled={disabled || loading}
-        aria-disabled={disabled || loading}
-      >
-        {loading ? "Guardando..." : "Siguiente"}
-      </button>
-
-      {error && (
-        <div id="username-error" className={styles.alinoError} role="alert">
-          {error}
+      <div className={styles.container}>
+        <div
+          className={styles.alinoUsernameInput}
+          role="group"
+          aria-labelledby="username-label"
+        >
+          <span className={styles.alinoAt} aria-hidden>
+            @
+          </span>
+          <input
+            className={styles.alinoInputField}
+            value={username}
+            onChange={(ev) => setUsername(ev.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            aria-invalid={!!error}
+            aria-describedby={error ? "username-error" : undefined}
+            disabled={disabled || loading}
+            inputMode="text"
+            autoComplete="username"
+          />
         </div>
+
+        <button
+          type="submit"
+          className={styles.alinoSubmitBtn}
+          onClick={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+          disabled={disabled || loading}
+          aria-disabled={disabled || loading}
+        >
+          {loading ? (
+            <LoadingIcon
+              style={{
+                width: "20px",
+                height: "auto",
+                stroke: `white`,
+                strokeWidth: "3",
+              }}
+            />
+          ) : (
+            "Siguiente"
+          )}
+        </button>
+      </div>
+      {error && (
+        <motion.div
+          id="username-error"
+          className={styles.alinoError}
+          role="alert"
+          initial={{ height: "0px" }}
+          animate={{ height: "initial" }}
+          exit={{ height: "0px" }}
+        >
+          {error}
+        </motion.div>
       )}
     </form>
   );

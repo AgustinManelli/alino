@@ -24,6 +24,7 @@ import {
   // deleteAllTasks,
   getUsersMembersList,
   createListInvitation,
+  setUsernameFirstTime,
 } from "@/lib/todo/actions";
 import { Database } from "@/lib/schemas/todo-schema";
 
@@ -93,6 +94,7 @@ type TodoStore = {
     list_id: string,
     invited_user_id: string
   ) => Promise<{ success: boolean; message: string }>;
+  setUsernameFirstTime: (username: string) => Promise<{ error: string | null }>;
   // deleteAllTasks: () => Promise<void>;
   getTaskCountByListId: (listId: string) => number;
 };
@@ -133,7 +135,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   getUser: async () => {
-    const { data, error } = await getUser();
+    const { data } = await getUser();
     set(() => ({ user: data?.user }));
   },
 
@@ -508,6 +510,24 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         message: "Ocurrió un error inesperado al invitar al usuario.",
       };
     }
+  },
+
+  setUsernameFirstTime: async (username: string) => {
+    try {
+      const res = await setUsernameFirstTime(username);
+
+      if (res.error) {
+        if (res.error === "USERNAME_TAKEN") {
+          return {
+            error: "Ese nombre de usuario ya está en uso. Elige uno diferente.",
+          };
+        }
+      }
+    } catch (err) {
+      console.error("Unexpected error changing username:", err);
+    }
+
+    return { error: null };
   },
 
   // deleteAllTasks: async () => {
