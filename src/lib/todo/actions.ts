@@ -513,7 +513,7 @@ export const createListInvitation = async (
     return { data };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
-    return { error: "Ocurrió un error desconocido." };
+    return { error: "UNKNOWN_ERROR" };
   }
 };
 
@@ -547,7 +547,7 @@ export const getNotifications = async () => {
     return { data: { notifications: data } };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
-    return { error: "Ocurrió un error desconocido." };
+    return { error: "UNKNOWN_ERROR" };
   }
 };
 
@@ -578,7 +578,26 @@ export const updateInvitationList = async (status: string) => {
     return { data: { notifications: data } };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
-    return { error: "Ocurrió un error desconocido." };
+    return { error: "UNKNOWN_ERROR" };
+  }
+};
+
+export const setUsernameFirstTime = async (username: string) => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase.rpc("set_username_first_time", {
+      p_username: username,
+    });
+
+    if (error) {
+      throw new Error(`${error.message}`);
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: "UNKNOWN_ERROR" };
   }
 };
 

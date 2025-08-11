@@ -10,6 +10,7 @@ import Sidebar from "./components/sidebar";
 import styles from "./layout.module.css";
 import { NotificationsSection } from "./components/notifications";
 import InitialUserConfiguration from "./components/initial-user-configuration";
+import AppContent from "./app-content";
 
 export default async function appLayout({
   children,
@@ -30,13 +31,13 @@ export default async function appLayout({
     .eq("user_id", userId)
     .single();
 
-  const initialUsernamePromptShown =
+  const initialPromptShown =
     userPrivate?.initial_username_prompt_shown ?? false;
 
   return (
     <section className={styles.app}>
       <TopBlurEffect />
-      <div className={styles.appContainer}>
+      {/* <div className={styles.appContainer}>
         {initialUsernamePromptShown ? (
           <InitialUserConfiguration />
         ) : (
@@ -50,7 +51,13 @@ export default async function appLayout({
             {children}
           </>
         )}
-      </div>
+      </div> */}
+      <AppContent
+        initialPromptShown={initialPromptShown}
+        user={result.data.user}
+      >
+        {children}
+      </AppContent>
     </section>
   );
 }
