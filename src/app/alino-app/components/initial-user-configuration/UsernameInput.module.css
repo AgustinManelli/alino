@@ -87,3 +87,19 @@
   color: #d9534f; /* red */
   font-size: 13px;
 }
+
+@media only screen and (max-width: 850px) {
+  .container {
+    flex-direction: column;
+    height: 90px;
+  }
+  .alinoUsernameInput {
+    height: 100%;
+    width: 100%;
+  }
+  .alinoSubmitBtn {
+    width: 100%;
+    height: initial;
+    padding: 10px 0;
+  }
+}
