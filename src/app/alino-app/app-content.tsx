@@ -9,6 +9,7 @@ import Sidebar from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import InitialUserConfiguration from "./components/initial-user-configuration";
 import styles from "./layout.module.css";
+import { AnimatePresence } from "motion/react";
 
 interface AppContentProps {
   initialPromptShown: boolean;
@@ -30,9 +31,12 @@ export default function AppContent({
 
   return (
     <div className={styles.appContainer}>
-      {showConfiguration ? (
-        <InitialUserConfiguration onComplete={handleConfigurationComplete} />
-      ) : (
+      <AnimatePresence>
+        {showConfiguration && (
+          <InitialUserConfiguration onComplete={handleConfigurationComplete} />
+        )}
+      </AnimatePresence>
+      {!showConfiguration && (
         <>
           <ConfigSection
             display_name={user.user_metadata.name}
