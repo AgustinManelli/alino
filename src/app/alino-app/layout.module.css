@@ -16,6 +16,14 @@
   gap: 15px;
 }
 
+.topButtons {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  gap: 10px;
+}
+
 @media all and (display-mode: standalone) {
   .app {
     height: 100vh;

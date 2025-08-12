@@ -15,6 +15,7 @@ import { ThemeSelector } from "@/components/ui/theme-selector";
 
 import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
+import ConfigUser from "../config-user";
 
 interface props {
   display_name: string;
@@ -24,6 +25,7 @@ interface props {
 export function ConfigSection({ display_name, userAvatarUrl }: props) {
   const [active, setActive] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
+  const [configUserActive, setConfigUserActive] = useState<boolean>(false);
   const { setLoading } = useNavigationLoader();
 
   const { user, getUser } = useTodoDataStore();
@@ -56,10 +58,24 @@ export function ConfigSection({ display_name, userAvatarUrl }: props) {
     setConfigActive(false);
   };
 
+  const handleOpenConfigUser = () => {
+    setActive(false);
+    setConfigUserActive(true);
+  };
+
+  const handleCloseConfigUser = () => {
+    setConfigUserActive(false);
+  };
+
   return (
     <>
       <AnimatePresence>
         {configActive && <ConfigModal handleCloseConfig={handleCloseConfig} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {configUserActive && (
+          <ConfigUser handleCloseConfig={handleCloseConfigUser} user={user} />
+        )}
       </AnimatePresence>
       <div className={styles.configSection}>
         <CloudIndicator />
@@ -107,6 +123,16 @@ export function ConfigSection({ display_name, userAvatarUrl }: props) {
               }}
             >
               <ThemeSelector />
+              <OptionBox text={"Mi cuenta"} action={handleOpenConfigUser}>
+                <UserIcon
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    strokeWidth: "2",
+                    stroke: "var(--text)",
+                  }}
+                />
+              </OptionBox>
               <OptionBox text={"Configuración"} action={handleOpenConfig}>
                 <Config
                   style={{

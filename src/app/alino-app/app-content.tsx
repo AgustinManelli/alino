@@ -38,11 +38,13 @@ export default function AppContent({
       </AnimatePresence>
       {!showConfiguration && (
         <>
-          <ConfigSection
-            display_name={user.user_metadata.name}
-            userAvatarUrl={user.user_metadata.avatar_url}
-          />
-          <NotificationsSection />
+          <section className={styles.topButtons}>
+            <NotificationsSection />
+            <ConfigSection
+              display_name={user.user_metadata.name}
+              userAvatarUrl={user.user_metadata.avatar_url}
+            />
+          </section>
           <Sidebar />
           {children}
         </>

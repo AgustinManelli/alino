@@ -51,7 +51,7 @@ export const useNotificationsStore = create<UNS>()((set, get) => ({
   },
 
   updateInvitationList: async (notification_id: string, status: string) => {
-    const { data, error } = await updateInvitationList(status);
+    const { data, error } = await updateInvitationList(notification_id, status);
 
     console.log(error);
     console.log(data);

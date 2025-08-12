@@ -25,7 +25,7 @@ export default async function appLayout({
   const userId = result.data.user.id;
 
   const supabase = createClientServer();
-  const { data: userPrivate, error } = await supabase
+  const { data: userPrivate } = await supabase
     .from("user_private")
     .select("initial_username_prompt_shown")
     .eq("user_id", userId)
