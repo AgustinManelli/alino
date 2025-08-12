@@ -59,7 +59,8 @@ export async function getLists() {
         avatar_url
       )`
       )
-      .in("list_id", listIds);
+      .in("list_id", listIds)
+      .order("created_at", { ascending: false });
 
     if (tasksError) {
       console.error("Supabase error fetching tasks:", tasksError.message);
@@ -551,7 +552,10 @@ export const getNotifications = async () => {
   }
 };
 
-export const updateInvitationList = async (status: string) => {
+export const updateInvitationList = async (
+  notification_id: string,
+  status: string
+) => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
     const {
@@ -565,7 +569,8 @@ export const updateInvitationList = async (status: string) => {
     const { data, error } = await supabase
       .from("list_invitations")
       .update({ status: status })
-      .eq("invited_user_id", user.id);
+      .eq("invited_user_id", user.id)
+      .eq("invitation_id", notification_id);
 
     if (error) {
       throw new Error(`No se pudo aceptar la invitación: ${error.message}`);

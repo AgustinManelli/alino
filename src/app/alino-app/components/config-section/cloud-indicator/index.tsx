@@ -35,15 +35,15 @@ export function CloudIndicator() {
           fill="none"
           style={{
             position: "absolute",
-            left: "-35px",
+            top: "45px",
             strokeWidth: "1.5",
             stroke: "var(--text)",
             display: "flex",
             zIndex: 0,
           }}
-          initial={{ opacity: 0, x: 20, scale: 0.5 }}
-          animate={{ opacity: 0.3, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: 20, scale: 0.5 }}
+          initial={{ opacity: 0, y: -45, scale: 0.5 }}
+          animate={{ opacity: 0.3, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -45, scale: 0.5 }}
         >
           <path
             d="M17.5,8.1h0c2.5,0,4.5,2,4.5,4.5s-.8,2.7-2,3.5M17.5,8.1c0-.2,0-.3,0-.5,0-3-2.5-5.5-5.5-5.5s-5.2,2.2-5.5,5M17.5,8.1c-.1,1.1-.5,2.2-1.2,3M6.5,7.2c-2.5.2-4.5,2.4-4.5,5s.8,3.1,2.1,4M6.5,7.2c.2,0,.3,0,.5,0,1.1,0,2.2.4,3,1"

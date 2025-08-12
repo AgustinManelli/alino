@@ -22,7 +22,7 @@ export function WpaDownloadModal() {
     if (uxPwaPrompt) {
       const timer = setTimeout(() => {
         setOpen(true);
-      }, 5000);
+      }, 60000);
       return () => clearTimeout(timer);
     }
   }, []);

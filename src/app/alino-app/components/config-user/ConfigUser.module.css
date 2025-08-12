@@ -1,0 +1,38 @@
+.configModalContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.userContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.displayName {
+  color: var(--text);
+}
+
+.username {
+  color: var(--text-not-available);
+}
+
+.configUserIcon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 70px;
+  height: 70px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 8px;
+  background-color: var(--background-container);
+  margin-bottom: 10px;
+}
