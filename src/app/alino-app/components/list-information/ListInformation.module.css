@@ -28,7 +28,7 @@
   gap: 10px;
   background-color: var(--background-over-container);
   border-radius: 10px;
-  padding: 10px 15px;
+  padding: 10px;
 }
 
 .sectionElement {
@@ -39,7 +39,7 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  /* gap: 10px; */
 }
 
 .configElementSeparator {
@@ -86,13 +86,15 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  object-fit: cover; /* Asegura que la imagen no se deforme */
+  object-fit: cover;
   background-color: var(--background-container);
 }
 
 .userInfo {
+  position: relative;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .displayName {
@@ -119,5 +121,16 @@
   .configModalContainer {
     flex-direction: column;
     gap: 20px;
+  }
+
+  .memberRowContainer {
+    flex-direction: column;
+    gap: 10px;
+    align-items: left;
+  }
+
+  .joinDate {
+    margin-left: initial;
+    width: 100%;
   }
 }

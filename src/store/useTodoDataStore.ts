@@ -16,7 +16,7 @@ import {
   deleteTask,
   updateDataList,
   updateCompletedTask,
-  // updatePinnedList,
+  updatePinnedList,
   updateIndexList,
   updateNameTask,
   // updateAllIndexLists,
@@ -83,7 +83,7 @@ type TodoStore = {
   ) => Promise<{ error: string | null }>;
   deleteTask: (task_id: string) => Promise<void>;
   updateTaskCompleted: (task_id: string, completed: boolean) => Promise<void>;
-  // updatePinnedList: (id: string, pinned: boolean) => Promise<void>;
+  updatePinnedList: (list_id: string, pinned: boolean) => Promise<void>;
   updateIndexList: (id: string, index: number) => Promise<void>;
   updateTaskName: (
     task_id: string,
@@ -224,6 +224,34 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === id
             ? { ...currentItem, index: previousIndex }
+            : currentItem
+        ),
+      }));
+    }
+  },
+
+  updatePinnedList: async (list_id: string, pinned: boolean) => {
+    const originalList = get().lists.find((list) => list.list_id === list_id);
+    if (!originalList) return;
+    const previousIndex = originalList.pinned;
+
+    set((state) => ({
+      lists: state.lists.map((currentItem) =>
+        currentItem.list_id === list_id
+          ? { ...currentItem, pinned }
+          : currentItem
+      ),
+    }));
+
+    const { error } = await updatePinnedList(list_id, pinned);
+
+    if (error) {
+      handleError(error);
+
+      set((state) => ({
+        lists: state.lists.map((currentItem) =>
+          currentItem.list_id === list_id
+            ? { ...currentItem, pinned: previousIndex }
             : currentItem
         ),
       }));

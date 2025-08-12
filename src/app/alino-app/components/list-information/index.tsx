@@ -7,6 +7,8 @@ import { use, useEffect, useState } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { MemberRow } from "./member-row";
 import InviteUserInput from "./invite-user-input";
+import { LoadingIcon } from "@/components/ui/icons/icons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
 type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
@@ -72,7 +74,11 @@ export default function ListInformation({ handleCloseConfig, list }: props) {
           sectionTitle="Miembros"
           configElements={
             isLoading
-              ? [{ content: <p>Cargando miembros...</p> }]
+              ? [
+                  {
+                    content: <MemberRow key={"skeleton"} user={null} />,
+                  },
+                ]
               : users.map((user) => ({
                   content: <MemberRow key={user.user_id} user={user} />,
                 }))
