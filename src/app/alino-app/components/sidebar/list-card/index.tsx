@@ -53,7 +53,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
 
   //estados globales
-  const { deleteList /*, updatePinnedList*/ } = useTodoDataStore();
+  const { deleteList, updatePinnedList } = useTodoDataStore();
   const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile));
   const animations = useUserPreferencesStore(
     useShallow((state) => state.animations)
@@ -90,7 +90,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
   };
 
   const handlePin = () => {
-    //updatePinnedList(list.id, !list.pinned);
+    updatePinnedList(list.list_id, !list.pinned);
   };
 
   //useEffect's

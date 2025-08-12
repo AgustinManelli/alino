@@ -241,39 +241,34 @@ export const updateDataList = async (
   }
 };
 
-// export const updatePinnedList = async (id: string, pinned: boolean) => {
-//   try {
-//     const { supabase } = await getAuthenticatedSupabaseClient();
+export const updatePinnedList = async (list_id: string, pinned: boolean) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-//     const pickSchema = ListSchema.pick({
-//       id: true,
-//       pinned: true,
-//     });
-//     const validatedData = pickSchema.parse({ id, pinned });
+    const { data, error } = await supabase
+      .from("list_memberships")
+      .update({ pinned: pinned })
+      .eq("list_id", list_id)
+      .eq("user_id", user.id)
+      .select();
 
-//     const { data, error } = await supabase
-//       .from("todos_data")
-//       .update({ pinned: validatedData.pinned })
-//       .eq("id", validatedData.id)
-//       .select();
+    if (error) {
+      throw new Error("Failed to update the list. Please try again later.");
+    }
 
-//     if (error) {
-//       throw new Error("Failed to update the list. Please try again later.");
-//     }
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors[0].message };
+    }
 
-//     return { data };
-//   } catch (error: unknown) {
-//     if (error instanceof z.ZodError) {
-//       return { error: error.errors[0].message };
-//     }
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
 
-//     if (error instanceof Error) {
-//       return { error: error.message };
-//     }
-
-//     return { error: UNKNOWN_ERROR_MESSAGE };
-//   }
-// };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
 
 // export const updateIndexList = async (id: string, index: number) => {
 //   try {
