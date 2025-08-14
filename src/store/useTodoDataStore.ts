@@ -25,7 +25,8 @@ import {
   getUsersMembersList,
   createListInvitation,
   setUsernameFirstTime,
-} from "@/lib/todo/actions";
+} from "@/lib/api/actions";
+
 import { Database } from "@/lib/schemas/todo-schema";
 
 type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
@@ -54,9 +55,9 @@ type TodoStore = {
   tasks: TaskType[];
   loadingQueue: number;
   user: UserComplete | null;
+  getUser: () => Promise<void>;
   setLists: (list: ListsType[]) => Promise<void>;
   getLists: () => Promise<void>;
-  getUser: () => Promise<void>;
   getListById: (list_id: string) => ListsType | undefined;
   subscriptionAddList: (list: ListsType) => void;
   subscriptionDeleteList: (list: MembershipRow) => void;
@@ -84,7 +85,7 @@ type TodoStore = {
   deleteTask: (task_id: string) => Promise<void>;
   updateTaskCompleted: (task_id: string, completed: boolean) => Promise<void>;
   updatePinnedList: (list_id: string, pinned: boolean) => Promise<void>;
-  updateIndexList: (id: string, index: number) => Promise<void>;
+  updateIndexList: (list_id: string, index: number) => Promise<void>;
   updateTaskName: (
     task_id: string,
     task_content: string
@@ -106,7 +107,6 @@ const calculateNewIndex = (lists: ListsType[]) =>
 
 function handleError(err: unknown) {
   toast.error((err as Error).message || "Error desconocido");
-  console.log(err);
 }
 
 export const useTodoDataStore = create<TodoStore>()((set, get) => ({
@@ -115,6 +115,20 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   loadingQueue: 0,
   user: null,
 
+  getUser: async () => {
+    try {
+      const { data, error } = await getUser();
+
+      if (error) {
+        throw new Error(error);
+      }
+
+      set(() => ({ user: data?.user }));
+    } catch (err) {
+      handleError(err);
+    }
+  },
+
   setLists: async (list) => {
     set(() => ({ lists: list }));
   },
@@ -122,29 +136,27 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   getLists: async () => {
     set((state) => ({ ...state, loadingQueue: state.loadingQueue + 1 }));
 
-    const { data, error } = await getLists();
+    try {
+      const { data, error } = await getLists();
 
-    if (error) {
-      handleError(error);
-      set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
-      return;
+      if (error) {
+        throw new Error(error);
+      }
+
+      set(() => ({ lists: data?.lists, tasks: data?.tasks }));
+    } catch (err) {
+      handleError(err);
+    } finally {
+      set((state) => ({ ...state, loadingQueue: state.loadingQueue - 1 }));
     }
-
-    set(() => ({ lists: data?.lists, tasks: data?.tasks }));
-    set((state) => ({ ...state, loadingQueue: state.loadingQueue - 1 }));
-  },
-
-  getUser: async () => {
-    const { data } = await getUser();
-    set(() => ({ user: data?.user }));
-  },
-
-  getTaskCountByListId: (listId: string) => {
-    return get().tasks.filter((task) => task.list_id === listId).length;
   },
 
   getListById: (list_id: string) => {
     return get().lists.find((list) => list.list_id === list_id);
+  },
+
+  getTaskCountByListId: (listId: string) => {
+    return get().tasks.filter((task) => task.list_id === listId).length;
   },
 
   subscriptionAddList: (list) => {
@@ -204,29 +216,35 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     }));
   },
 
-  updateIndexList: async (id, index) => {
-    const originalList = get().lists.find((list) => list.list_id === id);
+  updateIndexList: async (list_id, index) => {
+    const originalList = get().lists.find((list) => list.list_id === list_id);
     if (!originalList) return;
     const previousIndex = originalList.index;
 
-    set((state) => ({
-      lists: state.lists.map((currentItem) =>
-        currentItem.list_id === id ? { ...currentItem, index } : currentItem
-      ),
-    }));
-
-    const { error } = await updateIndexList(id, index);
-
-    if (error) {
-      handleError(error);
-
+    try {
       set((state) => ({
         lists: state.lists.map((currentItem) =>
-          currentItem.list_id === id
+          currentItem.list_id === list_id
+            ? { ...currentItem, index }
+            : currentItem
+        ),
+      }));
+
+      const { error } = await updateIndexList(list_id, index);
+
+      if (error) {
+        throw new Error(error);
+      }
+    } catch (err) {
+      set((state) => ({
+        lists: state.lists.map((currentItem) =>
+          currentItem.list_id === list_id
             ? { ...currentItem, index: previousIndex }
             : currentItem
         ),
       }));
+
+      handleError(err);
     }
   },
 
@@ -235,19 +253,21 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     if (!originalList) return;
     const previousIndex = originalList.pinned;
 
-    set((state) => ({
-      lists: state.lists.map((currentItem) =>
-        currentItem.list_id === list_id
-          ? { ...currentItem, pinned }
-          : currentItem
-      ),
-    }));
+    try {
+      set((state) => ({
+        lists: state.lists.map((currentItem) =>
+          currentItem.list_id === list_id
+            ? { ...currentItem, pinned }
+            : currentItem
+        ),
+      }));
 
-    const { error } = await updatePinnedList(list_id, pinned);
+      const { error } = await updatePinnedList(list_id, pinned);
 
-    if (error) {
-      handleError(error);
-
+      if (error) {
+        throw new Error(error);
+      }
+    } catch (err) {
       set((state) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === list_id
@@ -255,53 +275,51 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
             : currentItem
         ),
       }));
+      handleError(err);
     }
   },
 
   insertList: async (name, color, icon) => {
-    const prevLists = get().lists.slice();
-
     const optimisticId = uuidv4();
-    const newIndex = calculateNewIndex(prevLists);
+    const lists = get().lists;
+
+    const index = calculateNewIndex(lists);
     const now = new Date().toISOString();
 
-    const currentUserId = "";
-
     const optimistic: ListsType = {
-      index: newIndex,
+      index,
       list_id: optimisticId,
       pinned: false,
       role: "owner",
       shared_by: null,
       shared_since: now,
-      user_id: currentUserId,
+      user_id: get().user?.user_id || "",
       list: {
         color,
         created_at: now,
         icon: icon ?? null,
         list_id: optimisticId,
         list_name: name,
-        owner_id: currentUserId,
+        owner_id: get().user?.user_id || "",
         updated_at: null,
         is_shared: false,
         non_owner_count: 0,
       },
     };
+    try {
+      set((state) => ({ lists: [...state.lists, optimistic] }));
 
-    set((state) => ({ lists: [...state.lists, optimistic] }));
+      const { error } = await insertList(optimisticId, name, color, icon);
 
-    const { data, error } = await insertList(
-      optimisticId,
-      name,
-      color,
-      icon,
-      newIndex
-    );
+      if (error) {
+        throw new Error(error || "No se recibieron datos del servidor.");
+      }
+    } catch (err) {
+      set((state) => ({
+        lists: state.lists.filter((l) => l.list_id !== optimisticId),
+      }));
 
-    if (error) {
-      handleError(error);
-      set({ lists: prevLists });
-      return;
+      handleError(err);
     }
   },
 

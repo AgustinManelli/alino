@@ -21,7 +21,7 @@ type InvitationsType = InvitationRow & {
   inviter_avatar_url: UserRow["avatar_url"] | null;
 };
 
-import { getNotifications, updateInvitationList } from "@/lib/todo/actions";
+import { getNotifications, updateInvitationList } from "@/lib/api/actions";
 
 type UNS = {
   notifications: InvitationsType[] | [];

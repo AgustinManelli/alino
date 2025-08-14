@@ -27,6 +27,32 @@ const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
   }
 };
 
+export async function getUser() {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select(`*`)
+      .eq("user_id", user.id)
+      .single();
+
+    if (userError) {
+      throw new Error(
+        "No se pudo obtener el usuario. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+
+    return { data: { user: userData } };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+}
+
 export async function getLists() {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
@@ -38,8 +64,9 @@ export async function getLists() {
       .order("index", { ascending: true });
 
     if (listsError) {
-      console.error("Supabase error fetching lists:", listsError.message);
-      throw new Error("No se pudieron obtener las listas. Intenta más tarde.");
+      throw new Error(
+        "No se pudieron obtener las listas. Intentalo nuevamente o contacta con soporte."
+      );
     }
 
     if (!listsData || listsData.length === 0) {
@@ -63,8 +90,9 @@ export async function getLists() {
       .order("created_at", { ascending: false });
 
     if (tasksError) {
-      console.error("Supabase error fetching tasks:", tasksError.message);
-      throw new Error("No se pudieron obtener las tareas. Intenta más tarde.");
+      throw new Error(
+        "No se pudieron obtener las tareas. Intentalo nuevamente o contacta con soporte."
+      );
     }
 
     return { data: { lists: listsData, tasks: tasksData } };
@@ -72,46 +100,23 @@ export async function getLists() {
     if (error instanceof Error) {
       return { error: error.message };
     }
+
     return { error: UNKNOWN_ERROR_MESSAGE };
   }
 }
 
-export async function getUser() {
-  try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
-
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select(`*`)
-      .eq("user_id", user.id)
-      .single();
-
-    if (userError) {
-      console.error("Supabase error fetching tasks:", userError.message);
-      throw new Error("No se pudo obtener el usuario. Intenta más tarde.");
-    }
-
-    return { data: { user: userData } };
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
-    return { error: UNKNOWN_ERROR_MESSAGE };
-  }
-}
-
-export const updateIndexList = async (id: string, index: number) => {
+export const updateIndexList = async (list_id: string, index: number) => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("list_memberships")
-      .update({ index: index })
-      .eq("list_id", id);
+      .update({ index })
+      .eq("list_id", list_id);
 
     if (error) {
       throw new Error(
-        "Failed to update the list index. Please try again later."
+        "No se pudo actualizar la lista. Intentalo nuevamente o contacta con soporte."
       );
     }
 
@@ -126,31 +131,29 @@ export const updateIndexList = async (id: string, index: number) => {
 };
 
 export const insertList = async (
-  id: string,
-  name: string,
+  list_id: string,
+  list_name: string,
   color: string | null,
-  icon: string | null,
-  index: number
+  icon: string | null
 ) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase.from("lists").insert({
-      list_id: id,
+      list_id: list_id,
       owner_id: user.id,
-      list_name: name,
+      list_name: list_name,
       color: color,
       icon: icon,
     });
 
     if (error) {
       throw new Error(
-        "Failed to insert the list into the database. Please try again later." +
-          error.message
+        "No se pudo insertar la lista. Intentalo nuevamente o contacta con soporte."
       );
     }
 
-    return { data };
+    return { data: data?.[0] || null };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };
@@ -247,13 +250,15 @@ export const updatePinnedList = async (list_id: string, pinned: boolean) => {
 
     const { data, error } = await supabase
       .from("list_memberships")
-      .update({ pinned: pinned })
+      .update({ pinned })
       .eq("list_id", list_id)
       .eq("user_id", user.id)
       .select();
 
     if (error) {
-      throw new Error("Failed to update the list. Please try again later.");
+      throw new Error(
+        "No se pudo actualizar la lista. Intentalo nuevamente o contacta con soporte."
+      );
     }
 
     return { data };
