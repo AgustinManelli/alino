@@ -24,17 +24,17 @@ type InvitationsType = InvitationRow & {
 import { getNotifications, updateInvitationList } from "@/lib/api/actions";
 
 type UNS = {
-  notifications: InvitationsType[] | [];
+  notifications: InvitationRow[] | [];
   getNotifications: () => Promise<void>;
   updateInvitationList: (
     notification_id: string,
     status: string
   ) => Promise<void>;
+  subscriptionAddNotification: (notification: InvitationRow) => void;
 };
 
 function handleError(err: unknown) {
   toast.error((err as Error).message || "Error desconocido");
-  console.log(err);
 }
 
 export const useNotificationsStore = create<UNS>()((set, get) => ({
@@ -53,8 +53,6 @@ export const useNotificationsStore = create<UNS>()((set, get) => ({
   updateInvitationList: async (notification_id: string, status: string) => {
     const { data, error } = await updateInvitationList(notification_id, status);
 
-    console.log(error);
-    console.log(data);
     if (error) {
       handleError(error);
       return;
@@ -65,5 +63,15 @@ export const useNotificationsStore = create<UNS>()((set, get) => ({
         (n) => n.invitation_id !== notification_id
       ),
     }));
+  },
+
+  subscriptionAddNotification: (notification: InvitationRow) => {
+    set((state) => {
+      const updatedNotifications = [...state.notifications, notification].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      return { notifications: updatedNotifications };
+    });
   },
 }));

@@ -94,7 +94,7 @@ type TodoStore = {
   createListInvitation: (
     list_id: string,
     invited_user_id: string
-  ) => Promise<{ success: boolean; message: string }>;
+  ) => Promise<void>;
   setUsernameFirstTime: (username: string) => Promise<{ error: string | null }>;
   // deleteAllTasks: () => Promise<void>;
   getTaskCountByListId: (listId: string) => number;
@@ -527,34 +527,25 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         console.error("Error fetching members:", res.error);
       }
     } catch (err) {
-      console.error("Unexpected error fetching members:", err);
+      handleError(err);
     }
   },
 
   createListInvitation: async (
     list_id: string,
     invited_user_username: string
-  ): Promise<{ success: boolean; message: string }> => {
+  ) => {
     try {
-      const res = await createListInvitation(list_id, invited_user_username);
-
-      if (res.data) {
-        return {
-          success: res.data.status === "success",
-          message: res.data.message || "",
-        };
+      const { error } = await createListInvitation(
+        list_id,
+        invited_user_username
+      );
+      console.log(error);
+      if (error) {
+        throw new Error(error);
       }
-
-      return {
-        success: false,
-        message: res.error || "Error desconocido al invitar al usuario.",
-      };
     } catch (err) {
-      console.error("Unexpected error inviting user:", err);
-      return {
-        success: false,
-        message: "Ocurrió un error inesperado al invitar al usuario.",
-      };
+      handleError(err);
     }
   },
 
