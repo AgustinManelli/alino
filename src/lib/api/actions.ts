@@ -174,7 +174,7 @@ export const deleteList = async (list_id: string) => {
 
     if (error) {
       throw new Error(
-        "Failed to delete the list from the database. Please try again later."
+        "No se pudo eliminar la lista. Intentalo nuevamente o contacta con soporte."
       );
     }
   } catch (error: unknown) {
@@ -198,7 +198,7 @@ export const leaveList = async (list_id: string) => {
 
     if (error) {
       throw new Error(
-        "Failed to leave the list from the database. Please try again later."
+        "No se pudo salir de la lista. Intentalo nuevamente o contacta con soporte."
       );
     }
   } catch (error: unknown) {
@@ -231,7 +231,9 @@ export const updateDataList = async (
     console.log("errores:", error, data);
 
     if (error) {
-      throw new Error("Failed to update the list. Please try again later.");
+      throw new Error(
+        "No se pudo actualizar la lista. Intentalo nuevamente o contacta con soporte."
+      );
     }
 
     return { data };
@@ -448,7 +450,7 @@ export const updateCompletedTask = async (
 
 export const updateNameTask = async (task_id: string, task_content: string) => {
   try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    const { supabase } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("tasks")
@@ -481,7 +483,7 @@ export const getUsersMembersList = async (list_id: string) => {
 
     if (error) {
       throw new Error(
-        "No se pudieron obtener los miembros de la lista. Intenta más tarde."
+        "No se pudo obtener los miesmbros de la lista. Intentalo nuevamente o contacta con soporte."
       );
     }
 
@@ -497,7 +499,7 @@ export const createListInvitation = async (
   invited_user_username: string
 ) => {
   try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    const { supabase } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase.rpc(
       "create_list_invitation_by_username",
@@ -508,13 +510,42 @@ export const createListInvitation = async (
     );
 
     if (error) {
-      throw new Error(`No se pudo invitar al usuario. ${error.message}`);
+      switch (error.code) {
+        case "UNATH":
+          return {
+            error:
+              "Acceso no autorizado. Inténtalo nuevamente o contacta con soporte.",
+          };
+        case "USRNF":
+          return { error: "El usuario ingresado no fue encontrado." };
+        case "FRBDN":
+          return {
+            error: "No tienes permisos para invitar usuarios a esta lista.",
+          };
+        case "SLFIV":
+          return { error: "No puedes invitarte a ti mismo." };
+        case "ALRDM":
+          return { error: "El usuario ya es miembro de la lista." };
+        case "INVPD":
+          return {
+            error: "Ya existe una invitación pendiente para este usuario.",
+          };
+        case "LSTNF":
+          return { error: "La lista no existe o hubo un error inesperado." };
+        default:
+          return {
+            error: "Ocurrió un error inesperado. Por favor, intenta de nuevo.",
+          };
+      }
     }
 
     return { data };
   } catch (error: unknown) {
-    if (error instanceof Error) return { error: error.message };
-    return { error: "UNKNOWN_ERROR" };
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
   }
 };
 
@@ -533,7 +564,8 @@ export const getNotifications = async () => {
       .from("list_invitations")
       .select("*")
       .eq("invited_user_id", user.id)
-      .eq("status", "pending");
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
 
     if (error) {
       throw new Error(

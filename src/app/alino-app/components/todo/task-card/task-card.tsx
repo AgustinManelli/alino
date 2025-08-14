@@ -328,7 +328,7 @@ export function TaskCard({ task }: { task: TaskType }) {
           </>
         )}
       </div>
-      {user?.user_id != task.created_by?.user_id && (
+      {user?.user_id !== task.created_by?.user_id && (
         <div
           style={{
             width: "25px",

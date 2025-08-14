@@ -16,25 +16,8 @@ export default function InviteUserInput({ list_id }: props) {
   );
 
   const handleInvite = async () => {
-    console.log("estoy en la funcion");
     if (!inputValue.trim()) return;
-    const res = await createListInvitation(list_id, inputValue);
-    if (res.success) {
-      toast.success(`Invitaccion a @${inputValue} enviada correctamente`);
-    } else {
-      toast.error(`Error: ${res.message}`);
-    }
-
-    // toast.promise(Promise.resolve(res), {
-    //   loading: "Enviando invitación...",
-    //   success: (data) => {
-    //     if (data.success) {
-    //       return "Invitacion enviada correctamente";
-    //     } else {
-    //       return `Error: ${data.message}`;
-    //     }
-    //   },
-    // });
+    await createListInvitation(list_id, inputValue);
     setInputValue("");
   };
 
