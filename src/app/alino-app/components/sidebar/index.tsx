@@ -20,7 +20,6 @@ init({ data });
 
 export default function Sidebar() {
   const {
-    lists,
     getLists,
     subscriptionAddList,
     subscriptionDeleteList,
@@ -57,33 +56,7 @@ export default function Sidebar() {
           table: TABLE_NAME,
         },
         async (payload) => {
-          if (payload.eventType === "INSERT") {
-            const newMembership = payload.new as MembershipRow;
-            const listId = newMembership.list_id;
-
-            if (!listId) return;
-
-            const { data: listDetails, error } = await supabase
-              .from("lists")
-              .select("*")
-              .eq("list_id", listId)
-              .single();
-
-            if (error) {
-              console.error("Error fetching list details:", error);
-              return;
-            }
-
-            const newItemForStore: ListsType = {
-              ...newMembership,
-              list: listDetails,
-            };
-            console.log(newItemForStore);
-            subscriptionAddList(newItemForStore);
-          }
-
           if (payload.eventType === "UPDATE") {
-            console.log("Actualización de membresía recibida!", payload.new);
             const updatedMembership = payload.new as MembershipRow;
             subscriptionUpdateMembership(updatedMembership);
           }
@@ -97,6 +70,22 @@ export default function Sidebar() {
           }
         }
       )
+      .on("broadcast", { event: "membership_insert" }, (payload) => {
+        const sent = (payload as any).payload;
+        if (!sent) return;
+
+        const membership = sent.membership as MembershipRow;
+        const list = sent.list as ListsRow;
+
+        if (!membership) return;
+
+        const newItemForStore: ListsType = {
+          ...membership,
+          list: list,
+        };
+
+        subscriptionAddList(newItemForStore);
+      })
       .subscribe();
 
     return () => {
@@ -106,7 +95,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     const channelLists = supabase
-      .channel("lists")
+      .channel("lists", { config: { broadcast: { self: false } } })
       .on(
         "postgres_changes",
         {
@@ -115,10 +104,6 @@ export default function Sidebar() {
           table: "lists",
         },
         (payload) => {
-          console.log(
-            "Actualización de detalles de lista recibida!",
-            payload.new
-          );
           const updatedList = payload.new as ListsRow;
           subscriptionUpdateList(updatedList);
         }
