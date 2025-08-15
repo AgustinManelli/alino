@@ -483,7 +483,7 @@ export const getUsersMembersList = async (list_id: string) => {
 
     if (error) {
       throw new Error(
-        "No se pudo obtener los miesmbros de la lista. Intentalo nuevamente o contacta con soporte."
+        "No se pudo obtener los miembros de la lista. Intentalo nuevamente o contacta con soporte."
       );
     }
 
@@ -629,6 +629,28 @@ export const setUsernameFirstTime = async (username: string) => {
 
     if (error) {
       throw new Error(`${error.message}`);
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: "UNKNOWN_ERROR" };
+  }
+};
+
+export const searchUsers = async (searchTerm: string) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase.rpc("search_users_input", {
+      p_search_term: searchTerm,
+      p_exclude_user: user.id,
+    });
+
+    if (error) {
+      throw new Error(
+        "No se pudo obtener los usuarios. Intentalo nuevamente o contacta con soporte."
+      );
     }
 
     return { data };

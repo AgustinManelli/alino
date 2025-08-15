@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import React from "react";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 
 import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
@@ -108,8 +109,8 @@ export function NotificationsSection() {
     return (
       <ul className={styles.notificationList}>
         {notifications.map((inv, index) => (
-          <>
-            <li key={inv.invitation_id} className={styles.notificationItem}>
+          <React.Fragment key={inv.invitation_id}>
+            <li className={styles.notificationItem}>
               <div className={styles.notificationInfo}>
                 <div
                   className={styles.configUserIcon}
@@ -154,7 +155,7 @@ export function NotificationsSection() {
             {notifications.length > index + 1 && (
               <div className={styles.separator}></div>
             )}
-          </>
+          </React.Fragment>
         ))}
       </ul>
     );

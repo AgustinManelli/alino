@@ -88,7 +88,7 @@ export function EmojiMartPicker(props) {
 
   .search input[type='search'] {
     appearance: none;
-    color: #27272B;
+    color: var(--text);
     background-color: var(--background-over-container, #f5f7fa) !important;
     border: none;
     width: 100%;
