@@ -117,7 +117,10 @@ export function TaskCard({ task }: { task: TaskType }) {
   };
 
   const handleSaveName = async () => {
-    const formatText = inputName.replace(/\s+/g, " ").trim();
+    const formatText = inputName
+      .trim()
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n{3,}/g, "\n\n");
     if (task.task_content === inputName || completed || formatText.length < 1) {
       setEditing(false);
       setInputName(task.task_content);
@@ -270,7 +273,7 @@ export function TaskCard({ task }: { task: TaskType }) {
             }}
             onKeyDown={(e) => {
               if (!inputRef.current) return;
-              if (e.key === "Enter") {
+              if (e.key === "Enter" && !e.shiftKey) {
                 handleSaveName();
               }
               if (e.key === "Escape") {

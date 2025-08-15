@@ -25,6 +25,7 @@ import {
   getUsersMembersList,
   createListInvitation,
   setUsernameFirstTime,
+  searchUsers,
 } from "@/lib/api/actions";
 
 import { Database } from "@/lib/schemas/todo-schema";
@@ -521,7 +522,6 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     try {
       const res = await getUsersMembersList(listId);
       if (res.data) {
-        console.log(res.data);
         return res.data;
       } else {
         console.error("Error fetching members:", res.error);
@@ -540,7 +540,6 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         list_id,
         invited_user_username
       );
-      console.log(error);
       if (error) {
         throw new Error(error);
       }

@@ -76,7 +76,11 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   }
 
   const handleAdd = () => {
-    const formatText = task.replace(/\s+/g, " ").trim();
+    // const formatText = task.replace(/\s+/g, " ").trim();
+    const formatText = task
+      .trim()
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n{3,}/g, "\n\n");
     if (formatText.length < 1) {
       setTask("");
       setSelected(undefined);
@@ -265,7 +269,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             {focus && (
               <textarea
                 ref={inputRef}
-                maxLength={200}
+                maxLength={500}
                 rows={1}
                 className={styles.input}
                 // placeholder="ingrese una tarea"
@@ -274,9 +278,11 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   setTask(e.target.value);
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     handleAdd();
+                    setFocus(false);
+                    setHeight("40px");
                   }
                   if (e.key === "Escape") {
                     setTask("");
@@ -380,16 +386,16 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               className={styles.limitIndicator}
               style={{
                 color:
-                  task.length > 150
-                    ? task.length > 180
-                      ? task.length > 195
+                  task.length > 400
+                    ? task.length > 450
+                      ? task.length > 480
                         ? "#fc0303"
                         : "#fc8003"
                       : "#ffb300"
                     : "#8a8a8a",
               }}
             >
-              {task.length}/200
+              {task.length}/500
             </p>
           )}
         </div>

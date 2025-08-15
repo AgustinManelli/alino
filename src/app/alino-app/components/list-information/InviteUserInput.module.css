@@ -1,7 +1,12 @@
+.searchContainer {
+  position: relative;
+  width: 100%;
+}
+
 .inputContainer {
   display: flex;
   width: 100%;
-  overflow: hidden;
+  /* overflow: hidden; */
   gap: 10px;
   position: relative;
 }
@@ -60,6 +65,66 @@
 
 .button:disabled {
   opacity: 0.7;
+}
+
+.resultsList {
+  position: absolute;
+  top: 50px; /* Se posiciona justo debajo del input */
+  left: 0;
+  right: 0;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  list-style: none;
+  padding: 10px;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 5; /* Por debajo del input */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.resultItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-radius: 5px;
+}
+
+.resultItem:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+.avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--border-container-color);
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.displayName {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.username {
+  font-size: 12px;
+  color: var(--placeholder-text-color);
+}
+
+.statusItem {
+  padding: 8px 15px;
+  color: var(--placeholder-text-color);
+  font-style: italic;
 }
 
 @media only screen and (max-width: 850px) {
