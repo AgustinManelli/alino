@@ -1,6 +1,6 @@
 "use client";
 
-import { Database } from "@/lib/schemas/todo-schema";
+import { ListsType } from "@/lib/schemas/todo-schema";
 import { MoreVertical, Pin, SquircleIcon } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 import { usePathname } from "next/navigation";
@@ -10,6 +10,23 @@ import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useMemo } from "react";
+
+const variants = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    rotate: [1, -1, 1],
+    transition: {
+      type: "spring",
+      stiffness: 50,
+      rotate: {
+        repeat: Infinity,
+        duration: 0.2,
+        ease: "easeInOut",
+      },
+    },
+  },
+};
 
 export function DragListCard({ list }: { list: ListsType }) {
   const pathname = usePathname();
@@ -126,24 +143,3 @@ export function DragListCard({ list }: { list: ListsType }) {
     </motion.section>
   );
 }
-
-type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
-type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
-type ListsType = MembershipRow & { list: ListsRow };
-
-const variants = {
-  hidden: { opacity: 1 },
-  visible: {
-    opacity: 1,
-    rotate: [1, -1, 1],
-    transition: {
-      type: "spring",
-      stiffness: 50,
-      rotate: {
-        repeat: Infinity,
-        duration: 0.2,
-        ease: "easeInOut",
-      },
-    },
-  },
-};
