@@ -17,26 +17,13 @@ import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
 import styles from "./navbar.module.css";
 
 const containerFMVariant = {
-  hidden: { opacity: 1, scale: 1 },
   visible: {
-    rotate: 0,
-    opacity: 1,
-    scale: 1,
     transition: {
-      type: "spring",
-      stiffness: 50,
       delayChildren: 0.1,
       staggerChildren: 0.1,
     },
   },
-  exit: {
-    opacity: 0,
-    scale: 0,
-    transition: {
-      duration: 0.3,
-    },
-  },
-};
+} as const;
 
 interface NavbarProps {
   initialFetching?: boolean;

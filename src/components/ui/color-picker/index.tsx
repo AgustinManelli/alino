@@ -222,7 +222,7 @@ export function ColorPicker({
                 scale: 1,
                 opacity: 1,
                 filter: "blur(0px)",
-                transition: { duration: "0.2" },
+                transition: { duration: 0.2 },
               }}
               exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
               transition={{

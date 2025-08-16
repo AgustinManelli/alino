@@ -5,14 +5,14 @@ import { MoreVertical, Pin, SquircleIcon } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
+import type { Variants } from "motion/react";
 import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useMemo } from "react";
 
-const variants = {
-  hidden: { opacity: 1 },
+const variants: Variants = {
   visible: {
     opacity: 1,
     rotate: [1, -1, 1],
@@ -26,6 +26,7 @@ const variants = {
       },
     },
   },
+  hidden: { opacity: 1 },
 };
 
 export function DragListCard({ list }: { list: ListsType }) {
@@ -56,7 +57,7 @@ export function DragListCard({ list }: { list: ListsType }) {
       variants={animations ? variants : undefined}
       initial="hidden"
       animate="visible"
-      exit="exit"
+      exit="hidden"
     >
       <div
         className={styles.cardFx}
