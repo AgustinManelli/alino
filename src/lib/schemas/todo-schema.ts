@@ -409,3 +409,8 @@ export type Database = {
     };
   };
 };
+
+export type MembershipRow =
+  Database["public"]["Tables"]["list_memberships"]["Row"];
+export type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
+export type ListsType = MembershipRow & { list: ListsRow };

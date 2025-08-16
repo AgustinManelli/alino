@@ -10,6 +10,7 @@ import { NotificationsSection } from "./components/notifications";
 import InitialUserConfiguration from "./components/initial-user-configuration";
 import styles from "./layout.module.css";
 import { AnimatePresence } from "motion/react";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 interface AppContentProps {
   initialPromptShown: boolean;
@@ -38,6 +39,7 @@ export default function AppContent({
       </AnimatePresence>
       {!showConfiguration && (
         <>
+          <ConfirmationModal />
           <section className={styles.topButtons}>
             <NotificationsSection />
             <ConfigSection

@@ -44,7 +44,7 @@ interface NavbarProps {
 
 export const Navbar = memo(function Navbar({ initialFetching }: NavbarProps) {
   //estados locales
-  const [navbarOpened, setNavbarOpened] = useState<boolean>(false); //Estado para abrir la navbar
+  const [navbarOpened, setNavbarOpened] = useState<boolean>(false);
 
   //estados globales
   const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile));
@@ -95,7 +95,8 @@ export const Navbar = memo(function Navbar({ initialFetching }: NavbarProps) {
       <motion.div
         className={styles.sidebarContainer}
         ref={Ref}
-        animate={{ left: !navbarOpened && isMobile ? "-150%" : 0 }}
+        animate={{ x: !navbarOpened && isMobile ? "-150%" : 0 }}
+        // transition={{ type: "spring", stiffness: 300, damping: 30 }}
         transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
       >
         <div className={styles.navbar}>

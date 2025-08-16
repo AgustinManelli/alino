@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 
 interface ButtonConfigProps {
   name: string;
@@ -18,39 +19,36 @@ export function ButtonConfig({
   modalText,
   explainText,
 }: ButtonConfigProps) {
-  const [isDeleteConfirm, setIsDeleteConfirm] = useState<boolean>(false);
+  const openModal = useConfirmationModalStore((state) => state.openModal);
+
+  const handleConfirm = () => {
+    openModal({
+      text: modalText,
+      onConfirm: action,
+      aditionalText: explainText,
+    });
+  };
 
   return (
-    <>
-      {isDeleteConfirm && (
-        <ConfirmationModal
-          text={modalText}
-          aditionalText={explainText}
-          handleDelete={action}
-          isDeleteConfirm={setIsDeleteConfirm}
-          withBackground={false}
-          id={"config-modal"}
-        />
-      )}
-      <button
-        onClick={() => {
-          setIsDeleteConfirm(true);
-        }}
-        style={{
-          cursor: "pointer",
-          border: "none",
-          fontSize: "14px",
-          width: "fit-content",
-          height: "100%",
-          padding: "0 10px",
-          borderRadius: "5px",
-          backgroundColor: "var(--background-over-container)",
-          WebkitTapHighlightColor: "transparent",
-          ...stylesProp,
-        }}
-      >
-        {name}
-      </button>
-    </>
+    <button
+      onClick={(e) => {
+        e.preventDefault();
+        handleConfirm();
+      }}
+      style={{
+        cursor: "pointer",
+        border: "none",
+        fontSize: "14px",
+        width: "fit-content",
+        height: "100%",
+        padding: "0 10px",
+        borderRadius: "5px",
+        backgroundColor: "var(--background-over-container)",
+        WebkitTapHighlightColor: "transparent",
+        ...stylesProp,
+      }}
+    >
+      {name}
+    </button>
   );
 }
