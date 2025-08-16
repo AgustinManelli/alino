@@ -4,18 +4,14 @@ import { useRef } from "react";
 import { motion } from "motion/react";
 
 import { ColorPicker } from "../color-picker";
-import { Database } from "@/lib/schemas/todo-schema";
+import { ListsType } from "@/lib/schemas/todo-schema";
 import { hexColorSchema } from "@/lib/schemas/validationSchemas";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
-
-import styles from "./ListInfoEdit.module.css";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { Check } from "../icons/icons";
 import { TextTitlesAnimation } from "../text-titles-animation";
 
-type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
-type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
-type ListsType = MembershipRow & { list: ListsRow };
+import styles from "./ListInfoEdit.module.css";
+import { Check } from "../icons/icons";
 
 interface props {
   list: ListsType;
@@ -116,12 +112,6 @@ export function ListInfoEdit({
     }
   };
 
-  const gradientStyle = {
-    fontSize: big ? "18px" : "14px",
-    fontWeight: big ? "600" : "500",
-    color: "var(--text)",
-  };
-
   return (
     <>
       <div className={styles.colorPickerContainer}>
@@ -171,29 +161,6 @@ export function ListInfoEdit({
             id={`list-info-edit-container-${uniqueId}`}
           />
         ) : (
-          // <motion.p
-          //   className={styles.listName}
-          //   style={gradientStyle}
-          //   initial={
-          //     animations && !big
-          //       ? { backgroundPosition: "200% center" }
-          //       : undefined
-          //   }
-          //   animate={
-          //     animations && !big
-          //       ? {
-          //           backgroundPosition: ["200% center", "0% center"],
-          //         }
-          //       : undefined
-          //   }
-          //   transition={{
-          //     duration: 2,
-          //     ease: "linear",
-          //     delay: 0.2,
-          //   }}
-          // >
-          //   {list.name}
-          // </motion.p>
           <TextTitlesAnimation
             text={list.list.list_name}
             delay={0.3}

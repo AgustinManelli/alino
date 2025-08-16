@@ -22,7 +22,7 @@
   justify-content: center;
   align-items: center;
   z-index: 100;
-  left: -150%;
+  transform: translateX(-150%);
 }
 
 .navbar {

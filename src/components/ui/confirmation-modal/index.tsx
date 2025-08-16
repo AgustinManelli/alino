@@ -2,44 +2,28 @@
 
 import { createPortal } from "react-dom";
 import { useRef } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 
 import styles from "./ConfirmationModal.module.css";
 
-interface ConfirmationModalProps {
-  text: string;
-  aditionalText: string;
-  handleDelete: () => void;
-  isDeleteConfirm: (value: boolean) => void;
-  withBackground?: boolean;
-  id?: string;
-  actionButton?: string;
-}
-
-export function ConfirmationModal({
-  text,
-  aditionalText,
-  handleDelete,
-  isDeleteConfirm,
-  withBackground = true,
-  id = "default",
-  actionButton = "Eliminar",
-}: ConfirmationModalProps) {
+export function ConfirmationModal() {
   const ref = useRef<HTMLDivElement>(null);
 
-  const handleAccept = () => {
-    isDeleteConfirm(false);
-    handleDelete();
-  };
+  const { isOpen, text, aditionalText, actionButton, onConfirm, closeModal } =
+    useConfirmationModalStore();
 
-  const handleCancel = () => {
-    isDeleteConfirm(false);
+  const handleAccept = () => {
+    onConfirm();
+    closeModal();
   };
 
   useOnClickOutside(ref, () => {
-    isDeleteConfirm(false);
+    if (isOpen) {
+      closeModal();
+    }
   });
 
   const portalRoot = document.getElementById("portal-root");
@@ -49,55 +33,56 @@ export function ConfirmationModal({
   }
 
   return createPortal(
-    <div
-      style={{
-        backgroundColor: withBackground ? "rgb(0,0,0,0.3)" : "transparent",
-      }}
-      className={styles.confirmationModalBackground}
-      id={`confirmation-modal-${id}`}
-    >
-      <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{
-          scale: 1,
-          opacity: 1,
-          transition: { duration: 0.2 },
-        }}
-        exit={{ scale: 0, opacity: 0 }}
-        transition={{
-          type: "spring",
-          stiffness: 700,
-          damping: 40,
-        }}
-        className={styles.confirmationModalContainer}
-        ref={ref}
-      >
-        <section className={styles.confirmationModalText}>
-          <p className={styles.confirmationModalTitle}>{text}</p>
-          <p className={styles.confirmationModalAdditionalText}>
-            {aditionalText}
-          </p>
-        </section>
-        <section className={styles.confirmationModalButtons}>
-          <button
-            className={styles.confirmationModalButton}
-            onClick={() => {
-              handleCancel();
+    <AnimatePresence>
+      {isOpen && ( // Solo renderizamos el modal si 'isOpen' es true
+        <div
+          style={{
+            backgroundColor: "rgb(0,0,0,0.3)",
+          }}
+          className={styles.confirmationModalBackground}
+        >
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{
+              scale: 1,
+              opacity: 1,
+              transition: { duration: 0.2 },
             }}
-          >
-            Cancelar
-          </button>
-          <button
-            className={`${styles.confirmationModalButton} ${styles.delete}`}
-            onClick={() => {
-              handleAccept();
+            exit={{ scale: 0.5, opacity: 0, transition: { duration: 0.15 } }} // Animación de salida
+            transition={{
+              type: "spring",
+              stiffness: 700,
+              damping: 40,
             }}
+            className={styles.confirmationModalContainer}
+            ref={ref}
           >
-            {actionButton}
-          </button>
-        </section>
-      </motion.div>
-    </div>,
+            <section className={styles.confirmationModalText}>
+              <p className={styles.confirmationModalTitle}>{text}</p>
+              {aditionalText && (
+                <p className={styles.confirmationModalAdditionalText}>
+                  {aditionalText}
+                </p>
+              )}
+            </section>
+            <section className={styles.confirmationModalButtons}>
+              <button
+                className={styles.confirmationModalButton}
+                onClick={closeModal} // La cancelación solo cierra el modal
+              >
+                Cancelar
+              </button>
+              <button
+                className={`${styles.confirmationModalButton} ${styles.delete}`}
+                onClick={handleAccept}
+              >
+                {actionButton}
+              </button>
+            </section>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>,
     portalRoot
   );
 }

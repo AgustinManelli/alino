@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+
+import ClientOnlyPortal from "../client-only-portal";
+import { ConfigCard } from "./config-card";
 
 import { MoreVertical } from "@/components/ui/icons/icons";
 import styles from "./ConfigMenu.module.css";
-import { ConfigCard } from "./config-card";
-import ClientOnlyPortal from "../client-only-portal";
 
 interface ConfigOption {
   name: string;

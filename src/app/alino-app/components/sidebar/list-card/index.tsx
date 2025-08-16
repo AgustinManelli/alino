@@ -2,7 +2,6 @@
 
 import {
   CSSProperties,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -11,18 +10,17 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSortable } from "@dnd-kit/sortable";
-import { useShallow } from "zustand/shallow";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-import { Database } from "@/lib/schemas/todo-schema";
+import { ListsType } from "@/lib/schemas/todo-schema";
 
 import { ConfigMenu } from "@/components/ui/config-menu";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";
 import { CounterAnimation } from "@/components/ui/counter-animation";
-import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 import {
   DeleteIcon,
@@ -31,36 +29,30 @@ import {
   Unpin,
   Colaborate,
   LogOut,
-  Information,
 } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 
-type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
-type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
-type ListsType = MembershipRow & { list: ListsRow };
-
-interface ListCardProps {
+interface props {
   list: ListsType;
   handleCloseNavbar: () => void;
 }
 
-export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
+export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
   //estados locales
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
+  const [isNameChange, setIsNameChange] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(list.list.color);
   const [emoji, setEmoji] = useState<string | null>(list.list.icon);
-  const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
-  const [isNameChange, setIsNameChange] = useState<boolean>(false);
 
   //estados globales
-  const { deleteList, updatePinnedList } = useTodoDataStore();
-  const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile));
-  const animations = useUserPreferencesStore(
-    useShallow((state) => state.animations)
+  const deleteList = useTodoDataStore((state) => state.deleteList);
+  const updatePinnedList = useTodoDataStore((state) => state.updatePinnedList);
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
+  const animations = useUserPreferencesStore((state) => state.animations);
+  const taskCount = useTodoDataStore((state) =>
+    state.getTaskCountByListId(list.list_id)
   );
-  const taskCount = useTodoDataStore(
-    useShallow((state) => state.getTaskCountByListId(list.list_id))
-  );
+  const openModal = useConfirmationModalStore((state) => state.openModal);
 
   //ref's
   const divRef = useRef<HTMLInputElement | null>(null);
@@ -76,7 +68,12 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
   );
 
   const handleConfirm = () => {
-    isDeleteConfirm(true);
+    openModal({
+      text: `¿Desea eliminar la lista "${list.list.list_name}"?`,
+      onConfirm: handleDelete,
+      aditionalText:
+        "Esta acción es irreversible y eliminará todas las tareas de la lista.",
+    });
   };
 
   const handleDelete = () => {
@@ -119,7 +116,6 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
   });
 
   //dndkit
-  const id = list.list_id;
   const {
     isDragging,
     attributes,
@@ -128,7 +124,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
     transform,
     transition,
   } = useSortable({
-    id,
+    id: list.list_id,
     transition: {
       duration: 500,
       easing: "cubic-bezier(0.25, 1, 0.5, 1)",
@@ -153,86 +149,48 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
   const canDelete = role === "owner" || role === "admin";
   const canEdit = role === "owner" || role === "admin";
   const owner = role !== "owner";
-  const baseConfigOptions = [
-    {
-      name: "Editar",
-      icon: (
-        <Edit
-          style={{
-            width: "14px",
-            height: "auto",
-            stroke: "var(--text)",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: handleNameChange,
-    },
-    {
-      name: "Fijar",
-      icon: list.pinned ? (
-        <Unpin
-          style={{
-            width: "14px",
-            height: "auto",
-            stroke: "var(--text)",
-            strokeWidth: 2,
-          }}
-        />
-      ) : (
-        <Pin
-          style={{
-            width: "14px",
-            height: "auto",
-            stroke: "var(--text)",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: handlePin,
-    },
-    {
-      name: "Salir",
-      icon: (
-        <LogOut
-          style={{
-            stroke: "var(--text)",
-            width: "14px",
-            height: "auto",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: () => {},
-    },
-    {
-      name: "Eliminar",
-      icon: (
-        <DeleteIcon
-          style={{
-            stroke: "var(--text)",
-            width: "14px",
-            height: "auto",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: handleConfirm,
-    },
-  ];
+  const configOptions = useMemo(() => {
+    const baseOptions = [
+      {
+        name: "Editar",
+        icon: <Edit style={iconStyle} />,
+        action: handleNameChange,
+        enabled: canEdit,
+      },
+      {
+        name: "Fijar",
+        icon: list.pinned ? (
+          <Unpin style={iconStyle} />
+        ) : (
+          <Pin style={iconStyle} />
+        ),
+        action: handlePin,
+        enabled: true,
+      },
+      {
+        name: "Salir",
+        icon: <LogOut style={iconStyle} />,
+        action: () => {},
+        enabled: owner,
+      },
+      {
+        name: "Eliminar",
+        icon: <DeleteIcon style={iconStyle} />,
+        action: handleConfirm,
+        enabled: canDelete,
+      },
+    ];
 
-  const configOptions = baseConfigOptions.filter((option) => {
-    switch (option.name) {
-      case "Editar":
-        return canEdit;
-      case "Eliminar":
-        return canDelete;
-      case "Salir":
-        return owner;
-      default:
-        return true;
-    }
-  });
+    return baseOptions.filter((option) => option.enabled);
+  }, [
+    canEdit,
+    canDelete,
+    owner,
+    list.pinned,
+    handleNameChange,
+    handlePin,
+    handleConfirm,
+  ]);
 
   const handleConfigMenu = (state: boolean) => {
     setIsMoreOptions(state);
@@ -342,41 +300,37 @@ export const ListCard = memo(({ list, handleCloseNavbar }: ListCardProps) => {
   ]);
 
   return (
-    <>
-      {deleteConfirm && (
-        <ConfirmationModal
-          text={`¿Desea eliminar la lista "${list.list.list_name}"?`}
-          aditionalText="Esta acción es irreversible y eliminará todas las tareas de la lista."
-          handleDelete={handleDelete}
-          isDeleteConfirm={isDeleteConfirm}
-          id={"list-card"}
-        />
-      )}
-      <div ref={setNodeRef}>
-        <section
-          className={styles.container}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (isNameChange) return;
-            router.push(`${location.origin}/alino-app/${list.list_id}`),
-              handleCloseNavbar();
+    <div ref={setNodeRef}>
+      <section
+        {...attributes}
+        {...listeners}
+        ref={divRef}
+        className={styles.container}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (isNameChange) return;
+          router.push(`/alino-app/${list.list_id}`);
+          handleCloseNavbar();
+        }}
+        style={style}
+      >
+        <div
+          className={styles.cardFx}
+          style={{
+            boxShadow: `${colorTemp} 100px 50px 50px`,
+            opacity: isActive ? 0.1 : 0,
           }}
-          style={style}
-          {...attributes}
-          {...listeners}
-          ref={divRef}
-        >
-          <div
-            className={styles.cardFx}
-            style={{
-              boxShadow: `${colorTemp} 100px 50px 50px`,
-              opacity: isActive ? 0.1 : 0,
-            }}
-          ></div>
-          {content}
-        </section>
-      </div>
-    </>
+        ></div>
+        {content}
+      </section>
+    </div>
   );
 });
+
+const iconStyle = {
+  width: "14px",
+  height: "auto",
+  stroke: "var(--text)",
+  strokeWidth: 2,
+};

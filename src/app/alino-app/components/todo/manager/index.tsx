@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 import ListInformation from "../../list-information";
 import ListInviteModal from "../../list-invite-modal";
+import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 
 type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
 type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
@@ -43,12 +44,11 @@ export default function Manager({
 
   const [colorTemp, setColorTemp] = useState<string>(setList?.list.color ?? "");
   const [emoji, setEmoji] = useState<string | null>(null);
-  const [deleteConfirm, isDeleteConfirm] = useState<boolean>(false);
-  const [leaveConfirm, isLeaveConfirm] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
   const [inviteActive, setInviteActive] = useState<boolean>(false);
 
   const { tasks, deleteList, leaveList } = useTodoDataStore();
+  const openModal = useConfirmationModalStore((state) => state.openModal);
 
   useEffect(() => {
     if (!setList) return;
@@ -120,11 +120,21 @@ export default function Manager({
   }, [isNameChange]);
 
   const handleConfirm = () => {
-    isDeleteConfirm(true);
+    openModal({
+      text: `¿Desea eliminar la lista "${setList?.list.list_name}"?`,
+      onConfirm: handleDelete,
+      aditionalText:
+        "Esta acción es irreversible y eliminará todas las tareas de la lista.",
+    });
   };
 
   const handleConfirmLeave = () => {
-    isLeaveConfirm(true);
+    openModal({
+      text: `¿Desea salir de la lista "${setList?.list.list_name}"?`,
+      onConfirm: handleLeave,
+      aditionalText: "Puedes regresar a ella con otra invitación.",
+      actionButton: "Salir",
+    });
   };
 
   const router = useRouter();
@@ -248,25 +258,6 @@ export default function Manager({
 
   return (
     <>
-      {deleteConfirm && (
-        <ConfirmationModal
-          text={`¿Desea eliminar la lista "${setList?.list.list_name}"?`}
-          aditionalText="Esta acción es irreversible y eliminará todas las tareas de la lista."
-          handleDelete={handleDelete}
-          isDeleteConfirm={isDeleteConfirm}
-          id={"manager"}
-        />
-      )}
-      {leaveConfirm && (
-        <ConfirmationModal
-          text={`¿Desea salir la lista "${setList?.list.list_name}"?`}
-          aditionalText="Puedes volver a unirte a ella con otra invitación luego."
-          handleDelete={handleLeave}
-          isDeleteConfirm={isLeaveConfirm}
-          id={"manager-leave"}
-          actionButton={"Salir"}
-        />
-      )}
       <AnimatePresence>
         {configActive && setList && (
           <ListInformation

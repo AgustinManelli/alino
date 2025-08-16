@@ -21,8 +21,9 @@
   height: 200px;
   position: absolute;
   left: -200px;
-  opacity: 0.1;
-  transition: box-shadow 0.3s ease-in-out;
+  opacity: 0;
+  box-shadow: rgb(106, 195, 255) 100px 50px 50px;
+  transition: opacity 0.2s ease-in-out;
   z-index: 0;
 }
 
@@ -31,7 +32,7 @@
 }
 
 .container:hover .cardFx {
-  box-shadow: rgb(106, 195, 255) 100px 50px 50px !important;
+  opacity: 0.1 !important;
 }
 
 .colorPickerContainer {
@@ -95,10 +96,6 @@
   align-items: center;
   color: var(--text-not-available);
   font-size: 12px;
-}
-
-.Desktop {
-  position: absolute;
 }
 
 .Mobile {
