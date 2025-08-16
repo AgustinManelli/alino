@@ -21,38 +21,24 @@ import {
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { useShallow } from "zustand/shallow";
 
-import { Database } from "@/lib/schemas/todo-schema";
+import { ListsType } from "@/lib/schemas/todo-schema";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 import { DragListCard } from "../list-card/drag-list-card";
 import { ListCard } from "../list-card";
 
-type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
-type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
-type ListsType = MembershipRow & { list: ListsRow };
-
 const variants = {
-  hidden: { opacity: 1, scale: 1 },
   visible: {
-    rotate: 0,
     opacity: 1,
     scale: 1,
+    rotate: 0,
     transition: {
       type: "spring",
       stiffness: 50,
-      delayChildren: 0.1,
-      staggerChildren: 0.1,
     },
   },
-  exit: {
-    opacity: 0,
-    scale: 0,
-    transition: {
-      duration: 0.3,
-    },
-  },
-};
+} as const;
 
 interface DraggableContextProps {
   handleCloseNavbar: () => void;

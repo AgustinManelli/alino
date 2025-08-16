@@ -2,6 +2,7 @@
 
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { motion, useAnimation, AnimatePresence } from "motion/react";
+import type { Variants } from "motion/react";
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 
@@ -12,7 +13,7 @@ export const IconAlinoMotion = ({ style }: { style?: React.CSSProperties }) => {
     useShallow((state) => state.animations)
   );
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: {},
     visible: {
       transition: {
@@ -28,7 +29,7 @@ export const IconAlinoMotion = ({ style }: { style?: React.CSSProperties }) => {
     },
   };
 
-  const letterVariants = {
+  const letterVariants: Variants = {
     hidden: {
       scale: 0,
       opacity: 0,
@@ -53,7 +54,7 @@ export const IconAlinoMotion = ({ style }: { style?: React.CSSProperties }) => {
     },
   };
 
-  const detailVariants = {
+  const detailVariants: Variants = {
     hidden: {
       scale: 0,
       opacity: 0,
