@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { UseFormRegister, FieldErrors } from "react-hook-form";
 
 import { OauthButton } from "./oauth-button";

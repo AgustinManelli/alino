@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import React, { useRef, useState, useCallback, memo } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
@@ -21,7 +21,7 @@ import { hexColorSchema } from "@/lib/schemas/validationSchemas";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useModalUbication } from "@/hooks/useModalUbication";
 
-interface ColorPickerInterface {
+interface props {
   color: string;
   setColor: (value: string, typing?: boolean) => void;
   emoji: string | null;
@@ -41,9 +41,8 @@ export function ColorPicker({
   setOriginalColor,
   uniqueId = "",
   big = false,
-}: ColorPickerInterface) {
+}: props) {
   //estados locales
-
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false); //estado para abrir o cerrar color-picker-container
   const [type, setType] = useState<string>("color"); //modo color o emoji picker en la modal
 
