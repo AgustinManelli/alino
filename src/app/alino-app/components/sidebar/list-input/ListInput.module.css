@@ -93,3 +93,10 @@
 .button:hover {
   background-color: var(--hover-over-container);
 }
+
+.sendButton {
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  display: flex;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback, memo } from "react";
 
 import ClientOnlyPortal from "../client-only-portal";
 import { ConfigCard } from "./config-card";
@@ -14,7 +14,7 @@ interface ConfigOption {
   action: () => void;
 }
 
-interface props {
+interface Props {
   iconWidth: string;
   configOptions: ConfigOption[];
   optionalState?: (value: boolean) => void;
@@ -22,83 +22,96 @@ interface props {
   uniqueId?: string;
 }
 
-export function ConfigMenu({
+export const ConfigMenu = memo(function ConfigMenu({
   iconWidth,
   configOptions,
   optionalState,
   idScrollArea,
   uniqueId = "",
-}: props) {
+}: Props) {
   const [open, setOpen] = useState<boolean>(false);
 
-  const Ref = useRef<HTMLDivElement>(null);
-  const sRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(function mount() {
-    ubication();
-    function ubication() {
-      if (!Ref.current || !sRef.current) return;
-      const parentRect = Ref.current!.getBoundingClientRect();
-      const sRect = sRef.current!.getBoundingClientRect();
-
-      sRef.current.style.top = `${parentRect.top + parentRect.width + 5}px`;
-      sRef.current.style.left = `${parentRect.right - sRect.width}px`;
-
-      if (Ref.current.getBoundingClientRect().top > window.innerHeight / 2) {
-        sRef.current.style.top = `${parentRect.top - sRef.current.offsetHeight - 10}px`;
-      }
-    }
-    function divOnClick(event: MouseEvent | TouchEvent) {
-      if (sRef.current !== null && Ref.current !== null) {
-        if (
-          !sRef.current.contains(event.target as Node) &&
-          !Ref.current.contains(event.target as Node)
-        ) {
-          //functions
-          setOpen(false);
-          optionalState && optionalState(false);
-        }
-      }
-    }
-    window.addEventListener("mousedown", divOnClick);
-    window.addEventListener("mouseup", divOnClick);
-
-    return function unMount() {
-      window.removeEventListener("mousedown", divOnClick);
-      window.removeEventListener("mouseup", divOnClick);
-    };
-  });
+  const handleClose = useCallback(() => {
+    setOpen(false);
+    optionalState?.(false);
+  }, [optionalState]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setOpen(false);
+    if (!open) {
+      return;
+    }
+
+    const triggerElement = triggerRef.current;
+    const menuElement = menuRef.current;
+    const scrollContainer = idScrollArea
+      ? document.getElementById(idScrollArea)
+      : null;
+
+    if (!triggerElement || !menuElement) return;
+
+    const updatePosition = () => {
+      const parentRect = triggerElement.getBoundingClientRect();
+      const menuRect = menuElement.getBoundingClientRect();
+
+      let top = parentRect.top + parentRect.height + 5;
+      const left = parentRect.right - menuRect.width;
+
+      menuElement.style.left = `${left}px`;
+
+      if (parentRect.top > window.innerHeight / 2) {
+        top = parentRect.top - menuRect.height - 10;
+      }
+      menuElement.style.top = `${top}px`;
     };
-    const scrollContainer = document.getElementById(`${idScrollArea}`);
-    scrollContainer?.addEventListener("scroll", handleScroll);
+
+    updatePosition();
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
+        handleClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("resize", handleClose);
+    scrollContainer?.addEventListener("scroll", handleClose);
 
     return () => {
-      scrollContainer?.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("resize", handleClose);
+      scrollContainer?.removeEventListener("scroll", handleClose);
     };
-  }, []);
+  }, [open, handleClose, idScrollArea]);
+
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newOpenState = !open;
+    setOpen(newOpenState);
+    optionalState?.(newOpenState);
+  };
 
   return (
     <>
-      <div className={styles.fit} ref={Ref}>
+      <div className={styles.fit} ref={triggerRef}>
         <button
           className={styles.mainButton}
           style={{
-            width: `${iconWidth}`,
-            height: `${iconWidth}`,
+            width: iconWidth,
+            height: iconWidth,
             backgroundColor: open
               ? "var(--background-over-container-hover)"
-              : " var(--background-over-container)",
+              : "var(--background-over-container)",
           }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setOpen(!open);
-            optionalState && optionalState(!open);
-          }}
+          onClick={handleTriggerClick}
         >
           <MoreVertical
             style={{
@@ -113,19 +126,19 @@ export function ConfigMenu({
       <ClientOnlyPortal>
         {open && (
           <section
-            ref={sRef}
+            ref={menuRef}
             className={styles.container}
             id={`config-menu-container-${uniqueId}`}
           >
             <section className={styles.optionsContainer}>
               {configOptions.map((option, index) => (
                 <ConfigCard
-                  key={index}
+                  key={`${option.name}-${index}`}
                   name={option.name}
                   icon={option.icon}
                   action={() => {
                     option.action();
-                    setOpen(false);
+                    handleClose();
                   }}
                 />
               ))}
@@ -135,4 +148,4 @@ export function ConfigMenu({
       </ClientOnlyPortal>
     </>
   );
-}
+});

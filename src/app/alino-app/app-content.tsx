@@ -1,34 +1,36 @@
 "use client";
 
-import { useState } from "react";
-import type { User } from "@supabase/supabase-js";
+import { useState, useCallback, memo } from "react";
+import { AnimatePresence } from "motion/react";
 
-// Importa tus componentes
 import { ConfigSection } from "./components/config-section";
 import Sidebar from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import InitialUserConfiguration from "./components/initial-user-configuration";
-import styles from "./layout.module.css";
-import { AnimatePresence } from "motion/react";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
-interface AppContentProps {
+import type { User } from "@supabase/supabase-js";
+import styles from "./layout.module.css";
+
+interface props {
   initialPromptShown: boolean;
   user: User;
   children: React.ReactNode;
 }
 
-export default function AppContent({
+export default memo(function AppContent({
   initialPromptShown,
   user,
   children,
-}: AppContentProps) {
+}: props) {
   const [showConfiguration, setShowConfiguration] =
     useState(initialPromptShown);
 
-  const handleConfigurationComplete = () => {
+  const handleConfigurationComplete = useCallback(() => {
     setShowConfiguration(false);
-  };
+  }, []);
+
+  const { name: displayName, avatar_url: userAvatarUrl } = user.user_metadata;
 
   return (
     <div className={styles.appContainer}>
@@ -43,8 +45,8 @@ export default function AppContent({
           <section className={styles.topButtons}>
             <NotificationsSection />
             <ConfigSection
-              display_name={user.user_metadata.name}
-              userAvatarUrl={user.user_metadata.avatar_url}
+              display_name={displayName}
+              userAvatarUrl={userAvatarUrl}
             />
           </section>
           <Sidebar />
@@ -53,4 +55,4 @@ export default function AppContent({
       )}
     </div>
   );
-}
+});
