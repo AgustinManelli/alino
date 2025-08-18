@@ -1,84 +1,87 @@
 "use client";
 
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { memo, useEffect, useState } from "react";
 import { motion, useAnimation, AnimatePresence } from "motion/react";
-import type { Variants } from "motion/react";
-import { useEffect, useState } from "react";
-import { useShallow } from "zustand/shallow";
 
-export const IconAlinoMotion = ({ style }: { style?: React.CSSProperties }) => {
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+
+import type { Variants } from "motion/react";
+
+const containerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+  exit: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const letterVariants: Variants = {
+  hidden: {
+    scale: 0,
+    opacity: 0,
+  },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 200,
+      damping: 10,
+    },
+  },
+  exit: {
+    scale: 0,
+    opacity: 0,
+    transition: {
+      type: "spring",
+      stiffness: 200,
+      damping: 10,
+    },
+  },
+};
+
+const detailVariants: Variants = {
+  hidden: {
+    scale: 0,
+    opacity: 0,
+  },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 200,
+      damping: 10,
+      delay: 1,
+    },
+  },
+  exit: {
+    scale: 0,
+    opacity: 0,
+    transition: {
+      type: "spring",
+      stiffness: 200,
+      damping: 10,
+    },
+  },
+};
+
+export const IconAlinoMotion = memo(function IconAlinoMotion({
+  style,
+}: {
+  style?: React.CSSProperties;
+}) {
   const [isVisible, setIsVisible] = useState(true);
   const controls = useAnimation();
-  const animations = useUserPreferencesStore(
-    useShallow((state) => state.animations)
-  );
-
-  const containerVariants: Variants = {
-    hidden: {},
-    visible: {
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-    exit: {
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const letterVariants: Variants = {
-    hidden: {
-      scale: 0,
-      opacity: 0,
-    },
-    visible: {
-      scale: 1,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 200,
-        damping: 10,
-      },
-    },
-    exit: {
-      scale: 0,
-      opacity: 0,
-      transition: {
-        type: "spring",
-        stiffness: 200,
-        damping: 10,
-      },
-    },
-  };
-
-  const detailVariants: Variants = {
-    hidden: {
-      scale: 0,
-      opacity: 0,
-    },
-    visible: {
-      scale: 1,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 200,
-        damping: 10,
-        delay: 1,
-      },
-    },
-    exit: {
-      scale: 0,
-      opacity: 0,
-      transition: {
-        type: "spring",
-        stiffness: 200,
-        damping: 10,
-      },
-    },
-  };
+  const animations = useUserPreferencesStore((state) => state.animations);
 
   // Efecto para controlar el ciclo de animación
   useEffect(() => {
@@ -143,4 +146,4 @@ export const IconAlinoMotion = ({ style }: { style?: React.CSSProperties }) => {
       )}
     </AnimatePresence>
   );
-};
+});

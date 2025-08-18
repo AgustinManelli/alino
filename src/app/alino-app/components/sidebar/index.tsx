@@ -8,15 +8,14 @@ import { Navbar } from "./navbar";
 
 import { createClient } from "@/utils/supabase/client";
 
-import { Database } from "@/lib/schemas/todo-schema";
-type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
-type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
-type ListsType = MembershipRow & { list: ListsRow };
+import { ListsType, ListsRow, MembershipRow } from "@/lib/schemas/todo-schema";
 
 //INIT EMOJI-MART
 import { init } from "emoji-mart";
 import data from "@/components/ui/emoji-mart/apple.json";
 init({ data });
+
+const supabase = createClient();
 
 export default function Sidebar() {
   const {
@@ -26,21 +25,20 @@ export default function Sidebar() {
     subscriptionUpdateList,
     subscriptionUpdateMembership,
   } = useTodoDataStore();
-  const [initialFetching, setInitialFetching] = useState<boolean>(false);
+
+  const [initialFetching, setInitialFetching] = useState<boolean>(true);
   const executedRef = useRef(false);
-  const supabase = createClient();
 
   useEffect(() => {
     if (executedRef.current) return;
     executedRef.current = true;
 
-    const fetchTodos = async () => {
-      setInitialFetching(true);
+    const fetchInitialData = async () => {
       await getLists();
       setInitialFetching(false);
     };
 
-    fetchTodos();
+    fetchInitialData();
   }, []);
 
   useEffect(() => {

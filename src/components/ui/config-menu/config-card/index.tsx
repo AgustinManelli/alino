@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 import styles from "./ConfigCard.module.css";
 
 type props = {
@@ -11,21 +9,9 @@ type props = {
 };
 
 export function ConfigCard({ name, icon, action }: props) {
-  const [optionHover, setOptionHover] = useState<boolean>(false);
   return (
     <div
       className={styles.options}
-      style={{
-        backgroundColor: optionHover
-          ? "var(--background-over-container)"
-          : "transparent",
-      }}
-      onMouseEnter={() => {
-        setOptionHover(true);
-      }}
-      onMouseLeave={() => {
-        setOptionHover(false);
-      }}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
