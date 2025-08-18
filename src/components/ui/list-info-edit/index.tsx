@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useRef } from "react";
+import { useCallback, useRef, memo } from "react";
 import { motion } from "motion/react";
 
 import { ColorPicker } from "@/components/ui/color-picker";
@@ -26,7 +26,7 @@ interface props {
   big?: boolean;
 }
 
-export const ListInfoEdit = React.memo(function ListInfoEdit({
+export const ListInfoEdit = memo(function ListInfoEdit({
   list,
   isNameChange,
   setIsNameChange,

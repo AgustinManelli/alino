@@ -1,63 +1,154 @@
 "use client";
 
-import styles from "./manager.module.css";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { TaskCard } from "../task-card/task-card";
-import { Database } from "@/lib/schemas/todo-schema";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback, memo } from "react";
+import { useRouter } from "next/navigation";
+import { AnimatePresence } from "motion/react";
+
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useBlurBackgroundStore } from "@/store/useBlurBackgroundStore";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
+import { ListsType } from "@/lib/schemas/todo-schema";
+
+import ListInformation from "@/app/alino-app/components/list-information";
+import { ListInfoEdit } from "@/components/ui/list-info-edit";
+import { ConfigMenu } from "@/components/ui/config-menu";
 import TaskInput from "../task-input/task-input";
-import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
+import { TaskCard } from "../task-card/task-card";
+
+import styles from "./manager.module.css";
 import {
   DeleteIcon,
   Edit,
-  SquircleIcon,
   Information,
   LogOut,
-  Invite,
 } from "@/components/ui/icons/icons";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ConfigMenu } from "@/components/ui/config-menu";
-import { ListInfoEdit } from "@/components/ui/list-info-edit";
-import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-import { ConfirmationModal } from "@/components/ui/confirmation-modal";
-import { useRouter } from "next/navigation";
-import { AnimatePresence } from "motion/react";
-import ListInformation from "../../list-information";
-import ListInviteModal from "../../list-invite-modal";
-import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 
-type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
-type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
-type ListsType = MembershipRow & { list: ListsRow };
-
-export default function Manager({
+export const Manager = memo(function Manager({
   setList,
   h,
-  userName = "bienvenido",
 }: {
   setList?: ListsType;
   h?: boolean;
-  userName?: string;
 }) {
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
-
   const [colorTemp, setColorTemp] = useState<string>(setList?.list.color ?? "");
-  const [emoji, setEmoji] = useState<string | null>(null);
-  const [configActive, setConfigActive] = useState<boolean>(false);
-  const [inviteActive, setInviteActive] = useState<boolean>(false);
+  const [emoji, setEmoji] = useState<string | null>(setList?.list.icon ?? null);
+  const [infoActive, setInfoActive] = useState<boolean>(false);
 
-  const { tasks, deleteList, leaveList } = useTodoDataStore();
+  const { user, tasks, deleteList, leaveList } = useTodoDataStore();
   const openModal = useConfirmationModalStore((state) => state.openModal);
+  const setBlurredFx = useBlurBackgroundStore((state) => state.setColor);
+
+  const router = useRouter();
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const section1Ref = useRef<HTMLDivElement>(null);
+  const divRef = useRef<HTMLDivElement>(null);
+  const prevLengthRef = useRef(tasks.length);
+
+  const displayName = useMemo(
+    () => user?.display_name.split(" ")[0] ?? "Bienvenido",
+    [user]
+  );
+  const filteredTasks = useMemo(
+    () => tasks.filter((task) => task.list_id === setList?.list_id),
+    [tasks, setList?.list_id]
+  );
+  const activeTaskCount = useMemo(() => {
+    const source = h ? tasks : filteredTasks;
+    return source.filter((task) => !task.completed).length;
+  }, [tasks, filteredTasks, h]);
+  const formattedDate = useMemo(() => {
+    return new Date().toLocaleDateString("es-ES", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }, []);
+
+  const role = setList?.role;
+  const canDelete = role === "owner" || role === "admin";
+  const canEdit = role === "owner" || role === "admin";
+  const owner = role !== "owner";
+
+  const handleNameChange = useCallback(() => setIsNameChange(true), []);
+  const handleCloseInfo = useCallback(() => setInfoActive(false), []);
+
+  const handleDelete = useCallback(() => {
+    if (!setList) return;
+    router.push(`${location.origin}/alino-app`);
+    deleteList(setList.list_id);
+  }, [setList, router, deleteList]);
+
+  const handleLeave = useCallback(() => {
+    if (!setList) return;
+    router.push(`${location.origin}/alino-app`);
+    leaveList(setList.list_id);
+  }, [setList, router, leaveList]);
+
+  const handleConfirmDelete = useCallback(() => {
+    openModal({
+      text: `¿Desea eliminar la lista "${setList?.list.list_name}"?`,
+      onConfirm: handleDelete,
+      aditionalText:
+        "Esta acción es irreversible y eliminará todas las tareas de la lista.",
+    });
+  }, [openModal, setList, handleDelete]);
+
+  const handleConfirmLeave = useCallback(() => {
+    openModal({
+      text: `¿Desea salir de la lista "${setList?.list.list_name}"?`,
+      onConfirm: handleLeave,
+      aditionalText: "Puedes regresar a ella con otra invitación.",
+      actionButton: "Salir",
+    });
+  }, [openModal, setList, handleLeave]);
+
+  const configOptions = useMemo(() => {
+    const baseOptions = [
+      {
+        name: "Editar lista",
+        icon: <Edit style={iconStyle} />,
+        action: handleNameChange,
+        enabled: canEdit,
+      },
+      {
+        name: "Eliminar lista",
+        icon: <DeleteIcon style={iconStyle} />,
+        action: handleConfirmDelete,
+        enabled: canDelete,
+      },
+      {
+        name: "Salir de la lista",
+        icon: <LogOut style={iconStyle} />,
+        action: handleConfirmLeave,
+        enabled: owner,
+      },
+      {
+        name: "Información",
+        icon: <Information style={iconStyle} />,
+        action: () => {
+          setInfoActive(true);
+        },
+        enabled: true,
+      },
+    ];
+    return baseOptions.filter((option) => option.enabled);
+  }, [
+    canEdit,
+    canDelete,
+    owner,
+    handleNameChange,
+    handleConfirmDelete,
+    handleConfirmLeave,
+  ]);
 
   useEffect(() => {
     if (!setList) return;
     setColorTemp(setList.list.color);
     setEmoji(setList.list.icon);
   }, [setList]);
-
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const setBlurredFx = useBlurBackgroundStore((state) => state.setColor);
 
   useEffect(() => {
     if (setList?.list.color && !h) {
@@ -67,38 +158,15 @@ export default function Manager({
     }
   }, [setList?.list.color, setBlurredFx]);
 
-  const filteredTasks = useMemo(
-    () => tasks.filter((task) => task.list_id === setList?.list_id),
-    [tasks, setList?.list_id]
-  );
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("es-ES", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const [prevLength, setPrevLength] = useState(tasks.length);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
-    if (scrollRef.current && tasks.length > prevLength) {
+    if (scrollRef.current && tasks.length > prevLengthRef.current) {
       scrollRef.current.scrollTo({
         top: 0,
         behavior: "smooth",
       });
-      setPrevLength(tasks.length);
+      prevLengthRef.current = tasks.length;
     }
-  }, [tasks.length, prevLength]);
-
-  const handleNameChange = () => {
-    setIsNameChange(true);
-  };
-
-  const divRef = useRef<HTMLDivElement>(null);
+  }, [tasks.length]);
 
   useOnClickOutside(divRef, () => {
     const colorPickerContainer = document.getElementById(
@@ -119,121 +187,6 @@ export default function Manager({
     }
   }, [isNameChange]);
 
-  const handleConfirm = () => {
-    openModal({
-      text: `¿Desea eliminar la lista "${setList?.list.list_name}"?`,
-      onConfirm: handleDelete,
-      aditionalText:
-        "Esta acción es irreversible y eliminará todas las tareas de la lista.",
-    });
-  };
-
-  const handleConfirmLeave = () => {
-    openModal({
-      text: `¿Desea salir de la lista "${setList?.list.list_name}"?`,
-      onConfirm: handleLeave,
-      aditionalText: "Puedes regresar a ella con otra invitación.",
-      actionButton: "Salir",
-    });
-  };
-
-  const router = useRouter();
-
-  const handleDelete = () => {
-    if (!setList) return;
-    router.push(`${location.origin}/alino-app`);
-    deleteList(setList.list_id);
-  };
-
-  const handleLeave = () => {
-    if (!setList) return;
-    router.push(`${location.origin}/alino-app`);
-    leaveList(setList.list_id);
-  };
-
-  const role = setList?.role;
-
-  const canDelete = role === "owner" || role === "admin";
-  const canEdit = role === "owner" || role === "admin";
-  const owner = role !== "owner";
-
-  const baseConfigOptions = [
-    {
-      name: "Editar lista",
-      icon: (
-        <Edit
-          style={{
-            width: "14px",
-            height: "auto",
-            stroke: "var(--text)",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: handleNameChange,
-    },
-    {
-      name: "Eliminar lista",
-      icon: (
-        <DeleteIcon
-          style={{
-            stroke: "var(--text)",
-            width: "14px",
-            height: "auto",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: handleConfirm,
-    },
-    {
-      name: "Salir de la lista",
-      icon: (
-        <LogOut
-          style={{
-            stroke: "var(--text)",
-            width: "14px",
-            height: "auto",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: handleConfirmLeave,
-    },
-    {
-      name: "Información",
-      icon: (
-        <Information
-          style={{
-            stroke: "var(--text)",
-            width: "14px",
-            height: "auto",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: () => {
-        setConfigActive(true);
-      },
-    },
-  ];
-
-  const configOptions = baseConfigOptions.filter((option) => {
-    switch (option.name) {
-      case "Editar lista":
-        return canEdit;
-      case "Eliminar lista":
-        return canDelete;
-      case "Salir de la lista":
-        return owner;
-      default:
-        return true;
-    }
-  });
-
-  const section1Ref = useRef<HTMLDivElement>(null);
-  const [sectionHeight, setSectionHeight] = useState<number>(0);
-
   useEffect(() => {
     const observer = new ResizeObserver(() => {
       if (section1Ref.current && scrollRef.current) {
@@ -248,30 +201,11 @@ export default function Manager({
     return () => observer.disconnect();
   }, []);
 
-  const handleCloseConfig = () => {
-    setConfigActive(false);
-  };
-
-  const handleCloseInvite = () => {
-    setInviteActive(false);
-  };
-
   return (
     <>
       <AnimatePresence>
-        {configActive && setList && (
-          <ListInformation
-            handleCloseConfig={handleCloseConfig}
-            list={setList}
-          />
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {inviteActive && setList && (
-          <ListInviteModal
-            handleCloseConfig={handleCloseInvite}
-            list={setList.list_id}
-          />
+        {infoActive && setList && (
+          <ListInformation handleCloseConfig={handleCloseInfo} list={setList} />
         )}
       </AnimatePresence>
       <div className={styles.container}>
@@ -282,17 +216,13 @@ export default function Manager({
                 <div className={styles.homeSubContainer}>
                   <h1 className={styles.homeTitle}>
                     <span>Hola, </span>
-                    <span>{userName.split(" ")[0]}</span>
+                    <span>{displayName}</span>
                   </h1>
                   <div className={styles.homeTimeContainer}>
                     <p>
                       <span>Hoy es </span>
-                      {formatDate(currentTime)} <br />
-                      <span>
-                        Tienes{" "}
-                        {tasks.filter((task) => task.completed !== true).length}{" "}
-                        tareas activas
-                      </span>
+                      {formattedDate} <br />
+                      <span>Tienes {activeTaskCount} tareas activas</span>
                     </p>
                   </div>
                 </div>
@@ -300,7 +230,7 @@ export default function Manager({
             ) : (
               <div className={styles.listContainer}>
                 <div className={styles.titleSection} ref={divRef}>
-                  {!h && setList ? (
+                  {!h && setList && (
                     <ListInfoEdit
                       list={setList}
                       isNameChange={isNameChange}
@@ -312,22 +242,10 @@ export default function Manager({
                       uniqueId="todo-manager"
                       big
                     />
-                  ) : (
-                    ""
                   )}
                 </div>
                 <p className={styles.listSubtitle}>
-                  <span>
-                    Tienes{" "}
-                    {
-                      tasks.filter(
-                        (task) =>
-                          task.completed !== true &&
-                          task.list_id === setList?.list_id
-                      ).length
-                    }{" "}
-                    tareas activas
-                  </span>
+                  <span>Tienes {activeTaskCount} tareas activas</span>
                 </p>
               </div>
             )}
@@ -349,15 +267,9 @@ export default function Manager({
           >
             {h && !setList ? (
               <div className={styles.tasks}>
-                {tasks
-                  // .sort(
-                  //   (a, b) =>
-                  //     new Date(b.created_at).getTime() -
-                  //     new Date(a.created_at).getTime()
-                  // )
-                  .map((task) => (
-                    <TaskCard key={task.task_id} task={task} />
-                  ))}
+                {tasks.map((task) => (
+                  <TaskCard key={task.task_id} task={task} />
+                ))}
               </div>
             ) : filteredTasks.length > 0 ? (
               <div className={styles.tasks}>
@@ -375,4 +287,11 @@ export default function Manager({
       </div>
     </>
   );
-}
+});
+
+const iconStyle = {
+  width: "14px",
+  height: "auto",
+  stroke: "var(--text)",
+  strokeWidth: 2,
+};

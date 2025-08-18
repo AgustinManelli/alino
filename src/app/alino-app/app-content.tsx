@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, useRef } from "react";
 import { AnimatePresence } from "motion/react";
 
 import { ConfigSection } from "./components/config-section";
@@ -9,28 +9,31 @@ import { NotificationsSection } from "./components/notifications";
 import InitialUserConfiguration from "./components/initial-user-configuration";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
-import type { User } from "@supabase/supabase-js";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { UserType } from "@/lib/schemas/todo-schema";
+
 import styles from "./layout.module.css";
 
 interface props {
-  initialPromptShown: boolean;
-  user: User;
+  user: UserType;
   children: React.ReactNode;
 }
 
-export default memo(function AppContent({
-  initialPromptShown,
-  user,
-  children,
-}: props) {
-  const [showConfiguration, setShowConfiguration] =
-    useState(initialPromptShown);
+export default memo(function AppContent({ user, children }: props) {
+  const initialized = useRef(false);
+
+  if (!initialized.current) {
+    useTodoDataStore.setState({ user: user });
+    initialized.current = true;
+  }
+
+  const [showConfiguration, setShowConfiguration] = useState(
+    user.user_private?.initial_username_prompt_shown ?? false
+  );
 
   const handleConfigurationComplete = useCallback(() => {
     setShowConfiguration(false);
   }, []);
-
-  const { name: displayName, avatar_url: userAvatarUrl } = user.user_metadata;
 
   return (
     <div className={styles.appContainer}>
@@ -44,10 +47,7 @@ export default memo(function AppContent({
           <ConfirmationModal />
           <section className={styles.topButtons}>
             <NotificationsSection />
-            <ConfigSection
-              display_name={displayName}
-              userAvatarUrl={userAvatarUrl}
-            />
+            <ConfigSection />
           </section>
           <Sidebar />
           {children}

@@ -1,17 +1,13 @@
 "use client";
 
-import { Database } from "@/lib/schemas/todo-schema";
+import { ListsType } from "@/lib/schemas/todo-schema";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-import Manager from "./manager";
+import { Manager } from "./manager";
 
 import styles from "./todo.module.css";
 
-type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
-type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
-type ListsType = MembershipRow & { list: ListsRow };
-
-export default function Todo({ params }: { params: { list: string } }) {
+export function Todo({ params }: { params: { list: string } }) {
   const lists = useTodoDataStore((state) => state.lists);
 
   const setList = lists.find(

@@ -1,5 +1,3 @@
-// src/store/useConfirmationModalStore.ts
-
 import { create } from "zustand";
 
 interface ConfirmationModalState {

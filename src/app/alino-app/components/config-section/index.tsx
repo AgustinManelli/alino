@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence } from "motion/react";
 
 import { signOutLocal } from "@/lib/auth/actions";
@@ -9,7 +9,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 
 import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
 import { OptionBox } from "@/components/ui/modal-options-box/optionBox";
-import ConfigModal from "../config-modal";
+import { ConfigModal } from "../config-modal";
 import { CloudIndicator } from "./cloud-indicator";
 import { ThemeSelector } from "@/components/ui/theme-selector";
 
@@ -17,22 +17,17 @@ import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
 import ConfigUser from "../config-user";
 
-interface props {
-  display_name: string;
-  userAvatarUrl: string;
-}
-
-export function ConfigSection({ display_name, userAvatarUrl }: props) {
+export function ConfigSection() {
   const [active, setActive] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
   const [configUserActive, setConfigUserActive] = useState<boolean>(false);
   const { setLoading } = useNavigationLoader();
 
-  const { user, getUser } = useTodoDataStore();
+  const user = useTodoDataStore((state) => state.user);
 
-  useEffect(() => {
-    getUser();
-  }, []);
+  const avatar_url = user?.avatar_url;
+  const display_name = user?.display_name;
+  const username = user?.username;
 
   const iconRef = useRef<HTMLDivElement>(null);
 
@@ -87,11 +82,11 @@ export function ConfigSection({ display_name, userAvatarUrl }: props) {
           <div
             className={styles.configUserIcon}
             style={{
-              backgroundImage: userAvatarUrl ? `url('${userAvatarUrl}')` : "",
-              opacity: userAvatarUrl ? 1 : 0.3,
+              backgroundImage: avatar_url ? `url('${avatar_url}')` : "",
+              opacity: avatar_url ? 1 : 0.3,
             }}
           >
-            {!userAvatarUrl && (
+            {!avatar_url && (
               <UserIcon
                 style={{
                   stroke: "var(--icon-colorv2)",
@@ -106,7 +101,7 @@ export function ConfigSection({ display_name, userAvatarUrl }: props) {
         {active && (
           <ModalBox
             title={display_name ? display_name : "User"}
-            subtitle={`@${user?.username ? user.username : "user"}`}
+            subtitle={`@${username ? username : "user"}`}
             onClose={handleClose}
             iconRef={iconRef}
           >
