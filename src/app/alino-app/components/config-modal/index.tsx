@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-
-import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { useCallback } from "react";
 
 import { ButtonConfig } from "./components/buttonConfig";
 import { Switch } from "@/components/ui/switch";
 import { WindowComponent } from "@/components/ui/window-component";
+
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 import styles from "./AccountConfigSection.module.css";
 
@@ -15,17 +15,17 @@ interface props {
   handleCloseConfig: () => void;
 }
 
-export default function ConfigModal({ handleCloseConfig }: props) {
+export function ConfigModal({ handleCloseConfig }: props) {
   const { animations, toggleAnimations } = useUserPreferencesStore();
   const { deleteAllLists /*, deleteAllTasks*/ } = useTodoDataStore();
 
-  const closeConfigModal = () => {
+  const closeConfigModal = useCallback(() => {
     const confirmationModal = document.getElementById(
       "confirmation-modal-config-modal"
     );
     if (confirmationModal) return;
     handleCloseConfig();
-  };
+  }, [handleCloseConfig]);
 
   return (
     <WindowComponent

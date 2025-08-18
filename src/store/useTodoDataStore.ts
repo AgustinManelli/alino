@@ -2,8 +2,6 @@
 
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
-import { z } from "zod";
-import { produce } from "immer";
 import { toast } from "sonner";
 
 import {
@@ -25,37 +23,24 @@ import {
   getUsersMembersList,
   createListInvitation,
   setUsernameFirstTime,
-  searchUsers,
 } from "@/lib/api/actions";
 
-import { Database } from "@/lib/schemas/todo-schema";
-
-type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
-type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
-type ListsType = MembershipRow & { list: ListsRow };
-
-type TaskRow = Database["public"]["Tables"]["tasks"]["Row"];
-type UserProfile = Pick<
-  Database["public"]["Tables"]["users"]["Row"],
-  "user_id" | "display_name" | "username" | "avatar_url"
->;
-type TaskType = Omit<TaskRow, "created_by"> & {
-  created_by: UserProfile | null;
-};
-
-type UserComplete = Database["public"]["Tables"]["users"]["Row"];
-
-type MembershipInfo = Pick<MembershipRow, "role" | "shared_since">;
-export type UserWithMembershipRole = UserProfile & MembershipInfo;
+import {
+  ListsType,
+  ListsRow,
+  MembershipRow,
+  TaskType,
+  UserWithMembershipRole,
+  UserType,
+} from "@/lib/schemas/todo-schema";
 
 const POS_INDEX = 16384;
-const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
 
 type TodoStore = {
   lists: ListsType[];
   tasks: TaskType[];
   loadingQueue: number;
-  user: UserComplete | null;
+  user: UserType | null;
   getUser: () => Promise<void>;
   setLists: (list: ListsType[]) => Promise<void>;
   getLists: () => Promise<void>;

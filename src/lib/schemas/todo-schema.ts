@@ -414,3 +414,19 @@ export type MembershipRow =
   Database["public"]["Tables"]["list_memberships"]["Row"];
 export type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
 export type ListsType = MembershipRow & { list: ListsRow };
+
+export type TaskRow = Database["public"]["Tables"]["tasks"]["Row"];
+export type UserProfile = Pick<
+  Database["public"]["Tables"]["users"]["Row"],
+  "user_id" | "display_name" | "username" | "avatar_url"
+>;
+export type TaskType = Omit<TaskRow, "created_by"> & {
+  created_by: UserProfile | null;
+};
+
+type MembershipInfo = Pick<MembershipRow, "role" | "shared_since">;
+export type UserWithMembershipRole = UserProfile & MembershipInfo;
+
+export type UserType = Database["public"]["Tables"]["users"]["Row"] & {
+  user_private: Database["public"]["Tables"]["user_private"]["Row"] | null;
+};

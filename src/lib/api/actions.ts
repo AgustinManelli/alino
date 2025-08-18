@@ -33,7 +33,7 @@ export async function getUser() {
 
     const { data: userData, error: userError } = await supabase
       .from("users")
-      .select(`*`)
+      .select(`*, user_private (*)`)
       .eq("user_id", user.id)
       .single();
 
