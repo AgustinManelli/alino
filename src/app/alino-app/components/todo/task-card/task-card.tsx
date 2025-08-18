@@ -1,7 +1,7 @@
 "use client";
 
 import type { Database } from "@/lib/schemas/todo-schema";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState, useRef, useEffect, useMemo } from "react";
 import {

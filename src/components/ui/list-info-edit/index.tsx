@@ -1,17 +1,18 @@
 "use client";
 
-import { useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import { motion } from "motion/react";
 
-import { ColorPicker } from "../color-picker";
+import { ColorPicker } from "@/components/ui/color-picker";
 import { ListsType } from "@/lib/schemas/todo-schema";
-import { hexColorSchema } from "@/lib/schemas/validationSchemas";
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { TextTitlesAnimation } from "../text-titles-animation";
+//import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { TextTitlesAnimation } from "@/components/ui/text-titles-animation";
 
+import { hexColorSchema } from "@/lib/schemas/validationSchemas";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+
+import { Check } from "@/components/ui/icons/icons";
 import styles from "./ListInfoEdit.module.css";
-import { Check } from "../icons/icons";
 
 interface props {
   list: ListsType;
@@ -25,7 +26,7 @@ interface props {
   big?: boolean;
 }
 
-export function ListInfoEdit({
+export const ListInfoEdit = React.memo(function ListInfoEdit({
   list,
   isNameChange,
   setIsNameChange,
@@ -36,51 +37,55 @@ export function ListInfoEdit({
   uniqueId = "default",
   big = false,
 }: props) {
-  const animations = useUserPreferencesStore((state) => state.animations);
-  useUserPreferencesStore;
+  //const animations = useUserPreferencesStore((state) => state.animations);
   const updateDataList = useTodoDataStore((state) => state.updateDataList);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleSetColor = (color: string, typing?: boolean) => {
-    setColorTemp(color);
+  const isValidHex = useCallback((value: string) => {
+    return hexColorSchema.safeParse(value).success;
+  }, []);
 
-    if (emoji && typing) setEmoji(null);
-
-    if (typing) return;
-
-    const validation = hexColorSchema.safeParse(color);
-
-    if (!validation.success) {
-      setColorTemp(list.list.color);
-      if (emoji) {
-        setEmoji(list.list.icon);
+  const handleSetColor = useCallback(
+    (color: string, typing?: boolean) => {
+      if (typing) {
+        setColorTemp(color);
+        if (emoji) setEmoji(null);
+        return;
       }
-    }
 
-    inputRef.current?.focus();
-  };
+      if (!isValidHex(color)) {
+        setColorTemp(list.list.color);
+        if (emoji) {
+          setEmoji(list.list.icon);
+        }
+      }
 
-  const handleSetEmoji = (newEmoji: string | null) => {
-    setEmoji(newEmoji);
-    inputRef.current?.focus();
-  };
+      setColorTemp(color);
+      inputRef.current?.focus();
+    },
+    [isValidHex, setColorTemp, emoji, setEmoji, list.list.color, list.list.icon]
+  );
 
-  const setOriginalColor = () => {
+  const handleSetEmoji = useCallback(
+    (newEmoji: string | null) => {
+      setEmoji(newEmoji);
+      inputRef.current?.focus();
+    },
+    [setEmoji]
+  );
+
+  const setOriginalColor = useCallback(() => {
     setColorTemp(list.list.color);
     setEmoji(list.list.icon);
-  };
+  }, [list.list.color, list.list.icon, setColorTemp, setEmoji]);
 
-  const handleSaveName = async () => {
-    if (
-      !inputRef.current ||
-      inputRef.current === null ||
-      inputRef.current.value.length < 1
-    ) {
-      return;
-    }
+  const handleSaveName = useCallback(async () => {
+    const el = inputRef.current;
+    if (!el) return;
 
-    const formatText = inputRef.current.value.replace(/\s+/g, " ").trim();
+    const raw = el.value;
+    const formatText = raw.replace(/\s+/g, " ").trim();
 
     if (formatText.length < 1) {
       setIsNameChange(false);
@@ -88,7 +93,7 @@ export function ListInfoEdit({
     }
 
     if (
-      list.list.list_name === inputRef.current.value &&
+      list.list.list_name === formatText &&
       list.list.color === colorTemp &&
       list.list.icon === emoji
     ) {
@@ -96,8 +101,7 @@ export function ListInfoEdit({
       return;
     }
 
-    inputRef.current.value = formatText;
-
+    el.value = formatText;
     setIsNameChange(false);
 
     const { error } = await updateDataList(
@@ -106,11 +110,37 @@ export function ListInfoEdit({
       colorTemp,
       emoji
     );
+
     if (error) {
       setColorTemp(list.list.color);
       setEmoji(list.list.icon);
     }
-  };
+  }, [
+    updateDataList,
+    list.list_id,
+    list.list.list_name,
+    list.list.color,
+    list.list.icon,
+    colorTemp,
+    emoji,
+    setColorTemp,
+    setEmoji,
+    setIsNameChange,
+  ]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!inputRef.current) return;
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSaveName();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setIsNameChange(false);
+      }
+    },
+    [handleSaveName, setIsNameChange]
+  );
 
   return (
     <>
@@ -149,15 +179,7 @@ export function ListInfoEdit({
             type="text"
             defaultValue={list.list.list_name}
             ref={inputRef}
-            onKeyDown={(e) => {
-              if (!inputRef.current) return;
-              if (e.key === "Enter") {
-                handleSaveName();
-              }
-              if (e.key === "Escape") {
-                setIsNameChange(false);
-              }
-            }}
+            onKeyDown={handleKeyDown}
             id={`list-info-edit-container-${uniqueId}`}
           />
         ) : (
@@ -170,7 +192,6 @@ export function ListInfoEdit({
             colorEffect={list.list.color}
             charSize={big ? "18px" : "14px"}
             fontWeight={big ? "600" : "initial"}
-            onceAnimation={isNameChange}
           />
         )}
       </div>
@@ -195,4 +216,4 @@ export function ListInfoEdit({
       )}
     </>
   );
-}
+});

@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useMemo } from "react";
+import { motion } from "motion/react";
+
 import GraphemeSplitter from "grapheme-splitter";
 
+import type { Variants } from "motion/react";
 import styles from "./TextTitlesAnimation.module.css";
 
-interface AnimatedTextProps {
+interface props {
   text: string;
   className?: string;
   delay?: number;
@@ -16,11 +18,10 @@ interface AnimatedTextProps {
   charSize?: string;
   fontWeight?: string;
   colorEffect?: string;
-  onceAnimation?: boolean;
   limitLenght?: number;
 }
 
-export const TextTitlesAnimation = ({
+export const TextTitlesAnimation = React.memo(function TextTitlesAnimation({
   text,
   className = "",
   delay = 0,
@@ -30,58 +31,65 @@ export const TextTitlesAnimation = ({
   charSize = "14px",
   fontWeight = "500",
   colorEffect = "#1c1c1c",
-  onceAnimation = false,
   limitLenght = 30,
-}: AnimatedTextProps) => {
-  const [characters, setCharacters] = useState<string[]>([]);
-  const [isVisible, setIsVisible] = useState<boolean>(false);
-  const splitter = new GraphemeSplitter();
-
-  useEffect(() => {
+}: props) {
+  const characters = useMemo(() => {
+    const splitter = new GraphemeSplitter();
     const normalizedText = text.replace(/\s+/g, " ");
-    setCharacters(splitter.splitGraphemes(normalizedText));
-    const timer = setTimeout(() => setIsVisible(true), delay * 500);
-    return () => clearTimeout(timer);
-  }, [text, delay]);
+    return splitter.splitGraphemes(normalizedText);
+  }, [text]);
+
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        delayChildren: delay * 1.5,
+        staggerChildren: stagger,
+      },
+    },
+  };
+
+  const charVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      // scale: 0,
+      // filter: "blur(10px)",
+      color: "transparent",
+    },
+    visible: {
+      opacity: 1,
+      // scale: 1,
+      // filter: "blur(0px)",
+      color: [colorEffect, color],
+      transition: {
+        default: {
+          duration: duration,
+          ease: [0.2, 0.65, 0.3, 0.9],
+        },
+        color: {
+          duration: duration * 2,
+        },
+      },
+    },
+  };
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <span className={`${styles.wrapper} ${className}`}>
-          {characters.slice(0, limitLenght).map((char, index) => (
-            <motion.span
-              key={`${char}-${index}`}
-              className={styles.character}
-              initial={{
-                opacity: 0,
-                scale: 0,
-                filter: "blur(10px)",
-                color: "transparent",
-              }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                filter: "blur(0px)",
-                color: [colorEffect, color],
-              }}
-              transition={{
-                default: {
-                  duration: duration,
-                  delay: delay + index * stagger,
-                  ease: [0.2, 0.65, 0.3, 0.9],
-                },
-                color: {
-                  delay: delay + index * stagger + duration,
-                },
-              }}
-              style={{ fontSize: charSize, fontWeight }}
-              layout
-            >
-              {char}
-            </motion.span>
-          ))}
-        </span>
-      )}
-    </AnimatePresence>
+    <motion.span
+      className={`${styles.wrapper} ${className}`}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      style={{ fontSize: charSize, fontWeight }}
+    >
+      {characters.slice(0, limitLenght).map((char, index) => (
+        <motion.span
+          key={`${char}-${index}`}
+          className={styles.character}
+          variants={charVariants}
+        >
+          {char === " " ? "\u00A0" : char}
+        </motion.span>
+      ))}
+    </motion.span>
   );
-};
+});
