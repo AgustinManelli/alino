@@ -1,11 +1,7 @@
 "use server";
-
-import { createClient } from "@/utils/supabase/client";
 import { createClient as createClientServer } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
 import { z } from "zod";
-
-import { ListSchema, TaskSchema } from "@/lib/schemas/validationSchemas";
 
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";

@@ -1,150 +1,186 @@
 "use client";
 
-import type { Database } from "@/lib/schemas/todo-schema";
+import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
 import { motion } from "motion/react";
+import { useShallow } from "zustand/shallow";
+import { debounce } from "lodash-es";
+
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+//import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import type { TaskType } from "@/lib/schemas/todo-schema";
+
+import { ConfigMenu } from "@/components/ui/config-menu";
+import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState, useRef, useEffect, useMemo } from "react";
+
 import {
   Check,
   DeleteIcon,
   Edit,
   Information,
+  Link,
 } from "@/components/ui/icons/icons";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
 import styles from "./task-card.module.css";
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
-import { ConfigMenu } from "@/components/ui/config-menu";
-import { TimeLimitBox } from "@/components/ui/time-limit-box";
 
-type TaskRow = Database["public"]["Tables"]["tasks"]["Row"];
-type UserProfile = Pick<
-  Database["public"]["Tables"]["users"]["Row"],
-  "user_id" | "display_name" | "username" | "avatar_url"
->;
-type TaskType = Omit<TaskRow, "created_by"> & {
-  created_by: UserProfile | null;
-};
+const WavyStrikethrough = memo(
+  ({ lines, completed, generateWavePath }: any) => (
+    <>
+      {lines.map((line: any, index: number) => (
+        <motion.div
+          key={index}
+          style={{
+            position: "absolute",
+            pointerEvents: "none",
+            top: line.top,
+            left: line.left - 10,
+            width: line.width + 20,
+          }}
+        >
+          <motion.svg
+            width="100%"
+            height="6"
+            viewBox={`0 0 ${line.width + 15} 6`}
+            style={{ display: "block" }}
+          >
+            <motion.path
+              d={generateWavePath(line.width + 15)}
+              stroke="var(--text)"
+              strokeWidth="2"
+              fill="none"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: completed ? 1 : 0 }}
+              transition={{
+                duration: 0.2,
+                delay: completed
+                  ? index * 0.1
+                  : (lines.length - index - 1) * 0.1,
+                ease: "easeInOut",
+              }}
+            />
+          </motion.svg>
+        </motion.div>
+      ))}
+    </>
+  )
+);
 
-export function TaskCard({ task }: { task: TaskType }) {
+export const TaskCard = memo(({ task }: { task: TaskType }) => {
   const [completed, setCompleted] = useState<boolean>(task.completed);
-  const [editing, setEditing] = useState<boolean>(false);
   const [inputName, setInputName] = useState<string>(task.task_content);
+  const [editing, setEditing] = useState<boolean>(false);
   const [lines, setLines] = useState<
     { width: number; top: number; left: number }[]
   >([]);
+
   const textRef = useRef<HTMLParagraphElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const checkButtonRef = useRef<HTMLButtonElement>(null);
 
-  const animations = useUserPreferencesStore((store) => store.animations);
-  const user = useTodoDataStore((state) => state.user);
+  //const animations = useUserPreferencesStore((store) => store.animations);
+  const { user, list, updateTaskName, deleteTask, updateTaskCompleted } =
+    useTodoDataStore(
+      useShallow((state) => ({
+        user: state.user,
+        list: state.getListById(task.list_id),
+        updateTaskName: state.updateTaskName,
+        deleteTask: state.deleteTask,
+        updateTaskCompleted: state.updateTaskCompleted,
+      }))
+    );
 
-  const list = useTodoDataStore((state) => state.getListById(task.list_id));
-  const updateTaskName = useTodoDataStore((state) => state.updateTaskName);
+  const canEditOrDelete = list?.role !== "reader";
 
-  const deleteTask = useTodoDataStore((state) => state.deleteTask);
-  const updateTaskCompleted = useTodoDataStore(
-    (status) => status.updateTaskCompleted
-  );
-
-  useEffect(() => {
-    const calculateLines = () => {
-      if (!textRef.current) return;
-
-      const range = document.createRange();
-      const textNodes: Node[] = [];
-
-      function findTextNodes(node: Node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-          textNodes.push(node);
-        } else {
-          node.childNodes.forEach(findTextNodes);
-        }
-      }
-
-      findTextNodes(textRef.current);
-
-      const newLines: { width: number; top: number; left: number }[] = [];
-      const containerRect = textRef.current.getBoundingClientRect();
-
-      textNodes.forEach((textNode) => {
-        range.selectNodeContents(textNode);
-        const rects = Array.from(range.getClientRects());
-
-        rects.forEach((rect) => {
-          newLines.push({
-            width: rect.width,
-            top: rect.top - containerRect.top + rect.height / 2 - 2,
-            left: rect.left - containerRect.left,
-          });
-        });
-      });
-
-      setLines(newLines);
-    };
-
-    calculateLines();
-    window.addEventListener("resize", calculateLines);
-
-    return () => {
-      window.removeEventListener("resize", calculateLines);
-    };
-  }, [task]);
-
-  const generateWavePath = (width: number) => {
+  const generateWavePath = useCallback((width: number) => {
     const waveSegments = Math.max(4, Math.floor(width / 20));
     const step = width / waveSegments;
+    return `M 0 3 ${Array.from(
+      { length: waveSegments },
+      (_, i) =>
+        `Q ${step * (i + 0.5)} ${i % 2 === 0 ? 0 : 6}, ${step * (i + 1)} 3`
+    ).join(" ")}`;
+  }, []);
 
-    return `
-      M 0 3
-      ${Array.from({ length: waveSegments }, (_, i) => {
-        const x1 = step * (i + 0.5);
-        const y1 = i % 2 === 0 ? 0 : 6;
-        const x2 = step * (i + 1);
-        return `Q ${x1} ${y1}, ${x2} 3`;
-      }).join(" ")}
-    `;
-  };
+  useEffect(() => {
+    setCompleted(task.completed);
+    setInputName(task.task_content);
+  }, [task.completed, task.task_content]);
 
-  const handleDelete = () => {
-    deleteTask(task.task_id);
-  };
+  const calculateLines = useCallback(() => {
+    if (!textRef.current) return;
+    const range = document.createRange();
+    // const textNodes = Array.from(textRef.current.childNodes).filter(
+    //   (node) => node.nodeType === Node.TEXT_NODE
+    // );
+    const childNodes = Array.from(textRef.current.childNodes);
+    const newLines: { width: number; top: number; left: number }[] = [];
+    const containerRect = textRef.current.getBoundingClientRect();
 
-  const handleUpdateStatus = () => {
-    setCompleted(!completed);
-    updateTaskCompleted(task.task_id, !completed);
-  };
+    childNodes.forEach((textNode) => {
+      range.selectNodeContents(textNode);
+      const rects = Array.from(range.getClientRects());
+      rects.forEach((rect) => {
+        newLines.push({
+          width: rect.width,
+          top: rect.top - containerRect.top + rect.height / 2 - 2,
+          left: rect.left - containerRect.left,
+        });
+      });
+    });
+    setLines(newLines);
+  }, []);
 
-  const handleSaveName = async () => {
+  const handleUpdateStatus = useCallback(() => {
+    const newCompleted = !completed;
+    setCompleted(newCompleted);
+    updateTaskCompleted(task.task_id, newCompleted);
+  }, [completed, task.task_id, updateTaskCompleted]);
+
+  const handleSaveName = useCallback(async () => {
     const formatText = inputName
       .trim()
       .replace(/[ \t]+/g, " ")
       .replace(/\n{3,}/g, "\n\n");
-    if (task.task_content === inputName || completed || formatText.length < 1) {
-      setEditing(false);
+    setEditing(false);
+
+    if (
+      task.task_content === formatText ||
+      completed ||
+      formatText.length < 1
+    ) {
       setInputName(task.task_content);
       return;
     }
 
-    setEditing(false);
     setInputName(formatText);
-
     const { error } = await updateTaskName(task.task_id, formatText);
+    if (error) setInputName(task.task_content);
+  }, [inputName, completed, task.task_content, task.task_id, updateTaskName]);
 
-    if (error) {
-      setInputName(task.task_content);
-    }
-  };
+  const handleEdit = useCallback(
+    () => !completed && setEditing(true),
+    [completed]
+  );
+  const handleDelete = useCallback(
+    () => deleteTask(task.task_id),
+    [task.task_id, deleteTask]
+  );
+
+  useEffect(() => {
+    calculateLines();
+    const debouncedCalculateLines = debounce(calculateLines, 150);
+    window.addEventListener("resize", debouncedCalculateLines);
+    return () => {
+      debouncedCalculateLines.cancel();
+      window.removeEventListener("resize", debouncedCalculateLines);
+    };
+  }, [task.task_content, calculateLines, editing]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (
         inputRef.current &&
         !inputRef.current.contains(event.target as Node) &&
-        // &&
-        // cardRef.current &&
-        // !cardRef.current.contains(event.target as Node)
         checkButtonRef.current &&
         !checkButtonRef.current.contains(event.target as Node)
       ) {
@@ -158,7 +194,7 @@ export function TaskCard({ task }: { task: TaskType }) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [editing, task.task_content]);
 
   useEffect(() => {
     if (inputRef.current) {
@@ -166,12 +202,7 @@ export function TaskCard({ task }: { task: TaskType }) {
       inputRef.current.setSelectionRange(length, length);
       inputRef.current.focus();
     }
-    // inputRef.current?.focus();
   }, [editing]);
-
-  const handleEdit = () => {
-    setEditing(true);
-  };
 
   function autoResize(textarea: any) {
     textarea.style.height = "auto";
@@ -184,59 +215,139 @@ export function TaskCard({ task }: { task: TaskType }) {
     inputRef.current.style.height = inputRef.current.scrollHeight + "px";
   }, [editing]);
 
-  const canEditOrDelete = list?.role !== "reader";
-  const baseConfigOptions = [
-    {
-      name: "Editar",
-      icon: (
-        <Edit
-          style={{
-            width: "14px",
-            height: "auto",
-            stroke: "var(--text)",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: handleEdit,
-    },
-    {
-      name: "Eliminar",
-      icon: (
-        <DeleteIcon
-          style={{
-            stroke: "var(--text)",
-            width: "14px",
-            height: "auto",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: handleDelete,
-    },
-    {
-      name: "Información",
-      icon: (
-        <Information
-          style={{
-            stroke: "var(--text)",
-            width: "14px",
-            height: "auto",
-            strokeWidth: 2,
-          }}
-        />
-      ),
-      action: () => {},
-    },
-  ];
-  const configOptions = baseConfigOptions.filter((option) => {
-    if (option.name !== "Editar" && option.name !== "Eliminar") {
-      return true;
-    }
-    return canEditOrDelete;
-  });
+  const configOptions = useMemo(() => {
+    const baseOptions = [
+      {
+        name: "Editar",
+        icon: (
+          <Edit
+            style={{
+              width: "14px",
+              height: "auto",
+              stroke: "var(--text)",
+              strokeWidth: 2,
+            }}
+          />
+        ),
+        action: handleEdit,
+        enabled: canEditOrDelete,
+      },
+      {
+        name: "Eliminar",
+        icon: (
+          <DeleteIcon
+            style={{
+              stroke: "var(--text)",
+              width: "14px",
+              height: "auto",
+              strokeWidth: 2,
+            }}
+          />
+        ),
+        action: handleDelete,
+        enabled: canEditOrDelete,
+      },
+      // {
+      //   name: "Información",
+      //   icon: (
+      //     <Information
+      //       style={{
+      //         stroke: "var(--text)",
+      //         width: "14px",
+      //         height: "auto",
+      //         strokeWidth: 2,
+      //       }}
+      //     />
+      //   ),
+      //   action: () => {},
+      //   enabled: true,
+      // },
+    ];
+    return baseOptions.filter((option) => option.enabled);
+  }, [handleEdit, handleDelete]);
 
-  const filteredOptions = completed ? configOptions.slice(1) : configOptions;
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (!inputRef.current) return;
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSaveName();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setEditing(false);
+        setInputName(task.task_content);
+      }
+    },
+    [handleSaveName, setInputName]
+  );
+
+  const shortenUrl = (rawUrl: string, maxChars = 36) => {
+    try {
+      const url = rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`;
+      const u = new URL(url);
+      const host = u.hostname.replace(/^www\./, "");
+      const path = u.pathname + u.search + u.hash;
+      if (path === "/" || path === "") return host;
+      const shortPath =
+        path.length > maxChars
+          ? path.slice(0, Math.max(6, maxChars - 3)) + "..."
+          : path;
+      return `${host}${shortPath.startsWith("/") ? "" : "/"}${shortPath}`;
+    } catch {
+      // fallback: truncate raw string
+      if (rawUrl.length <= maxChars) return rawUrl;
+      return rawUrl.slice(0, maxChars - 3) + "...";
+    }
+  };
+
+  const linkifyWithIcon = useCallback((text: string) => {
+    const urlRegex = /(https?:\/\/[^\s\)\]]+|www\.[^\s\)\]]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, index) => {
+      if (part && part.match(urlRegex)) {
+        let raw = part;
+        let label = "";
+        const pipeIndex = part.indexOf("|");
+        if (pipeIndex >= 0) {
+          raw = part.slice(0, pipeIndex).trim();
+          label = part.slice(pipeIndex + 1).trim();
+        }
+
+        const href = raw.startsWith("http") ? raw : `https://${raw}`;
+        const display = label || shortenUrl(raw, 20);
+
+        return (
+          <a
+            key={`link-${index}-${raw}`}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.linkBox}
+            title={href}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Link
+              style={{
+                width: "14px",
+                height: "auto",
+                stroke: "currentColor",
+                strokeWidth: 2,
+              }}
+              aria-hidden
+            />
+            <span className={styles.linkText}>{display}</span>
+          </a>
+        );
+      }
+      return part;
+    });
+  }, []);
+
+  const linkedContent = useMemo(
+    () => linkifyWithIcon(task.task_content),
+    [task.task_content, linkifyWithIcon]
+  );
 
   return (
     <div className={styles.cardContainer} ref={cardRef}>
@@ -250,37 +361,17 @@ export function TaskCard({ task }: { task: TaskType }) {
       </div>
       <div className={styles.textContainer} style={{ position: "relative" }}>
         {editing ? (
-          <motion.textarea
+          <textarea
+            ref={inputRef}
+            maxLength={500}
             rows={1}
-            maxLength={200}
-            initial={{
-              backgroundColor: "var(--background-over-container)",
-            }}
-            animate={{
-              backgroundColor: "var(--background-over-container)",
-            }}
-            transition={{
-              backgroundColor: {
-                duration: 0.3,
-              },
-            }}
             className={styles.nameChangerInput}
             value={inputName}
-            ref={inputRef}
-            onInput={(e) => autoResize(e.target)}
             onChange={(e) => {
               setInputName(e.target.value);
             }}
-            onKeyDown={(e) => {
-              if (!inputRef.current) return;
-              if (e.key === "Enter" && !e.shiftKey) {
-                handleSaveName();
-              }
-              if (e.key === "Escape") {
-                setEditing(false);
-                setInputName(task.task_content);
-              }
-            }}
+            onInput={(e) => autoResize(e.target)}
+            onKeyDown={handleKeyDown}
           />
         ) : (
           <>
@@ -291,43 +382,13 @@ export function TaskCard({ task }: { task: TaskType }) {
                 opacity: completed ? 0.3 : 1,
               }}
             >
-              {task.task_content}
+              {linkedContent}
             </p>
-            {lines.map((line, index) => (
-              <motion.div
-                key={index}
-                style={{
-                  position: "absolute",
-                  pointerEvents: "none",
-                  top: line.top,
-                  left: line.left - 10,
-                  width: line.width + 20,
-                }}
-              >
-                <motion.svg
-                  width="100%"
-                  height="6"
-                  viewBox={`0 0 ${line.width + 15} 6`}
-                  style={{ display: "block" }}
-                >
-                  <motion.path
-                    d={generateWavePath(line.width + 15)}
-                    stroke="var(--text)"
-                    strokeWidth="2"
-                    fill="none"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: completed ? 1 : 0 }}
-                    transition={{
-                      duration: 0.2,
-                      delay: completed
-                        ? index * 0.1
-                        : (lines.length - index - 1) * 0.1,
-                      ease: "easeInOut",
-                    }}
-                  />
-                </motion.svg>
-              </motion.div>
-            ))}
+            <WavyStrikethrough
+              lines={lines}
+              completed={completed}
+              generateWavePath={generateWavePath}
+            />
           </>
         )}
       </div>
@@ -364,6 +425,7 @@ export function TaskCard({ task }: { task: TaskType }) {
         {editing ? (
           <button
             onClick={(e) => {
+              e.preventDefault();
               handleSaveName();
             }}
             className={styles.checkButton}
@@ -381,11 +443,11 @@ export function TaskCard({ task }: { task: TaskType }) {
         ) : (
           <ConfigMenu
             iconWidth={"25px"}
-            configOptions={filteredOptions}
+            configOptions={configOptions}
             idScrollArea={"task-section-scroll-area"}
           />
         )}
       </div>
     </div>
   );
-}
+});

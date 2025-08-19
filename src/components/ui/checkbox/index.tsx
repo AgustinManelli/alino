@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { animate } from "motion";
+
 import { interpolate } from "flubber";
 
 import styles from "./checkbox.module.css";
@@ -48,9 +49,9 @@ export function Checkbox({
       maxSegmentLength: 2,
     });
 
-    animate(svg, { transform: "scale(0.75)" }, { duration: 0.3 });
+    animate(svg, { transform: "scale(0.75)" }, { duration: 0.15 });
     animate(0, 1, {
-      duration: 0.3,
+      duration: 0.15,
       ease: "easeInOut",
       onUpdate: (progress) => {
         path.setAttribute("d", mixPaths(progress));
@@ -60,9 +61,9 @@ export function Checkbox({
         maxSegmentLength: 2,
       });
 
-      animate(svg, { transform: "scale(1)" }, { duration: 0.3 });
+      animate(svg, { transform: "scale(1)" }, { duration: 0.15 });
       animate(0, 1, {
-        duration: 0.3,
+        duration: 0.15,
         ease: "easeInOut",
         onUpdate: (progress) => {
           path.setAttribute("d", mixPathsBack(progress));
