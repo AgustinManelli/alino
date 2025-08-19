@@ -291,7 +291,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                     inputRef.current?.blur();
                   }
                 }}
-                style={{ cursor: "text" }}
               />
             )}
           </motion.div>
@@ -307,6 +306,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                 }}
                 text={currentText}
                 textColor="var(--placeholder-text-color)"
+                opacity={0.3}
               />
             </div>
           )}

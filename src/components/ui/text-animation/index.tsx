@@ -6,10 +6,12 @@ export function TextAnimation({
   text,
   style,
   textColor,
+  opacity = 1,
 }: {
   text: string;
   style?: React.CSSProperties;
   textColor?: string;
+  opacity?: number;
 }) {
   const [isMounted, setIsMounted] = useState(false);
 
@@ -40,7 +42,7 @@ export function TextAnimation({
           animate={{
             filter: "blur(0px)",
             y: 0,
-            opacity: 1,
+            opacity: opacity,
             color: [
               "#f0f0f0",
               "#e6bccd",
