@@ -27,7 +27,7 @@ const WavyStrikethrough = memo(
     <>
       {lines.map((line: any, index: number) => (
         <motion.div
-          key={index}
+          key={`${line.top}-${line.left}-${line.width}`}
           style={{
             position: "absolute",
             pointerEvents: "none",
@@ -106,28 +106,116 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
     setInputName(task.task_content);
   }, [task.completed, task.task_content]);
 
-  const calculateLines = useCallback(() => {
-    if (!textRef.current) return;
-    const range = document.createRange();
-    // const textNodes = Array.from(textRef.current.childNodes).filter(
-    //   (node) => node.nodeType === Node.TEXT_NODE
-    // );
-    const childNodes = Array.from(textRef.current.childNodes);
-    const newLines: { width: number; top: number; left: number }[] = [];
-    const containerRect = textRef.current.getBoundingClientRect();
+  // const calculateLines = useCallback(() => {
+  //   if (!textRef.current) return;
+  //   const range = document.createRange();
+  //   const textNodes = Array.from(textRef.current.childNodes).filter(
+  //     (node) => node.nodeType === Node.TEXT_NODE
+  //   );
+  //   // const childNodes = Array.from(textRef.current.childNodes);
+  //   const newLines: { width: number; top: number; left: number }[] = [];
+  //   const containerRect = textRef.current.getBoundingClientRect();
 
-    childNodes.forEach((textNode) => {
-      range.selectNodeContents(textNode);
-      const rects = Array.from(range.getClientRects());
-      rects.forEach((rect) => {
-        newLines.push({
-          width: rect.width,
-          top: rect.top - containerRect.top + rect.height / 2 - 2,
-          left: rect.left - containerRect.left,
+  //   textNodes.forEach((textNode) => {
+  //     range.selectNodeContents(textNode);
+  //     const rects = Array.from(range.getClientRects());
+  //     rects.forEach((rect) => {
+  //       newLines.push({
+  //         width: rect.width,
+  //         top: rect.top - containerRect.top + rect.height / 2 - 2,
+  //         left: rect.left - containerRect.left,
+  //       });
+  //     });
+  //   });
+  //   setLines(newLines);
+  // }, []);
+
+  const calculateLines = useCallback(() => {
+    const el = textRef.current;
+    if (!el) return;
+
+    const parent = el.parentElement;
+    if (!parent) return;
+
+    requestAnimationFrame(() => {
+      try {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const rects = Array.from(range.getClientRects());
+        if (!rects.length) {
+          setLines([]);
+          return;
+        }
+
+        const pRect = el.getBoundingClientRect();
+        const parentRect = parent.getBoundingClientRect();
+
+        type RectInfo = {
+          leftP: number;
+          topP: number;
+          height: number;
+          rightP: number;
+          centerYP: number;
+        };
+
+        const rectInfos: RectInfo[] = rects
+          .filter((r) => r.width > 0 && r.height > 0)
+          .map((r) => {
+            const leftP = r.left - pRect.left;
+            const topP = r.top - pRect.top;
+            const height = r.height;
+            const rightP = leftP + r.width;
+            const centerYP = topP + height / 2;
+            return { leftP, topP, height, rightP, centerYP };
+          });
+
+        const LINE_MERGE_THRESHOLD = 6;
+        const groups: Array<RectInfo[]> = [];
+        rectInfos.forEach((ri) => {
+          let found = false;
+          for (const g of groups) {
+            const avgCenter = g.reduce((s, x) => s + x.centerYP, 0) / g.length;
+            if (Math.abs(avgCenter - ri.centerYP) <= LINE_MERGE_THRESHOLD) {
+              g.push(ri);
+              found = true;
+              break;
+            }
+          }
+          if (!found) groups.push([ri]);
         });
-      });
+
+        const SVG_HEIGHT = 6;
+        const SVG_CENTER = SVG_HEIGHT / 2;
+        const VERTICAL_ADJUST = 0;
+
+        const newLines = groups.map((g) => {
+          const minLeftP = Math.min(...g.map((x) => x.leftP));
+          const maxRightP = Math.max(...g.map((x) => x.rightP));
+          const avgCenterYP = g.reduce((s, x) => s + x.centerYP, 0) / g.length;
+          const width = maxRightP - minLeftP;
+
+          const pOffsetTopInParent = Math.round(pRect.top - parentRect.top);
+          const pOffsetLeftInParent = Math.round(pRect.left - parentRect.left);
+
+          const topRelativeToParent = Math.round(
+            pOffsetTopInParent + (avgCenterYP - SVG_CENTER + VERTICAL_ADJUST)
+          );
+          const leftRelativeToParent = Math.round(
+            pOffsetLeftInParent + minLeftP
+          );
+
+          return {
+            left: leftRelativeToParent,
+            top: topRelativeToParent,
+            width: Math.round(width),
+          };
+        });
+
+        setLines(newLines);
+      } catch {
+        setLines([]);
+      }
     });
-    setLines(newLines);
   }, []);
 
   const handleUpdateStatus = useCallback(() => {
@@ -166,15 +254,35 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
     [task.task_id, deleteTask]
   );
 
+  // useEffect(() => {
+  //   calculateLines();
+  //   const debouncedCalculateLines = debounce(calculateLines, 150);
+  //   window.addEventListener("resize", debouncedCalculateLines);
+  //   return () => {
+  //     debouncedCalculateLines.cancel();
+  //     window.removeEventListener("resize", debouncedCalculateLines);
+  //   };
+  // }, [task.task_content, calculateLines, editing]);
+
   useEffect(() => {
     calculateLines();
     const debouncedCalculateLines = debounce(calculateLines, 150);
+
+    // Observador de tamaño para re-calcular cuando cambie el párrafo
+    let ro: ResizeObserver | null = null;
+    if (textRef.current && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => debouncedCalculateLines());
+      ro.observe(textRef.current);
+    }
+
     window.addEventListener("resize", debouncedCalculateLines);
+
     return () => {
       debouncedCalculateLines.cancel();
       window.removeEventListener("resize", debouncedCalculateLines);
+      if (ro && textRef.current) ro.unobserve(textRef.current);
     };
-  }, [task.task_content, calculateLines, editing]);
+  }, [calculateLines, editing, task.task_content]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
@@ -282,9 +390,18 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
   );
 
   const shortenUrl = (rawUrl: string, maxChars = 36) => {
+    const trimmed = rawUrl.trim();
     try {
-      const url = rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`;
-      const u = new URL(url);
+      const hasScheme = /^https?:\/\//i.test(trimmed);
+      const candidate = hasScheme ? trimmed : `https://${trimmed}`;
+
+      if (/^\s*(javascript|data|vbscript):/i.test(candidate))
+        throw new Error("invalid scheme");
+
+      // const url = rawUrl.toLowerCase().startsWith("http")
+      //   ? rawUrl
+      //   : `https://${rawUrl}`;
+      const u = new URL(candidate);
       const host = u.hostname.replace(/^www\./, "");
       const path = u.pathname + u.search + u.hash;
       if (path === "/" || path === "") return host;
@@ -294,14 +411,13 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
           : path;
       return `${host}${shortPath.startsWith("/") ? "" : "/"}${shortPath}`;
     } catch {
-      // fallback: truncate raw string
-      if (rawUrl.length <= maxChars) return rawUrl;
-      return rawUrl.slice(0, maxChars - 3) + "...";
+      if (trimmed.length <= maxChars) return trimmed;
+      return trimmed.slice(0, maxChars - 3) + "...";
     }
   };
 
   const linkifyWithIcon = useCallback((text: string) => {
-    const urlRegex = /(https?:\/\/[^\s\)\]]+|www\.[^\s\)\]]+)/g;
+    const urlRegex = /(https?:\/\/[^\s\)\]]+|www\.[^\s\)\]]+)/gi;
     const parts = text.split(urlRegex);
 
     return parts.map((part, index) => {
@@ -314,7 +430,11 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
           label = part.slice(pipeIndex + 1).trim();
         }
 
-        const href = raw.startsWith("http") ? raw : `https://${raw}`;
+        if (/^\s*(javascript|data|vbscript):/i.test(raw)) {
+          return raw;
+        }
+
+        const href = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
         const display = label || shortenUrl(raw, 20);
 
         return (
@@ -359,7 +479,7 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
           active={editing ? true : false}
         />
       </div>
-      <div className={styles.textContainer} style={{ position: "relative" }}>
+      <div className={styles.textContainer}>
         {editing ? (
           <textarea
             ref={inputRef}
