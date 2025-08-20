@@ -12,7 +12,7 @@ import styles from "./TimeLimitBox.module.css";
 interface props {
   target_date: string | null;
   idScrollArea?: string;
-  completed?: boolean;
+  completed?: boolean | null;
 }
 
 export const TimeLimitBox = memo(
