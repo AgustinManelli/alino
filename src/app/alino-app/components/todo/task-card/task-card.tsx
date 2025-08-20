@@ -416,30 +416,41 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
     }
   };
 
-  const linkifyWithIcon = useCallback((text: string) => {
-    const urlRegex = /(https?:\/\/[^\s\)\]]+|www\.[^\s\)\]]+)/gi;
-    const parts = text.split(urlRegex);
+  const linkifyWithIcon = useCallback(
+    (text: string) => {
+      const pattern =
+        /(https?:\/\/[^\s\[\]]+|www\.[^\s\[\]]+)(?:\[([^\]]+)\])?/gi;
+      const nodes: Array<string | JSX.Element> = [];
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+      let idx = 0;
 
-    return parts.map((part, index) => {
-      if (part && part.match(urlRegex)) {
-        let raw = part;
-        let label = "";
-        const pipeIndex = part.indexOf("|");
-        if (pipeIndex >= 0) {
-          raw = part.slice(0, pipeIndex).trim();
-          label = part.slice(pipeIndex + 1).trim();
+      while ((match = pattern.exec(text)) !== null) {
+        const start = match.index;
+        const end = pattern.lastIndex;
+
+        if (start > lastIndex) nodes.push(text.slice(lastIndex, start));
+
+        const raw = match[1];
+        const labelGroup = match[2];
+        let label = labelGroup ? labelGroup.trim() : shortenUrl(raw, 30);
+
+        if (label.length > 30) {
+          label = label.slice(0, 30) + "…";
         }
 
-        if (/^\s*(javascript|data|vbscript):/i.test(raw)) {
-          return raw;
+        const candidate = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+        if (/^\s*(javascript|data|vbscript):/i.test(candidate)) {
+          nodes.push(raw);
+          lastIndex = end;
+          continue;
         }
 
-        const href = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-        const display = label || shortenUrl(raw, 20);
+        const href = candidate;
 
-        return (
+        nodes.push(
           <a
-            key={`link-${index}-${raw}`}
+            key={`link-${start}-${idx}-${raw}`}
             href={href}
             target="_blank"
             rel="noopener noreferrer"
@@ -456,13 +467,20 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
               }}
               aria-hidden
             />
-            <span className={styles.linkText}>{display}</span>
+            <span className={styles.linkText}>{label}</span>
           </a>
         );
+
+        lastIndex = end;
+        idx++;
       }
-      return part;
-    });
-  }, []);
+
+      if (lastIndex < text.length) nodes.push(text.slice(lastIndex));
+
+      return nodes;
+    },
+    [shortenUrl]
+  );
 
   const linkedContent = useMemo(
     () => linkifyWithIcon(task.task_content),

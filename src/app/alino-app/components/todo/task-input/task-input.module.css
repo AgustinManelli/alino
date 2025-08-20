@@ -33,6 +33,7 @@
     0 30px 80px #0c144214,
     inset 0 0 #e6e9ed;
   transition: height 0.3s ease-in-out;
+  gap: 10px;
 }
 
 .inputContainer {
@@ -75,6 +76,15 @@
 
 .input::placeholder {
   color: var(--placeholder-text-color);
+}
+
+.input::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.input::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
 }
 
 .placeholder {
