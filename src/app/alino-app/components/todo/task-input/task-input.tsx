@@ -364,6 +364,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   e.stopPropagation();
                   handleAdd();
                   setFocus(false);
+                  setHeight("40px");
                 }}
                 initial={{ scale: 0 }}
                 animate={{ scale: focus ? 1 : 0 }}

@@ -65,16 +65,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookie = cookies().get("theme-storage");
-  const initialTheme = cookie?.value || "light";
+  const initialTheme = cookie?.value ?? undefined;
   return (
     <html lang="es" data-theme={initialTheme} suppressHydrationWarning>
       <head>
-        {/* {process.env.NODE_ENV === "development" && (
-          <script
-            crossOrigin="anonymous"
-            src="//unpkg.com/react-scan/dist/auto.global.js"
-          />
-        )} */}
         <script
           id="theme-init"
           dangerouslySetInnerHTML={{

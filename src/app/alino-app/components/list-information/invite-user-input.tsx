@@ -56,6 +56,7 @@ export default function InviteUserInput({ list_id }: props) {
     if (!inputValue.trim()) return;
     await createListInvitation(list_id, inputValue);
     setInputValue("");
+    setDebouncedInputValue("");
     setIsUserSelected(false);
   };
 

@@ -528,6 +528,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       if (error) {
         throw new Error(error);
       }
+      toast.success(`${invited_user_username} fue invitado correctamente.`);
     } catch (err) {
       handleError(err);
     }

@@ -24,7 +24,7 @@ const ThemeInitializer = () => {
     mediaQuery.addEventListener("change", handleSystemThemeChange);
     return () =>
       mediaQuery.removeEventListener("change", handleSystemThemeChange);
-  }, [theme, appliedTheme]);
+  }, [theme /*, appliedTheme*/]);
 
   return null;
 };
