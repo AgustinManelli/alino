@@ -9,7 +9,12 @@ import { Dropdown } from "@/components/ui/dropdown";
 import { usePathname } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
-import { NoList, SendIcon, SquircleIcon } from "@/components/ui/icons/icons";
+import {
+  NoList,
+  Note,
+  SendIcon,
+  SquircleIcon,
+} from "@/components/ui/icons/icons";
 import { motion } from "motion/react";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { TextAnimation } from "@/components/ui/text-animation";
@@ -22,6 +27,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   const [focus, setFocus] = useState<boolean>(false);
   const [selected, setSelected] = useState<Date>();
   const [hour, setHour] = useState<string | undefined>();
+  const [isNote, setIsNote] = useState<boolean>(false);
   const executedRef = useRef(false);
   const [selectedListHome, setSelectedListHome] = useState<
     ListsType | undefined
@@ -73,6 +79,10 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     return combined.toISOString();
   }
 
+  const handleNote = () => {
+    setIsNote(!isNote);
+  };
+
   const handleAdd = () => {
     // const formatText = task.replace(/\s+/g, " ").trim();
     const formatText = task
@@ -90,10 +100,10 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     setSelected(undefined);
     setHour(undefined);
     if (setList) {
-      addTask(setList.list_id, formatText, combinedDate);
+      addTask(setList.list_id, formatText, combinedDate, isNote);
     } else {
       if (!selectedListHome) return;
-      addTask(selectedListHome.list_id, formatText, combinedDate);
+      addTask(selectedListHome.list_id, formatText, combinedDate, isNote);
     }
   };
 
@@ -202,6 +212,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     const calendarComponent = document.getElementById("calendar-component");
     const dropdownComponent = document.getElementById("dropdown-component");
     if (calendarComponent || dropdownComponent) return;
+    if (task) return;
     setFocus(false);
     setTask("");
     setHour(undefined);
@@ -337,6 +348,35 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   />
                 </motion.div>
               )}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: focus ? 1 : 0 }}
+                exit={{ scale: 0 }}
+                transition={{ delay: 0.05 }}
+                key="note"
+                className={styles.note}
+              >
+                <button
+                  className={styles.noteButton}
+                  onClick={(e) => {
+                    e.preventDefault(), handleNote();
+                  }}
+                  style={{
+                    backgroundColor: isNote
+                      ? "var(--background-over-container-hover)"
+                      : "var(--background-over-container)",
+                  }}
+                >
+                  <Note
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      stroke: "var(--icon-color)",
+                      strokeWidth: "1.5",
+                    }}
+                  />
+                </button>
+              </motion.div>
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: focus ? 1 : 0 }}
