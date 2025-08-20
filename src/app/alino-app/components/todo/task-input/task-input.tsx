@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import styles from "./task-input.module.css";
-import { Database } from "@/lib/schemas/todo-schema";
+import { ListsType } from "@/lib/schemas/todo-schema";
 import { Calendar } from "@/components/ui/calendar";
 import { Dropdown } from "@/components/ui/dropdown";
 import { usePathname } from "next/navigation";
@@ -14,9 +14,7 @@ import { motion } from "motion/react";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { TextAnimation } from "@/components/ui/text-animation";
 
-type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
-type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
-type ListsType = MembershipRow & { list: ListsRow };
+const MAX_HEIGHT = 200;
 
 export default function TaskInput({ setList }: { setList?: ListsType }) {
   const lists = useTodoDataStore((state) => state.lists);
@@ -179,14 +177,18 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   };
 
   const [height, setHeight] = useState("40px");
+  const [isScrollable, setIsScrollable] = useState(false);
   const tempRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (tempRef.current && inputRef.current) {
       tempRef.current.style.height = "auto";
 
-      const newHeight = inputRef.current.scrollHeight + 13 + "px";
-      setHeight(newHeight);
+      const newHeight = inputRef.current.scrollHeight + 13;
+      const clamped = Math.min(newHeight, MAX_HEIGHT);
+      setHeight(clamped + "px");
+
+      setIsScrollable(newHeight > MAX_HEIGHT);
     }
   }, [task, focus]);
 
@@ -205,6 +207,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     setHour(undefined);
     setSelected(undefined);
     setHeight("40px");
+    setIsScrollable(false);
   });
 
   const handleOnClick = () => {
@@ -269,7 +272,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             {focus && (
               <textarea
                 ref={inputRef}
-                maxLength={500}
+                maxLength={1000}
                 rows={1}
                 className={styles.input}
                 // placeholder="ingrese una tarea"
@@ -283,13 +286,18 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                     handleAdd();
                     setFocus(false);
                     setHeight("40px");
+                    setIsScrollable(false);
                   }
                   if (e.key === "Escape") {
                     setTask("");
                     setFocus(false);
                     setHeight("40px");
+                    setIsScrollable(false);
                     inputRef.current?.blur();
                   }
+                }}
+                style={{
+                  overflowY: isScrollable ? "auto" : "hidden",
                 }}
               />
             )}
@@ -365,6 +373,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   handleAdd();
                   setFocus(false);
                   setHeight("40px");
+                  setIsScrollable(false);
                 }}
                 initial={{ scale: 0 }}
                 animate={{ scale: focus ? 1 : 0 }}
@@ -387,16 +396,16 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               className={styles.limitIndicator}
               style={{
                 color:
-                  task.length > 400
-                    ? task.length > 450
-                      ? task.length > 480
+                  task.length > 700
+                    ? task.length > 800
+                      ? task.length > 900
                         ? "#fc0303"
                         : "#fc8003"
                       : "#ffb300"
                     : "#8a8a8a",
               }}
             >
-              {task.length}/500
+              {task.length}/1000
             </p>
           )}
         </div>
