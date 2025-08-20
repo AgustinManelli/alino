@@ -23,7 +23,7 @@ export function Checkbox({
   id,
   active = true,
 }: {
-  status: boolean;
+  status: boolean | null;
   handleUpdateStatus: () => void;
   id: string;
   active?: boolean;

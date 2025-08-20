@@ -65,7 +65,7 @@ const WavyStrikethrough = memo(
 );
 
 export const TaskCard = memo(({ task }: { task: TaskType }) => {
-  const [completed, setCompleted] = useState<boolean>(task.completed);
+  const [completed, setCompleted] = useState<boolean | null>(task.completed);
   const [inputName, setInputName] = useState<string>(task.task_content);
   const [editing, setEditing] = useState<boolean>(false);
   const [lines, setLines] = useState<
