@@ -124,18 +124,3 @@ export default function UsernameInput({
     </form>
   );
 }
-
-/*
-Example usage:
-
-import UsernameInput from './UsernameInput';
-
-export default function Page(){
-  const handle = async (u: string) => {
-    // call supabase or your endpoint
-    await fetch('/api/user/set-username', { method: 'POST', body: JSON.stringify({ username: u }) });
-  }
-
-  return <UsernameInput onSubmit={handle} />
-}
-*/

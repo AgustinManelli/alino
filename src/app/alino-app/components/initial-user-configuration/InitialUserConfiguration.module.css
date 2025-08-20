@@ -41,7 +41,7 @@
 }
 
 .initialText {
-  color: var(--background-alino-app);
+  color: var(--background-container);
   font-size: 40px;
   font-weight: 900;
   z-index: 1;

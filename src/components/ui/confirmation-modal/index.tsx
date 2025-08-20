@@ -40,6 +40,7 @@ export function ConfirmationModal() {
             backgroundColor: "rgb(0,0,0,0.3)",
           }}
           className={styles.confirmationModalBackground}
+          id="confirmation-modal"
         >
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
