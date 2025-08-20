@@ -1,5 +1,7 @@
 .rdp-root {
-  --rdp-accent-color: #87189d; /* The accent color used for selected days and UI elements. */
+  --rdp-accent-color: var(
+    --text-not-available
+  ); /* The accent color used for selected days and UI elements. */
   --rdp-accent-background-color: #f0f0ff; /* The accent background color used for selected days and UI elements. */
 
   --rdp-day-height: 28px; /* The height of the day cells. */
@@ -63,7 +65,7 @@
   ); /* The width of the week number cells. */
   --rdp-weeknumber-text-align: center; /* The text alignment of the weekday cells. */
 
-  --rdp-weekday-opacity: 0.75; /* The opacity of the weekday. */
+  --rdp-weekday-opacity: 0.5; /* The opacity of the weekday. */
   --rdp-weekday-padding: 0.5rem 0rem 0.3rem 0rem; /* The padding of the weekday. */
   --rdp-weekday-text-align: center; /* The text alignment of the weekday cells. */
 
@@ -262,6 +264,7 @@
   font-size: smaller;
   text-align: var(--rdp-weekday-text-align);
   text-transform: var(--rdp-weekday-text-transform);
+  color: var(--text-not-available);
 }
 
 .rdp-week_number {

@@ -99,10 +99,17 @@ export function Calendar({
   const handleDateSelect = (date: Date | undefined) => {
     setSelected(date);
     setTempMonth(date);
+    console.log(date);
     // date &&
     //   setTimeout(() => {
     //     setStep(true);
     //   }, 150);
+  };
+
+  const handleCancel = () => {
+    setSelected(undefined);
+    setHour(undefined);
+    setOpen(false);
   };
 
   return (
@@ -352,7 +359,7 @@ export function Calendar({
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          setOpen(false);
+                          handleCancel();
                         }}
                       >
                         cancelar

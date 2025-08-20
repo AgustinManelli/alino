@@ -66,7 +66,8 @@ type TodoStore = {
   addTask: (
     list_id: string,
     task_content: string,
-    target_date: string | null
+    target_date: string | null,
+    note: boolean
   ) => Promise<{ error: string | null }>;
   deleteTask: (task_id: string) => Promise<void>;
   updateTaskCompleted: (task_id: string, completed: boolean) => Promise<void>;
@@ -387,7 +388,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   //TASKS ACTIONS
-  addTask: async (list_id, task_content, target_date) => {
+  addTask: async (list_id, task_content, target_date, note) => {
     const optimisticId = uuidv4();
 
     const user = get().user;
@@ -404,7 +405,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       task_content,
       list_id,
       target_date,
-      completed: false,
+      completed: note ? null : false,
       index: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -427,7 +428,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       list_id,
       task_content,
       optimisticId,
-      target_date
+      target_date,
+      note
     );
 
     if (error) {

@@ -146,3 +146,22 @@
   gap: 10px;
   margin-top: 10px;
 }
+
+.note {
+  width: 30px;
+  height: 30px;
+}
+.noteButton {
+  background-color: var(--background-over-container);
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 5px;
+  width: 30px;
+  height: 30px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.noteButton:hover {
+  background-color: var(--background-over-container-hover);
+}

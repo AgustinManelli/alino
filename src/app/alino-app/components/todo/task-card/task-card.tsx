@@ -490,12 +490,16 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
   return (
     <div className={styles.cardContainer} ref={cardRef}>
       <div className={styles.checkboxContainer}>
-        <Checkbox
-          status={completed}
-          handleUpdateStatus={handleUpdateStatus}
-          id={task.task_id}
-          active={editing ? true : false}
-        />
+        {task.completed !== null ? (
+          <Checkbox
+            status={completed}
+            handleUpdateStatus={handleUpdateStatus}
+            id={task.task_id}
+            active={editing ? true : false}
+          />
+        ) : (
+          <p className={styles.note}>Nota</p>
+        )}
       </div>
       <div className={styles.textContainer}>
         {editing ? (

@@ -195,7 +195,7 @@ export type Database = {
       };
       tasks: {
         Row: {
-          completed: boolean;
+          completed: boolean | null;
           created_at: string;
           created_by: string | null;
           description: string | null;
@@ -207,7 +207,7 @@ export type Database = {
           updated_at: string | null;
         };
         Insert: {
-          completed?: boolean;
+          completed?: boolean | null;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
@@ -219,7 +219,7 @@ export type Database = {
           updated_at?: string | null;
         };
         Update: {
-          completed?: boolean;
+          completed?: boolean | null;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;

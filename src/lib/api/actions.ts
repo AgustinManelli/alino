@@ -360,7 +360,8 @@ export const insertTask = async (
   list_id: string,
   task_content: string,
   task_id: string,
-  target_date: string | null
+  target_date: string | null,
+  note: boolean
 ) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
@@ -373,6 +374,7 @@ export const insertTask = async (
         created_by: user.id,
         task_content,
         target_date,
+        completed: note ? null : false,
       })
       .select()
       .single();

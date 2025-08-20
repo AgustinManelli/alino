@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, memo, useRef } from "react";
+import { useState, useCallback, memo, useEffect } from "react";
 import { AnimatePresence } from "motion/react";
 
 import { ConfigSection } from "./components/config-section";
@@ -20,12 +20,9 @@ interface props {
 }
 
 export default memo(function AppContent({ user, children }: props) {
-  const initialized = useRef(false);
-
-  if (!initialized.current) {
+  useEffect(() => {
     useTodoDataStore.setState({ user: user });
-    initialized.current = true;
-  }
+  }, [user]);
 
   const [showConfiguration, setShowConfiguration] = useState(
     user.user_private?.initial_username_prompt_shown ?? false
