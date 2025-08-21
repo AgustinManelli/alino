@@ -6,6 +6,7 @@ import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
 import styles from "./EditTaskModal.module.css";
 import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
+import ClientOnlyPortal from "../client-only-portal";
 
 export const EditTaskModal = () => {
   const {
@@ -61,7 +62,7 @@ export const EditTaskModal = () => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <ClientOnlyPortal>
           {/* Fondo con blur */}
           <motion.div
             className={styles.modalBackdrop}
@@ -95,7 +96,7 @@ export const EditTaskModal = () => {
           >
             {syncedTask && <TaskCard task={syncedTask} editionMode={true} />}
           </motion.div>
-        </>
+        </ClientOnlyPortal>
       )}
     </AnimatePresence>
   );
