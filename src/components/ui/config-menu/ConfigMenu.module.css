@@ -38,7 +38,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 10px;
-  z-index: 100;
+  z-index: 502;
   box-shadow:
     rgba(12, 20, 66, 0.02) 0px 4px 12px,
     rgba(12, 20, 66, 0.08) 0px 30px 80px,

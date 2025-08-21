@@ -4,8 +4,8 @@ import { TaskType } from "@/lib/schemas/todo-schema";
 interface EditTaskModalState {
   isOpen: boolean;
   task: TaskType | null;
-  initialRect: DOMRect | null;
   onConfirm: () => void;
+  initialRect: DOMRect | null;
   openModal: (options: {
     task: TaskType;
     onConfirm: () => void;
