@@ -21,6 +21,7 @@ interface WindowComponentProps {
   children?: React.ReactNode;
   windowTitle?: string;
   closeAction?: boolean;
+  adaptative?: React.CSSProperties;
   bgBlur?: boolean;
   id?: string;
   crossAction?: () => void;
@@ -30,6 +31,7 @@ export function WindowComponent({
   children,
   windowTitle = "window_title",
   closeAction = true,
+  adaptative,
   bgBlur = false,
   id = "default",
   crossAction = () => {},
@@ -127,6 +129,7 @@ export function WindowComponent({
           ease: [0.23, 1, 0.32, 1],
           opacity: { duration: 0.2 },
         }}
+        style={adaptative ? { ...adaptative } : undefined}
       >
         <section className={styles.windowHeader}>
           <div className={styles.windowTitle}>
