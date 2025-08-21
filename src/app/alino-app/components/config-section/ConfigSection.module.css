@@ -36,3 +36,9 @@
   border-radius: 8px;
   background-color: var(--background-container);
 }
+
+.separator {
+  width: 100%;
+  height: 1px;
+  background-color: var(--border-container-color);
+}

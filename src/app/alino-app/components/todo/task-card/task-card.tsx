@@ -6,6 +6,7 @@ import { useShallow } from "zustand/shallow";
 import { debounce } from "lodash-es";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
 //import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import type { TaskType } from "@/lib/schemas/todo-schema";
 
@@ -19,8 +20,10 @@ import {
   Edit,
   Information,
   Link,
+  Note,
 } from "@/components/ui/icons/icons";
 import styles from "./task-card.module.css";
+import { Dropdown } from "@/components/ui/dropdown";
 
 const WavyStrikethrough = memo(
   ({ lines, completed, generateWavePath }: any) => (
@@ -71,6 +74,10 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
   const [lines, setLines] = useState<
     { width: number; top: number; left: number }[]
   >([]);
+  const [selected, setSelected] = useState<Date>();
+  const [hour, setHour] = useState<string | undefined>();
+
+  const openModal = useEditTaskModalStore((state) => state.openModal);
 
   const textRef = useRef<HTMLParagraphElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -105,30 +112,6 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
     setCompleted(task.completed);
     setInputName(task.task_content);
   }, [task.completed, task.task_content]);
-
-  // const calculateLines = useCallback(() => {
-  //   if (!textRef.current) return;
-  //   const range = document.createRange();
-  //   const textNodes = Array.from(textRef.current.childNodes).filter(
-  //     (node) => node.nodeType === Node.TEXT_NODE
-  //   );
-  //   // const childNodes = Array.from(textRef.current.childNodes);
-  //   const newLines: { width: number; top: number; left: number }[] = [];
-  //   const containerRect = textRef.current.getBoundingClientRect();
-
-  //   textNodes.forEach((textNode) => {
-  //     range.selectNodeContents(textNode);
-  //     const rects = Array.from(range.getClientRects());
-  //     rects.forEach((rect) => {
-  //       newLines.push({
-  //         width: rect.width,
-  //         top: rect.top - containerRect.top + rect.height / 2 - 2,
-  //         left: rect.left - containerRect.left,
-  //       });
-  //     });
-  //   });
-  //   setLines(newLines);
-  // }, []);
 
   const calculateLines = useCallback(() => {
     const el = textRef.current;
@@ -225,15 +208,15 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
   }, [completed, task.task_id, updateTaskCompleted]);
 
   const handleSaveName = useCallback(async () => {
+    setEditing(false);
+
     const formatText = inputName
       .trim()
       .replace(/[ \t]+/g, " ")
       .replace(/\n{3,}/g, "\n\n");
-    setEditing(false);
 
     if (
-      task.task_content === formatText ||
-      completed ||
+      (task.task_content === formatText && completed === task.completed) ||
       formatText.length < 1
     ) {
       setInputName(task.task_content);
@@ -241,28 +224,19 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
     }
 
     setInputName(formatText);
-    const { error } = await updateTaskName(task.task_id, formatText);
+    const { error } = await updateTaskName(task.task_id, formatText, completed);
     if (error) setInputName(task.task_content);
   }, [inputName, completed, task.task_content, task.task_id, updateTaskName]);
 
-  const handleEdit = useCallback(
-    () => !completed && setEditing(true),
-    [completed]
-  );
+  const handleEdit = useCallback(() => {
+    !completed && setEditing(true);
+    // openModal({ task: task, onConfirm: () => {} });
+  }, [completed]);
+
   const handleDelete = useCallback(
     () => deleteTask(task.task_id),
     [task.task_id, deleteTask]
   );
-
-  // useEffect(() => {
-  //   calculateLines();
-  //   const debouncedCalculateLines = debounce(calculateLines, 150);
-  //   window.addEventListener("resize", debouncedCalculateLines);
-  //   return () => {
-  //     debouncedCalculateLines.cancel();
-  //     window.removeEventListener("resize", debouncedCalculateLines);
-  //   };
-  // }, [task.task_content, calculateLines, editing]);
 
   useEffect(() => {
     calculateLines();
@@ -286,14 +260,22 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const dropdownComponent = document.getElementById("dropdown-component");
+      const calendarComponent = document.getElementById("calendar-component");
+
       if (
         inputRef.current &&
         !inputRef.current.contains(event.target as Node) &&
         checkButtonRef.current &&
-        !checkButtonRef.current.contains(event.target as Node)
+        !checkButtonRef.current.contains(event.target as Node) &&
+        cardRef.current &&
+        !cardRef.current.contains(event.target as Node) &&
+        !dropdownComponent &&
+        !calendarComponent
       ) {
         setEditing(false);
         setInputName(task.task_content);
+        setCompleted(task.completed);
       }
     };
 
@@ -487,18 +469,167 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
     [task.task_content, linkifyWithIcon]
   );
 
+  interface Item {
+    id: number;
+    label: string;
+  }
+
+  const renderItem = (item: Item) => {
+    return (
+      <div
+        className={styles.dropdownItemContainer}
+        style={{ justifyContent: "start" }}
+      >
+        <div
+          style={{
+            width: "16px",
+            height: "16px",
+          }}
+        >
+          {item.id === 1 && (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              style={{
+                width: "15px",
+                stroke: "var(--icon-colorv2)",
+                strokeWidth: "2",
+                overflow: "visible",
+                fill: "var(--icon-colorv2)",
+                transition: "fill 0.1s ease-in-out",
+                transform: "scale(1)",
+              }}
+            >
+              <path
+                d={
+                  "M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z"
+                }
+              />
+              <path
+                style={{ stroke: "var(--icon-color-inside)", strokeWidth: 2 }}
+                strokeLinejoin="round"
+                d="m6.68,13.58s1.18,0,2.76,2.76c0,0,3.99-7.22,7.88-8.67"
+              />
+            </svg>
+          )}
+          {item.id === 2 && (
+            <Note
+              style={{
+                width: "15px",
+                stroke: "var(--icon-colorv2)",
+                strokeWidth: "2",
+                overflow: "visible",
+                fill: "transparent",
+                transition: "fill 0.1s ease-in-out",
+                transform: "scale(1)",
+              }}
+            />
+          )}
+        </div>
+        <p>{item.label}</p>
+      </div>
+    );
+  };
+
+  const triggerLabel = () => {
+    return (
+      <div
+        className={styles.dropdownItemContainer}
+        style={{ justifyContent: "start" }}
+      >
+        <div
+          style={{
+            width: "15px",
+            height: "15px",
+            display: "flex",
+          }}
+        >
+          {completed !== null ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              style={{
+                width: "15px",
+                stroke: "var(--icon-colorv2)",
+                strokeWidth: "2",
+                overflow: "visible",
+                fill: "transparent",
+                transition: "fill 0.1s ease-in-out",
+                transform: "scale(1)",
+              }}
+            >
+              <path
+                d={
+                  "M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z"
+                }
+              />
+            </svg>
+          ) : (
+            <Note
+              style={{
+                width: "15px",
+                stroke: "var(--icon-colorv2)",
+                strokeWidth: "2",
+                overflow: "visible",
+                fill: "transparent",
+                transition: "fill 0.1s ease-in-out",
+                transform: "scale(1)",
+              }}
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const handleSelected = (item: Item) => {
+    if (item.id === 1) {
+      setCompleted(false);
+      return;
+    }
+    setCompleted(null);
+  };
+
   return (
-    <div className={styles.cardContainer} ref={cardRef}>
+    <div
+      className={styles.cardContainer}
+      ref={cardRef}
+      style={{ paddingLeft: editing ? "10px" : "15px" }}
+    >
       <div className={styles.checkboxContainer}>
-        {task.completed !== null ? (
-          <Checkbox
-            status={completed}
-            handleUpdateStatus={handleUpdateStatus}
-            id={task.task_id}
-            active={editing ? true : false}
-          />
+        {!editing ? (
+          task.completed !== null ? (
+            <Checkbox
+              status={completed}
+              handleUpdateStatus={handleUpdateStatus}
+              id={task.task_id}
+            />
+          ) : (
+            <Note
+              style={{
+                width: "15px",
+                stroke: "var(--icon-colorv2)",
+                strokeWidth: "2",
+                opacity: "0.2",
+              }}
+            />
+          )
         ) : (
-          <p className={styles.note}>Nota</p>
+          <Dropdown
+            items={[
+              { id: 1, label: "Tarea" },
+              { id: 2, label: "Nota" },
+            ]}
+            renderItem={renderItem}
+            triggerLabel={triggerLabel}
+            selectedListHome={
+              completed ? { id: 1, label: "Tarea" } : { id: 2, label: "Nota" }
+            }
+            setSelectedListHome={handleSelected}
+            boxSize={25}
+            style={{ borderRadius: "10px" }}
+            directionContainerShow={true}
+          />
         )}
       </div>
       <div className={styles.textContainer}>

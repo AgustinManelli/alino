@@ -21,7 +21,6 @@ interface WindowComponentProps {
   children?: React.ReactNode;
   windowTitle?: string;
   closeAction?: boolean;
-  adaptative?: boolean;
   bgBlur?: boolean;
   id?: string;
   crossAction?: () => void;
@@ -31,7 +30,6 @@ export function WindowComponent({
   children,
   windowTitle = "window_title",
   closeAction = true,
-  adaptative = false,
   bgBlur = false,
   id = "default",
   crossAction = () => {},
@@ -119,12 +117,6 @@ export function WindowComponent({
       )}
       <motion.section
         className={styles.windowModal}
-        style={{
-          width: "50%",
-          minWidth: "300px",
-          maxWidth: "600px",
-          height: adaptative ? "auto" : "450px",
-        }}
         ref={windowRef as any}
         key={"window-component-modal"}
         initial={{ scale: 0.8, opacity: 0, y: -50 }}
