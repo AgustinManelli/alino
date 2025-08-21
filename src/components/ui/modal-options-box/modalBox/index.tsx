@@ -8,7 +8,7 @@ import styles from "./ModalBox.module.css";
 
 interface props {
   title: string;
-  user: boolean;
+  user?: boolean;
   subtitle?: string;
   children: React.ReactNode;
   onClose: () => void;
