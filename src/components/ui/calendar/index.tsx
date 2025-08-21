@@ -12,6 +12,7 @@ import { ArrowThin, Calendar as Icon } from "@/components/ui/icons/icons";
 import styles from "./Calendar.module.css";
 import "./DayPicker.css";
 import ClientOnlyPortal from "../client-only-portal";
+import { useModalUbication } from "@/hooks/useModalUbication";
 
 interface props {
   selected: Date | undefined;
@@ -19,6 +20,7 @@ interface props {
   hour: string | undefined;
   setHour: (value: string | undefined) => void;
   focusToParentInput?: () => void;
+  trigger?: React.ReactNode;
 }
 
 export function Calendar({
@@ -27,6 +29,7 @@ export function Calendar({
   hour,
   setHour,
   focusToParentInput,
+  trigger,
 }: props) {
   const [open, setOpen] = useState<boolean>(false);
   const [step, setStep] = useState<boolean>(false);
@@ -35,75 +38,20 @@ export function Calendar({
   const Ref = useRef<HTMLButtonElement>(null);
   const sRef = useRef<HTMLDivElement>(null);
 
-  const ubication = () => {
-    if (!Ref.current || !sRef.current) return;
-    const parentRect = Ref.current!.getBoundingClientRect();
-    const scrollY = window.scrollY || document.documentElement.scrollTop;
-
-    sRef.current.style.top = `${parentRect.top + scrollY + parentRect.height + 5}px`;
-    sRef.current.style.left = `${parentRect.left - 252 + parentRect.width}px`;
-
-    if (Ref.current.getBoundingClientRect().top > window.innerHeight / 2) {
-      sRef.current.style.top = `${parentRect.top + scrollY - sRef.current.offsetHeight - 5}px`;
-    }
-  };
-
-  useEffect(() => {
-    if (!Ref.current) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      ubication();
-    });
-
-    const scrollHandler = () => {
-      ubication();
-    };
-
-    resizeObserver.observe(Ref.current);
-
-    window.addEventListener("scroll", scrollHandler, true);
-    window.addEventListener("resize", scrollHandler, true);
-
-    ubication();
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener("scroll", scrollHandler, true);
-      window.removeEventListener("resize", scrollHandler, true);
-    };
-  }, [ubication]);
-
-  useEffect(function mount() {
-    function divOnClick(event: MouseEvent | TouchEvent) {
-      if (sRef.current !== null && Ref.current !== null) {
-        if (
-          !sRef.current.contains(event.target as Node) &&
-          !Ref.current.contains(event.target as Node)
-        ) {
-          setOpen(false);
-          setStep(false);
-        }
-      }
-    }
-
-    window.addEventListener("mousedown", divOnClick);
-    window.addEventListener("mouseup", divOnClick);
-    ubication();
-
-    return function unMount() {
-      window.removeEventListener("mousedown", divOnClick);
-      window.removeEventListener("mouseup", divOnClick);
-    };
-  });
+  useModalUbication(
+    Ref,
+    sRef,
+    () => {
+      setOpen(false);
+      setStep(false);
+    },
+    false
+  );
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelected(date);
     setTempMonth(date);
     console.log(date);
-    // date &&
-    //   setTimeout(() => {
-    //     setStep(true);
-    //   }, 150);
   };
 
   const handleCancel = () => {
@@ -118,7 +66,8 @@ export function Calendar({
         ref={Ref}
         className={styles.button}
         style={{
-          height: "30px",
+          height: trigger ? "25px" : "30px",
+          padding: trigger ? "0" : "5px",
           width: "auto",
           aspectRatio: "1 / 1",
           backgroundColor: open
@@ -135,14 +84,16 @@ export function Calendar({
           className={styles.notification}
           style={{ opacity: selected ? 1 : 0 }}
         ></div>
-        <Icon
-          style={{
-            width: "100%",
-            height: "auto",
-            stroke: "var(--icon-color)",
-            strokeWidth: "1.5",
-          }}
-        />
+        {trigger ?? (
+          <Icon
+            style={{
+              width: "100%",
+              height: "auto",
+              stroke: "var(--icon-color)",
+              strokeWidth: "1.5",
+            }}
+          />
+        )}
       </button>
       <ClientOnlyPortal>
         <AnimatePresence mode="wait">

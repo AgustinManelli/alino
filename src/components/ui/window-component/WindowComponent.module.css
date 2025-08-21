@@ -33,6 +33,10 @@
     rgb(230, 233, 237) 0px 0px 0px 0px inset;
   overflow: hidden;
   padding: 20px 13px 20px 30px;
+  width: 50%;
+  height: 80%;
+  min-width: 300px;
+  max-width: 600px;
 }
 
 .windowHeader {
@@ -110,6 +114,8 @@
     width: 90%;
     min-width: none;
     height: 80%;
+    min-width: initial;
+    max-width: initial;
   }
   .windowHeader {
     height: 15%;

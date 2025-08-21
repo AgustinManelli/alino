@@ -8,12 +8,13 @@ interface props {
 }
 
 export default function ClientOnlyPortal({ children }: props) {
-  const ref = useRef();
+  const ref = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    ref.current = document.getElementById("portal-root");
     setMounted(true);
   }, []);
 
-  return mounted ? createPortal(children, document.body) : null;
+  return mounted && ref.current ? createPortal(children, ref.current) : null;
 }

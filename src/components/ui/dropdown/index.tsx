@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, ReactNode, useRef, useEffect } from "react";
+import { useState, ReactNode, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import styles from "./Dropdown.module.css";
-import { createPortal } from "react-dom";
 import ClientOnlyPortal from "../client-only-portal";
+import { useModalUbication } from "@/hooks/useModalUbication";
 interface DropdownProps<T> {
   items: T[];
   renderItem: (item: T, index: number) => ReactNode;
@@ -12,6 +12,9 @@ interface DropdownProps<T> {
   selectedListHome: T | undefined;
   setSelectedListHome: (value: T) => void;
   handleFocusToParentInput?: () => void;
+  boxSize?: number;
+  directionContainerShow?: boolean;
+  style?: React.CSSProperties;
 }
 
 export function Dropdown<T>({
@@ -21,71 +24,23 @@ export function Dropdown<T>({
   selectedListHome,
   setSelectedListHome,
   handleFocusToParentInput,
+  boxSize = 30,
+  directionContainerShow = false,
+  style,
 }: DropdownProps<T>) {
   const [open, setOpen] = useState<boolean>(false);
 
   const Ref = useRef<HTMLButtonElement>(null);
   const sRef = useRef<HTMLDivElement>(null);
 
-  const ubication = () => {
-    if (!Ref.current || !sRef.current) return;
-    const parentRect = Ref.current!.getBoundingClientRect();
-    const scrollY = window.scrollY || document.documentElement.scrollTop;
-
-    sRef.current.style.top = `${parentRect.top + scrollY + parentRect.height + 5}px`;
-    sRef.current.style.left = `${parentRect.left - 150 + parentRect.width}px`;
-
-    if (Ref.current.getBoundingClientRect().top > window.innerHeight / 2) {
-      sRef.current.style.top = `${parentRect.top + scrollY - sRef.current.offsetHeight - 5}px`;
-    }
-  };
-
-  useEffect(() => {
-    if (!Ref.current) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      ubication();
-    });
-
-    const scrollHandler = () => {
-      ubication();
-    };
-
-    resizeObserver.observe(Ref.current);
-
-    window.addEventListener("scroll", scrollHandler, true);
-    window.addEventListener("resize", scrollHandler, true);
-
-    ubication();
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener("scroll", scrollHandler, true);
-      window.removeEventListener("resize", scrollHandler, true);
-    };
-  }, [ubication]);
-
-  useEffect(function mount() {
-    function divOnClick(event: MouseEvent | TouchEvent) {
-      if (sRef.current !== null && Ref.current !== null) {
-        if (
-          !sRef.current.contains(event.target as Node) &&
-          !Ref.current.contains(event.target as Node)
-        ) {
-          setOpen(false);
-        }
-      }
-    }
-
-    window.addEventListener("mousedown", divOnClick);
-    window.addEventListener("mouseup", divOnClick);
-    ubication();
-
-    return function unMount() {
-      window.removeEventListener("mousedown", divOnClick);
-      window.removeEventListener("mouseup", divOnClick);
-    };
-  });
+  useModalUbication(
+    Ref,
+    sRef,
+    () => {
+      setOpen(false);
+    },
+    directionContainerShow
+  );
 
   const toggleDropdown = () => setOpen(!open);
   const closeDropdown = () => setOpen(false);
@@ -96,12 +51,13 @@ export function Dropdown<T>({
         ref={Ref}
         className={styles.triggerButton}
         style={{
-          height: "30px",
-          width: "30px",
+          height: `${boxSize}px`,
+          width: `${boxSize}px`,
           aspectRatio: "1 / 1",
           backgroundColor: open
             ? "var(--background-over-container-hover)"
             : "var(--background-over-container)",
+          ...style,
         }}
         onClick={toggleDropdown}
       >

@@ -79,10 +79,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     return combined.toISOString();
   }
 
-  const handleNote = () => {
-    setIsNote(!isNote);
-  };
-
   const handleAdd = () => {
     // const formatText = task.replace(/\s+/g, " ").trim();
     const formatText = task
@@ -186,6 +182,127 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     );
   };
 
+  interface Item {
+    id: number;
+    label: string;
+  }
+
+  const renderItemType = (item: Item) => {
+    return (
+      <div
+        className={styles.dropdownItemContainer}
+        style={{ justifyContent: "start" }}
+      >
+        <div
+          style={{
+            width: "16px",
+            height: "16px",
+          }}
+        >
+          {item.id === 1 && (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              style={{
+                width: "15px",
+                stroke: "var(--icon-colorv2)",
+                strokeWidth: "2",
+                overflow: "visible",
+                fill: "var(--icon-colorv2)",
+                transition: "fill 0.1s ease-in-out",
+                transform: "scale(1)",
+              }}
+            >
+              <path
+                d={
+                  "M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z"
+                }
+              />
+              <path
+                style={{ stroke: "var(--icon-color-inside)", strokeWidth: 2 }}
+                strokeLinejoin="round"
+                d="m6.68,13.58s1.18,0,2.76,2.76c0,0,3.99-7.22,7.88-8.67"
+              />
+            </svg>
+          )}
+          {item.id === 2 && (
+            <Note
+              style={{
+                width: "15px",
+                stroke: "var(--icon-colorv2)",
+                strokeWidth: "2",
+                overflow: "visible",
+                fill: "transparent",
+                transition: "fill 0.1s ease-in-out",
+                transform: "scale(1)",
+              }}
+            />
+          )}
+        </div>
+        <p>{item.label}</p>
+      </div>
+    );
+  };
+
+  const triggerLabelType = () => {
+    return (
+      <div
+        className={styles.dropdownItemContainer}
+        style={{ justifyContent: "start" }}
+      >
+        <div
+          style={{
+            width: "15px",
+            height: "15px",
+            display: "flex",
+          }}
+        >
+          {!isNote ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              style={{
+                width: "15px",
+                stroke: "var(--icon-colorv2)",
+                strokeWidth: "2",
+                overflow: "visible",
+                fill: "transparent",
+                transition: "fill 0.1s ease-in-out",
+                transform: "scale(1)",
+              }}
+            >
+              <path
+                d={
+                  "M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z"
+                }
+              />
+            </svg>
+          ) : (
+            <Note
+              style={{
+                width: "15px",
+                stroke: "var(--icon-colorv2)",
+                strokeWidth: "2",
+                overflow: "visible",
+                fill: "transparent",
+                transition: "fill 0.1s ease-in-out",
+                transform: "scale(1)",
+              }}
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const handleSelected = (item: Item) => {
+    if (item.id === 1) {
+      setIsNote(false);
+      return;
+    }
+    setIsNote(true);
+  };
+
   const [height, setHeight] = useState("40px");
   const [isScrollable, setIsScrollable] = useState(false);
   const tempRef = useRef<HTMLDivElement>(null);
@@ -273,6 +390,33 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     >
       <div className={styles.formContainer}>
         <div className={styles.form}>
+          <div
+            className={styles.inputManagerContainer}
+            style={{ marginTop: "12.5px" }}
+          >
+            <motion.div
+              key="dropdown"
+              initial={{ scale: 0 }}
+              animate={{ scale: focus ? 1 : 0 }}
+              exit={{ scale: 0 }}
+            >
+              <Dropdown
+                items={[
+                  { id: 1, label: "Tarea" },
+                  { id: 2, label: "Nota" },
+                ]}
+                renderItem={renderItemType}
+                triggerLabel={triggerLabelType}
+                selectedListHome={
+                  isNote ? { id: 1, label: "Tarea" } : { id: 2, label: "Nota" }
+                }
+                setSelectedListHome={handleSelected}
+                boxSize={25}
+                style={{ borderRadius: "10px" }}
+                directionContainerShow={true}
+              />
+            </motion.div>
+          </div>
           <motion.div
             className={styles.inputContainer}
             ref={tempRef}
@@ -330,13 +474,15 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             </div>
           )}
           <div className={styles.inputManagerContainer}>
-            <AnimatePresence>
+            <AnimatePresence mode="popLayout">
               {isHome && (
                 <motion.div
                   key="dropdown"
                   initial={{ scale: 0 }}
                   animate={{ scale: focus ? 1 : 0 }}
                   exit={{ scale: 0 }}
+                  transition={{ duration: 0.2 }}
+                  layout
                 >
                   <Dropdown
                     items={lists}
@@ -348,50 +494,24 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   />
                 </motion.div>
               )}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: focus ? 1 : 0 }}
-                exit={{ scale: 0 }}
-                transition={{ delay: 0.05 }}
-                key="note"
-                className={styles.note}
-              >
-                <button
-                  className={styles.noteButton}
-                  onClick={(e) => {
-                    e.preventDefault(), handleNote();
-                  }}
-                  style={{
-                    backgroundColor: isNote
-                      ? "var(--background-over-container-hover)"
-                      : "var(--background-over-container)",
-                  }}
+              {!isNote && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: focus ? 1 : 0 }}
+                  exit={{ scale: 0 }}
+                  transition={{ delay: 0.05 }}
+                  key="calendar"
+                  layout
                 >
-                  <Note
-                    style={{
-                      width: "100%",
-                      height: "auto",
-                      stroke: "var(--icon-color)",
-                      strokeWidth: "1.5",
-                    }}
+                  <Calendar
+                    selected={selected}
+                    setSelected={setSelected}
+                    hour={hour}
+                    setHour={handleSetHour}
+                    focusToParentInput={handleFocusToParentInput}
                   />
-                </button>
-              </motion.div>
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: focus ? 1 : 0 }}
-                exit={{ scale: 0 }}
-                transition={{ delay: 0.05 }}
-                key="calendar"
-              >
-                <Calendar
-                  selected={selected}
-                  setSelected={setSelected}
-                  hour={hour}
-                  setHour={handleSetHour}
-                  focusToParentInput={handleFocusToParentInput}
-                />
-              </motion.div>
+                </motion.div>
+              )}
               <motion.div
                 key="separator"
                 initial={{ height: 0 }}

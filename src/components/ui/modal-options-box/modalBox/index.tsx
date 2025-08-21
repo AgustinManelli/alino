@@ -8,6 +8,7 @@ import styles from "./ModalBox.module.css";
 
 interface props {
   title: string;
+  user: boolean;
   subtitle?: string;
   children: React.ReactNode;
   onClose: () => void;
@@ -16,6 +17,7 @@ interface props {
 
 export function ModalBox({
   title,
+  user = false,
   subtitle,
   children,
   onClose,
@@ -34,7 +36,12 @@ export function ModalBox({
   return (
     <div className={styles.container} ref={modalRef}>
       <div className={styles.textContainer}>
-        <p className={styles.title}>{title}</p>
+        <p
+          className={styles.title}
+          style={{ color: user ? "var(--text)" : "var(--text-not-available)" }}
+        >
+          {title}
+        </p>
         {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
       </div>
       <div className={styles.separator}></div>

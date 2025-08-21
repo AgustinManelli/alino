@@ -101,6 +101,7 @@ export function ConfigSection() {
         {active && (
           <ModalBox
             title={display_name ? display_name : "User"}
+            user={true}
             subtitle={`@${username ? username : "user"}`}
             onClose={handleClose}
             iconRef={iconRef}
@@ -138,6 +139,7 @@ export function ConfigSection() {
                   }}
                 />
               </OptionBox>
+              <div className={styles.separator}></div>
               <OptionBox text={"Cerrar sesión"} action={logout}>
                 <LogOut
                   style={{

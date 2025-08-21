@@ -13,6 +13,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { UserType } from "@/lib/schemas/todo-schema";
 
 import styles from "./layout.module.css";
+import { EditTaskModal } from "@/components/ui/edit-task-modal";
 
 interface props {
   user: UserType;
@@ -41,6 +42,7 @@ export default memo(function AppContent({ user, children }: props) {
       </AnimatePresence>
       {!showConfiguration && (
         <>
+          <EditTaskModal />
           <ConfirmationModal />
           <section className={styles.topButtons}>
             <NotificationsSection />

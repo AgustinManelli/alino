@@ -254,6 +254,7 @@ export type Database = {
           preferences: Json | null;
           updated_at: string | null;
           user_id: string;
+          initial_guide_show: boolean;
         };
         Insert: {
           created_at?: string;
@@ -261,6 +262,7 @@ export type Database = {
           preferences?: Json | null;
           updated_at?: string | null;
           user_id?: string;
+          initial_guide_show?: boolean;
         };
         Update: {
           created_at?: string;
@@ -268,6 +270,7 @@ export type Database = {
           preferences?: Json | null;
           updated_at?: string | null;
           user_id?: string;
+          initial_guide_show?: boolean;
         };
         Relationships: [
           {
