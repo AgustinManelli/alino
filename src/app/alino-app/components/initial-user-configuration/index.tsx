@@ -102,7 +102,7 @@ export default function InitialUserConfiguration({
           <WindowComponent
             windowTitle={"Bienvenido a Alino"}
             closeAction={false}
-            adaptative={true}
+            adaptative={{ height: "auto" }}
             bgBlur={false}
             id={"initial-user-configuration-popup"}
           >
