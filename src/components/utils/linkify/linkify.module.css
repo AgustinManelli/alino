@@ -1,0 +1,40 @@
+.linkBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  background-color: var(--background-over-container);
+  margin: 0 5px 5px 0;
+  vertical-align: baseline;
+  text-decoration: none;
+  max-width: 100%;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.text .linkBox:last-of-type {
+  margin-right: 0;
+  margin-bottom: 0;
+}
+
+.linkText {
+  display: inline-block;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+
+.linkBox:hover,
+.linkBox:focus {
+  background-color: var(--background-over-container-hover);
+  outline: none;
+}
+
+.linkBox svg {
+  flex: 0 0 auto;
+  display: block;
+}
