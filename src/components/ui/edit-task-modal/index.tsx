@@ -59,6 +59,43 @@ export const EditTaskModal = () => {
         height: 0,
       };
 
+  const targetAnimation = useMemo(() => {
+    const viewportWidth =
+      typeof window !== "undefined" ? window.innerWidth : 1024;
+    const viewportHeight =
+      typeof window !== "undefined" ? window.innerHeight : 800;
+
+    const preferredWidth = initialRect?.width ?? 500;
+    const MARGIN = 0;
+    const MOBILE_BREAKPOINT = 600;
+    const maxAvailable = Math.max(240, viewportWidth - MARGIN * 2);
+
+    const targetWidth =
+      viewportWidth < MOBILE_BREAKPOINT
+        ? Math.min(preferredWidth, maxAvailable)
+        : Math.min(Math.min(preferredWidth, 500), maxAvailable);
+
+    const centeredX = Math.round(viewportWidth / 2 - targetWidth / 2);
+    const minX = MARGIN;
+    const maxX = Math.max(MARGIN, viewportWidth - targetWidth - MARGIN);
+    const targetX =
+      viewportWidth < MOBILE_BREAKPOINT
+        ? minX
+        : Math.min(Math.max(centeredX, minX), maxX);
+
+    // mantenemos el mismo offset vertical que usabas (-200)
+    const targetY = Math.round(viewportHeight / 2 - 200);
+
+    return {
+      x: targetX,
+      y: targetY,
+      // width: Math.round(targetWidth),
+      transition: {
+        delay: 0.01,
+      },
+    };
+  }, [initialRect]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -77,14 +114,7 @@ export const EditTaskModal = () => {
           <motion.div
             className={styles.modalContainer}
             initial={initialAnimation}
-            animate={{
-              x:
-                typeof window !== "undefined" ? window.innerWidth / 2 - 250 : 0,
-              y:
-                typeof window !== "undefined"
-                  ? window.innerHeight / 2 - 200
-                  : 0,
-            }}
+            animate={targetAnimation}
             exit={{
               x: initialAnimation.x,
               y: initialAnimation.y,
