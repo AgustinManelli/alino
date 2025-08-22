@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
 import styles from "./EditTaskModal.module.css";
 import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import ClientOnlyPortal from "../client-only-portal";
+import { Calendar } from "../calendar";
 
 export const EditTaskModal = () => {
   const {
@@ -14,15 +15,18 @@ export const EditTaskModal = () => {
     task: modalTask,
     initialRect,
     closeModal,
-    onConfirm,
   } = useEditTaskModalStore();
+
+  const [selected, setSelected] = useState<Date>();
+  const [hour, setHour] = useState<string | undefined>();
+  const [editing, setEditing] = useState<boolean>(true);
+
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const modalTaskId = modalTask?.task_id ?? null;
 
-  // leemos la lista completa de tareas desde la store global
   const tasks = useTodoDataStore((s) => s.tasks);
 
-  // buscamos la tarea sincronizada en la store por id
   const syncedTask = useMemo(
     () =>
       modalTaskId
@@ -31,7 +35,6 @@ export const EditTaskModal = () => {
     [tasks, modalTaskId]
   );
 
-  // Prevenir scroll cuando el modal está abierto
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -44,13 +47,12 @@ export const EditTaskModal = () => {
     };
   }, [isOpen]);
 
-  // Calcular la posición y dimensiones iniciales
   const initialAnimation = initialRect
     ? {
         x: initialRect.left - 15,
         y: initialRect.top - 15,
         width: initialRect.width,
-        height: initialRect.height,
+        // height: initialRect.height + 45,
       }
     : {
         x: typeof window !== "undefined" ? window.innerWidth / 2 : 0,
@@ -83,7 +85,6 @@ export const EditTaskModal = () => {
         ? minX
         : Math.min(Math.max(centeredX, minX), maxX);
 
-    // mantenemos el mismo offset vertical que usabas (-200)
     const targetY = Math.round(viewportHeight / 2 - 200);
 
     return {
@@ -91,26 +92,30 @@ export const EditTaskModal = () => {
       y: targetY,
       // width: Math.round(targetWidth),
       transition: {
-        delay: 0.01,
+        delay: 0.05,
       },
     };
   }, [initialRect]);
+
+  const handleFocusToParentInput = () => {
+    if (inputRef) inputRef.current?.focus();
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
         <ClientOnlyPortal>
-          {/* Fondo con blur */}
           <motion.div
             className={styles.modalBackdrop}
             initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
             animate={{ opacity: 1, backdropFilter: "blur(5px)" }}
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.3 }}
-            onClick={closeModal}
+            onClick={() => {
+              closeModal();
+            }}
           />
 
-          {/* Contenido del modal */}
           <motion.div
             className={styles.modalContainer}
             initial={initialAnimation}
@@ -120,11 +125,33 @@ export const EditTaskModal = () => {
               y: initialAnimation.y,
               width: initialAnimation.width,
               height: initialAnimation.height,
+              // transition: { delay: 0.3 },
             }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             layout
           >
             {syncedTask && <TaskCard task={syncedTask} editionMode={true} />}
+            {/* <motion.section
+              className={styles.toolsSection}
+              initial={{ width: 0 }}
+              animate={{ width: "90px", transition: { delay: 0.3 } }}
+              exit={{ width: 0 }}
+            >
+              <motion.div
+                className={styles.toolsSectionChild}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1, transition: { delay: 0.3 } }}
+                exit={{ scale: 0 }}
+              >
+                <Calendar
+                  selected={selected}
+                  setSelected={setSelected}
+                  hour={hour}
+                  setHour={setHour}
+                  // focusToParentInput={handleFocusToParentInput}
+                />
+              </motion.div>
+            </motion.section> */}
           </motion.div>
         </ClientOnlyPortal>
       )}

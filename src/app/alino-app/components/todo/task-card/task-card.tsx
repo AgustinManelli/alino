@@ -82,8 +82,6 @@ export const TaskCard = memo(
     const [lines, setLines] = useState<
       { width: number; top: number; left: number }[]
     >([]);
-    const [selected, setSelected] = useState<Date>();
-    const [hour, setHour] = useState<string | undefined>();
 
     const openModal = useEditTaskModalStore((state) => state.openModal);
     const taskEditing = useEditTaskModalStore((state) => state.task);

@@ -14,7 +14,6 @@ import ListInformation from "@/app/alino-app/components/list-information";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";
 import { ConfigMenu } from "@/components/ui/config-menu";
 import TaskInput from "../task-input/task-input";
-import { TaskCard } from "../task-card/task-card";
 
 import styles from "./manager.module.css";
 import {
@@ -23,6 +22,7 @@ import {
   Information,
   LogOut,
 } from "@/components/ui/icons/icons";
+import { TaskCardStatic } from "../task-card/task-card-static";
 
 export const Manager = memo(function Manager({
   setList,
@@ -268,13 +268,13 @@ export const Manager = memo(function Manager({
             {h && !setList ? (
               <div className={styles.tasks}>
                 {tasks.map((task) => (
-                  <TaskCard key={task.task_id} task={task} />
+                  <TaskCardStatic key={task.task_id} task={task} />
                 ))}
               </div>
             ) : filteredTasks.length > 0 ? (
               <div className={styles.tasks}>
                 {filteredTasks.map((task) => (
-                  <TaskCard key={task.task_id} task={task} />
+                  <TaskCardStatic key={task.task_id} task={task} />
                 ))}
               </div>
             ) : (
