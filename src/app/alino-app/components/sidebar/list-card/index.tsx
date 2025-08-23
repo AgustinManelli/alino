@@ -139,7 +139,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
     transition,
     pointerEvents: isDragging ? "none" : "auto",
     zIndex: isDragging ? 99 : 1,
-    opacity: isDragging ? 0.2 : 1,
+    opacity: isDragging ? 0 : 1,
     backgroundColor: isActive
       ? "var(--background-over-container)"
       : "transparent",

@@ -81,7 +81,7 @@
   flex-direction: column;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 30px;
+  padding: 30px 15px 15px 15px;
 }
 
 .cardsSection::-webkit-scrollbar {
@@ -98,7 +98,7 @@
 
 .inputContainer {
   position: relative;
-  padding: 0 30px;
+  padding: 0 15px;
 }
 
 @media only screen and (max-width: 850px) {
@@ -111,13 +111,5 @@
 
   .active {
     left: initial;
-  }
-
-  .cardsSection {
-    padding: 30px 15px 15px 15px;
-  }
-
-  .inputContainer {
-    padding: 0 15px;
   }
 }

@@ -54,7 +54,7 @@
   color: var(--text);
   max-height: 280px;
   overflow-y: auto;
-  animation: blink_input_opacity_to_prevent_scrolling_when_focus 0.01s;
+  animation: blink_input_opacity_to_prevent_scrolling_when_focus 0.3s;
 }
 
 .nameChangerInput::-webkit-scrollbar {

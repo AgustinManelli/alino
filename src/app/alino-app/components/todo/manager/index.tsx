@@ -1,6 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useCallback, memo } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  memo,
+  useLayoutEffect,
+} from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 
@@ -56,7 +64,7 @@ export const Manager = memo(function Manager({
   );
   const activeTaskCount = useMemo(() => {
     const source = h ? tasks : filteredTasks;
-    return source.filter((task) => !task.completed).length;
+    return source.filter((task) => task.completed === false).length;
   }, [tasks, filteredTasks, h]);
   const formattedDate = useMemo(() => {
     return new Date().toLocaleDateString("es-ES", {
@@ -187,18 +195,25 @@ export const Manager = memo(function Manager({
     }
   }, [isNameChange]);
 
-  useEffect(() => {
-    const observer = new ResizeObserver(() => {
-      if (section1Ref.current && scrollRef.current) {
-        scrollRef.current.style.paddingTop = `${section1Ref.current.offsetHeight}px`;
-      }
+  useLayoutEffect(() => {
+    const sectionEl = section1Ref.current;
+    const scrollEl = scrollRef.current;
+    if (!sectionEl || !scrollEl) return;
+
+    const applyPadding = () => {
+      scrollEl.style.paddingTop = `${sectionEl.offsetHeight}px`;
+    };
+
+    applyPadding();
+
+    const ro = new ResizeObserver(() => {
+      requestAnimationFrame(applyPadding);
     });
+    ro.observe(sectionEl);
 
-    if (section1Ref.current) {
-      observer.observe(section1Ref.current);
-    }
-
-    return () => observer.disconnect();
+    return () => {
+      ro.disconnect();
+    };
   }, []);
 
   return (
@@ -222,7 +237,11 @@ export const Manager = memo(function Manager({
                     <p>
                       <span>Hoy es </span>
                       {formattedDate} <br />
-                      <span>Tienes {activeTaskCount} tareas activas</span>
+                      <span>
+                        {activeTaskCount === 0
+                          ? "No tienes tareas activas"
+                          : `Tienes ${activeTaskCount} ${activeTaskCount > 1 ? "tareas activas" : "tarea activa"}`}
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -245,7 +264,11 @@ export const Manager = memo(function Manager({
                   )}
                 </div>
                 <p className={styles.listSubtitle}>
-                  <span>Tienes {activeTaskCount} tareas activas</span>
+                  <span>
+                    {activeTaskCount === 0
+                      ? "No tienes tareas activas"
+                      : `Tienes ${activeTaskCount} ${activeTaskCount > 1 ? "tareas activas" : "tarea activa"}`}
+                  </span>
                 </p>
               </div>
             )}
@@ -279,7 +302,7 @@ export const Manager = memo(function Manager({
               </div>
             ) : (
               <div className={styles.empty}>
-                <p>No hay tareas...</p>
+                <p>Sin tareas ni notas, agrega una desde la barra superior.</p>
               </div>
             )}
           </div>
