@@ -305,6 +305,7 @@ export const TaskCard = memo(
           setEditing(false);
           setInputName(task.task_content);
           setCompleted(task.completed);
+          closeModal();
         }
       };
 
