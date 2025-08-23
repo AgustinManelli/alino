@@ -10,12 +10,7 @@ import ClientOnlyPortal from "../client-only-portal";
 import { Calendar } from "../calendar";
 
 export const EditTaskModal = () => {
-  const {
-    isOpen,
-    task: modalTask,
-    initialRect,
-    closeModal,
-  } = useEditTaskModalStore();
+  const { isOpen, task: modalTask, initialRect } = useEditTaskModalStore();
 
   const [selected, setSelected] = useState<Date>();
   const [hour, setHour] = useState<string | undefined>();
@@ -111,9 +106,6 @@ export const EditTaskModal = () => {
             animate={{ opacity: 1, backdropFilter: "blur(5px)" }}
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.3 }}
-            onClick={() => {
-              closeModal();
-            }}
           />
           <div className={styles.modalContainerLimit}>
             <motion.div
