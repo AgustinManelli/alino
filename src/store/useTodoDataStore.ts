@@ -440,9 +440,13 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     }
 
     set((state) => ({
-      tasks: state.tasks.map((t) =>
-        t.task_id === optimisticId ? { ...t, ...data } : t
-      ),
+      tasks: state.tasks.map((t) => {
+        if (t.task_id === optimisticId) {
+          const { created_by, ...restData } = data;
+          return { ...t, ...restData, created_by: t.created_by };
+        }
+        return t;
+      }),
     }));
 
     return { error: null };

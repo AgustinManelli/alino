@@ -115,23 +115,23 @@ export const EditTaskModal = () => {
               closeModal();
             }}
           />
-
-          <motion.div
-            className={styles.modalContainer}
-            initial={initialAnimation}
-            animate={targetAnimation}
-            exit={{
-              x: initialAnimation.x,
-              y: initialAnimation.y,
-              width: initialAnimation.width,
-              height: initialAnimation.height,
-              // transition: { delay: 0.3 },
-            }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            layout
-          >
-            {syncedTask && <TaskCard task={syncedTask} editionMode={true} />}
-            {/* <motion.section
+          <div className={styles.modalContainerLimit}>
+            <motion.div
+              className={styles.modalContainer}
+              initial={initialAnimation}
+              animate={targetAnimation}
+              exit={{
+                x: initialAnimation.x,
+                y: initialAnimation.y,
+                width: initialAnimation.width,
+                height: initialAnimation.height,
+                // transition: { delay: 0.3 },
+              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              layout
+            >
+              {syncedTask && <TaskCard task={syncedTask} editionMode={true} />}
+              {/* <motion.section
               className={styles.toolsSection}
               initial={{ width: 0 }}
               animate={{ width: "90px", transition: { delay: 0.3 } }}
@@ -152,7 +152,8 @@ export const EditTaskModal = () => {
                 />
               </motion.div>
             </motion.section> */}
-          </motion.div>
+            </motion.div>
+          </div>
         </ClientOnlyPortal>
       )}
     </AnimatePresence>
