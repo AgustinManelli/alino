@@ -43,7 +43,7 @@ export function DragListCard({ list }: { list: ListsType }) {
   );
 
   const style = {
-    backgroundColor: "rgb(250, 250, 250)",
+    backgroundColor: "var(--background-card-dragged)",
     pointerEvents: "auto",
     boxShadow: "0px 0px 30px 0px rgba(0,0,0,0.1)",
     zIndex: 99,
@@ -52,7 +52,7 @@ export function DragListCard({ list }: { list: ListsType }) {
 
   return (
     <motion.section
-      className={styles.container}
+      className={styles.containerDrag}
       style={style}
       variants={animations ? variants : undefined}
       initial="hidden"
@@ -92,14 +92,7 @@ export function DragListCard({ list }: { list: ListsType }) {
 
       {/* IMPLEMENTAR INPUT PARA CAMBIAR DE NOMBRE CON SU RESPECTIVO BOTÓN */}
       <div className={styles.textContainer}>
-        <p
-          className={styles.listName}
-          style={{
-            color: "#1c1c1c",
-          }}
-        >
-          {list.list.list_name}
-        </p>
+        <p className={styles.listName}>{list.list.list_name}</p>
       </div>
 
       <div className={styles.listManagerContainer}>

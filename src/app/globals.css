@@ -4,6 +4,7 @@
   --background-container: rgb(255, 255, 255);
   --background-over-container: rgba(0, 0, 0, 0.025);
   --background-over-container-hover: rgba(0, 0, 0, 0.05);
+  --background-card-dragged: rgb(230, 230, 230);
   --border-container-color: rgb(240, 240, 240);
   --hover-over-container: rgb(250, 250, 250);
   --text: #1c1c1c;
@@ -22,6 +23,7 @@
   --background-container: rgb(44, 47, 53);
   --background-over-container: rgba(255, 255, 255, 0.05);
   --background-over-container-hover: rgba(255, 255, 255, 0.1);
+  --background-card-dragged: rgb(60, 63, 69);
   --border-container-color: rgb(60, 63, 69);
   --hover-over-container: rgb(54, 57, 63);
   --text: #ffffff;

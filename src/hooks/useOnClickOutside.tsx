@@ -25,12 +25,29 @@ export function useOnClickOutside(
       handler(e);
     };
 
-    document.addEventListener("mousedown", listener);
-    document.addEventListener("touchstart", listener);
+    const supportsPointer =
+      typeof window !== "undefined" && "PointerEvent" in window;
+
+    if (supportsPointer) {
+      document.addEventListener("pointerdown", listener, { capture: true });
+    } else {
+      document.addEventListener("mousedown", listener, { capture: true });
+      document.addEventListener("touchstart", listener, { capture: true });
+    }
 
     return () => {
-      document.removeEventListener("mousedown", listener);
-      document.removeEventListener("touchstart", listener);
+      if (supportsPointer) {
+        document.removeEventListener("pointerdown", listener, {
+          capture: true,
+        } as EventListenerOptions);
+      } else {
+        document.removeEventListener("mousedown", listener, {
+          capture: true,
+        } as EventListenerOptions);
+        document.removeEventListener("touchstart", listener, {
+          capture: true,
+        } as EventListenerOptions);
+      }
     };
   }, [ref, parentRef, handler]);
 }
