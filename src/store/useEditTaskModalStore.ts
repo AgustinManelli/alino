@@ -6,10 +6,12 @@ interface EditTaskModalState {
   task: TaskType | null;
   onConfirm: () => void;
   initialRect: DOMRect | null;
+  tempFocusElement: HTMLTextAreaElement | null;
   openModal: (options: {
     task: TaskType;
     onConfirm: () => void;
     initialRect: DOMRect;
+    tempFocusElement?: HTMLTextAreaElement;
   }) => void;
   closeModal: () => void;
 }
@@ -18,18 +20,27 @@ export const useEditTaskModalStore = create<EditTaskModalState>((set) => ({
   isOpen: false,
   task: null,
   initialRect: null,
+  tempFocusElement: null,
   onConfirm: () => {},
-  openModal: ({ task, onConfirm, initialRect }) =>
+  openModal: ({ task, onConfirm, initialRect, tempFocusElement }) =>
     set({
       isOpen: true,
       task,
       onConfirm,
       initialRect,
+      tempFocusElement: tempFocusElement || null,
     }),
   closeModal: () =>
-    set({
-      isOpen: false,
-      task: null,
-      initialRect: null,
+    set((state) => {
+      if (state.tempFocusElement) {
+        state.tempFocusElement.remove();
+      }
+
+      return {
+        isOpen: false,
+        task: null,
+        initialRect: null,
+        tempFocusElement: null,
+      };
     }),
 }));

@@ -56,15 +56,45 @@ export const EditTaskModal = () => {
         height: 0,
       };
 
+  const computeTargetY = (rectHeight: number, viewportWidth: number) => {
+    const vv = window.visualViewport;
+    const vh = vv?.height ?? window.innerHeight;
+    const offsetTop = vv?.offsetTop ?? 0;
+
+    const clamp = (n: number, min: number, max: number) =>
+      Math.max(min, Math.min(n, max));
+
+    const isMobile = viewportWidth < 850;
+
+    if (isMobile) {
+      const upperTop = offsetTop;
+      const upperHeight = vh / 2;
+
+      const centerUpper = upperTop + upperHeight / 2;
+
+      const idealTop = centerUpper - rectHeight / 2;
+
+      const minTop = upperTop;
+      const maxTop = upperTop + upperHeight - rectHeight;
+
+      return Math.round(clamp(idealTop, minTop, maxTop));
+    } else {
+      const centerFull = offsetTop + vh / 2;
+      const idealTop = centerFull - rectHeight / 2;
+
+      const minTop = offsetTop;
+      const maxTop = offsetTop + vh - rectHeight;
+      return Math.round(clamp(idealTop, minTop, maxTop));
+    }
+  };
+
   const targetAnimation = useMemo(() => {
     const viewportWidth =
       typeof window !== "undefined" ? window.innerWidth : 1024;
-    const viewportHeight =
-      typeof window !== "undefined" ? window.innerHeight : 800;
 
     const preferredWidth = initialRect?.width ?? 500;
     const MARGIN = 0;
-    const MOBILE_BREAKPOINT = 600;
+    const MOBILE_BREAKPOINT = 850;
     const maxAvailable = Math.max(240, viewportWidth - MARGIN * 2);
 
     const targetWidth =
@@ -80,7 +110,9 @@ export const EditTaskModal = () => {
         ? minX
         : Math.min(Math.max(centeredX, minX), maxX);
 
-    const targetY = Math.round(viewportHeight / 2 - 200);
+    const rectHeight = initialRect?.height ?? 0;
+
+    const targetY = computeTargetY(rectHeight, viewportWidth);
 
     return {
       x: targetX,
@@ -94,6 +126,12 @@ export const EditTaskModal = () => {
 
   const handleFocusToParentInput = () => {
     if (inputRef) inputRef.current?.focus();
+  };
+
+  const handleAnimationComplete = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   return (
@@ -120,9 +158,10 @@ export const EditTaskModal = () => {
                 // transition: { delay: 0.3 },
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
+              onAnimationComplete={handleAnimationComplete}
               layout
             >
-              {syncedTask && <TaskCard task={syncedTask} />}
+              {syncedTask && <TaskCard task={syncedTask} inputRef={inputRef} />}
               {/* <motion.section
               className={styles.toolsSection}
               initial={{ width: 0 }}

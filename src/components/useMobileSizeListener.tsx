@@ -8,7 +8,7 @@ export const MobileSizeListener = () => {
 
   useLayoutEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 850);
+      setIsMobile(window.innerWidth <= 850);
     };
 
     handleResize();

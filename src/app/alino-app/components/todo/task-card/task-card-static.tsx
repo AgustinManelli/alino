@@ -103,10 +103,22 @@ export const TaskCardStatic = memo(
     const handleEdit = useCallback(() => {
       const rect = cardRef.current?.getBoundingClientRect();
       if (!rect) return;
+
+      const tempTextarea = document.createElement("textarea");
+      tempTextarea.style.position = "absolute";
+      tempTextarea.style.opacity = "0";
+      tempTextarea.style.pointerEvents = "none";
+      tempTextarea.style.top = "-9999px";
+      tempTextarea.style.left = "-9999px";
+      document.body.appendChild(tempTextarea);
+      tempTextarea.focus();
+      setTimeout(() => window.scrollTo(0, 0), 300);
+
       openModal({
         task: task,
         onConfirm: () => {},
         initialRect: rect,
+        tempFocusElement: tempTextarea,
       });
     }, [openModal, task]);
 

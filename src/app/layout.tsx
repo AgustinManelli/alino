@@ -15,6 +15,16 @@ const APP_DEFAULT_TITLE = "Alino";
 const APP_TITLE_TEMPLATE = "Alino | %s";
 const APP_DESCRIPTION = "Alino, Tu organizador en linea";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  height: "device-height",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
+};
+
 export const metadata: Metadata = {
   applicationName: APP_NAME,
   title: {
@@ -48,15 +58,7 @@ export const metadata: Metadata = {
     },
     description: APP_DESCRIPTION,
   },
-};
-
-export const viewport: Viewport = {
-  width: "device-width",
-  height: "device-height",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: "cover",
+  viewport: viewport,
 };
 
 export default function RootLayout({
