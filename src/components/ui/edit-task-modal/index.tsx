@@ -122,7 +122,7 @@ export const EditTaskModal = () => {
               transition={{ duration: 0.3, ease: "easeInOut" }}
               layout
             >
-              {syncedTask && <TaskCard task={syncedTask} editionMode={true} />}
+              {syncedTask && <TaskCard task={syncedTask} />}
               {/* <motion.section
               className={styles.toolsSection}
               initial={{ width: 0 }}

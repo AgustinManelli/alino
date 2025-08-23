@@ -173,3 +173,22 @@
   overflow: hidden;
   color: var(--text);
 }
+
+.mainButton {
+  width: 25px;
+  height: 25px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: transparent;
+  transition: scale 0.2s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--background-over-container);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.mainButton:hover {
+  background-color: var(--background-over-container-hover) !important;
+}
