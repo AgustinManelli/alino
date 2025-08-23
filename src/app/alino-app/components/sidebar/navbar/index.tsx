@@ -82,8 +82,14 @@ export const Navbar = memo(function Navbar({ initialFetching }: NavbarProps) {
         ref={Ref}
         initial={{ x: "-150%" }}
         animate={{ x: !navbarOpened && isMobile ? "-150%" : 0 }}
-        // transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+        // transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+        transition={{ type: "tween", duration: 0.25 }}
+        // transition={{
+        //   type: "spring",
+        //   stiffness: 300,
+        //   damping: 27,
+        //   mass: 1,
+        // }}
       >
         <div className={styles.navbar}>
           <div className={styles.logoContainer}>

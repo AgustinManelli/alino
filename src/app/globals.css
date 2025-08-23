@@ -48,12 +48,16 @@ body {
   width: 100%;
   font-family: var(--font-inter), sans-serif;
   perspective: 1000px;
-  overflow: hidden !important;
+  /* overflow: hidden !important; */
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+#portal-root {
+  overflow: hidden;
 }
 
 @media all and (display-mode: standalone) {

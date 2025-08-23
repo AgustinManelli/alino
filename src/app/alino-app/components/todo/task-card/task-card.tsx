@@ -612,6 +612,11 @@ export const TaskCard = memo(
     };
 
     const handleSelected = (item: Item) => {
+      if (inputRef.current) {
+        const length = inputRef.current.value.length;
+        inputRef.current.setSelectionRange(length, length);
+        inputRef.current.focus();
+      }
       if (item.id === 1) {
         setCompleted(false);
         return;
@@ -641,6 +646,7 @@ export const TaskCard = memo(
         ref={cardRef}
         style={{
           paddingLeft: editing ? "10px" : "15px",
+          maxHeight: editing ? "300px" : "initial",
         }}
       >
         <div className={styles.checkboxContainer}>
@@ -683,7 +689,7 @@ export const TaskCard = memo(
           {editing ? (
             <textarea
               ref={inputRef}
-              maxLength={500}
+              maxLength={1000}
               rows={1}
               className={styles.nameChangerInput}
               value={inputName}
