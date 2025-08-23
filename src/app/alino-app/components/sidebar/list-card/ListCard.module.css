@@ -25,13 +25,14 @@
   transition: opacity 0.3s ease-in-out;
   z-index: 0;
 }
+@media only screen and (min-width: 851px) {
+  .container:hover {
+    background-color: var(--background-over-container) !important;
+  }
 
-.container:hover {
-  background-color: var(--background-over-container) !important;
-}
-
-.container:hover .cardFx {
-  opacity: 0.05 !important;
+  .container:hover .cardFx {
+    opacity: 0.05 !important;
+  }
 }
 
 .colorPickerContainer {
@@ -160,3 +161,13 @@
 .Mobile {
   position: relative;
 }
+
+/* @media only screen and (max-width: 850px) {
+  .container:hover {
+    background-color: transparent;
+  }
+
+  .container:hover .cardFx {
+    opacity: 0 !important;
+  }
+} */
