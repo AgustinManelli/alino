@@ -35,12 +35,11 @@ export const AppContent = memo(({ user, children }: Props) => {
 
   return (
     <div className={styles.appContentContainer}>
-      <AnimatePresence>
-        {showConfiguration && (
+      {showConfiguration ? (
+        <AnimatePresence>
           <InitialUserConfiguration onComplete={handleConfigurationComplete} />
-        )}
-      </AnimatePresence>
-      {!showConfiguration && (
+        </AnimatePresence>
+      ) : (
         <>
           <EditTaskModal />
           <ConfirmationModal />

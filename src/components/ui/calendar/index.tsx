@@ -11,7 +11,7 @@ import { Hour } from "./hour";
 import { ArrowThin, Calendar as Icon } from "@/components/ui/icons/icons";
 import styles from "./Calendar.module.css";
 import "./DayPicker.css";
-import ClientOnlyPortal from "../client-only-portal";
+import { ClientOnlyPortal } from "../client-only-portal";
 import { useModalUbication } from "@/hooks/useModalUbication";
 
 interface props {

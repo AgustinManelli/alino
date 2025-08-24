@@ -71,7 +71,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
     openModal({
       text: `¿Desea eliminar la lista "${list.list.list_name}"?`,
       onConfirm: handleDelete,
-      aditionalText:
+      additionalText:
         "Esta acción es irreversible y eliminará todas las tareas de la lista.",
     });
   };

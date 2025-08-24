@@ -1,28 +1,27 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 export function useOnClickOutside(
   ref: React.RefObject<HTMLElement>,
   handler: (e: MouseEvent | TouchEvent) => void,
   parentRef?: React.RefObject<HTMLElement>
 ) {
+  const savedHandler = useRef(handler);
+
+  useLayoutEffect(() => {
+    savedHandler.current = handler;
+  }, [handler]);
+
   useEffect(() => {
     const listener = (e: MouseEvent | TouchEvent) => {
       if (!ref.current || ref.current.contains(e.target as Node)) {
         return;
       }
-      if (parentRef) {
-        if (parentRef.current !== null) {
-          if (
-            !parentRef.current ||
-            parentRef.current.contains(e.target as Node)
-          ) {
-            return;
-          }
-        }
+      if (parentRef?.current?.contains(e.target as Node)) {
+        return;
       }
-      handler(e);
+      savedHandler.current(e);
     };
 
     const supportsPointer =
@@ -49,5 +48,5 @@ export function useOnClickOutside(
         } as EventListenerOptions);
       }
     };
-  }, [ref, parentRef, handler]);
+  }, [ref, parentRef]);
 }
