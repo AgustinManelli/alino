@@ -10,8 +10,8 @@ export async function GET(request: Request) {
   const baseURL =
     process.env.NEXT_PUBLIC_BASE_URL ??
     (process.env.NODE_ENV === "development"
-      ? "http://localhost:3000"
-      : "https://app.alino.online");
+      ? "http://localhost:3000/alino-app"
+      : "https://app.alino.online/alino-app");
 
   if (code) {
     const supabase = await createClient();

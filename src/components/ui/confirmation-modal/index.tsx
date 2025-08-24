@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
@@ -10,10 +10,18 @@ import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import styles from "./ConfirmationModal.module.css";
 
 export function ConfirmationModal() {
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   const { isOpen, text, aditionalText, actionButton, onConfirm, closeModal } =
     useConfirmationModalStore();
+
+    useEffect(() => {
+    const root = document.getElementById("portal-root");
+    if (root) {
+      setPortalRoot(root);
+    }
+  }, []);
 
   const handleAccept = () => {
     onConfirm();
@@ -25,8 +33,6 @@ export function ConfirmationModal() {
       closeModal();
     }
   });
-
-  const portalRoot = document.getElementById("portal-root");
 
   if (!portalRoot) {
     return null;

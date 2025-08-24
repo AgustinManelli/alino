@@ -14,7 +14,6 @@ import { useMemo } from "react";
 
 const variants: Variants = {
   visible: {
-    opacity: 1,
     rotate: [1, -1, 1],
     transition: {
       type: "spring",
@@ -26,7 +25,6 @@ const variants: Variants = {
       },
     },
   },
-  hidden: { opacity: 1 },
 };
 
 export function DragListCard({ list }: { list: ListsType }) {
@@ -55,9 +53,7 @@ export function DragListCard({ list }: { list: ListsType }) {
       className={styles.containerDrag}
       style={style}
       variants={animations ? variants : undefined}
-      initial="hidden"
       animate="visible"
-      exit="hidden"
     >
       <div
         className={styles.cardFx}

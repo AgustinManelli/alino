@@ -1,14 +1,19 @@
 .buttonContainer {
   position: relative;
+  width: fit-content;
   padding: 10px 15px 10px 15px;
   border-radius: 10px;
-  transition:
-    background-color 0.2s ease-in-out,
-    color 0.2s ease-in-out;
-  width: fit-content;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--button-bg-color);
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
+}
+
+.buttonContainer:hover {
+  background-color: var(--button-hover-color);
 }
 
 .container {
@@ -22,6 +27,7 @@
 .container p {
   font-size: 16px;
   font-weight: 400;
+  color: var(--text);
 }
 
 .iconContainer {

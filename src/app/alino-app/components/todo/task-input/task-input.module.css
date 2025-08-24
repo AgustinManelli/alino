@@ -22,8 +22,8 @@
   min-height: 50px;
   height: fit-content;
   display: flex;
-  justify-content: start;
-  align-items: start;
+  justify-content: flex-start;
+  align-items: flex-start;
   border-radius: 15px;
   background-color: var(--background-container);
   /* overflow: hidden; */

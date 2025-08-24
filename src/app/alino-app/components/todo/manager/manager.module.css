@@ -2,7 +2,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: center;
   gap: 30px;
   width: 100%;
@@ -13,7 +13,7 @@
   position: absolute;
   display: flex;
   flex-direction: column;
-  justify-content: end;
+  justify-content: flex-end;
   align-items: center;
   gap: 15px;
   width: 100%;
@@ -54,7 +54,7 @@
   position: relative;
   width: 100%;
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: center;
   height: 75px;
 }
@@ -107,21 +107,21 @@
   height: 75px;
   display: flex;
   justify-content: center;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .listContainer {
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: end;
+  justify-content: flex-end;
   gap: 5px;
   height: 75px;
 }
 
 .titleSection {
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: center;
   flex-direction: row;
   gap: 5px;
@@ -172,7 +172,7 @@
   scrollbar-width: none;
   display: flex;
   justify-content: center;
-  align-items: start;
+  align-items: flex-start;
   /* padding-top: 180px; */
 }
 
@@ -186,7 +186,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: center;
   gap: 10px;
   border-radius: 20px;

@@ -57,34 +57,36 @@ export const EditTaskModal = () => {
       };
 
   const computeTargetY = (rectHeight: number, viewportWidth: number) => {
-    const vv = window.visualViewport;
-    const vh = vv?.height ?? window.innerHeight;
-    const offsetTop = vv?.offsetTop ?? 0;
-
-    const clamp = (n: number, min: number, max: number) =>
-      Math.max(min, Math.min(n, max));
-
-    const isMobile = viewportWidth < 850;
-
-    if (isMobile) {
-      const upperTop = offsetTop;
-      const upperHeight = vh / 2;
-
-      const centerUpper = upperTop + upperHeight / 2;
-
-      const idealTop = centerUpper - rectHeight / 2;
-
-      const minTop = upperTop;
-      const maxTop = upperTop + upperHeight - rectHeight;
-
-      return Math.round(clamp(idealTop, minTop, maxTop));
-    } else {
-      const centerFull = offsetTop + vh / 2;
-      const idealTop = centerFull - rectHeight / 2;
-
-      const minTop = offsetTop;
-      const maxTop = offsetTop + vh - rectHeight;
-      return Math.round(clamp(idealTop, minTop, maxTop));
+    if (typeof window !== 'undefined'){
+      const vv = window.visualViewport;
+      const vh = vv?.height ?? window.innerHeight;
+      const offsetTop = vv?.offsetTop ?? 0;
+  
+      const clamp = (n: number, min: number, max: number) =>
+        Math.max(min, Math.min(n, max));
+  
+      const isMobile = viewportWidth < 850;
+  
+      if (isMobile) {
+        const upperTop = offsetTop;
+        const upperHeight = vh / 2;
+  
+        const centerUpper = upperTop + upperHeight / 2;
+  
+        const idealTop = centerUpper - rectHeight / 2;
+  
+        const minTop = upperTop;
+        const maxTop = upperTop + upperHeight - rectHeight;
+  
+        return Math.round(clamp(idealTop, minTop, maxTop));
+      } else {
+        const centerFull = offsetTop + vh / 2;
+        const idealTop = centerFull - rectHeight / 2;
+  
+        const minTop = offsetTop;
+        const maxTop = offsetTop + vh - rectHeight;
+        return Math.round(clamp(idealTop, minTop, maxTop));
+      }
     }
   };
 

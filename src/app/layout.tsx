@@ -58,7 +58,6 @@ export const metadata: Metadata = {
     },
     description: APP_DESCRIPTION,
   },
-  viewport: viewport,
 };
 
 export default function RootLayout({

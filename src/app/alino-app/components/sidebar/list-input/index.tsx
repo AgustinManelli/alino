@@ -104,7 +104,7 @@ export const ListInput = memo(() => {
           ref={formRef}
           transition={{ type: "spring", stiffness: 700, damping: 40 }}
           initial={animations ? { scale: 0, opacity: 0 } : undefined}
-          animate={{ scale: 1, opacity: 1 }}
+          animate={animations ? { scale: 1, opacity: 1 } : undefined}
           exit={animations ? { scale: 0, opacity: 0 } : undefined}
         >
           <div className={styles.colorPickerContainer}>
@@ -151,7 +151,7 @@ export const ListInput = memo(() => {
           className={styles.button}
           transition={{ type: "spring", stiffness: 700, damping: 40 }}
           initial={animations ? { scale: 0, opacity: 0 } : undefined}
-          animate={{ scale: 1, opacity: 1 }}
+          animate={animations ? { scale: 1, opacity: 1 } : undefined}
           exit={animations ? { scale: 0, opacity: 0 } : undefined}
         >
           <PlusBoxIcon

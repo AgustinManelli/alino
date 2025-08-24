@@ -224,8 +224,6 @@ export const updateDataList = async (
       })
       .eq("list_id", list_id);
 
-    console.log("errores:", error, data);
-
     if (error) {
       throw new Error(
         "No se pudo actualizar la lista. Intentalo nuevamente o contacta con soporte."

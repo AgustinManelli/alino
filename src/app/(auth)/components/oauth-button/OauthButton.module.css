@@ -10,4 +10,10 @@
   align-items: center;
   gap: 10px;
   box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.05);
+  background-color: var(--outauthBackground);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.LoginOauth:hover {
+  background-color: var(--outauthHover);
 }
