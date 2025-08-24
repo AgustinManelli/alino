@@ -3,13 +3,13 @@ import { create } from "zustand";
 interface ConfirmationModalState {
   isOpen: boolean;
   text: string;
-  aditionalText?: string;
+  additionalText?: string;
   actionButton: string;
   onConfirm: () => void;
   openModal: (options: {
     text: string;
     onConfirm: () => void;
-    aditionalText?: string;
+    additionalText?: string;
     actionButton?: string;
   }) => void;
   closeModal: () => void;
@@ -19,20 +19,20 @@ export const useConfirmationModalStore = create<ConfirmationModalState>(
   (set) => ({
     isOpen: false,
     text: "",
-    aditionalText: undefined,
+    additionalText: undefined,
     actionButton: "Eliminar",
     onConfirm: () => {},
     openModal: ({
       text,
       onConfirm,
-      aditionalText,
+      additionalText,
       actionButton = "Eliminar",
     }) =>
       set({
         isOpen: true,
         text,
         onConfirm,
-        aditionalText,
+        additionalText,
         actionButton,
       }),
     closeModal: () =>

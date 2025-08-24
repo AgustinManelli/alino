@@ -101,7 +101,7 @@ export const Manager = memo(function Manager({
     openModal({
       text: `¿Desea eliminar la lista "${setList?.list.list_name}"?`,
       onConfirm: handleDelete,
-      aditionalText:
+      additionalText:
         "Esta acción es irreversible y eliminará todas las tareas de la lista.",
     });
   }, [openModal, setList, handleDelete]);
@@ -110,7 +110,7 @@ export const Manager = memo(function Manager({
     openModal({
       text: `¿Desea salir de la lista "${setList?.list.list_name}"?`,
       onConfirm: handleLeave,
-      aditionalText: "Puedes regresar a ella con otra invitación.",
+      additionalText: "Puedes regresar a ella con otra invitación.",
       actionButton: "Salir",
     });
   }, [openModal, setList, handleLeave]);

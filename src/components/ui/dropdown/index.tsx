@@ -3,7 +3,7 @@
 import { useState, ReactNode, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import styles from "./Dropdown.module.css";
-import ClientOnlyPortal from "../client-only-portal";
+import { ClientOnlyPortal } from "../client-only-portal";
 import { useModalUbication } from "@/hooks/useModalUbication";
 interface DropdownProps<T> {
   items: T[];

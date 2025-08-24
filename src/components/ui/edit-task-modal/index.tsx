@@ -1,94 +1,96 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
-import styles from "./EditTaskModal.module.css";
-import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
+import { useShallow } from "zustand/shallow";
+
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-import ClientOnlyPortal from "../client-only-portal";
-import { Calendar } from "../calendar";
+import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
+
+import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
+import { ClientOnlyPortal } from "../client-only-portal";
+
+import styles from "./EditTaskModal.module.css";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+
+const computeTargetY = (rectHeight: number, viewportWidth: number) => {
+  if (typeof window !== "undefined") {
+    const vv = window.visualViewport;
+    const vh = vv?.height ?? window.innerHeight;
+    const offsetTop = vv?.offsetTop ?? 0;
+
+    const clamp = (n: number, min: number, max: number) =>
+      Math.max(min, Math.min(n, max));
+
+    const isMobile = viewportWidth < 850;
+
+    if (isMobile) {
+      const upperTop = offsetTop;
+      const upperHeight = vh / 2;
+
+      const centerUpper = upperTop + upperHeight / 2;
+
+      const idealTop = centerUpper - rectHeight / 2;
+
+      const minTop = upperTop;
+      const maxTop = upperTop + upperHeight - rectHeight;
+
+      return Math.round(clamp(idealTop, minTop, maxTop));
+    } else {
+      const centerFull = offsetTop + vh / 2;
+      const idealTop = centerFull - rectHeight / 2;
+
+      const minTop = offsetTop;
+      const maxTop = offsetTop + vh - rectHeight;
+      return Math.round(clamp(idealTop, minTop, maxTop));
+    }
+  }
+};
 
 export const EditTaskModal = () => {
-  const { isOpen, task: modalTask, initialRect } = useEditTaskModalStore();
-
-  const [selected, setSelected] = useState<Date>();
-  const [hour, setHour] = useState<string | undefined>();
-  const [editing, setEditing] = useState<boolean>(true);
+  const {
+    isOpen,
+    task: modalTask,
+    initialRect,
+  } = useEditTaskModalStore(
+    useShallow((state) => ({
+      isOpen: state.isOpen,
+      task: state.task,
+      initialRect: state.initialRect,
+    }))
+  );
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const modalTaskId = modalTask?.task_id ?? null;
 
-  const tasks = useTodoDataStore((s) => s.tasks);
-
-  const syncedTask = useMemo(
-    () =>
-      modalTaskId
-        ? (tasks.find((t) => t.task_id === modalTaskId) ?? null)
-        : null,
-    [tasks, modalTaskId]
+  const syncedTask = useTodoDataStore((state) =>
+    state.tasks.find((t) => t.task_id === modalTaskId)
   );
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-
+    document.body.style.overflow = isOpen ? "hidden" : "unset";
     return () => {
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
-  const initialAnimation = initialRect
-    ? {
-        x: initialRect.left - 15,
-        y: initialRect.top - 15,
-        width: initialRect.width,
-        // height: initialRect.height + 45,
-      }
-    : {
+  const initialAnimation = useMemo(() => {
+    if (!initialRect) {
+      return {
         x: typeof window !== "undefined" ? window.innerWidth / 2 : 0,
         y: typeof window !== "undefined" ? window.innerHeight / 2 : 0,
         width: 0,
         height: 0,
       };
-
-  const computeTargetY = (rectHeight: number, viewportWidth: number) => {
-    if (typeof window !== 'undefined'){
-      const vv = window.visualViewport;
-      const vh = vv?.height ?? window.innerHeight;
-      const offsetTop = vv?.offsetTop ?? 0;
-  
-      const clamp = (n: number, min: number, max: number) =>
-        Math.max(min, Math.min(n, max));
-  
-      const isMobile = viewportWidth < 850;
-  
-      if (isMobile) {
-        const upperTop = offsetTop;
-        const upperHeight = vh / 2;
-  
-        const centerUpper = upperTop + upperHeight / 2;
-  
-        const idealTop = centerUpper - rectHeight / 2;
-  
-        const minTop = upperTop;
-        const maxTop = upperTop + upperHeight - rectHeight;
-  
-        return Math.round(clamp(idealTop, minTop, maxTop));
-      } else {
-        const centerFull = offsetTop + vh / 2;
-        const idealTop = centerFull - rectHeight / 2;
-  
-        const minTop = offsetTop;
-        const maxTop = offsetTop + vh - rectHeight;
-        return Math.round(clamp(idealTop, minTop, maxTop));
-      }
     }
-  };
+
+    return {
+      x: initialRect.left - 15,
+      y: initialRect.top - 15,
+      width: initialRect.width,
+    };
+  }, [initialRect]);
 
   const targetAnimation = useMemo(() => {
     const viewportWidth =
@@ -126,10 +128,6 @@ export const EditTaskModal = () => {
     };
   }, [initialRect]);
 
-  const handleFocusToParentInput = () => {
-    if (inputRef) inputRef.current?.focus();
-  };
-
   const handleAnimationComplete = () => {
     if (inputRef.current) {
       inputRef.current.focus();
@@ -164,27 +162,6 @@ export const EditTaskModal = () => {
               layout
             >
               {syncedTask && <TaskCard task={syncedTask} inputRef={inputRef} />}
-              {/* <motion.section
-              className={styles.toolsSection}
-              initial={{ width: 0 }}
-              animate={{ width: "90px", transition: { delay: 0.3 } }}
-              exit={{ width: 0 }}
-            >
-              <motion.div
-                className={styles.toolsSectionChild}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1, transition: { delay: 0.3 } }}
-                exit={{ scale: 0 }}
-              >
-                <Calendar
-                  selected={selected}
-                  setSelected={setSelected}
-                  hour={hour}
-                  setHour={setHour}
-                  // focusToParentInput={handleFocusToParentInput}
-                />
-              </motion.div>
-            </motion.section> */}
             </motion.div>
           </div>
         </ClientOnlyPortal>

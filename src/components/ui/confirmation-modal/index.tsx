@@ -1,30 +1,37 @@
 "use client";
 
-import { createPortal } from "react-dom";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { useShallow } from "zustand/shallow";
 
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 
+import { ClientOnlyPortal } from "../client-only-portal";
+
 import styles from "./ConfirmationModal.module.css";
 
-export function ConfirmationModal() {
-  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
+export const ConfirmationModal = () => {
   const ref = useRef<HTMLDivElement>(null);
 
-  const { isOpen, text, aditionalText, actionButton, onConfirm, closeModal } =
-    useConfirmationModalStore();
+  const { isOpen, text, additionalText, actionButton, onConfirm, closeModal } =
+    useConfirmationModalStore(
+      useShallow((state) => ({
+        isOpen: state.isOpen,
+        text: state.text,
+        additionalText: state.additionalText,
+        actionButton: state.actionButton,
+        onConfirm: state.onConfirm,
+        closeModal: state.closeModal,
+      }))
+    );
 
-    useEffect(() => {
-    const root = document.getElementById("portal-root");
-    if (root) {
-      setPortalRoot(root);
-    }
-  }, []);
-
-  const handleAccept = () => {
+  const handleAccept = useCallback(() => {
     onConfirm();
+    closeModal();
+  }, [isOpen, closeModal]);
+
+  const handleCloseModal = () => {
     closeModal();
   };
 
@@ -34,62 +41,63 @@ export function ConfirmationModal() {
     }
   });
 
-  if (!portalRoot) {
-    return null;
-  }
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    };
 
-  return createPortal(
+    if (isOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, closeModal]);
+
+  return (
     <AnimatePresence>
-      {isOpen && ( // Solo renderizamos el modal si 'isOpen' es true
-        <div
-          style={{
-            backgroundColor: "rgb(0,0,0,0.3)",
-          }}
-          className={styles.confirmationModalBackground}
-          id="confirmation-modal"
-        >
+      {isOpen && (
+        <ClientOnlyPortal>
           <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
+            className={styles.confirmationModalBackground}
+            id="confirmation-modal"
+            initial={{ opacity: 0 }}
             animate={{
-              scale: 1,
               opacity: 1,
               transition: { duration: 0.2 },
             }}
-            exit={{ scale: 0.5, opacity: 0, transition: { duration: 0.15 } }} // Animación de salida
-            transition={{
-              type: "spring",
-              stiffness: 700,
-              damping: 40,
-            }}
-            className={styles.confirmationModalContainer}
-            ref={ref}
+            exit={{ opacity: 0, transition: { duration: 0.15 } }}
           >
-            <section className={styles.confirmationModalText}>
-              <p className={styles.confirmationModalTitle}>{text}</p>
-              {aditionalText && (
-                <p className={styles.confirmationModalAdditionalText}>
-                  {aditionalText}
-                </p>
-              )}
-            </section>
-            <section className={styles.confirmationModalButtons}>
-              <button
-                className={styles.confirmationModalButton}
-                onClick={closeModal} // La cancelación solo cierra el modal
-              >
-                Cancelar
-              </button>
-              <button
-                className={`${styles.confirmationModalButton} ${styles.delete}`}
-                onClick={handleAccept}
-              >
-                {actionButton}
-              </button>
-            </section>
+            <div className={styles.confirmationModalContainer} ref={ref}>
+              <section className={styles.confirmationModalText}>
+                <p className={styles.confirmationModalTitle}>{text}</p>
+                {additionalText && (
+                  <p className={styles.confirmationModalAdditionalText}>
+                    {additionalText}
+                  </p>
+                )}
+              </section>
+              <section className={styles.confirmationModalButtons}>
+                <button
+                  className={styles.confirmationModalButton}
+                  onClick={handleCloseModal}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className={`${styles.confirmationModalButton} ${styles.delete}`}
+                  onClick={handleAccept}
+                >
+                  {actionButton}
+                </button>
+              </section>
+            </div>
           </motion.div>
-        </div>
+        </ClientOnlyPortal>
       )}
-    </AnimatePresence>,
-    portalRoot
+    </AnimatePresence>
   );
-}
+};

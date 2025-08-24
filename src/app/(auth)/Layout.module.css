@@ -74,6 +74,7 @@
   filter: saturate(200%);
   pointer-events: none;
   opacity: 0.5;
+  top: 0;
 }
 
 @media only screen and (max-width: 650px) {
@@ -92,7 +93,9 @@
   .layout {
     height: calc(100svh + env(safe-area-inset-top));
   }
+}
 
+@media only screen and (display-mode: standalone) {
   .backLinkContainer {
     display: none;
   }

@@ -3,11 +3,11 @@
 import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-interface props {
+interface Props {
   children: React.ReactNode;
 }
 
-export default function ClientOnlyPortal({ children }: props) {
+export const ClientOnlyPortal = ({ children }: Props) => {
   const ref = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -17,4 +17,4 @@ export default function ClientOnlyPortal({ children }: props) {
   }, []);
 
   return mounted && ref.current ? createPortal(children, ref.current) : null;
-}
+};
