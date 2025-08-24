@@ -40,7 +40,7 @@
 .modalContainer {
   position: fixed;
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   right: -215px;
   top: -90px;
   width: fit-content;

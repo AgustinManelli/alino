@@ -9,6 +9,8 @@ import {
   UpdatePasswordInput,
 } from "@/lib/schemas/user-schema";
 
+const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
+
 export async function signInWithEmailAndPassword(dataInput: LoginUserInput) {
   const supabase = createClient();
 
@@ -117,13 +119,26 @@ export async function getSession() {
 }
 
 export async function getUser() {
-  const supabase = createClient();
-  const { data, error } = await supabase.auth.getUser();
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.getUser();
 
-  return {
-    data: {
-      user: data.user,
-    },
-    error: error?.message || null,
-  };
+    if (error) {
+      throw new Error(
+        "No se pudo obtener el usuario. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+
+    return {
+      data: {
+        user: data.user,
+      },
+    };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
 }

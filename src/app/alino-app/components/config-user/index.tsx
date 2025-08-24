@@ -1,10 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import React from "react";
-
-import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 import { WindowComponent } from "@/components/ui/window-component";
 
@@ -20,8 +16,6 @@ interface props {
 }
 
 export default function ConfigUser({ handleCloseConfig, user }: props) {
-  const { animations, toggleAnimations } = useUserPreferencesStore();
-
   const closeConfigModal = () => {
     const confirmationModal = document.getElementById(
       "confirmation-modal-my-account-config-modal"
@@ -38,7 +32,6 @@ export default function ConfigUser({ handleCloseConfig, user }: props) {
     >
       <div className={styles.configModalContainer}>
         <section className={styles.userContainer}>
-          {/* seccion de foto de perfil, display_name y username no editable */}
           <div
             className={styles.configUserIcon}
             style={{
@@ -62,8 +55,9 @@ export default function ConfigUser({ handleCloseConfig, user }: props) {
           <h1 className={styles.displayName}>{user?.display_name}</h1>
           <p className={styles.username}>@{user?.username}</p>
         </section>
-        <section></section>
-        <section></section>
+        <section className={styles.userEditorContainer}>
+          <div className={styles.editionContainer}></div>
+        </section>
       </div>
     </WindowComponent>
   );

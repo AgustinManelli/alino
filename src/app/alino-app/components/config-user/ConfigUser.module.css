@@ -36,3 +36,18 @@
   background-color: var(--background-container);
   margin-bottom: 10px;
 }
+
+.userEditorContainer {
+  background-color: rgb(80, 59, 59);
+  position: relative;
+  width: 100%;
+  height: fit-content;
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.editionContainer {
+}

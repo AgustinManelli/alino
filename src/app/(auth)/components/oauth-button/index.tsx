@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 
+import { createClient } from "@/utils/supabase/client";
 import { LoadingIcon } from "@/components/ui/icons/icons";
+
 import styles from "./OauthButton.module.css";
 import { toast } from "sonner";
 
-interface props {
+interface Props {
   providerName: string;
   providerType: "google" | "github";
   children?: React.ReactNode;
@@ -19,44 +20,40 @@ interface props {
   setOauthPending: (value: boolean) => void;
 }
 
-export function OauthButton({
+export const OauthButton = ({
   providerName,
   providerType,
   children,
   style,
-  text = false,
+  text = true,
   loadColor = "#1c1c1c",
   disabled = false,
   oauthPending,
   setOauthPending,
-}: props) {
+}: Props) => {
   const [isPending, setIsPending] = useState<boolean>(false);
 
   const login = async () => {
     setIsPending(true);
     setOauthPending(true);
-    const supabase = await createClient();
     const href = window.location.origin;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: providerType,
-      options: {
-        redirectTo: `${href}/auth/callback`,
-      },
-    });
-
+    const { error } = await loginWithOauth(href, providerType);
     if (error) {
-      toast.error("Hubo un error al iniciar sesión");
       setIsPending(false);
       setOauthPending(false);
+      toast.error(error);
       return;
     }
   };
 
   return (
     <button
-      onClick={login}
       className={styles.LoginOauth}
       type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        login();
+      }}
       style={style}
       disabled={oauthPending || disabled}
     >
@@ -72,7 +69,36 @@ export function OauthButton({
       ) : (
         children
       )}
-      {text ? <p>Continuar con {providerName}</p> : ""}
+      {text && <p>Continuar con {providerName}</p>}
     </button>
   );
-}
+};
+
+const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
+
+const loginWithOauth = async (
+  href: string,
+  providerType: "google" | "github"
+) => {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: providerType,
+      options: {
+        redirectTo: `${href}/auth/callback`,
+      },
+    });
+    if (error) {
+      throw new Error(
+        "Error al iniciar sesión. Inténtalo nuevamente o contacta con soporte."
+      );
+    }
+    return { error: null };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};

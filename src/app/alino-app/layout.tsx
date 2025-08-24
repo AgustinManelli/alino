@@ -1,6 +1,3 @@
-import { redirect } from "next/navigation";
-
-import { getUser as auth } from "@/lib/auth/actions";
 import { getUser } from "@/lib/api/actions";
 
 import AppContent from "./app-content";
@@ -13,14 +10,7 @@ export default async function appLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [userResult, userPrivateResult] = await Promise.all([
-    auth(),
-    getUser(),
-  ]);
-
-  if (userResult.error || !userResult.data?.user) {
-    return redirect("/sign-in");
-  }
+  const userPrivateResult = await getUser();
 
   return (
     <section className={styles.app}>

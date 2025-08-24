@@ -2,11 +2,9 @@
 
 import { useCallback } from "react";
 
-import { ButtonConfig } from "./components/buttonConfig";
 import { Switch } from "@/components/ui/switch";
 import { WindowComponent } from "@/components/ui/window-component";
 
-import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 import styles from "./AccountConfigSection.module.css";
@@ -17,7 +15,6 @@ interface props {
 
 export function ConfigModal({ handleCloseConfig }: props) {
   const { animations, toggleAnimations } = useUserPreferencesStore();
-  const { deleteAllLists /*, deleteAllTasks*/ } = useTodoDataStore();
 
   const closeConfigModal = useCallback(() => {
     const confirmationModal = document.getElementById(
@@ -45,41 +42,6 @@ export function ConfigModal({ handleCloseConfig }: props) {
                   value={animations}
                   action={toggleAnimations}
                   width={40}
-                />
-              ),
-            },
-          ]}
-        />
-
-        <SectionContainer
-          sectionTitle="Almacenamiento"
-          sectionDescription="Eliminar todas las listas o tareas es una acción irreversible."
-          configElements={[
-            {
-              text: <>Eliminar todas las listas</>,
-              elementAction: (
-                <ButtonConfig
-                  name="Eliminar"
-                  action={deleteAllLists}
-                  stylesProp={{
-                    color: "rgb(255, 43, 43)",
-                  }}
-                  modalText="¿Desea eliminar todas las listas?"
-                  explainText="Esta acción es irreversible."
-                />
-              ),
-            },
-            {
-              text: <>Eliminar todas las tareas</>,
-              elementAction: (
-                <ButtonConfig
-                  name="Eliminar"
-                  action={() => {} /*deleteAllTasks*/}
-                  stylesProp={{
-                    color: "rgb(255, 43, 43)",
-                  }}
-                  modalText="¿Desea eliminar todas las tareas?"
-                  explainText="Esta acción es irreversible."
                 />
               ),
             },
