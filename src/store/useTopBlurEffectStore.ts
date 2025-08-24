@@ -2,12 +2,12 @@
 
 import { create } from "zustand";
 
-interface blur_interface {
+interface BlurInterface {
   color: string | undefined;
   setColor: (color: string) => void;
 }
 
-export const useBlurBackgroundStore = create<blur_interface>((set) => ({
+export const useTopBlurEffectStore = create<BlurInterface>((set) => ({
   color: "transparent",
   setColor: (color) => set({ color }),
 }));

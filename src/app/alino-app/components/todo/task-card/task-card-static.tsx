@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/icons/icons";
 import styles from "./task-card.module.css";
 import { animate } from "motion";
+import { useUserDataStore } from "@/store/useUserDataStore";
 
 export const TaskCardStatic = memo(
   ({
@@ -40,14 +41,15 @@ export const TaskCardStatic = memo(
     const openModal = useEditTaskModalStore((state) => state.openModal);
     const taskEditing = useEditTaskModalStore((state) => state.task);
     //const animations = useUserPreferencesStore((store) => store.animations);
-    const { user, list, deleteTask, updateTaskCompleted } = useTodoDataStore(
+    const { list, deleteTask, updateTaskCompleted } = useTodoDataStore(
       useShallow((state) => ({
-        user: state.user,
         list: state.getListById(task.list_id),
         deleteTask: state.deleteTask,
         updateTaskCompleted: state.updateTaskCompleted,
       }))
     );
+
+    const user = useUserDataStore((state) => state.user);
 
     const textRef = useRef<HTMLParagraphElement>(null);
     const cardRef = useRef<HTMLDivElement>(null);

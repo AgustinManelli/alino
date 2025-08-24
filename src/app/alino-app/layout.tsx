@@ -1,11 +1,11 @@
 import { getUser } from "@/lib/api/actions";
 
-import AppContent from "./app-content";
-import TopBlurEffect from "@/components/ui/top-blur-effect";
+import { AppContent } from "./AppContent";
+import { TopBlurEffect } from "@/components/ui/top-blur-effect";
 
-import styles from "./layout.module.css";
+import styles from "./AlinoAppLayout.module.css";
 
-export default async function appLayout({
+export default async function AlinoAppLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -13,7 +13,7 @@ export default async function appLayout({
   const userPrivateResult = await getUser();
 
   return (
-    <section className={styles.app}>
+    <section className={styles.alinoAppLayoutContainer}>
       <TopBlurEffect />
       <AppContent user={userPrivateResult.data?.user}>{children}</AppContent>
     </section>

@@ -1,40 +1,40 @@
 "use client";
 
-import { useState, useCallback, memo, useEffect } from "react";
+import { useState, memo, useEffect } from "react";
 import { AnimatePresence } from "motion/react";
+
+import { useUserDataStore } from "@/store/useUserDataStore";
 
 import { ConfigSection } from "./components/config-section";
 import Sidebar from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
-import InitialUserConfiguration from "./components/initial-user-configuration";
+import { InitialUserConfiguration } from "./components/initial-user-configuration";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
-
-import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { UserType } from "@/lib/schemas/todo-schema";
-
-import styles from "./layout.module.css";
 import { EditTaskModal } from "@/components/ui/edit-task-modal";
 
-interface props {
+import { UserType } from "@/lib/schemas/todo-schema";
+import styles from "./AlinoAppLayout.module.css";
+
+interface Props {
   user: UserType;
   children: React.ReactNode;
 }
 
-export default memo(function AppContent({ user, children }: props) {
+export const AppContent = memo(({ user, children }: Props) => {
   useEffect(() => {
-    useTodoDataStore.setState({ user: user });
+    useUserDataStore.setState({ user: user });
   }, [user]);
 
   const [showConfiguration, setShowConfiguration] = useState(
     user.user_private?.initial_username_prompt_shown ?? false
   );
 
-  const handleConfigurationComplete = useCallback(() => {
+  const handleConfigurationComplete = () => {
     setShowConfiguration(false);
-  }, []);
+  };
 
   return (
-    <div className={styles.appContainer}>
+    <div className={styles.appContentContainer}>
       <AnimatePresence>
         {showConfiguration && (
           <InitialUserConfiguration onComplete={handleConfigurationComplete} />

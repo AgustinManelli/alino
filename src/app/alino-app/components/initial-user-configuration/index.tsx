@@ -1,34 +1,30 @@
 "use client";
-
-import { WindowComponent } from "@/components/ui/window-component";
-import styles from "./InitialUserConfiguration.module.css";
-import UsernameInput from "./username-input";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { useEffect, useRef, useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
+import { useShallow } from "zustand/shallow";
 
-export default function InitialUserConfiguration({
-  onComplete,
-}: {
+import { useUserDataStore } from "@/store/useUserDataStore";
+
+import { UsernameInput } from "./username-input";
+import { WindowComponent } from "@/components/ui/window-component";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import styles from "./InitialUserConfiguration.module.css";
+
+interface Props {
   onComplete: () => void;
-}) {
+}
+
+export const InitialUserConfiguration = ({ onComplete }: Props) => {
   const [finish, setFinish] = useState<boolean>(false);
-  const [textToShow, setTextToShow] = useState("Bienvenido a alino");
-  const { user, getUser, setUsernameFirstTime } = useTodoDataStore();
-  const executedRef = useRef(false);
 
-  useEffect(() => {
-    if (executedRef.current) return;
-    executedRef.current = true;
-
-    const fetchUser = async () => {
-      await getUser();
-    };
-
-    fetchUser();
-  }, []);
+  const { user, setUsernameFirstTime } = useUserDataStore(
+    useShallow((state) => ({
+      user: state.user,
+      setUsernameFirstTime: state.setUsernameFirstTime,
+    }))
+  );
 
   const onSubmit = async (username: string) => {
     const { error } = await setUsernameFirstTime(username);
@@ -36,8 +32,6 @@ export default function InitialUserConfiguration({
 
     setFinish(true);
     await new Promise((resolve) => setTimeout(resolve, 3000));
-    // setTextToShow("Disfruta ordenando tu día");
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
 
     onComplete();
     return null;
@@ -45,7 +39,7 @@ export default function InitialUserConfiguration({
 
   return (
     <motion.div
-      className={styles.generalContainer}
+      className={styles.initialUserConfigurationContainer}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -74,26 +68,26 @@ export default function InitialUserConfiguration({
       >
         <Image
           src="/circle-blur.webp"
-          alt="blur circle"
-          fill
+          alt="Blur circle"
           style={{
             objectFit: "contain",
             pointerEvents: "none",
             userSelect: "none",
           }}
+          priority
+          fill
         />
       </motion.div>
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {finish && (
           <motion.h1
-            key={textToShow}
             className={styles.initialText}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3, delay: 0.5 }}
           >
-            {textToShow}
+            Bienvenido a alino
           </motion.h1>
         )}
       </AnimatePresence>
@@ -138,4 +132,4 @@ export default function InitialUserConfiguration({
       </AnimatePresence>
     </motion.div>
   );
-}
+};

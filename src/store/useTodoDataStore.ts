@@ -4,9 +4,11 @@ import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 
+import { createClient } from "@/utils/supabase/client";
+import { useUserDataStore } from "./useUserDataStore";
+
 import {
   getLists,
-  getUser,
   insertList,
   deleteList,
   leaveList,
@@ -17,12 +19,9 @@ import {
   updatePinnedList,
   updateIndexList,
   updateNameTask,
-  // updateAllIndexLists,
   deleteAllLists,
-  // deleteAllTasks,
   getUsersMembersList,
   createListInvitation,
-  setUsernameFirstTime,
 } from "@/lib/api/actions";
 
 import {
@@ -31,7 +30,6 @@ import {
   MembershipRow,
   TaskType,
   UserWithMembershipRole,
-  UserType,
 } from "@/lib/schemas/todo-schema";
 
 const POS_INDEX = 16384;
@@ -40,8 +38,6 @@ type TodoStore = {
   lists: ListsType[];
   tasks: TaskType[];
   loadingQueue: number;
-  user: UserType | null;
-  getUser: () => Promise<void>;
   setLists: (list: ListsType[]) => Promise<void>;
   getLists: () => Promise<void>;
   getListById: (list_id: string) => ListsType | undefined;
@@ -83,8 +79,6 @@ type TodoStore = {
     list_id: string,
     invited_user_id: string
   ) => Promise<void>;
-  setUsernameFirstTime: (username: string) => Promise<{ error: string | null }>;
-  // deleteAllTasks: () => Promise<void>;
   getTaskCountByListId: (listId: string) => number;
 };
 
@@ -97,25 +91,23 @@ function handleError(err: unknown) {
   toast.error((err as Error).message || "Error desconocido");
 }
 
+async function getCurrentUserId(): Promise<string | null> {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    return null;
+  }
+
+  return session.user.id;
+}
+
 export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   lists: [],
   tasks: [],
   loadingQueue: 0,
-  user: null,
-
-  getUser: async () => {
-    try {
-      const { data, error } = await getUser();
-
-      if (error) {
-        throw new Error(error);
-      }
-
-      set(() => ({ user: data?.user }));
-    } catch (err) {
-      handleError(err);
-    }
-  },
 
   setLists: async (list) => {
     set(() => ({ lists: list }));
@@ -147,10 +139,10 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     return get().tasks.filter((task) => task.list_id === listId).length;
   },
 
-  subscriptionAddList: (list) => {
-    const user = get().user;
+  subscriptionAddList: async (list) => {
+    const user_id = await getCurrentUserId();
 
-    if (list.user_id !== user?.user_id) {
+    if (user_id && list.user_id !== user_id) {
       return;
     }
 
@@ -171,10 +163,10 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     });
   },
 
-  subscriptionDeleteList: (list) => {
-    const user = get().user;
+  subscriptionDeleteList: async (list) => {
+    const user_id = await getCurrentUserId();
 
-    if (list.user_id !== user?.user_id) {
+    if (user_id && list.user_id !== user_id) {
       return;
     }
 
@@ -268,6 +260,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   insertList: async (name, color, icon) => {
+    const user_id = await getCurrentUserId();
+
     const optimisticId = uuidv4();
     const lists = get().lists;
 
@@ -281,14 +275,14 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       role: "owner",
       shared_by: null,
       shared_since: now,
-      user_id: get().user?.user_id || "",
+      user_id: user_id || "",
       list: {
         color,
         created_at: now,
         icon: icon ?? null,
         list_id: optimisticId,
         list_name: name,
-        owner_id: get().user?.user_id || "",
+        owner_id: user_id || "",
         updated_at: null,
         is_shared: false,
         non_owner_count: 0,
@@ -392,12 +386,11 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   addTask: async (list_id, task_content, target_date, note) => {
     const optimisticId = uuidv4();
 
-    const user = get().user;
+    const user = useUserDataStore((state) => state.user);
 
     if (!user) {
       const errorMsg =
         "No se puede crear la tarea: el usuario no está autenticado.";
-      console.error(errorMsg);
       return { error: errorMsg };
     }
 
@@ -540,44 +533,4 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       handleError(err);
     }
   },
-
-  setUsernameFirstTime: async (username: string) => {
-    try {
-      const res = await setUsernameFirstTime(username);
-
-      if (res.error) {
-        if (res.error === "USERNAME_TAKEN") {
-          return {
-            error: "Ese nombre de usuario ya está en uso. Elige uno diferente.",
-          };
-        }
-      }
-    } catch (err) {
-      console.error("Unexpected error changing username:", err);
-    }
-
-    return { error: null };
-  },
-
-  // deleteAllTasks: async () => {
-  //   const originalTasks = get().tasks;
-  //   await createCRUDHandler(z.void()).interact(
-  //     undefined,
-  //     {
-  //       optimisticUpdate: (draft) => {
-  //         draft.tasks = [];
-  //       },
-  //       apiCall: async () => {
-  //         const { error } = await deleteAllTasks();
-  //         if (error) throw new Error(error);
-  //       },
-  //       rollback: () => set({ tasks: originalTasks }),
-  //     },
-  //     set
-  //   );
-  // },
-
-  // getTaskCountByListId: (listId: string) => {
-  //   return get().tasks.filter((task) => task.category_id === listId).length;
-  // },
 }));

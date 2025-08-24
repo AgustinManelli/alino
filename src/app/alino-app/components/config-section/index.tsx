@@ -5,7 +5,7 @@ import { AnimatePresence } from "motion/react";
 
 import { signOutLocal } from "@/lib/auth/actions";
 import { useNavigationLoader } from "@/hooks/useNavigationLoader";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useUserDataStore } from "@/store/useUserDataStore";
 
 import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
 import { OptionBox } from "@/components/ui/modal-options-box/optionBox";
@@ -23,7 +23,7 @@ export function ConfigSection() {
   const [configUserActive, setConfigUserActive] = useState<boolean>(false);
   const { setLoading } = useNavigationLoader();
 
-  const user = useTodoDataStore((state) => state.user);
+  const user = useUserDataStore((state) => state.user);
 
   const avatar_url = user?.avatar_url;
   const display_name = user?.display_name;
