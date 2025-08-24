@@ -1,10 +1,11 @@
 "use client";
 
-import styles from "./TopBlurEffect.module.css";
-import { useBlurBackgroundStore } from "@/store/useBlurBackgroundStore";
+import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
 
-export default function TopBlurEffect() {
-  const colorSelectedList = useBlurBackgroundStore((state) => state.color);
+import styles from "./TopBlurEffect.module.css";
+
+export const TopBlurEffect = () => {
+  const colorSelectedList = useTopBlurEffectStore((state) => state.color);
 
   return (
     <div
@@ -14,4 +15,4 @@ export default function TopBlurEffect() {
       }}
     ></div>
   );
-}
+};

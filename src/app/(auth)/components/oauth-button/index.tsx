@@ -60,7 +60,7 @@ export const OauthButton = ({
       {isPending ? (
         <LoadingIcon
           style={{
-            width: "20px",
+            width: "25px",
             height: "auto",
             stroke: `${loadColor}`,
             strokeWidth: "3",

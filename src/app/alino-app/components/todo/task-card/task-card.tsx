@@ -24,6 +24,7 @@ import { linkifyWithIcon } from "@/components/utils/linkify";
 
 import { Check, MoreVertical, Note } from "@/components/ui/icons/icons";
 import styles from "./task-card.module.css";
+import { useUserDataStore } from "@/store/useUserDataStore";
 
 export const TaskCard = memo(
   ({
@@ -44,15 +45,16 @@ export const TaskCard = memo(
     const checkButtonRef = useRef<HTMLButtonElement>(null);
 
     //const animations = useUserPreferencesStore((store) => store.animations);
-    const { user, updateTaskName, deleteTask, updateTaskCompleted } =
+    const { updateTaskName, deleteTask, updateTaskCompleted } =
       useTodoDataStore(
         useShallow((state) => ({
-          user: state.user,
           updateTaskName: state.updateTaskName,
           deleteTask: state.deleteTask,
           updateTaskCompleted: state.updateTaskCompleted,
         }))
       );
+
+    const user = useUserDataStore((state) => state.user);
 
     const { lines, calculateLines } = useLineCalculator(textRef);
 

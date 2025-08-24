@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-import { useBlurBackgroundStore } from "@/store/useBlurBackgroundStore";
+import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { ListsType } from "@/lib/schemas/todo-schema";
@@ -31,6 +31,7 @@ import {
   LogOut,
 } from "@/components/ui/icons/icons";
 import { TaskCardStatic } from "../task-card/task-card-static";
+import { useUserDataStore } from "@/store/useUserDataStore";
 
 export const Manager = memo(function Manager({
   setList,
@@ -44,9 +45,10 @@ export const Manager = memo(function Manager({
   const [emoji, setEmoji] = useState<string | null>(setList?.list.icon ?? null);
   const [infoActive, setInfoActive] = useState<boolean>(false);
 
-  const { user, tasks, deleteList, leaveList } = useTodoDataStore();
+  const { tasks, deleteList, leaveList } = useTodoDataStore();
+  const user = useUserDataStore((state) => state.user);
   const openModal = useConfirmationModalStore((state) => state.openModal);
-  const setBlurredFx = useBlurBackgroundStore((state) => state.setColor);
+  const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
 
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement | null>(null);

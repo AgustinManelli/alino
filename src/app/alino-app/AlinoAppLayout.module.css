@@ -1,4 +1,4 @@
-.app {
+.alinoAppLayoutContainer {
   position: relative;
   height: 100svh;
   width: 100vw;
@@ -8,7 +8,7 @@
   touch-action: none;
 }
 
-.appContainer {
+.appContentContainer {
   position: relative;
   height: 100%;
   display: flex;
@@ -25,7 +25,7 @@
 }
 
 @media all and (display-mode: standalone) {
-  .app {
+  .alinoAppLayoutContainer {
     height: 100vh;
     padding: calc(env(safe-area-inset-top) + 15px) 15px
       calc(env(safe-area-inset-bottom) + 15px) 15px;

@@ -12,12 +12,12 @@ type Props = {
   disabled?: boolean;
 };
 
-export default function UsernameInput({
+export const UsernameInput = ({
   initialValue = "",
   onSubmit,
   placeholder = "Elige un nombre de usuario",
   disabled = false,
-}: Props) {
+}: Props) => {
   const [username, setUsername] = useState<string>(initialValue);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -31,8 +31,7 @@ export default function UsernameInput({
     return /^[a-z0-9_]{3,30}$/.test(v);
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleSubmit = async () => {
     setError(null);
     const cleaned = username.trim().toLowerCase();
     if (!validate(cleaned)) {
@@ -123,4 +122,4 @@ export default function UsernameInput({
       )}
     </form>
   );
-}
+};

@@ -6,7 +6,7 @@
   height: 260px;
   pointer-events: none;
   border-radius: 100%;
-  opacity: 0.4;
+  opacity: 0.7;
   transform: translateY(-175%) translateZ(0px);
   transition: box-shadow 0.3s ease-in-out;
   z-index: 20;
