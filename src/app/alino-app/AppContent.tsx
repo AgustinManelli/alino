@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, memo, useEffect } from "react";
+import { useState, memo, useEffect, useRef } from "react";
 import { AnimatePresence } from "motion/react";
 
 import { useUserDataStore } from "@/store/useUserDataStore";
 
 import { ConfigSection } from "./components/config-section";
-import Sidebar from "./components/sidebar";
+import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import { InitialUserConfiguration } from "./components/initial-user-configuration";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
@@ -21,9 +21,13 @@ interface Props {
 }
 
 export const AppContent = memo(({ user, children }: Props) => {
+  const initialized = useRef(false);
   useEffect(() => {
-    useUserDataStore.setState({ user: user });
-  }, [user]);
+    if (!initialized.current) {
+      useUserDataStore.setState({ user: user });
+      initialized.current = true;
+    }
+  }, []);
 
   const [showConfiguration, setShowConfiguration] = useState(
     user.user_private?.initial_username_prompt_shown ?? false
@@ -35,11 +39,12 @@ export const AppContent = memo(({ user, children }: Props) => {
 
   return (
     <div className={styles.appContentContainer}>
-      {showConfiguration ? (
+      {showConfiguration && (
         <AnimatePresence>
           <InitialUserConfiguration onComplete={handleConfigurationComplete} />
         </AnimatePresence>
-      ) : (
+      )}
+      {!showConfiguration && (
         <>
           <EditTaskModal />
           <ConfirmationModal />

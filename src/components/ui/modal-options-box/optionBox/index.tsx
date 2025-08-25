@@ -1,31 +1,25 @@
 "use client";
 
-import { useState } from "react";
-
 import styles from "./OptionBox.module.css";
 
-interface props {
+interface Props {
   children: React.ReactNode;
   text: string;
   action: () => void;
 }
 
-export function OptionBox({ children, text, action }: props) {
-  const [hover, setHover] = useState<boolean>(false);
+export const OptionBox = ({ children, text, action }: Props) => {
   return (
     <div
       className={styles.box}
-      onClick={action}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{
-        backgroundColor: hover
-          ? "var(--background-over-container)"
-          : "transparent",
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        action();
       }}
     >
       {children}
       <p>{text}</p>
     </div>
   );
-}
+};

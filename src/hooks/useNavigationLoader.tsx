@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useLoaderStore } from "@/store/useLoaderStore";
 
 export const useNavigationLoader = () => {
-  const { setLoading } = useLoaderStore();
+  const setLoading = useLoaderStore((state) => state.setLoading);
   const pathname = usePathname();
 
   useEffect(() => {

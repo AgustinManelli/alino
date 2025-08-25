@@ -39,29 +39,6 @@ export const Navbar = memo(function Navbar({ initialFetching }: NavbarProps) {
   //ref's
   const Ref = useRef<HTMLDivElement | null>(null);
 
-  //Lógica para cerrar el navbar
-  useOnClickOutside(Ref, () => {
-    const configMenuContainer = document.getElementById(
-      "config-menu-container-navbar-list-card"
-    );
-    const colorPickerContainer = document.getElementById(
-      "color-picker-container-navbar-list-card"
-    );
-    const listEdit = document.getElementById(
-      "list-info-edit-container-list-card"
-    );
-    const confirmationModal = document.getElementById("confirmation-modal");
-    if (
-      configMenuContainer ||
-      colorPickerContainer ||
-      listEdit ||
-      confirmationModal
-    ) {
-      return;
-    }
-    setNavbarOpened(false);
-  });
-
   const toggleNavbar = () => {
     setNavbarOpened((prev) => !prev);
   };
@@ -69,6 +46,8 @@ export const Navbar = memo(function Navbar({ initialFetching }: NavbarProps) {
   const handleCloseNavbar = () => {
     setNavbarOpened(false);
   };
+
+  useOnClickOutside(Ref, handleCloseNavbar, [], "ignore-sidebar-close");
 
   return (
     <>
@@ -82,14 +61,7 @@ export const Navbar = memo(function Navbar({ initialFetching }: NavbarProps) {
         ref={Ref}
         initial={{ x: "-150%" }}
         animate={{ x: !navbarOpened && isMobile ? "-150%" : 0 }}
-        // transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
         transition={{ type: "tween", duration: 0.25 }}
-        // transition={{
-        //   type: "spring",
-        //   stiffness: 300,
-        //   damping: 27,
-        //   mass: 1,
-        // }}
       >
         <div className={styles.navbar}>
           <div className={styles.logoContainer}>

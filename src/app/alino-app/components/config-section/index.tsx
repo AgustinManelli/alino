@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { AnimatePresence } from "motion/react";
 
 import { signOutLocal } from "@/lib/auth/actions";
@@ -12,24 +12,24 @@ import { OptionBox } from "@/components/ui/modal-options-box/optionBox";
 import { ConfigModal } from "../config-modal";
 import { CloudIndicator } from "./cloud-indicator";
 import { ThemeSelector } from "@/components/ui/theme-selector";
+import ConfigUser from "../config-user";
 
 import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
-import ConfigUser from "../config-user";
 
-export function ConfigSection() {
-  const [active, setActive] = useState<boolean>(false);
+export const ConfigSection = () => {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
   const [configUserActive, setConfigUserActive] = useState<boolean>(false);
   const { setLoading } = useNavigationLoader();
 
   const user = useUserDataStore((state) => state.user);
 
+  const iconRef = useRef<HTMLDivElement>(null);
+
   const avatar_url = user?.avatar_url;
   const display_name = user?.display_name;
   const username = user?.username;
-
-  const iconRef = useRef<HTMLDivElement>(null);
 
   const logout = () => {
     signOutLocal();
@@ -37,15 +37,15 @@ export function ConfigSection() {
   };
 
   const handleClose = () => {
-    setActive(false);
+    setIsOpen(false);
   };
 
   const handleToggle = () => {
-    setActive(!active);
+    setIsOpen((prev) => !prev);
   };
 
   const handleOpenConfig = () => {
-    setActive(false);
+    setIsOpen(false);
     setConfigActive(true);
   };
 
@@ -54,7 +54,7 @@ export function ConfigSection() {
   };
 
   const handleOpenConfigUser = () => {
-    setActive(false);
+    setIsOpen(false);
     setConfigUserActive(true);
   };
 
@@ -98,57 +98,25 @@ export function ConfigSection() {
             )}
           </div>
         </div>
-        {active && (
+        {isOpen && (
           <ModalBox
             title={display_name ? display_name : "User"}
-            user={true}
+            user
             subtitle={`@${username ? username : "user"}`}
             onClose={handleClose}
             iconRef={iconRef}
           >
-            <div
-              style={{
-                width: "fit-content",
-                height: "fit-content",
-                display: "flex",
-                gap: "5px",
-                justifyContent: "center",
-                alignItems: "center",
-                flexDirection: "column",
-                minWidth: "200px",
-              }}
-            >
+            <div className={styles.optionsBoxsContainer}>
               <ThemeSelector />
               <OptionBox text={"Mi cuenta"} action={handleOpenConfigUser}>
-                <UserIcon
-                  style={{
-                    width: "18px",
-                    height: "18px",
-                    strokeWidth: "2",
-                    stroke: "var(--text)",
-                  }}
-                />
+                <UserIcon style={iconStyles} />
               </OptionBox>
               <OptionBox text={"Configuración"} action={handleOpenConfig}>
-                <Config
-                  style={{
-                    width: "18px",
-                    height: "18px",
-                    strokeWidth: "2",
-                    stroke: "var(--text)",
-                  }}
-                />
+                <Config style={iconStyles} />
               </OptionBox>
               <div className={styles.separator}></div>
               <OptionBox text={"Cerrar sesión"} action={logout}>
-                <LogOut
-                  style={{
-                    width: "18px",
-                    height: "18px",
-                    strokeWidth: "2",
-                    stroke: "var(--text)",
-                  }}
-                />
+                <LogOut style={iconStyles} />
               </OptionBox>
             </div>
           </ModalBox>
@@ -156,4 +124,11 @@ export function ConfigSection() {
       </div>
     </>
   );
-}
+};
+
+const iconStyles = {
+  width: "18px",
+  height: "18px",
+  strokeWidth: "2",
+  stroke: "var(--text)",
+} as React.CSSProperties;

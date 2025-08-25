@@ -25,13 +25,7 @@ export function ModalBox({
 }: props) {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  useOnClickOutside(
-    modalRef,
-    () => {
-      onClose();
-    },
-    iconRef
-  );
+  useOnClickOutside(modalRef, onClose, [iconRef]);
 
   return (
     <div className={styles.container} ref={modalRef}>

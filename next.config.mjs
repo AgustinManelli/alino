@@ -1,7 +1,4 @@
 import withPWAInit from "@ducanh2912/next-pwa";
-import path from "path";
-
-const __dirname = new URL('.', import.meta.url).pathname;
 
 const withPWA = withPWAInit({
   dest: "public",
@@ -15,7 +12,7 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   images: {
     remotePatterns: [
       {
@@ -28,12 +25,6 @@ const nextConfig = {
       },
     ],
   },
-  webpack(config) {
-    config.resolve.alias['@public'] = path.join(__dirname, 'public');
-    return config;
-  },
 };
 
 export default withPWA(nextConfig);
-
-
