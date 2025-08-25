@@ -15,8 +15,6 @@ import { init } from "emoji-mart";
 import data from "@/components/ui/emoji-mart/apple.json";
 init({ data });
 
-const supabase = createClient();
-
 export const Sidebar = () => {
   const {
     getLists,
@@ -28,6 +26,8 @@ export const Sidebar = () => {
 
   const [initialFetching, setInitialFetching] = useState<boolean>(true);
   const executedRef = useRef(false);
+
+  const supabase = createClient();
 
   useEffect(() => {
     if (executedRef.current) return;
@@ -41,77 +41,106 @@ export const Sidebar = () => {
     fetchInitialData();
   }, []);
 
-  useEffect(() => {
-    const TABLE_NAME = "list_memberships";
+  // useEffect(() => {
+  //   const TABLE_NAME = "list_memberships";
 
-    const channel = supabase
-      .channel("list-memberships", { config: { broadcast: { self: false } } })
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: TABLE_NAME,
-        },
-        async (payload) => {
-          if (payload.eventType === "UPDATE") {
-            const updatedMembership = payload.new as MembershipRow;
-            subscriptionUpdateMembership(updatedMembership);
-          }
+  //   const channel = supabase
+  //     .channel("list-memberships")
+  //     .on(
+  //       "postgres_changes",
+  //       {
+  //         event: "*",
+  //         schema: "public",
+  //         table: TABLE_NAME,
+  //       },
+  //       async (payload) => {
+  //         if (payload.eventType === "DELETE") {
+  //           console.log("esto es un delete: ", payload);
+  //           const oldMembership = payload.old as MembershipRow;
+  //           if (oldMembership) {
+  //             subscriptionDeleteList(oldMembership);
+  //           }
+  //         } else {
+  //           console.log("esto no es delete: ", payload);
+  //         }
+  //       }
+  //     )
+  // .on(
+  //   "postgres_changes",
+  //   {
+  //     event: "*",
+  //     schema: "public",
+  //     table: "list_memberships",
+  //   },
+  //   (payload) => {
+  //     console.log("esto es lo que devuelve:", payload);
+  //     //   const updatedMembership = payload.new as MembershipRow;
+  //     //   subscriptionUpdateMembership(updatedMembership);
+  //   }
+  // )
+  // .on(
+  //   "postgres_changes",
+  //   {
+  //     event: "UPDATE",
+  //     schema: "public",
+  //     table: "lists",
+  //   },
+  //   (payload) => {
+  //     console.log(payload.new);
+  //     const updatedList = payload.new as ListsRow;
+  //     subscriptionUpdateList(updatedList);
+  //   }
+  // )
+  //     .on("broadcast", { event: "membership_insert" }, (payload) => {
+  //       console.log(payload);
+  //       const sent = (payload as any).payload;
+  //       if (!sent) return;
 
-          if (payload.eventType === "DELETE") {
-            const oldMembership = payload.old as MembershipRow;
+  //       const membership = sent.membership as MembershipRow;
+  //       const list = sent.list as ListsRow;
 
-            if (oldMembership) {
-              subscriptionDeleteList(oldMembership);
-            }
-          }
-        }
-      )
-      .on("broadcast", { event: "membership_insert" }, (payload) => {
-        const sent = (payload as any).payload;
-        if (!sent) return;
+  //       if (!membership) return;
 
-        const membership = sent.membership as MembershipRow;
-        const list = sent.list as ListsRow;
+  //       const newItemForStore: ListsType = {
+  //         ...membership,
+  //         list: list,
+  //       };
 
-        if (!membership) return;
+  //       subscriptionAddList(newItemForStore);
+  //     })
+  //     .subscribe();
 
-        const newItemForStore: ListsType = {
-          ...membership,
-          list: list,
-        };
+  //   return () => {
+  //     supabase.removeChannel(channel);
+  //   };
+  // }, [
+  //   supabase,
+  //   subscriptionAddList,
+  //   subscriptionUpdateMembership,
+  //   subscriptionDeleteList,
+  // ]);
 
-        subscriptionAddList(newItemForStore);
-      })
-      .subscribe();
+  // useEffect(() => {
+  //   const channelLists = supabase
+  //     .channel("lists", { config: { broadcast: { self: false } } })
+  //     .on(
+  //       "postgres_changes",
+  //       {
+  //         event: "UPDATE",
+  //         schema: "public",
+  //         table: "lists",
+  //       },
+  //       (payload) => {
+  //         const updatedList = payload.new as ListsRow;
+  //         subscriptionUpdateList(updatedList);
+  //       }
+  //     )
+  //     .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, subscriptionAddList, subscriptionDeleteList]);
-
-  useEffect(() => {
-    const channelLists = supabase
-      .channel("lists", { config: { broadcast: { self: false } } })
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "lists",
-        },
-        (payload) => {
-          const updatedList = payload.new as ListsRow;
-          subscriptionUpdateList(updatedList);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channelLists);
-    };
-  }, [supabase, subscriptionUpdateList]);
+  //   return () => {
+  //     supabase.removeChannel(channelLists);
+  //   };
+  // }, [supabase, subscriptionUpdateList]);
 
   return <Navbar initialFetching={initialFetching} />;
 };

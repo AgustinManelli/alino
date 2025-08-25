@@ -19,6 +19,7 @@
   overflow: hidden;
   min-width: 100px;
   min-height: 50px;
+  max-height: 300px;
   top: 110%;
   right: 0;
 }
