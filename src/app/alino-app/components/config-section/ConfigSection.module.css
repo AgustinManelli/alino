@@ -10,7 +10,6 @@
 .configButton {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -21,6 +20,7 @@
   overflow: hidden;
   padding: 2px;
   z-index: 0;
+  border-radius: 17px;
 }
 
 .configUserIcon {
@@ -33,7 +33,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 8px;
+  border-radius: 15px;
   background-color: var(--background-container);
 }
 

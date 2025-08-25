@@ -51,18 +51,21 @@ export const useNotificationsStore = create<UNS>()((set, get) => ({
   },
 
   updateInvitationList: async (notification_id: string, status: string) => {
-    const { data, error } = await updateInvitationList(notification_id, status);
-
-    if (error) {
-      handleError(error);
-      return;
-    }
+    const originalNotifications = get().notifications;
 
     set((state) => ({
       notifications: state.notifications.filter(
         (n) => n.invitation_id !== notification_id
       ),
     }));
+
+    const { error } = await updateInvitationList(notification_id, status);
+
+    if (error) {
+      handleError(error);
+      set({ notifications: originalNotifications });
+      return;
+    }
   },
 
   subscriptionAddNotification: (notification: InvitationRow) => {

@@ -8,7 +8,7 @@
   position: relative;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 15px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -19,7 +19,7 @@
 }
 
 .notificationButton:hover {
-  background-color: var(--background-over-container-hover);
+  background-color: var(--background-over-container-hover) !important;
 }
 
 .badge {
@@ -32,12 +32,11 @@
   height: 15px;
   border-radius: 50%;
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 300;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  border: 2px solid var(--background-over-container);
 }
 
 .contentWrapper {
@@ -46,6 +45,9 @@
   max-height: 300px;
   overflow-y: auto;
   padding: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .contentWrapper::-webkit-scrollbar {
@@ -56,7 +58,7 @@
   text-align: center;
   padding: 20px;
   color: var(--text-not-available);
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .notificationList {
@@ -78,8 +80,6 @@
   align-items: left;
   gap: 5px;
   padding: 5px 10px;
-  /* background-color: var(--background-over-container); */
-  border-radius: 6px;
 }
 
 .notificationInfo {
@@ -89,7 +89,7 @@
   align-items: center;
   flex-direction: row;
   gap: 10px;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text);
 }
 
@@ -101,8 +101,7 @@
 .notificationActions {
   display: flex;
   gap: 8px;
-  /* justify-content: flex-end; */
-  padding-left: 50px;
+  padding-left: 40px;
 }
 
 .actionButton {
@@ -112,16 +111,16 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.actionButton:hover {
-  opacity: 0.85;
 }
 
 .accept {
   background-color: var(--background-over-container);
-  color: white;
+  color: var(--text);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.accept:hover {
+  background-color: var(--background-over-container-hover);
 }
 
 .decline {
@@ -135,8 +134,8 @@
   justify-content: center;
   align-items: center;
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

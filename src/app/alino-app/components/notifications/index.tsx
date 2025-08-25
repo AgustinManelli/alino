@@ -2,20 +2,19 @@
 
 import { useState, useRef, useEffect } from "react";
 import React from "react";
-import { useNotificationsStore } from "@/store/useNotificationsStore";
-
-import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
-import { Alert, UserIcon } from "@/components/ui/icons/icons";
 import { createClient } from "@/utils/supabase/client";
-import { Database } from "@/lib/schemas/todo-schema";
-
-import styles from "./notifications.module.css";
 import { toast } from "sonner";
 
-type InvitationRow = Database["public"]["Tables"]["list_invitations"]["Row"];
+import { useNotificationsStore } from "@/store/useNotificationsStore";
+import { InvitationRow } from "@/lib/schemas/todo-schema";
 
-export function NotificationsSection() {
-  const [active, setActive] = useState(false);
+import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
+
+import { Alert, LoadingIcon, UserIcon } from "@/components/ui/icons/icons";
+import styles from "./NotificationsSection.module.css";
+
+export const NotificationsSection = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const iconRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +39,7 @@ export function NotificationsSection() {
   useEffect(() => {
     const TABLE_NAME = "list_invitations";
     const channel = supabase
-      .channel("list-invitations", { config: { broadcast: { self: false } } })
+      .channel("list-invitations")
       .on(
         "postgres_changes",
         {
@@ -56,19 +55,6 @@ export function NotificationsSection() {
             );
             subscriptionAddNotification(invitation);
           }
-
-          // if (payload.eventType === "UPDATE") {
-          //   const updatedMembership = payload.new as MembershipRow;
-          //   subscriptionUpdateMembership(updatedMembership);
-          // }
-
-          // if (payload.eventType === "DELETE") {
-          //   const oldMembership = payload.old as MembershipRow;
-
-          //   if (oldMembership) {
-          //     subscriptionDeleteList(oldMembership);
-          //   }
-          // }
         }
       )
       .subscribe();
@@ -79,27 +65,33 @@ export function NotificationsSection() {
   }, [supabase, subscriptionAddNotification]);
 
   const handleToggle = () => {
-    setActive(!active);
+    setIsOpen(!isOpen);
   };
 
   const handleClose = () => {
-    setActive(false);
+    setIsOpen(false);
   };
 
   const handleAccept = async (invitationId: string) => {
     await updateInvitationList(invitationId, "accepted");
-
-    // handleClose();
   };
 
   const handleDecline = async (invitationId: string) => {
     await updateInvitationList(invitationId, "rejected");
-    // handleClose();
   };
 
   const renderContent = () => {
     if (isLoading) {
-      return <p className={styles.statusText}>Cargando...</p>;
+      return (
+        <LoadingIcon
+          style={{
+            width: "20px",
+            height: "auto",
+            stroke: "var(--text-not-available)",
+            strokeWidth: 3,
+          }}
+        />
+      );
     }
 
     if (!notifications || notifications.length === 0) {
@@ -165,18 +157,28 @@ export function NotificationsSection() {
     <div className={styles.notificationContainer}>
       <div
         className={styles.notificationButton}
+        style={{
+          backgroundColor: isOpen
+            ? "var(--background-over-container-hover)"
+            : "var(--background-over-container)",
+        }}
         onClick={handleToggle}
         ref={iconRef}
       >
         <Alert
-          style={{ width: "20px", height: "20px", stroke: "var(--icon-color)" }}
+          style={{
+            width: "20px",
+            height: "20px",
+            stroke: "var(--icon-color)",
+            strokeWidth: 1.5,
+          }}
         />
         {notifications && notifications.length > 0 && (
           <span className={styles.badge}>{notifications.length}</span>
         )}
       </div>
 
-      {active && (
+      {isOpen && (
         <ModalBox
           title="Notificaciones"
           onClose={handleClose}
@@ -187,4 +189,4 @@ export function NotificationsSection() {
       )}
     </div>
   );
-}
+};
