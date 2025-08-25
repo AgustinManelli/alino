@@ -386,7 +386,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   addTask: async (list_id, task_content, target_date, note) => {
     const optimisticId = uuidv4();
 
-    const user = useUserDataStore((state) => state.user);
+    const { user } = useUserDataStore.getState();
 
     if (!user) {
       const errorMsg =

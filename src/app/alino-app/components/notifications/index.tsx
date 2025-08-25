@@ -62,13 +62,14 @@ export const NotificationsSection = () => {
   //         //   subscriptionUpdateMembership(updatedMembership);
   //         // }
 
-  //         // if (payload.eventType === "DELETE") {
-  //         //   const oldMembership = payload.old as MembershipRow;
+  //         if (payload.eventType === "DELETE") {
+  //           console.log(payload);
+  //           // const oldMembership = payload.old as MembershipRow;
 
-  //         //   if (oldMembership) {
-  //         //     subscriptionDeleteList(oldMembership);
-  //         //   }
-  //         // }
+  //           // if (oldMembership) {
+  //           //   subscriptionDeleteList(oldMembership);
+  //           // }
+  //         }
   //       }
   //     )
   //     .subscribe();

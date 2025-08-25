@@ -91,23 +91,23 @@ export const Sidebar = () => {
   //     subscriptionUpdateList(updatedList);
   //   }
   // )
-  //     .on("broadcast", { event: "membership_insert" }, (payload) => {
-  //       console.log(payload);
-  //       const sent = (payload as any).payload;
-  //       if (!sent) return;
+  // .on("broadcast", { event: "membership_insert" }, (payload) => {
+  //   console.log(payload);
+  //   const sent = (payload as any).payload;
+  //   if (!sent) return;
 
-  //       const membership = sent.membership as MembershipRow;
-  //       const list = sent.list as ListsRow;
+  //   const membership = sent.membership as MembershipRow;
+  //   const list = sent.list as ListsRow;
 
-  //       if (!membership) return;
+  //   if (!membership) return;
 
-  //       const newItemForStore: ListsType = {
-  //         ...membership,
-  //         list: list,
-  //       };
+  //   const newItemForStore: ListsType = {
+  //     ...membership,
+  //     list: list,
+  //   };
 
-  //       subscriptionAddList(newItemForStore);
-  //     })
+  //   subscriptionAddList(newItemForStore);
+  // })
   //     .subscribe();
 
   //   return () => {
