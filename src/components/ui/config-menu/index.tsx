@@ -127,7 +127,7 @@ export const ConfigMenu = memo(function ConfigMenu({
         {open && (
           <section
             ref={menuRef}
-            className={styles.container}
+            className={`${styles.container} ignore-sidebar-close`}
             id={`config-menu-container-${uniqueId}`}
             onClick={(e) => {
               e.stopPropagation();

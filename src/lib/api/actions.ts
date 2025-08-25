@@ -421,7 +421,7 @@ export const updateCompletedTask = async (
   completed: boolean
 ) => {
   try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    const { supabase } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("tasks")
@@ -475,7 +475,7 @@ export const updateNameTask = async (
 
 export const getUsersMembersList = async (list_id: string) => {
   try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    const { supabase } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase.rpc("get_list_members_users", {
       p_list_id: list_id,
@@ -551,10 +551,10 @@ export const createListInvitation = async (
 
 export const getNotifications = async () => {
   try {
-    const { supabase } = await getAuthenticatedSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    // const {
+    //   data: { user },
+    // } = await supabase.auth.getUser();
 
     if (!user) {
       return { data: { notifications: [] } };
@@ -589,10 +589,10 @@ export const updateInvitationList = async (
   status: string
 ) => {
   try {
-    const { supabase } = await getAuthenticatedSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    // const {
+    //   data: { user },
+    // } = await supabase.auth.getUser();
 
     if (!user) {
       return { data: { notifications: [] } };

@@ -16,6 +16,7 @@ import styles from "./NotificationsSection.module.css";
 export const NotificationsSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
   const iconRef = useRef<HTMLDivElement>(null);
 
   const supabase = createClient();
@@ -39,7 +40,7 @@ export const NotificationsSection = () => {
   useEffect(() => {
     const TABLE_NAME = "list_invitations";
     const channel = supabase
-      .channel("list-invitations")
+      .channel("list-invitations", { config: { broadcast: { self: false } } })
       .on(
         "postgres_changes",
         {
@@ -55,6 +56,19 @@ export const NotificationsSection = () => {
             );
             subscriptionAddNotification(invitation);
           }
+
+          // if (payload.eventType === "UPDATE") {
+          //   const updatedMembership = payload.new as MembershipRow;
+          //   subscriptionUpdateMembership(updatedMembership);
+          // }
+
+          // if (payload.eventType === "DELETE") {
+          //   const oldMembership = payload.old as MembershipRow;
+
+          //   if (oldMembership) {
+          //     subscriptionDeleteList(oldMembership);
+          //   }
+          // }
         }
       )
       .subscribe();
@@ -65,7 +79,7 @@ export const NotificationsSection = () => {
   }, [supabase, subscriptionAddNotification]);
 
   const handleToggle = () => {
-    setIsOpen(!isOpen);
+    setIsOpen((prev) => !prev);
   };
 
   const handleClose = () => {

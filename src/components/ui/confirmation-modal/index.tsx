@@ -62,8 +62,7 @@ export const ConfirmationModal = () => {
       {isOpen && (
         <ClientOnlyPortal>
           <motion.div
-            className={styles.confirmationModalBackground}
-            id="confirmation-modal"
+            className={`${styles.confirmationModalBackground} ignore-sidebar-close`}
             initial={{ opacity: 0 }}
             animate={{
               opacity: 1,

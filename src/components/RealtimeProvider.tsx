@@ -1,57 +1,29 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
+import { useEffect } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-
-import { Navbar } from "./navbar";
-
 import { createClient } from "@/utils/supabase/client";
-
-import { ListsType, ListsRow, MembershipRow } from "@/lib/schemas/todo-schema";
-
-//INIT EMOJI-MART
-import { init } from "emoji-mart";
-import data from "@/components/ui/emoji-mart/apple.json";
-init({ data });
+import { ListsRow, MembershipRow, ListsType } from "@/lib/schemas/todo-schema";
 
 const supabase = createClient();
 
-export const Sidebar = () => {
+export const RealtimeProvider = () => {
   const {
-    getLists,
     subscriptionAddList,
     subscriptionDeleteList,
     subscriptionUpdateList,
     subscriptionUpdateMembership,
   } = useTodoDataStore();
 
-  const [initialFetching, setInitialFetching] = useState<boolean>(true);
-  const executedRef = useRef(false);
-
   useEffect(() => {
-    if (executedRef.current) return;
-    executedRef.current = true;
-
-    const fetchInitialData = async () => {
-      await getLists();
-      setInitialFetching(false);
-    };
-
-    fetchInitialData();
-  }, []);
-
-  useEffect(() => {
-    const TABLE_NAME = "list_memberships";
-
-    const channel = supabase
-      .channel("list-memberships", { config: { broadcast: { self: false } } })
+    const channelMemberships = supabase
+      .channel("list-memberships-realtime")
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
-          table: TABLE_NAME,
+          table: "list_memberships",
         },
         async (payload) => {
           if (payload.eventType === "UPDATE") {
@@ -61,7 +33,6 @@ export const Sidebar = () => {
 
           if (payload.eventType === "DELETE") {
             const oldMembership = payload.old as MembershipRow;
-
             if (oldMembership) {
               subscriptionDeleteList(oldMembership);
             }
@@ -86,14 +57,8 @@ export const Sidebar = () => {
       })
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, subscriptionAddList, subscriptionDeleteList]);
-
-  useEffect(() => {
     const channelLists = supabase
-      .channel("lists", { config: { broadcast: { self: false } } })
+      .channel("lists-realtime")
       .on(
         "postgres_changes",
         {
@@ -109,9 +74,15 @@ export const Sidebar = () => {
       .subscribe();
 
     return () => {
+      supabase.removeChannel(channelMemberships);
       supabase.removeChannel(channelLists);
     };
-  }, [supabase, subscriptionUpdateList]);
+  }, [
+    subscriptionAddList,
+    subscriptionDeleteList,
+    subscriptionUpdateList,
+    subscriptionUpdateMembership,
+  ]);
 
-  return <Navbar initialFetching={initialFetching} />;
+  return null;
 };

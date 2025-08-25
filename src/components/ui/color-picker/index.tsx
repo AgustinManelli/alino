@@ -214,7 +214,7 @@ export function ColorPicker({
         <>
           {isOpenPicker && (
             <motion.section
-              className={styles.modalContainer}
+              className={`${styles.modalContainer} ignore-sidebar-close`}
               ref={portalRef}
               initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
               animate={{

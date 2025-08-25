@@ -2,23 +2,32 @@
 
 import { useEffect, useLayoutEffect, useRef } from "react";
 
-export function useOnClickOutside(
-  ref: React.RefObject<HTMLElement>,
-  handler: (e: MouseEvent | TouchEvent) => void,
-  parentRef?: React.RefObject<HTMLElement>
-) {
-  const savedHandler = useRef(handler);
+export const useOnClickOutside = (
+  refElement: React.RefObject<HTMLElement>,
+  callback: (e: MouseEvent | TouchEvent) => void,
+  excludes: React.RefObject<HTMLElement>[] = [],
+  ignoreClass: string | null | undefined = null
+) => {
+  const savedHandler = useRef(callback);
 
   useLayoutEffect(() => {
-    savedHandler.current = handler;
-  }, [handler]);
+    savedHandler.current = callback;
+  }, [callback]);
 
   useEffect(() => {
     const listener = (e: MouseEvent | TouchEvent) => {
-      if (!ref.current || ref.current.contains(e.target as Node)) {
+      if (
+        !refElement.current ||
+        refElement.current.contains(e.target as Node)
+      ) {
         return;
       }
-      if (parentRef?.current?.contains(e.target as Node)) {
+      if (
+        excludes?.some((exclude) => exclude.current?.contains(e.target as Node))
+      ) {
+        return;
+      }
+      if (ignoreClass && (e.target as Element).closest(`.${ignoreClass}`)) {
         return;
       }
       savedHandler.current(e);
@@ -48,5 +57,5 @@ export function useOnClickOutside(
         } as EventListenerOptions);
       }
     };
-  }, [ref, parentRef]);
-}
+  }, [refElement, excludes]);
+};
