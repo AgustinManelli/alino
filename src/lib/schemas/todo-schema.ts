@@ -433,3 +433,6 @@ export type UserWithMembershipRole = UserProfile & MembershipInfo;
 export type UserType = Database["public"]["Tables"]["users"]["Row"] & {
   user_private: Database["public"]["Tables"]["user_private"]["Row"] | null;
 };
+
+export type InvitationRow =
+  Database["public"]["Tables"]["list_invitations"]["Row"];

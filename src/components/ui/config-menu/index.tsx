@@ -129,6 +129,9 @@ export const ConfigMenu = memo(function ConfigMenu({
             ref={menuRef}
             className={styles.container}
             id={`config-menu-container-${uniqueId}`}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
           >
             <section className={styles.optionsContainer}>
               {configOptions.map((option, index) => (
