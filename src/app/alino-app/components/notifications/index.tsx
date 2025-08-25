@@ -37,46 +37,46 @@ export const NotificationsSection = () => {
     fetchInitialNotifications();
   }, [getNotifications]);
 
-  useEffect(() => {
-    const TABLE_NAME = "list_invitations";
-    const channel = supabase
-      .channel("list-invitations", { config: { broadcast: { self: false } } })
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: TABLE_NAME,
-        },
-        async (payload) => {
-          if (payload.eventType === "INSERT") {
-            const invitation = payload.new as InvitationRow;
-            toast(
-              `${invitation.inviter_display_name} te ha invitado a la lista "${invitation.list_name}"`
-            );
-            subscriptionAddNotification(invitation);
-          }
+  // useEffect(() => {
+  //   const TABLE_NAME = "list_invitations";
+  //   const channel = supabase
+  //     .channel("list-invitations", { config: { broadcast: { self: false } } })
+  //     .on(
+  //       "postgres_changes",
+  //       {
+  //         event: "*",
+  //         schema: "public",
+  //         table: TABLE_NAME,
+  //       },
+  //       async (payload) => {
+  //         if (payload.eventType === "INSERT") {
+  //           const invitation = payload.new as InvitationRow;
+  //           toast(
+  //             `${invitation.inviter_display_name} te ha invitado a la lista "${invitation.list_name}"`
+  //           );
+  //           subscriptionAddNotification(invitation);
+  //         }
 
-          // if (payload.eventType === "UPDATE") {
-          //   const updatedMembership = payload.new as MembershipRow;
-          //   subscriptionUpdateMembership(updatedMembership);
-          // }
+  //         // if (payload.eventType === "UPDATE") {
+  //         //   const updatedMembership = payload.new as MembershipRow;
+  //         //   subscriptionUpdateMembership(updatedMembership);
+  //         // }
 
-          // if (payload.eventType === "DELETE") {
-          //   const oldMembership = payload.old as MembershipRow;
+  //         // if (payload.eventType === "DELETE") {
+  //         //   const oldMembership = payload.old as MembershipRow;
 
-          //   if (oldMembership) {
-          //     subscriptionDeleteList(oldMembership);
-          //   }
-          // }
-        }
-      )
-      .subscribe();
+  //         //   if (oldMembership) {
+  //         //     subscriptionDeleteList(oldMembership);
+  //         //   }
+  //         // }
+  //       }
+  //     )
+  //     .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, subscriptionAddNotification]);
+  //   return () => {
+  //     supabase.removeChannel(channel);
+  //   };
+  // }, [supabase, subscriptionAddNotification]);
 
   const handleToggle = () => {
     setIsOpen((prev) => !prev);
