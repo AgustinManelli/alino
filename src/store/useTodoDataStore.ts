@@ -169,11 +169,11 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   subscriptionDeleteList: async (list) => {
-    // const user_id = await getCurrentUserId();
+    const { user } = useUserDataStore.getState();
 
-    // if (user_id && list.user_id !== user_id) {
-    //   return;
-    // }
+    if (user && user.user_id && list.user_id !== user.user_id) {
+      return;
+    }
 
     set((state) => ({
       lists: state.lists.filter((l) => l.list_id !== list.list_id),
