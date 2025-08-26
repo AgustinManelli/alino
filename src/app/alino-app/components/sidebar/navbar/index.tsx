@@ -1,10 +1,11 @@
 "use client";
 
-import { memo, useRef, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { useShallow } from "zustand/shallow";
+import { shallow, useShallow } from "zustand/shallow";
 
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+import { useUIStore } from "@/store/useUIStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
 import { DraggableContext } from "./draggable-context";
@@ -25,43 +26,36 @@ const containerFMVariant = {
   },
 } as const;
 
-interface NavbarProps {
+interface Props {
   initialFetching?: boolean;
 }
 
-export const Navbar = memo(function Navbar({ initialFetching }: NavbarProps) {
-  //estados locales
-  const [navbarOpened, setNavbarOpened] = useState<boolean>(false);
+export const Navbar = memo(({ initialFetching }: Props) => {
+  const navbarStatus = useUIStore((state) => state.navbarStatus);
+  const setNavbarStatus = useUIStore((state) => state.setNavbarStatus);
 
-  //estados globales
   const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile));
 
-  //ref's
   const Ref = useRef<HTMLDivElement | null>(null);
 
-  const toggleNavbar = () => {
-    setNavbarOpened((prev) => !prev);
-  };
+  const toggleNavbar = useCallback(() => {
+    setNavbarStatus(!navbarStatus);
+  }, [setNavbarStatus]);
 
-  const handleCloseNavbar = () => {
-    setNavbarOpened(false);
-  };
+  const handleCloseNavbar = useCallback(() => {
+    setNavbarStatus(false);
+  }, [setNavbarStatus]);
 
   useOnClickOutside(Ref, handleCloseNavbar, [], "ignore-sidebar-close");
 
   return (
     <>
-      {/* BOTON PARA ABRIR NAVBAR MOBILE */}
       {isMobile && (
-        <NavbarButton navbarOpened={navbarOpened} toggleNavbar={toggleNavbar} />
+        <NavbarButton navbarOpened={navbarStatus} toggleNavbar={toggleNavbar} />
       )}
-      {/* NAVBAR */}
-      <motion.div
-        className={styles.sidebarContainer}
+      <div
+        className={`${styles.sidebarContainer} ${navbarStatus ? styles.open : ""}`}
         ref={Ref}
-        initial={{ x: "-150%" }}
-        animate={{ x: !navbarOpened && isMobile ? "-150%" : 0 }}
-        transition={{ type: "tween", duration: 0.25 }}
       >
         <div className={styles.navbar}>
           <div className={styles.logoContainer}>
@@ -112,7 +106,7 @@ export const Navbar = memo(function Navbar({ initialFetching }: NavbarProps) {
             <ListInput key={"input"} />
           </div>
         </div>
-      </motion.div>
+      </div>
     </>
   );
 });

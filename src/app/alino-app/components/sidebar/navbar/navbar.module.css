@@ -9,7 +9,7 @@
   align-items: center;
   background-color: var(--background-over-container);
   border: none;
-  border-radius: 10px;
+  border-radius: 15px;
   -webkit-tap-highlight-color: transparent;
   z-index: 100;
 }
@@ -23,6 +23,17 @@
   align-items: center;
   z-index: 100;
   transform: translateX(-150%);
+  transition: transform 0.2s ease-in-out;
+}
+
+.sidebarContainer.open {
+  transform: translateX(0%);
+}
+
+@media (min-width: 851px) {
+  .sidebarContainer {
+    transform: translateX(0);
+  }
 }
 
 .navbar {
