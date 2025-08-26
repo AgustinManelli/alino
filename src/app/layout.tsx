@@ -2,10 +2,11 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
 
-import ThemeInitializer from "@/components/useThemeInicializer";
+import { ThemeInitializer } from "@/components/useThemeInicializer";
 import { MobileSizeListener } from "@/components/useMobileSizeListener";
 import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
 import { Loader } from "@/components/ui/loader";
+import { RealtimeProvider } from "@/components/RealtimeProvider";
 
 import { inter } from "../lib/fonts";
 import "./globals.css";
@@ -95,8 +96,9 @@ export default function RootLayout({
       <body className={`${inter.className}`}>
         <ThemeInitializer />
         <MobileSizeListener />
-        <Loader />
+        <RealtimeProvider />
         <Toaster />
+        <Loader />
 
         <div id="modal-root">
           <WpaDownloadModal />
@@ -104,7 +106,7 @@ export default function RootLayout({
 
         {children}
 
-        <div id="portal-root"></div>
+        <div id="portal-root" />
       </body>
     </html>
   );

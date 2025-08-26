@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 import useThemeStore from "@/store/useThemeStore";
 
-const ThemeInitializer = () => {
+export const ThemeInitializer = () => {
   const { theme, appliedTheme, setAppliedTheme } = useThemeStore();
 
   useEffect(() => {
@@ -28,5 +28,3 @@ const ThemeInitializer = () => {
 
   return null;
 };
-
-export default ThemeInitializer;

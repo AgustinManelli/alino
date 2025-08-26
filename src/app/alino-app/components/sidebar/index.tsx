@@ -30,10 +30,5 @@ export const Sidebar = () => {
     fetchInitialData();
   }, []);
 
-  return (
-    <>
-      <RealtimeProvider />
-      <Navbar initialFetching={initialFetching} />
-    </>
-  );
+  return <Navbar initialFetching={initialFetching} />;
 };
