@@ -42,9 +42,9 @@ export const Navbar = memo(({ initialFetching }: Props) => {
     setNavbarStatus(!navbarStatus);
   }, [setNavbarStatus]);
 
-  const handleCloseNavbar = useCallback(() => {
+  const handleCloseNavbar = () => {
     setNavbarStatus(false);
-  }, [setNavbarStatus]);
+  };
 
   useOnClickOutside(Ref, handleCloseNavbar, [], "ignore-sidebar-close");
 
@@ -98,7 +98,7 @@ export const Navbar = memo(({ initialFetching }: Props) => {
                   handleCloseNavbar={handleCloseNavbar}
                   key={"homecard"}
                 />
-                <DraggableContext handleCloseNavbar={handleCloseNavbar} />
+                <DraggableContext />
               </motion.section>
             )}
           </motion.section>

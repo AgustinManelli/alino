@@ -16,6 +16,7 @@ import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { useUIStore } from "@/store/useUIStore";
 import { ListsType } from "@/lib/schemas/todo-schema";
 
 import { ConfigMenu } from "@/components/ui/config-menu";
@@ -34,10 +35,9 @@ import styles from "./ListCard.module.css";
 
 interface props {
   list: ListsType;
-  handleCloseNavbar: () => void;
 }
 
-export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
+export const ListCard = memo(({ list }: props) => {
   //estados locales
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
@@ -53,6 +53,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
     state.getTaskCountByListId(list.list_id)
   );
   const openModal = useConfirmationModalStore((state) => state.openModal);
+  const setNavbarStatus = useUIStore((state) => state.setNavbarStatus);
 
   //ref's
   const divRef = useRef<HTMLInputElement | null>(null);
@@ -311,7 +312,7 @@ export const ListCard = memo(({ list, handleCloseNavbar }: props) => {
           e.stopPropagation();
           if (isNameChange) return;
           router.push(`/alino-app/${list.list_id}`);
-          handleCloseNavbar();
+          setNavbarStatus(false);
         }}
         style={style}
       >
