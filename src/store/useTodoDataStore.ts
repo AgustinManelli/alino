@@ -22,6 +22,7 @@ import {
   deleteAllLists,
   getUsersMembersList,
   createListInvitation,
+  getSingleLists,
 } from "@/lib/api/actions";
 
 import {
@@ -41,7 +42,7 @@ type TodoStore = {
   setLists: (list: ListsType[]) => Promise<void>;
   getLists: () => Promise<void>;
   getListById: (list_id: string) => ListsType | undefined;
-  subscriptionAddList: (list: ListsType) => void;
+  subscriptionAddList: (membership: MembershipRow) => void;
   subscriptionDeleteList: (list: MembershipRow) => void;
   subscriptionUpdateList: (updatedList: ListsRow) => void;
   subscriptionUpdateMembership: (updatedMembership: MembershipRow) => void;
@@ -139,25 +140,29 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     return get().tasks.filter((task) => task.list_id === listId).length;
   },
 
-  subscriptionAddList: async (list) => {
-    // const user_id = await getCurrentUserId();
+  subscriptionAddList: async (membership) => {
+    const list = await getSingleLists(membership.list_id);
 
-    // if (user_id && list.user_id !== user_id) {
-    //   return;
-    // }
+    if (!list) return;
+
+    const newItemForStore: ListsType = {
+      ...membership,
+      list: list.data,
+    };
 
     set((state) => {
-      const listExists = state.lists.some((l) => l.list_id === list.list_id);
-
+      const listExists = state.lists.some(
+        (l) => l.list_id === newItemForStore.list_id
+      );
       if (listExists) {
         return {
           lists: state.lists.map((item) =>
-            item.list_id === list.list_id ? list : item
+            item.list_id === newItemForStore.list_id ? newItemForStore : item
           ),
         };
       } else {
         return {
-          lists: [...state.lists, list],
+          lists: [...state.lists, newItemForStore],
         };
       }
     });

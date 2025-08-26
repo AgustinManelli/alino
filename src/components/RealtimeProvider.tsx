@@ -3,12 +3,13 @@
 import { useEffect } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { createClient } from "@/utils/supabase/client";
-import { ListsRow, MembershipRow, ListsType } from "@/lib/schemas/todo-schema";
-
-const supabase = createClient();
+import { ListsRow, MembershipRow } from "@/lib/schemas/todo-schema";
 
 export const RealtimeProvider = () => {
+  const supabase = createClient();
+
   const {
+    getLists,
     subscriptionAddList,
     subscriptionDeleteList,
     subscriptionUpdateList,
@@ -16,49 +17,53 @@ export const RealtimeProvider = () => {
   } = useTodoDataStore();
 
   useEffect(() => {
-    const channelMemberships = supabase
-      .channel("list-memberships-realtime")
+    const TABLE_NAME = "list_memberships";
+    const store = useTodoDataStore.getState();
+
+    const channel = supabase
+      .channel("list-memberships")
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
-          table: "list_memberships",
+          table: TABLE_NAME,
         },
-        async (payload) => {
-          if (payload.eventType === "UPDATE") {
-            const updatedMembership = payload.new as MembershipRow;
-            subscriptionUpdateMembership(updatedMembership);
-          }
+        (payload) => {
+          const newMembership = payload.new as MembershipRow;
+          const exists = store.lists.some(
+            (list) => list.list_id === newMembership.list_id
+          );
 
-          if (payload.eventType === "DELETE") {
-            const oldMembership = payload.old as MembershipRow;
-            if (oldMembership) {
-              subscriptionDeleteList(oldMembership);
-            }
+          if (!exists) subscriptionAddList(newMembership);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: TABLE_NAME,
+        },
+        (payload) => {
+          const oldMembership = payload.old as MembershipRow;
+          if (oldMembership) {
+            subscriptionDeleteList(oldMembership);
           }
         }
       )
-      .on("broadcast", { event: "membership_insert" }, (payload) => {
-        const sent = (payload as any).payload;
-        if (!sent) return;
-
-        const membership = sent.membership as MembershipRow;
-        const list = sent.list as ListsRow;
-
-        if (!membership) return;
-
-        const newItemForStore: ListsType = {
-          ...membership,
-          list: list,
-        };
-
-        subscriptionAddList(newItemForStore);
-      })
-      .subscribe();
-
-    const channelLists = supabase
-      .channel("lists-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: TABLE_NAME,
+        },
+        (payload) => {
+          const updatedMembership = payload.new as MembershipRow;
+          subscriptionUpdateMembership(updatedMembership);
+        }
+      )
       .on(
         "postgres_changes",
         {
@@ -74,14 +79,13 @@ export const RealtimeProvider = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channelMemberships);
-      supabase.removeChannel(channelLists);
+      supabase.removeChannel(channel);
     };
   }, [
+    supabase,
     subscriptionAddList,
-    subscriptionDeleteList,
-    subscriptionUpdateList,
     subscriptionUpdateMembership,
+    subscriptionDeleteList,
   ]);
 
   return null;
