@@ -5,12 +5,12 @@ import { motion } from "motion/react";
 import { MenuIcon } from "@/components/ui/icons/icons";
 import styles from "./navbar.module.css";
 
-interface NabarButtonProps {
+interface Props {
   navbarOpened: boolean;
   toggleNavbar: () => void;
 }
 
-export function NavbarButton({ navbarOpened, toggleNavbar }: NabarButtonProps) {
+export const NavbarButton = ({ navbarOpened, toggleNavbar }: Props) => {
   return (
     <motion.button
       className={styles.mobileButton}
@@ -43,4 +43,4 @@ export function NavbarButton({ navbarOpened, toggleNavbar }: NabarButtonProps) {
       />
     </motion.button>
   );
-}
+};

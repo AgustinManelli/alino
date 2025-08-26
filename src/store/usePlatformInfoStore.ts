@@ -5,7 +5,7 @@
 import { create } from "zustand";
 
 interface platform_interface {
-  isMobile: boolean;
+  isMobile: boolean | null;
   isStandalone: boolean;
   setIsMobile: (value: boolean) => void;
 }
