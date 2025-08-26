@@ -49,6 +49,36 @@ export async function getUser() {
   }
 }
 
+export async function getSingleLists(list_id: string) {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+
+    const { data: listData, error: listsError } = await supabase
+      .from("lists")
+      .select("*")
+      .eq("list_id", list_id)
+      .single();
+
+    if (listsError) {
+      throw new Error(
+        "No se pudo obtener la lista. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+
+    if (!listData || listData.length === 0) {
+      return { data: {} };
+    }
+
+    return { data: listData };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+}
+
 export async function getLists() {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
@@ -103,12 +133,13 @@ export async function getLists() {
 
 export const updateIndexList = async (list_id: string, index: number) => {
   try {
-    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("list_memberships")
       .update({ index })
-      .eq("list_id", list_id);
+      .eq("list_id", list_id)
+      .eq("user_id", user.id);
 
     if (error) {
       throw new Error(
@@ -483,7 +514,7 @@ export const getUsersMembersList = async (list_id: string) => {
 
     if (error) {
       throw new Error(
-        "No se pudo obtener los miembros de la lista. Intentalo nuevamente o contacta con soporte."
+        `No se pudo obtener los miembros de la lista. Intentalo nuevamente o contacta con soporte. ${error.message}`
       );
     }
 
