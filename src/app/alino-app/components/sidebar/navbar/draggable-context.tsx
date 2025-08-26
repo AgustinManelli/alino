@@ -12,6 +12,7 @@ import {
   MouseSensor,
   TouchSensor,
   DragOverlay,
+  Modifier,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -114,6 +115,14 @@ export const DraggableContext = memo(() => {
       activationConstraint: { distance: 5, delay: 250, tolerance: 5 },
     })
   );
+
+  const adjustForLayoutPadding: Modifier = ({ transform }) => {
+    return {
+      ...transform,
+      x: transform.x - 15, // compensa el padding izquierdo
+      y: transform.y - 15, // compensa el padding superior
+    };
+  };
 
   const listIds = lists.map((list) => list.list_id);
 
@@ -225,13 +234,13 @@ export const DraggableContext = memo(() => {
               </motion.div>
             ))}
           </AnimatePresence>
-          <DragOverlay>
-            {draggedItem ? (
+          <DragOverlay modifiers={[adjustForLayoutPadding]}>
+            {draggedItem && (
               <DragListCard
                 list={draggedItem}
                 key={`list-${draggedItem.list_id}`}
               />
-            ) : null}
+            )}
           </DragOverlay>
         </SortableContext>
       </DndContext>

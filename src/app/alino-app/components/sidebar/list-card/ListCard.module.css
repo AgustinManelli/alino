@@ -169,6 +169,16 @@
   border-radius: 5px;
 }
 
+.moreOptions {
+  width: 23px;
+  height: 23px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--background-over-container);
+  border-radius: 5px;
+}
+
 .container:hover .counterDesktop {
   opacity: 0 !important;
 }

@@ -140,7 +140,7 @@ export const ListCard = memo(({ list }: props) => {
     transition,
     pointerEvents: isDragging ? "none" : "auto",
     zIndex: isDragging ? 99 : 1,
-    opacity: isDragging ? 0 : 1,
+    // opacity: isDragging ? 0 : 1,
     backgroundColor: isActive
       ? "var(--background-over-container)"
       : "transparent",
@@ -210,18 +210,20 @@ export const ListCard = memo(({ list }: props) => {
           setEmoji={setEmoji}
           uniqueId="list-card"
         />
-        {list.list.is_shared && (
-          <Colaborate
-            style={{
-              width: "auto",
-              height: "70%",
-              stroke: "var(--icon-color)",
-              strokeWidth: 2,
-              opacity: 0.4,
-            }}
-          />
-        )}
         <div className={styles.listManagerContainer}>
+          {list.list.is_shared && (
+            <div className={styles.pinContainer}>
+              <Colaborate
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  stroke: "var(--icon-color)",
+                  strokeWidth: 2,
+                  opacity: 0.4,
+                }}
+              />
+            </div>
+          )}
           {!isNameChange && list.pinned && (
             <div className={styles.pinContainer}>
               <Pin

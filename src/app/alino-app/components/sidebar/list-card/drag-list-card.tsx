@@ -1,7 +1,12 @@
 "use client";
 
 import { ListsType } from "@/lib/schemas/todo-schema";
-import { MoreVertical, Pin, SquircleIcon } from "@/components/ui/icons/icons";
+import {
+  Colaborate,
+  MoreVertical,
+  Pin,
+  SquircleIcon,
+} from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
@@ -13,6 +18,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useMemo } from "react";
 
 const variants: Variants = {
+  hidden: { opacity: 1 },
   visible: {
     rotate: [1, -1, 1],
     transition: {
@@ -46,6 +52,7 @@ export function DragListCard({ list }: { list: ListsType }) {
     boxShadow: "0px 0px 30px 0px rgba(0,0,0,0.1)",
     zIndex: 99,
     padding: "7px 10px 7px 15px",
+    left: "0",
   } as React.CSSProperties;
 
   return (
@@ -53,7 +60,9 @@ export function DragListCard({ list }: { list: ListsType }) {
       className={styles.containerDrag}
       style={style}
       variants={animations ? variants : undefined}
+      initial="hidden"
       animate="visible"
+      exit="hidden"
     >
       <div
         className={styles.cardFx}
@@ -86,12 +95,24 @@ export function DragListCard({ list }: { list: ListsType }) {
         )}
       </div>
 
-      {/* IMPLEMENTAR INPUT PARA CAMBIAR DE NOMBRE CON SU RESPECTIVO BOTÓN */}
       <div className={styles.textContainer}>
         <p className={styles.listName}>{list.list.list_name}</p>
       </div>
 
       <div className={styles.listManagerContainer}>
+        {list.list.is_shared && (
+          <div className={styles.pinContainer}>
+            <Colaborate
+              style={{
+                width: "100%",
+                height: "auto",
+                stroke: "var(--icon-color)",
+                strokeWidth: 2,
+                opacity: 0.4,
+              }}
+            />
+          </div>
+        )}
         {list.pinned && (
           <div className={styles.pinContainer}>
             <Pin
@@ -111,9 +132,15 @@ export function DragListCard({ list }: { list: ListsType }) {
               <div
                 className={`${styles.configButtonContainer} ${styles.Mobile}`}
               >
-                <MoreVertical
-                  style={{ stroke: "#1c1c1c", width: "20px", strokeWidth: "3" }}
-                />
+                <div className={styles.moreOptions}>
+                  <MoreVertical
+                    style={{
+                      stroke: "var(--text)",
+                      width: "20px",
+                      strokeWidth: "3",
+                    }}
+                  />
+                </div>
               </div>
             </div>
             <div className={styles.configsContainer}>
