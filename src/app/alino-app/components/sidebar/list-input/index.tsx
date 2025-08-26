@@ -66,16 +66,6 @@ export const ListInput = memo(() => {
 
     insertList(formatText, color, emoji as string);
 
-    const scrollElement = document.getElementById("list-container");
-    if (scrollElement) {
-      setTimeout(() => {
-        scrollElement.scrollTo({
-          top: scrollElement.scrollHeight,
-          behavior: "smooth",
-        });
-      }, 0);
-    }
-
     resetForm();
   }, [inputValue, color, emoji, insertList, resetForm]);
 
