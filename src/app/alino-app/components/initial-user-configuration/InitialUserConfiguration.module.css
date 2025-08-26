@@ -45,7 +45,6 @@
   font-size: 40px;
   font-weight: 900;
   z-index: 1;
-  filter: blur(0.8px);
   user-select: none;
   text-align: center;
 }

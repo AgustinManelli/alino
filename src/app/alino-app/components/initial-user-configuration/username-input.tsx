@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import styles from "./UsernameInput.module.css";
-import { LoadingIcon } from "@/components/ui/icons/icons";
 import { motion } from "motion/react";
+
+import { LoadingIcon } from "@/components/ui/icons/icons";
+import styles from "./UsernameInput.module.css";
 
 type Props = {
   initialValue?: string;
