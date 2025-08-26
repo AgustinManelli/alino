@@ -9,7 +9,6 @@ import { Navbar } from "./navbar";
 //INIT EMOJI-MART
 import { init } from "emoji-mart";
 import data from "@/components/ui/emoji-mart/apple.json";
-import { RealtimeProvider } from "@/components/RealtimeProvider";
 init({ data });
 
 export const Sidebar = () => {

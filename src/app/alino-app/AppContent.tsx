@@ -22,6 +22,7 @@ interface Props {
 
 export const AppContent = memo(({ user, children }: Props) => {
   const initialized = useRef(false);
+
   useEffect(() => {
     if (!initialized.current) {
       useUserDataStore.setState({ user: user });

@@ -12,7 +12,7 @@ const style = {
 export default async function AlinoAppPage() {
   return (
     <div style={style}>
-      <Manager h={true} />
+      <Manager h />
     </div>
   );
 }

@@ -15,7 +15,7 @@ function handleError(err: unknown) {
   toast.error((err as Error).message || "Error desconocido");
 }
 
-export const useUserDataStore = create<UserData>()((set, get) => ({
+export const useUserDataStore = create<UserData>()((set) => ({
   user: null,
 
   getUser: async () => {

@@ -5,7 +5,7 @@
   align-items: center;
   width: 100%;
   height: 45px;
-  gap: 8px;
+  gap: 10px;
 }
 
 .alinoUsernameInputWrapper {
@@ -19,6 +19,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: center;
   background-color: var(--background-over-container);
   border-radius: 10px;
   padding: 0 10px;
@@ -28,10 +29,9 @@
 }
 
 .alinoAt {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 20px;
   color: var(--text-not-available);
   font-weight: 600;
   user-select: none;
@@ -88,18 +88,23 @@
   font-size: 13px;
 }
 
-@media only screen and (max-width: 850px) {
+@media only screen and (max-width: 650px) {
   .container {
-    flex-direction: column;
     height: 90px;
-  }
-  .alinoUsernameInput {
-    height: 100%;
-    width: 100%;
+    flex-direction: column;
   }
   .alinoSubmitBtn {
     width: 100%;
-    height: initial;
-    padding: 10px 0;
+    height: 40px;
+  }
+  .alinoUsernameInput {
+    height: 40px;
+  }
+}
+
+@media only screen and (max-width: 850px) and (min-width: 650px) {
+  .alinoUsernameInput {
+    height: 100%;
+    width: 100%;
   }
 }
