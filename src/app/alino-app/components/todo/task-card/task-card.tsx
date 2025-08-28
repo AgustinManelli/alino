@@ -422,8 +422,8 @@ export const TaskCard = memo(
         {user?.user_id !== task.created_by?.user_id && (
           <div
             style={{
-              width: "25px",
-              height: "100%",
+              width: "30px",
+              height: "30px",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
