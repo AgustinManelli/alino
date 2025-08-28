@@ -23,7 +23,10 @@ export const Sidebar = () => {
 
     const fetchInitialData = async () => {
       await getLists();
-      setInitialFetching(false);
+
+      setTimeout(() => {
+        setInitialFetching(false);
+      }, 250);
     };
 
     fetchInitialData();
