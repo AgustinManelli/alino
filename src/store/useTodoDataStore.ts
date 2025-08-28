@@ -31,6 +31,7 @@ import {
   MembershipRow,
   TaskType,
   UserWithMembershipRole,
+  FolderType,
 } from "@/lib/schemas/todo-schema";
 
 const POS_INDEX = 16384;
@@ -38,6 +39,7 @@ const POS_INDEX = 16384;
 type TodoStore = {
   lists: ListsType[];
   tasks: TaskType[];
+  folders: FolderType[];
   loadingQueue: number;
   setLists: (list: ListsType[]) => Promise<void>;
   getLists: () => Promise<void>;
@@ -108,6 +110,7 @@ async function getCurrentUserId(): Promise<string | null> {
 export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   lists: [],
   tasks: [],
+  folders: [],
   loadingQueue: 0,
 
   setLists: async (list) => {
@@ -124,7 +127,11 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         throw new Error(error);
       }
 
-      set(() => ({ lists: data?.lists, tasks: data?.tasks }));
+      set(() => ({
+        lists: data?.lists,
+        tasks: data?.tasks,
+        folders: data?.folders,
+      }));
     } catch (err) {
       handleError(err);
     } finally {
@@ -274,6 +281,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     const now = new Date().toISOString();
 
     const optimistic: ListsType = {
+      folder: null,
       index,
       list_id: optimisticId,
       pinned: false,
@@ -284,6 +292,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       list: {
         color,
         created_at: now,
+        description: null,
         icon: icon ?? null,
         list_id: optimisticId,
         list_name: name,
