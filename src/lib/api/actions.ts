@@ -83,6 +83,17 @@ export async function getLists() {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
+    const { data: foldersData, error: foldersError } = await supabase
+      .from("list_folders")
+      .select(`*`)
+      .eq("user_id", user.id);
+
+    if (foldersError) {
+      throw new Error(
+        "No se pudieron obtener las carpetas. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+
     const { data: listsData, error: listsError } = await supabase
       .from("list_memberships")
       .select(`*, list: lists (*)`)
@@ -121,7 +132,9 @@ export async function getLists() {
       );
     }
 
-    return { data: { lists: listsData, tasks: tasksData } };
+    return {
+      data: { lists: listsData, tasks: tasksData, folders: foldersData },
+    };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };

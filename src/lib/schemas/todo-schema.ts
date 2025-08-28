@@ -7,11 +7,51 @@ export type Json =
   | Json[];
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)";
   };
   public: {
     Tables: {
+      list_folders: {
+        Row: {
+          created_at: string;
+          folder_color: string;
+          folder_description: string | null;
+          folder_id: string;
+          folder_name: string;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          folder_color?: string;
+          folder_description?: string | null;
+          folder_id?: string;
+          folder_name: string;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          folder_color?: string;
+          folder_description?: string | null;
+          folder_id?: string;
+          folder_name?: string;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "list_folders_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
       list_invitations: {
         Row: {
           created_at: string;
@@ -81,6 +121,7 @@ export type Database = {
       };
       list_memberships: {
         Row: {
+          folder: string | null;
           index: number;
           list_id: string;
           pinned: boolean;
@@ -90,6 +131,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          folder?: string | null;
           index?: number;
           list_id: string;
           pinned?: boolean;
@@ -99,6 +141,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          folder?: string | null;
           index?: number;
           list_id?: string;
           pinned?: boolean;
@@ -135,6 +178,7 @@ export type Database = {
         Row: {
           color: string;
           created_at: string;
+          description: string | null;
           icon: string | null;
           is_shared: boolean;
           list_id: string;
@@ -146,6 +190,7 @@ export type Database = {
         Insert: {
           color?: string;
           created_at?: string;
+          description?: string | null;
           icon?: string | null;
           is_shared?: boolean;
           list_id?: string;
@@ -157,6 +202,7 @@ export type Database = {
         Update: {
           color?: string;
           created_at?: string;
+          description?: string | null;
           icon?: string | null;
           is_shared?: boolean;
           list_id?: string;
@@ -250,27 +296,27 @@ export type Database = {
       user_private: {
         Row: {
           created_at: string;
+          initial_guide_show: boolean;
           initial_username_prompt_shown: boolean;
           preferences: Json | null;
           updated_at: string | null;
           user_id: string;
-          initial_guide_show: boolean;
         };
         Insert: {
           created_at?: string;
+          initial_guide_show?: boolean;
           initial_username_prompt_shown?: boolean;
           preferences?: Json | null;
           updated_at?: string | null;
           user_id?: string;
-          initial_guide_show?: boolean;
         };
         Update: {
           created_at?: string;
+          initial_guide_show?: boolean;
           initial_username_prompt_shown?: boolean;
           preferences?: Json | null;
           updated_at?: string | null;
           user_id?: string;
-          initial_guide_show?: boolean;
         };
         Relationships: [
           {
@@ -349,61 +395,71 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      check_edit_tasks: {
+      ch_edit_or_insert_task: {
         Args: { p_list_id: string };
         Returns: boolean;
       };
-      check_is_list_admin: {
+      ch_is_list_admin: {
         Args: { p_list_id: string };
         Returns: boolean;
       };
-      check_is_list_member: {
+      ch_is_list_member: {
+        Args: { p_list_id: string };
+        Returns: boolean;
+      };
+      ch_is_list_owner: {
         Args: { p_list_id: string };
         Returns: boolean;
       };
       create_list_invitation_by_username: {
-        Args: { p_list_id: string; p_invited_username: string };
+        Args: { p_invited_username: string; p_list_id: string };
         Returns: Json;
       };
       get_list_members_users: {
         Args: { p_list_id: string };
         Returns: {
-          user_id: string;
-          username: string;
-          display_name: string;
           avatar_url: string;
+          display_name: string;
           role: string;
           shared_since: string;
+          user_id: string;
+          username: string;
         }[];
       };
       get_my_pending_notifications: {
         Args: Record<PropertyKey, never>;
         Returns: {
-          invitation_id: string;
-          list_id: string;
-          inviter_user_id: string;
-          invited_user_id: string;
-          status: Database["public"]["Enums"]["status_shared_types"];
-          created_at: string;
-          list_name: string;
-          username: string;
-          display_name: string;
           avatar_url: string;
+          created_at: string;
+          display_name: string;
+          invitation_id: string;
+          invited_user_id: string;
+          inviter_user_id: string;
+          list_id: string;
+          list_name: string;
+          status: Database["public"]["Enums"]["status_shared_types"];
+          username: string;
         }[];
       };
       get_setting_int: {
         Args: { p_setting: string };
         Returns: number;
       };
+      search_users_input: {
+        Args: { p_exclude_user?: string; p_search_term: string };
+        Returns: {
+          avatar_url: string;
+          display_name: string;
+          user_id: string;
+          username: string;
+        }[];
+      };
+      set_username_first_time: {
+        Args: { p_username: string };
+        Returns: undefined;
+      };
     };
     Enums: {
-      notifications_types:
-        | "share_group"
-        | "share_list"
-        | "role_request"
-        | "general"
-        | "new_version";
-      plan_types: "pro" | "student";
       roles_types: "admin" | "editor" | "reader" | "owner";
       status_shared_types: "pending" | "accepted" | "rejected";
     };
@@ -436,3 +492,5 @@ export type UserType = Database["public"]["Tables"]["users"]["Row"] & {
 
 export type InvitationRow =
   Database["public"]["Tables"]["list_invitations"]["Row"];
+
+export type FolderType = Database["public"]["Tables"]["list_folders"]["Row"];
