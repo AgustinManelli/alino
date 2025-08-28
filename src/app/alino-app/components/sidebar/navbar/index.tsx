@@ -18,14 +18,14 @@ import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
 import styles from "./navbar.module.css";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 
-const containerFMVariant = {
-  visible: {
-    transition: {
-      delayChildren: 0.1,
-      staggerChildren: 0.1,
-    },
-  },
-} as const;
+// const containerFMVariant = {
+//   visible: {
+//     transition: {
+//       delayChildren: 0.1,
+//       staggerChildren: 0.1,
+//     },
+//   },
+// } as const;
 
 interface Props {
   initialFetching?: boolean;
@@ -101,19 +101,19 @@ export const Navbar = memo(({ initialFetching }: Props) => {
                   ))}
               </div>
             ) : (
-              <motion.section
+              <section
                 className={styles.cardsContainer}
-                variants={containerFMVariant}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
+                // variants={containerFMVariant}
+                // initial="hidden"
+                // animate="visible"
+                // exit="exit"
               >
                 <HomeCard
                   handleCloseNavbar={handleCloseNavbar}
                   key={"homecard"}
                 />
                 <DraggableContext />
-              </motion.section>
+              </section>
             )}
           </motion.section>
           <div className={styles.inputContainer}>

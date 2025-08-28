@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, memo } from "react";
+import { useMemo, useState, useCallback, memo, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   DndContext,
@@ -126,6 +126,12 @@ export const DraggableContext = memo(() => {
 
   const listIds = lists.map((list) => list.list_id);
 
+  const scrollContainerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    scrollContainerRef.current = document.getElementById("list-container");
+  }, []);
+
   return (
     <>
       <DndContext
@@ -143,16 +149,17 @@ export const DraggableContext = memo(() => {
                   layout={draggedItem ? false : true}
                   variants={animations ? variants : undefined}
                   initial={animations ? { scale: 0, opacity: 0 } : undefined}
-                  transition={
-                    animations
-                      ? {
-                          scale: {
-                            duration: 0.2,
-                            ease: "easeInOut",
-                          },
-                        }
-                      : undefined
-                  }
+                  // transition={
+                  //   animations
+                  //     ? {
+                  //         scale: {
+                  //           duration: 0.2,
+                  //           ease: "easeInOut",
+                  //         },
+                  //       }
+                  //     : undefined
+                  // }
+                  whileInView="visible"
                   exit={
                     animations
                       ? {
@@ -169,6 +176,11 @@ export const DraggableContext = memo(() => {
                   }
                   key={`pinned-${list.list_id}`}
                   id={`pinned-${list.list_id}`}
+                  viewport={{
+                    root: scrollContainerRef,
+                    once: true,
+                    amount: 0.1,
+                  }}
                 >
                   <ListCard list={list} />
                 </motion.div>
@@ -203,16 +215,17 @@ export const DraggableContext = memo(() => {
                 initial={
                   animations ? { scale: 0, opacity: 0, zIndex: 1 } : undefined
                 }
-                transition={
-                  animations
-                    ? {
-                        scale: {
-                          duration: 0.2,
-                          ease: "easeInOut",
-                        },
-                      }
-                    : undefined
-                }
+                // transition={
+                //   animations
+                //     ? {
+                //         scale: {
+                //           duration: 0.2,
+                //           ease: "easeInOut",
+                //         },
+                //       }
+                //     : undefined
+                // }
+                whileInView="visible"
                 exit={
                   animations
                     ? {
@@ -229,6 +242,11 @@ export const DraggableContext = memo(() => {
                 }
                 key={`list-${list.list_id}`}
                 id={`list-${list.list_id}`}
+                viewport={{
+                  root: scrollContainerRef,
+                  once: true,
+                  amount: 0.1,
+                }}
               >
                 <ListCard list={list} />
               </motion.div>
