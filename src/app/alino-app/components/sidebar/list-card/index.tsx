@@ -140,7 +140,7 @@ export const ListCard = memo(({ list }: props) => {
     transition,
     pointerEvents: isDragging ? "none" : "auto",
     zIndex: isDragging ? 99 : 1,
-    // opacity: isDragging ? 0 : 1,
+    opacity: isDragging ? 0 : 1,
     backgroundColor: isActive
       ? "var(--background-over-container)"
       : "transparent",
