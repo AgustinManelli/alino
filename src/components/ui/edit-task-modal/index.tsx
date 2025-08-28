@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useShallow } from "zustand/shallow";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
@@ -11,7 +11,6 @@ import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
 import { ClientOnlyPortal } from "../client-only-portal";
 
 import styles from "./EditTaskModal.module.css";
-import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
 const computeTargetY = (rectHeight: number, viewportWidth: number) => {
   if (typeof window !== "undefined") {
@@ -44,6 +43,8 @@ const computeTargetY = (rectHeight: number, viewportWidth: number) => {
       const maxTop = offsetTop + vh - rectHeight;
       return Math.round(clamp(idealTop, minTop, maxTop));
     }
+  } else {
+    return 0;
   }
 };
 
@@ -62,11 +63,35 @@ export const EditTaskModal = () => {
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  const [windowSize, setWindowSize] = useState({
+    width: 0,
+    height: 0,
+  });
+
   const modalTaskId = modalTask?.task_id ?? null;
 
   const syncedTask = useTodoDataStore((state) =>
     state.tasks.find((t) => t.task_id === modalTaskId)
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "unset";
@@ -78,8 +103,8 @@ export const EditTaskModal = () => {
   const initialAnimation = useMemo(() => {
     if (!initialRect) {
       return {
-        x: typeof window !== "undefined" ? window.innerWidth / 2 : 0,
-        y: typeof window !== "undefined" ? window.innerHeight / 2 : 0,
+        x: windowSize.width / 2,
+        y: windowSize.height / 2,
         width: 0,
         height: 0,
       };
@@ -90,11 +115,10 @@ export const EditTaskModal = () => {
       y: initialRect.top - 15,
       width: initialRect.width,
     };
-  }, [initialRect]);
+  }, [initialRect, windowSize]);
 
   const targetAnimation = useMemo(() => {
-    const viewportWidth =
-      typeof window !== "undefined" ? window.innerWidth : 1024;
+    const viewportWidth = windowSize.width;
 
     const preferredWidth = initialRect?.width ?? 500;
     const MARGIN = 0;
@@ -126,13 +150,13 @@ export const EditTaskModal = () => {
         delay: 0.05,
       },
     };
-  }, [initialRect]);
+  }, [initialRect, windowSize]);
 
-  const handleAnimationComplete = () => {
+  const handleAnimationComplete = useCallback(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
-  };
+  }, []);
 
   return (
     <AnimatePresence>
@@ -153,13 +177,12 @@ export const EditTaskModal = () => {
               exit={{
                 x: initialAnimation.x,
                 y: initialAnimation.y,
-                width: initialAnimation.width,
-                height: initialAnimation.height,
+                // width: initialAnimation.width,
+                // height: initialAnimation.height,
                 // transition: { delay: 0.3 },
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
               onAnimationComplete={handleAnimationComplete}
-              layout
             >
               {syncedTask && <TaskCard task={syncedTask} inputRef={inputRef} />}
             </motion.div>
