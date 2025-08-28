@@ -40,7 +40,7 @@ export const Navbar = memo(({ initialFetching }: Props) => {
 
   useEffect(() => {
     const scrollElement = document.getElementById("list-container");
-    if (scrollElement) {
+    if (scrollElement && !initialFetching) {
       setTimeout(() => {
         scrollElement.scrollTo({
           top: scrollElement.scrollHeight,
