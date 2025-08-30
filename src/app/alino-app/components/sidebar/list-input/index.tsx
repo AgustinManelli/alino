@@ -8,18 +8,31 @@ import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { hexColorSchema } from "@/lib/schemas/validationSchemas";
-import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
+import {
+  FolderOpen,
+  ListIcon,
+  PlusBoxIcon,
+  SendIcon,
+} from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
+import { Dropdown } from "@/components/ui/dropdown";
 
 const DEFAULT_COLOR = "#87189d";
+const DEFAULT_FOLDER_COLOR = null;
 
 export const ListInput = memo(() => {
   const [activeInput, setActiveInput] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>("");
-  const [color, setColor] = useState<string>(DEFAULT_COLOR);
+  const [color, setColor] = useState<string | null>(DEFAULT_COLOR);
   const [emoji, setEmoji] = useState<string | null>(null);
+  const [isList, setIsList] = useState<boolean>(true);
 
-  const { insertList } = useTodoDataStore();
+  const { insertList, insertFolder } = useTodoDataStore(
+    useShallow((state) => ({
+      insertList: state.insertList,
+      insertFolder: state.insertFolder,
+    }))
+  );
   const animations = useUserPreferencesStore(
     useShallow((state) => state.animations)
   );
@@ -31,11 +44,12 @@ export const ListInput = memo(() => {
     setInputValue("");
     setEmoji(null);
     setColor(DEFAULT_COLOR);
+    setIsList(true);
     setActiveInput(false);
   }, []);
 
   const handleSetColor = useCallback(
-    (newColor: string, isTyping?: boolean) => {
+    (newColor: string | null, isTyping?: boolean) => {
       setColor(newColor);
       if (emoji && isTyping) {
         setEmoji(null);
@@ -44,12 +58,12 @@ export const ListInput = memo(() => {
 
       const validation = hexColorSchema.safeParse(newColor);
       if (!validation.success) {
-        setColor(DEFAULT_COLOR);
+        setColor(isList ? DEFAULT_COLOR : DEFAULT_FOLDER_COLOR);
         if (emoji) setEmoji(null);
       }
       inputRef.current?.focus();
     },
-    [emoji]
+    [emoji, isList]
   );
 
   const handleSetEmoji = useCallback((newEmoji: string | null) => {
@@ -63,17 +77,28 @@ export const ListInput = memo(() => {
       resetForm();
       return;
     }
+    isList && color
+      ? insertList(formatText, color, emoji as string)
+      : insertFolder(formatText, color);
 
-    insertList(formatText, color, emoji as string);
-
+    const scrollElement = document.getElementById("list-container");
+    if (scrollElement) {
+      setTimeout(() => {
+        scrollElement.scrollTo({
+          top: scrollElement.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 50);
+    }
     resetForm();
-  }, [inputValue, color, emoji, insertList, resetForm]);
+  }, [inputValue, color, emoji, insertList, insertFolder, resetForm, isList]);
 
   const handleClickOutside = useCallback(() => {
     const colorPickerContainer = document.getElementById(
       "color-picker-container-navbar-list-card"
     );
-    if (inputValue === "" && !colorPickerContainer) {
+    const dropdownComponent = document.getElementById("dropdown-component");
+    if (inputValue === "" && !colorPickerContainer && !dropdownComponent) {
       resetForm();
     }
   }, [inputValue, resetForm]);
@@ -85,6 +110,72 @@ export const ListInput = memo(() => {
       inputRef.current?.focus();
     }
   }, [activeInput]);
+
+  interface Item {
+    id: number;
+    label: string;
+  }
+
+  const renderItemType = (item: Item) => {
+    return (
+      <div
+        className={styles.dropdownItemContainer}
+        style={{ justifyContent: "start" }}
+      >
+        <p>{item.label}</p>
+      </div>
+    );
+  };
+
+  const triggerLabelType = () => {
+    return (
+      <div
+        className={styles.dropdownItemContainer}
+        style={{ justifyContent: "start" }}
+      >
+        <div
+          style={{
+            width: "15px",
+            height: "15px",
+            display: "flex",
+          }}
+        >
+          {isList ? (
+            <ListIcon
+              style={{
+                stroke: "var(--text-not-available)",
+                width: "15px",
+                height: "15px",
+                strokeWidth: 2,
+              }}
+            />
+          ) : (
+            <FolderOpen
+              style={{
+                stroke: "var(--text-not-available)",
+                width: "15px",
+                height: "15px",
+                strokeWidth: 2,
+              }}
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const handleSelected = (item: Item) => {
+    if (item.id === 1) {
+      setIsList(true);
+      if (color === null) setColor(DEFAULT_COLOR);
+      return;
+    }
+    if (item.id === 2) {
+      setIsList(false);
+      setColor(null);
+      return;
+    }
+  };
 
   return (
     <motion.div className={styles.formContainer} layout>
@@ -104,10 +195,11 @@ export const ListInput = memo(() => {
               emoji={emoji}
               setEmoji={handleSetEmoji}
               setOriginalColor={() => {
-                setColor(DEFAULT_COLOR);
+                setColor(isList ? DEFAULT_COLOR : DEFAULT_FOLDER_COLOR);
                 setEmoji(null);
               }}
               uniqueId="navbar-list-card"
+              isFolder={!isList}
             />
           </div>
           <motion.input
@@ -123,6 +215,23 @@ export const ListInput = memo(() => {
               if (e.key === "Escape") resetForm();
             }}
           />
+          <div className={styles.typeSelectorContainer}>
+            <Dropdown
+              items={[
+                { id: 1, label: "Lista" },
+                { id: 2, label: "Carpeta" },
+              ]}
+              renderItem={renderItemType}
+              triggerLabel={triggerLabelType}
+              selectedListHome={
+                isList ? { id: 1, label: "Tarea" } : { id: 2, label: "Nota" }
+              }
+              setSelectedListHome={handleSelected}
+              boxSize={25}
+              style={{ borderRadius: "10px" }}
+              directionContainerShow={false}
+            />
+          </div>
           <button
             className={styles.sendButton}
             onClick={(e) => {
@@ -131,7 +240,11 @@ export const ListInput = memo(() => {
             }}
           >
             <SendIcon
-              style={{ width: 18, stroke: "var(--icon-color)", strokeWidth: 2 }}
+              style={{
+                width: 18,
+                stroke: "var(--icon-color)",
+                strokeWidth: 2,
+              }}
             />
           </button>
         </motion.div>

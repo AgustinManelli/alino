@@ -1,13 +1,16 @@
 import { z } from "zod";
 
-export const hexColorSchema = z.string().refine(
-  (value) => {
-    return /^#([A-Fa-f0-9]{3,4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/.test(value);
-  },
-  {
-    message: "Formato inválido. Debe ser: #RGB, #RGBA, #RRGGBB o #RRGGBBAA",
-  }
-);
+export const hexColorSchema = z
+  .string()
+  .refine(
+    (value) => {
+      return /^#([A-Fa-f0-9]{3,4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/.test(value);
+    },
+    {
+      message: "Formato inválido. Debe ser: #RGB, #RGBA, #RRGGBB o #RRGGBBAA",
+    }
+  )
+  .nullable();
 
 export const shortcodeEmojiSchema = z
   .string()

@@ -24,6 +24,7 @@ interface props {
   setEmoji: (value: string | null) => void;
   uniqueId?: string;
   big?: boolean;
+  inFolder?: boolean;
 }
 
 export const ListInfoEdit = memo(function ListInfoEdit({
@@ -36,6 +37,7 @@ export const ListInfoEdit = memo(function ListInfoEdit({
   setEmoji,
   uniqueId = "default",
   big = false,
+  inFolder = false,
 }: props) {
   //const animations = useUserPreferencesStore((state) => state.animations);
   const updateDataList = useTodoDataStore((state) => state.updateDataList);
@@ -185,9 +187,9 @@ export const ListInfoEdit = memo(function ListInfoEdit({
         ) : (
           <TextTitlesAnimation
             text={list.list.list_name}
-            delay={0.3}
-            duration={0.1}
-            stagger={0.03}
+            delay={inFolder ? 0 : 0.3}
+            duration={inFolder ? 0 : 0.1}
+            stagger={inFolder ? 0 : 0.03}
             color={"var(--text)"}
             colorEffect={list.list.color}
             charSize={big ? "18px" : "14px"}

@@ -17,28 +17,31 @@ export type Database = {
       list_folders: {
         Row: {
           created_at: string;
-          folder_color: string;
+          folder_color: string | null;
           folder_description: string | null;
           folder_id: string;
           folder_name: string;
+          index: number;
           updated_at: string | null;
           user_id: string;
         };
         Insert: {
           created_at?: string;
-          folder_color?: string;
+          folder_color?: string | null;
           folder_description?: string | null;
           folder_id?: string;
           folder_name: string;
+          index?: number;
           updated_at?: string | null;
           user_id: string;
         };
         Update: {
           created_at?: string;
-          folder_color?: string;
+          folder_color?: string | null;
           folder_description?: string | null;
           folder_id?: string;
           folder_name?: string;
+          index?: number;
           updated_at?: string | null;
           user_id?: string;
         };

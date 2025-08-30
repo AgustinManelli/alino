@@ -144,19 +144,49 @@ export async function getLists() {
   }
 }
 
-export const updateIndexList = async (list_id: string, index: number) => {
+export const updateIndexList = async (
+  list_id: string,
+  index: number,
+  folder_id: string | null
+) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("list_memberships")
-      .update({ index })
+      .update({ index, folder: folder_id })
       .eq("list_id", list_id)
       .eq("user_id", user.id);
 
     if (error) {
       throw new Error(
         "No se pudo actualizar la lista. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const updateIndexFolder = async (folder_id: string, index: number) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase
+      .from("list_folders")
+      .update({ index })
+      .eq("folder_id", folder_id)
+      .eq("user_id", user.id);
+
+    if (error) {
+      throw new Error(
+        "No se pudo actualizar la carpeta. Intentalo nuevamente o contacta con soporte."
       );
     }
 
@@ -180,16 +210,49 @@ export const insertList = async (
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase.from("lists").insert({
-      list_id: list_id,
+      list_id,
       owner_id: user.id,
-      list_name: list_name,
-      color: color,
-      icon: icon,
+      list_name,
+      color,
+      icon,
     });
 
     if (error) {
       throw new Error(
         "No se pudo insertar la lista. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+
+    return { data: data?.[0] || null };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const insertFolder = async (
+  folder_id: string,
+  folder_name: string,
+  folder_color: string | null,
+  index: number
+) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase.from("list_folders").insert({
+      folder_id,
+      user_id: user.id,
+      folder_name,
+      folder_color,
+      index,
+    });
+
+    if (error) {
+      throw new Error(
+        "No se pudo insertar la carpeta. Intentalo nuevamente o contacta con soporte."
       );
     }
 
@@ -215,6 +278,29 @@ export const deleteList = async (list_id: string) => {
     if (error) {
       throw new Error(
         "No se pudo eliminar la lista. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const deleteFolder = async (folder_id: string) => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+
+    const { error } = await supabase
+      .from("list_folders")
+      .delete()
+      .eq("folder_id", folder_id);
+
+    if (error) {
+      throw new Error(
+        "No se pudo eliminar la carpeta. Intentalo nuevamente o contacta con soporte."
       );
     }
   } catch (error: unknown) {

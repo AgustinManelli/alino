@@ -11,6 +11,7 @@ import {
   getLists,
   insertList,
   deleteList,
+  deleteFolder,
   leaveList,
   insertTask,
   deleteTask,
@@ -23,6 +24,8 @@ import {
   getUsersMembersList,
   createListInvitation,
   getSingleLists,
+  insertFolder,
+  updateIndexFolder,
 } from "@/lib/api/actions";
 
 import {
@@ -42,6 +45,7 @@ type TodoStore = {
   folders: FolderType[];
   loadingQueue: number;
   setLists: (list: ListsType[]) => Promise<void>;
+  setFolders: (folders: FolderType[]) => Promise<void>;
   getLists: () => Promise<void>;
   getListById: (list_id: string) => ListsType | undefined;
   subscriptionAddList: (membership: MembershipRow) => void;
@@ -53,7 +57,12 @@ type TodoStore = {
     color: string,
     icon: string | null
   ) => Promise<void>;
+  insertFolder: (
+    folder_name: string,
+    folder_color: string | null
+  ) => Promise<void>;
   deleteList: (list_id: string) => Promise<void>;
+  deleteFolder: (folder_id: string) => Promise<void>;
   leaveList: (list_id: string) => Promise<void>;
   updateDataList: (
     list_id: string,
@@ -71,7 +80,12 @@ type TodoStore = {
   deleteTask: (task_id: string) => Promise<void>;
   updateTaskCompleted: (task_id: string, completed: boolean) => Promise<void>;
   updatePinnedList: (list_id: string, pinned: boolean) => Promise<void>;
-  updateIndexList: (list_id: string, index: number) => Promise<void>;
+  updateIndexList: (
+    list_id: string,
+    index: number,
+    folder_id: string | null
+  ) => Promise<void>;
+  updateIndexFolders: (folder_id: string, index: number) => Promise<void>;
   updateTaskName: (
     task_id: string,
     task_content: string,
@@ -85,10 +99,26 @@ type TodoStore = {
   getTaskCountByListId: (listId: string) => number;
 };
 
-const calculateNewIndex = (lists: ListsType[]) =>
-  lists.length > 0
-    ? Math.max(...lists.map((l) => l.index ?? 0)) + POS_INDEX
-    : POS_INDEX;
+const calculateNewIndex = (
+  a: ListsType[] | FolderType[],
+  b: ListsType[] | FolderType[]
+) => {
+  // extraemos índices, forzando a number (fallback 0)
+  const idxA = a
+    ? a.length > 0
+      ? Math.max(...a.map((x) => x.index ?? 0))
+      : 0
+    : 0;
+  const idxB = b
+    ? b.length > 0
+      ? Math.max(...b.map((x) => x.index ?? 0))
+      : 0
+    : 0;
+
+  const maxIdx = Math.max(idxA, idxB);
+
+  return maxIdx <= 0 ? POS_INDEX : maxIdx + POS_INDEX;
+};
 
 function handleError(err: unknown) {
   toast.error((err as Error).message || "Error desconocido");
@@ -115,6 +145,10 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
 
   setLists: async (list) => {
     set(() => ({ lists: list }));
+  },
+
+  setFolders: async (folder) => {
+    set(() => ({ folders: folder }));
   },
 
   getLists: async () => {
@@ -208,21 +242,22 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     }));
   },
 
-  updateIndexList: async (list_id, index) => {
+  updateIndexList: async (list_id, index, folder_id) => {
     const originalList = get().lists.find((list) => list.list_id === list_id);
     if (!originalList) return;
     const previousIndex = originalList.index;
+    const previousFolder = originalList.folder;
 
     try {
       set((state) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === list_id
-            ? { ...currentItem, index }
+            ? { ...currentItem, index, folder_id }
             : currentItem
         ),
       }));
 
-      const { error } = await updateIndexList(list_id, index);
+      const { error } = await updateIndexList(list_id, index, folder_id);
 
       if (error) {
         throw new Error(error);
@@ -231,6 +266,40 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       set((state) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === list_id
+            ? { ...currentItem, index: previousIndex, folder: previousFolder }
+            : currentItem
+        ),
+      }));
+
+      handleError(err);
+    }
+  },
+
+  updateIndexFolders: async (folder_id, index) => {
+    const originalFolders = get().folders.find(
+      (folder) => folder.folder_id === folder_id
+    );
+    if (!originalFolders) return;
+    const previousIndex = originalFolders.index;
+
+    try {
+      set((state) => ({
+        folders: state.folders.map((currentItem) =>
+          currentItem.folder_id === folder_id
+            ? { ...currentItem, index }
+            : currentItem
+        ),
+      }));
+
+      const { error } = await updateIndexFolder(folder_id, index);
+
+      if (error) {
+        throw new Error(error);
+      }
+    } catch (err) {
+      set((state) => ({
+        folders: state.folders.map((currentItem) =>
+          currentItem.folder_id === folder_id
             ? { ...currentItem, index: previousIndex }
             : currentItem
         ),
@@ -276,9 +345,12 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
 
     const optimisticId = uuidv4();
     const lists = get().lists;
+    const folders = get().folders;
 
-    const index = calculateNewIndex(lists);
+    const index = calculateNewIndex(lists, folders);
     const now = new Date().toISOString();
+
+    console.log(index);
 
     const optimistic: ListsType = {
       folder: null,
@@ -319,6 +391,48 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     }
   },
 
+  insertFolder: async (folder_name, folder_color) => {
+    const user_id = await getCurrentUserId();
+
+    const optimisticId = uuidv4();
+    const lists = get().lists;
+    const folders = get().folders;
+
+    const index = calculateNewIndex(lists, folders);
+    const now = new Date().toISOString();
+
+    const optimistic: FolderType = {
+      folder_id: optimisticId,
+      folder_name,
+      folder_color,
+      folder_description: null,
+      user_id: user_id || "",
+      updated_at: null,
+      created_at: now,
+      index,
+    };
+    try {
+      set((state) => ({ folders: [...state.folders, optimistic] }));
+
+      const { error } = await insertFolder(
+        optimisticId,
+        folder_name,
+        folder_color,
+        index
+      );
+
+      if (error) {
+        throw new Error(error || "No se recibieron datos del servidor.");
+      }
+    } catch (err) {
+      set((state) => ({
+        lists: state.lists.filter((l) => l.list_id !== optimisticId),
+      }));
+
+      handleError(err);
+    }
+  },
+
   deleteList: async (list_id) => {
     const prevLists = get().lists.slice();
     const prevTasks = get().tasks.slice();
@@ -333,6 +447,26 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     if (result?.error) {
       handleError(result.error);
       set({ lists: prevLists, tasks: prevTasks });
+      return;
+    }
+  },
+
+  deleteFolder: async (folder_id) => {
+    const prevFolders = get().folders.slice();
+    const prevLists = get().lists.slice();
+
+    set((state) => ({
+      folders: state.folders.filter((f) => f.folder_id !== folder_id),
+      lists: state.lists.map((l) =>
+        l.folder === folder_id ? { ...l, folder: null } : l
+      ),
+    }));
+
+    const result = await deleteFolder(folder_id);
+
+    if (result?.error) {
+      handleError(result.error);
+      set({ folders: prevFolders, lists: prevLists });
       return;
     }
   },

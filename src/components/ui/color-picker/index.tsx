@@ -22,7 +22,7 @@ import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useModalUbication } from "@/hooks/useModalUbication";
 
 interface props {
-  color: string;
+  color: string | null;
   setColor: (value: string, typing?: boolean) => void;
   emoji: string | null;
   setEmoji: (value: string | null) => void;
@@ -30,6 +30,7 @@ interface props {
   setOriginalColor: () => void;
   uniqueId?: string;
   big?: boolean;
+  isFolder?: boolean;
 }
 
 export function ColorPicker({
@@ -41,6 +42,7 @@ export function ColorPicker({
   setOriginalColor,
   uniqueId = "",
   big = false,
+  isFolder = false,
 }: props) {
   //estados locales
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false); //estado para abrir o cerrar color-picker-container
@@ -64,6 +66,7 @@ export function ColorPicker({
 
   useModalUbication(pickerRef, portalRef, () => {
     const validation = hexColorSchema.safeParse(color);
+
     if (!validation.success) {
       setOriginalColor();
     }
@@ -76,7 +79,7 @@ export function ColorPicker({
       {emoji === null || emoji === "" ? (
         <SquircleIcon
           style={{
-            fill: `${color}`,
+            fill: color ?? "var(--text-not-available)",
             transition: "fill 0.3s ease-in-out",
             width: big ? "16px" : "12px",
           }}
@@ -232,17 +235,21 @@ export function ColorPicker({
               id={`color-picker-container-${uniqueId}`}
             >
               <section className={styles.titleSection}>
-                <div
-                  className={styles.titleButtons}
-                  style={{
-                    justifyContent:
-                      "flex-" + (type === "color" ? "start" : "end"),
-                  }}
-                >
-                  <motion.div className={styles.titleSelector} layout />
-                  {titleButtons("color", "color")}
-                  {titleButtons("emoji", "emoji")}
-                </div>
+                {!isFolder ? (
+                  <div
+                    className={styles.titleButtons}
+                    style={{
+                      justifyContent:
+                        "flex-" + (type === "color" ? "start" : "end"),
+                    }}
+                  >
+                    <motion.div className={styles.titleSelector} layout />
+                    {titleButtons("color", "color")}
+                    {titleButtons("emoji", "emoji")}
+                  </div>
+                ) : (
+                  <p className={styles.titleText}>Color de carpeta</p>
+                )}
               </section>
 
               <div className={styles.separator}></div>
@@ -268,7 +275,7 @@ export function ColorPicker({
                           className={styles.inputColor}
                           id="colorInput"
                           type="color"
-                          value={color}
+                          value={color ?? undefined}
                           onChange={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -279,7 +286,7 @@ export function ColorPicker({
                           htmlFor="colorInput"
                           className={styles.labelColor}
                         >
-                          {hexColorSchema.safeParse(color).success ? (
+                          {hexColorSchema.safeParse(color).success && color ? (
                             <>
                               <SquircleIcon
                                 style={{ fill: `${color}`, width: "18px" }}
@@ -310,7 +317,7 @@ export function ColorPicker({
                       <input
                         className={styles.hexCode}
                         type="text"
-                        value={`${color}`}
+                        value={color ?? undefined}
                         onChange={(e) => {
                           setColor(e.target.value, true);
                         }}
@@ -326,11 +333,18 @@ export function ColorPicker({
                         }}
                       ></input>
                       <button
+                        disabled={!color}
                         onClick={() => {
-                          navigator.clipboard.writeText(color);
-                          toast("color copiado al portapapeles");
+                          if (color) {
+                            navigator.clipboard.writeText(color);
+                            toast("color copiado al portapapeles");
+                          }
                         }}
                         className={styles.copyButton}
+                        style={{
+                          opacity: !color ? 0.3 : 1,
+                          cursor: !color ? "initial" : "pointer",
+                        }}
                       >
                         <CopyToClipboardIcon
                           style={{
@@ -386,7 +400,7 @@ interface emoji {
 }
 
 interface SquircleColorButonType {
-  color: string;
+  color: string | null;
   setColor: (value: string) => void;
   colorHex: string;
   setIsOpenPicker: (value: boolean) => void;

@@ -97,6 +97,16 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.titleText {
+  font-size: 12px;
+  font-weight: 500;
+  background-color: transparent;
+  padding: 5px 10px 5px 10px;
+  width: 100%;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--text-not-available);
+}
+
 .separator {
   width: 100%;
   height: 1px;

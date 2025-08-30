@@ -100,3 +100,27 @@
   cursor: pointer;
   display: flex;
 }
+
+.typeSelectorContainer {
+  width: 18px;
+  height: 100%;
+  min-width: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dropdownItemContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.dropdownItemContainer p {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 100%;
+  overflow: hidden;
+  color: var(--text);
+}
