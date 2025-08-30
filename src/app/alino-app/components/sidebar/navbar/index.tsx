@@ -16,7 +16,6 @@ import { NavbarButton } from "./navbar-button";
 
 import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
 import styles from "./navbar.module.css";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
 
 // const containerFMVariant = {
 //   visible: {
@@ -36,19 +35,6 @@ export const Navbar = memo(({ initialFetching }: Props) => {
   const setNavbarStatus = useUIStore((state) => state.setNavbarStatus);
 
   const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile));
-  const lists = useTodoDataStore((state) => state.lists);
-
-  useEffect(() => {
-    const scrollElement = document.getElementById("list-container");
-    if (scrollElement && !initialFetching) {
-      setTimeout(() => {
-        scrollElement.scrollTo({
-          top: scrollElement.scrollHeight,
-          behavior: "smooth",
-        });
-      }, 50);
-    }
-  }, [lists]);
 
   const Ref = useRef<HTMLDivElement | null>(null);
 

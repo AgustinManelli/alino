@@ -35,9 +35,10 @@ import styles from "./ListCard.module.css";
 
 interface props {
   list: ListsType;
+  inFolder?: boolean;
 }
 
-export const ListCard = memo(({ list }: props) => {
+export const ListCard = memo(({ list, inFolder = false }: props) => {
   //estados locales
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
@@ -126,10 +127,8 @@ export const ListCard = memo(({ list }: props) => {
     transition,
   } = useSortable({
     id: list.list_id,
-    transition: {
-      duration: 500,
-      easing: "cubic-bezier(0.25, 1, 0.5, 1)",
-    },
+    transition: { duration: 500, easing: "cubic-bezier(0.25, 1, 0.5, 1)" },
+    data: { type: "item", parentId: list.folder ?? null },
     disabled: isMoreOptions || isNameChange || list.pinned,
   });
 
@@ -140,7 +139,7 @@ export const ListCard = memo(({ list }: props) => {
     transition,
     pointerEvents: isDragging ? "none" : "auto",
     zIndex: isDragging ? 99 : 1,
-    opacity: isDragging ? 0 : 1,
+    opacity: isDragging ? 0.3 : 1,
     backgroundColor: isActive
       ? "var(--background-over-container)"
       : "transparent",
@@ -209,6 +208,7 @@ export const ListCard = memo(({ list }: props) => {
           emoji={emoji}
           setEmoji={setEmoji}
           uniqueId="list-card"
+          inFolder
         />
         <div className={styles.listManagerContainer}>
           {list.list.is_shared && (
@@ -281,7 +281,7 @@ export const ListCard = memo(({ list }: props) => {
                     opacity: isMoreOptions ? "0" : "1",
                   }}
                 >
-                  {animations ? (
+                  {animations && !inFolder ? (
                     <CounterAnimation tasksLength={taskCount} />
                   ) : (
                     taskCount
@@ -303,7 +303,7 @@ export const ListCard = memo(({ list }: props) => {
   ]);
 
   return (
-    <div ref={setNodeRef}>
+    <div ref={setNodeRef} className={styles.allContainer}>
       <section
         {...attributes}
         {...listeners}

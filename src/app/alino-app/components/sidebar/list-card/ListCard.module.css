@@ -1,3 +1,6 @@
+.allContainer {
+  width: 100%;
+}
 .container {
   position: relative;
   overflow: hidden;
