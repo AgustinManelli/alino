@@ -227,7 +227,7 @@ export const ListInput = memo(() => {
                 isList ? { id: 1, label: "Tarea" } : { id: 2, label: "Nota" }
               }
               setSelectedListHome={handleSelected}
-              boxSize={25}
+              boxSize={30}
               style={{ borderRadius: "10px" }}
               directionContainerShow={false}
             />

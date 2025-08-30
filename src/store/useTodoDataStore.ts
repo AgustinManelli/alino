@@ -121,6 +121,7 @@ const calculateNewIndex = (
 };
 
 function handleError(err: unknown) {
+  console.log(err);
   toast.error((err as Error).message || "Error desconocido");
 }
 
@@ -160,6 +161,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       if (error) {
         throw new Error(error);
       }
+
+      console.log(data?.folders);
 
       set(() => ({
         lists: data?.lists,
@@ -393,7 +396,6 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
 
   insertFolder: async (folder_name, folder_color) => {
     const user_id = await getCurrentUserId();
-
     const optimisticId = uuidv4();
     const lists = get().lists;
     const folders = get().folders;
