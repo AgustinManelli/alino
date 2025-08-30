@@ -107,7 +107,13 @@ export async function getLists() {
     }
 
     if (!listsData || listsData.length === 0) {
-      return { data: { lists: [], tasks: [] } };
+      return {
+        data: {
+          lists: [],
+          tasks: [],
+          folders: !foldersData || foldersData.length === 0 ? [] : foldersData,
+        },
+      };
     }
 
     const listIds = listsData.map((membership) => membership.list.list_id);
@@ -133,7 +139,11 @@ export async function getLists() {
     }
 
     return {
-      data: { lists: listsData, tasks: tasksData, folders: foldersData },
+      data: {
+        lists: listsData,
+        tasks: tasksData,
+        folders: !foldersData || foldersData.length === 0 ? [] : foldersData,
+      },
     };
   } catch (error: unknown) {
     if (error instanceof Error) {

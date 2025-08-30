@@ -6,7 +6,7 @@
   background-color: var(--background-over-container);
   border-radius: 15px;
   padding: 7px 10px 7px 10px;
-  gap: 5px;
+  gap: 10px;
   height: 45px;
 }
 
@@ -26,7 +26,6 @@
   font-family: inherit;
   color: var(--text);
   border-radius: 10px;
-  padding-left: 10px;
 }
 
 .inputText::placeholder {
@@ -99,6 +98,7 @@
   background-color: transparent;
   cursor: pointer;
   display: flex;
+  width: 30px;
 }
 
 .typeSelectorContainer {

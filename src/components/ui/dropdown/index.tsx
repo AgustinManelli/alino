@@ -98,7 +98,7 @@ export function Dropdown<T>({
               ref={sRef}
               id="dropdown-component"
             >
-              <div className={styles.items}>
+              <div className={`${styles.items} ignore-sidebar-close`}>
                 {items
                   .filter((item) => item !== selectedListHome)
                   .map((item, index) => (
