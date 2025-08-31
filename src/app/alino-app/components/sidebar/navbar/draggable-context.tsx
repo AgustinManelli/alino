@@ -157,7 +157,9 @@ export const DraggableContext = () => {
       const current = combinedItems.find(
         (it) => it.id === (active.id as string)
       );
-      setDraggedItem(current ?? null);
+      if (current) {
+        setDraggedItem(current);
+      }
     },
     [combinedItems]
   );
@@ -166,7 +168,6 @@ export const DraggableContext = () => {
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
-      console.log(active, over);
       //Cancelar si es sobre el mismo id, significa que no se movió
       if (active.id === over?.id) {
         setDraggedItem(null);
@@ -346,6 +347,11 @@ export const DraggableContext = () => {
     return rectIntersection(args);
   };
 
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    console.log(active, over);
+  };
+
   return (
     <>
       <DndContext
@@ -356,6 +362,7 @@ export const DraggableContext = () => {
           setDraggedItem(null);
         }}
         collisionDetection={rectIntersection}
+        // onDragOver={handleDragOver}
         // collisionDetection={customCollisionDetection}
         // modifiers={[restrictToVerticalAxis]}
       >
@@ -368,7 +375,6 @@ export const DraggableContext = () => {
               const folder = item.data as FolderType;
               return (
                 <motion.div
-                  layout={draggedItem ? false : true}
                   variants={animations ? variants : undefined}
                   initial={
                     animations ? { scale: 0, opacity: 0, zIndex: 1 } : undefined
@@ -407,7 +413,6 @@ export const DraggableContext = () => {
               const list = item.data as ListsType;
               return (
                 <motion.div
-                  layout={draggedItem ? false : true}
                   variants={animations ? variants : undefined}
                   initial={
                     animations ? { scale: 0, opacity: 0, zIndex: 1 } : undefined

@@ -26,6 +26,7 @@ import {
   getSingleLists,
   insertFolder,
   updateIndexFolder,
+  updateDataFolder,
 } from "@/lib/api/actions";
 
 import {
@@ -69,6 +70,11 @@ type TodoStore = {
     list_name: string,
     color: string,
     icon: string | null
+  ) => Promise<{ error: string | null }>;
+  updateDataFolder: (
+    folder_id: string,
+    folder_name: string,
+    folde_color: string | null
   ) => Promise<{ error: string | null }>;
   deleteAllLists: () => Promise<void>;
   addTask: (
@@ -515,6 +521,32 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     if (result?.error) {
       handleError(result.error);
       set({ lists: prevLists });
+      return { error: result.error };
+    }
+
+    return { error: null };
+  },
+
+  updateDataFolder: async (folder_id, folder_name, folder_color) => {
+    const prevFolders = get().folders.slice();
+
+    set((state) => ({
+      folders: state.folders.map((folder) =>
+        folder.folder_id === folder_id
+          ? {
+              ...folder,
+              folder_name: folder_name,
+              folder_color: folder_color,
+            }
+          : folder
+      ),
+    }));
+
+    const result = await updateDataFolder(folder_id, folder_name, folder_color);
+
+    if (result?.error) {
+      handleError(result.error);
+      set({ folders: prevFolders });
       return { error: result.error };
     }
 

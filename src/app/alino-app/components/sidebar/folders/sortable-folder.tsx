@@ -1,4 +1,10 @@
-import React, { CSSProperties, useEffect, useMemo, useState } from "react";
+import React, {
+  CSSProperties,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useDndMonitor, useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -25,8 +31,11 @@ import {
 import { ConfigMenu } from "@/components/ui/config-menu";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+import { CounterAnimation } from "@/components/ui/counter-animation";
+import { FolderInfoEdit } from "@/components/ui/folder-info-edit";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
-// sólo el cuerpo del componente, reemplaza el original
 export const SortableFolder = ({
   folder,
   lists,
@@ -34,11 +43,21 @@ export const SortableFolder = ({
 }: SortableFolderProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const [containsOver, setContainsOver] = useState<boolean>(false);
+  const [isNameChange, setIsNameChange] = useState<boolean>(false);
+  const [colorTemp, setColorTemp] = useState<string | null>(
+    folder.folder_color
+  );
 
   const openModal = useConfirmationModalStore((state) => state.openModal);
   const deleteFolder = useTodoDataStore((state) => state.deleteFolder);
 
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
+
   const listIds = useMemo(() => lists.map((list) => list.list_id), [lists]);
+
+  const listsCount = useMemo(() => lists.length, [lists]);
+
+  const divRef = useRef<HTMLDivElement | null>(null);
 
   useDndMonitor({
     onDragOver: (event) => {
@@ -48,8 +67,6 @@ export const SortableFolder = ({
         setContainsOver(false);
         return;
       }
-
-      // Si el `over.id` es uno de los listIds de esta carpeta — marcar true
       if (
         listIds.includes(overId) ||
         overId === `folder-${folder.folder_id}-dropzone`
@@ -100,15 +117,15 @@ export const SortableFolder = ({
         : "1px solid var(--border-container-color)",
   } as CSSProperties;
 
-  // useEffect(() => {
-  //   let timer: NodeJS.Timeout;
-  //   if (containsOver && !isCurrentlyDraggingThis) {
-  //     timer = setTimeout(() => {
-  //       setOpen(true);
-  //     }, 1000);
-  //   }
-  //   return () => clearTimeout(timer);
-  // }, [containsOver, isCurrentlyDraggingThis]);
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (containsOver && !isCurrentlyDraggingThis) {
+      timer = setTimeout(() => {
+        setOpen(true);
+      }, 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [containsOver, isCurrentlyDraggingThis]);
 
   const handleConfirm = () => {
     openModal({
@@ -123,13 +140,17 @@ export const SortableFolder = ({
     deleteFolder(folder.folder_id);
   };
 
+  const handleInfoEdit = () => {
+    setIsNameChange(true);
+  };
+
   const configOptions = useMemo(() => {
     const baseOptions = [
       {
         name: "Editar",
         icon: <Edit style={iconStyle} />,
-        action: () => {},
-        enabled: false,
+        action: handleInfoEdit,
+        enabled: true,
       },
       {
         name: "Fijar",
@@ -147,15 +168,27 @@ export const SortableFolder = ({
     return baseOptions.filter((bs) => bs.enabled);
   }, []);
 
+  useEffect(() => {
+    const input = document.getElementById("folder-info-edit-container");
+    if (input) {
+      input.focus();
+    }
+  }, [isNameChange]);
+
+  useOnClickOutside(divRef, () => {
+    const colorPickerContainer = document.getElementById(
+      "color-picker-container-folder"
+    );
+    if (colorPickerContainer) return;
+    setIsNameChange(false);
+    setColorTemp(folder.folder_color);
+  });
+
   return (
     <div
       ref={setSortableNodeRef}
       className={styles.folderContainer}
       style={style}
-      onClick={(e) => {
-        e.stopPropagation();
-        setOpen((prev) => !prev);
-      }}
     >
       <div
         id={`folder-${folder.folder_id}-dropzone`}
@@ -164,68 +197,79 @@ export const SortableFolder = ({
         className={styles.folderDropOverlay}
         style={{ pointerEvents: isDragging ? "auto" : "none" }}
       />
-      <div className={styles.folderHeader} {...listeners} {...attributes}>
-        <div
-          style={{
-            display: "flex",
-            gap: "5px",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {open ? (
-            <FolderOpen
-              style={{
-                stroke: folder.folder_color ?? "var(--text-not-available)",
-                width: "15px",
-                height: "15px",
-                strokeWidth: 2,
-              }}
-            />
-          ) : (
-            <FolderClosed
-              style={{
-                stroke: folder.folder_color ?? "var(--text-not-available)",
-                width: "15px",
-                height: "15px",
-                strokeWidth: 2,
-              }}
-            />
-          )}
-          <p
+      <div
+        className={styles.folderHeader}
+        {...listeners}
+        {...attributes}
+        ref={divRef}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isNameChange) return;
+          setOpen((prev) => !prev);
+        }}
+      >
+        <div className={styles.button}>
+          <ArrowThin
             style={{
-              color: folder.folder_color ?? "var(--text-not-available)",
+              stroke: colorTemp ?? "var(--text-not-available)",
+              width: "15px",
+              height: "15px",
+              strokeWidth: 2,
+              transform: open ? "rotate(0deg)" : "rotate(-90deg)",
+              transition: "transform 0.1s ease-in-out",
             }}
-          >
-            {folder.folder_name}
-          </p>
-        </div>
-        <section className={styles.buttonsContainer}>
-          <ConfigMenu
-            iconWidth={"23px"}
-            configOptions={configOptions}
-            idScrollArea={"list-container"}
-            uniqueId={"navbar-list-card"}
           />
-          <div className={styles.button}>
-            <ArrowThin
-              style={{
-                stroke: "var(--text-not-available)",
-                width: "15px",
-                height: "15px",
-                strokeWidth: 2,
-                transform: open ? "rotate(180deg)" : "rotate(0deg)",
-              }}
-            />
-          </div>
-        </section>
+        </div>
+        <div className={styles.infoEditContainer}>
+          <FolderInfoEdit
+            folder={folder}
+            isNameChange={isNameChange}
+            setIsNameChange={setIsNameChange}
+            colorTemp={colorTemp}
+            setColorTemp={setColorTemp}
+            folderOpen={open}
+          />
+        </div>
+        {!isNameChange && (
+          <section className={styles.buttonsContainer}>
+            {isMobile ? (
+              <section className={styles.rightButtonsMobile}>
+                <div className={styles.moreConfigMenuMobile}>
+                  <ConfigMenu
+                    iconWidth={"23px"}
+                    configOptions={configOptions}
+                    idScrollArea={"list-container"}
+                    uniqueId={"navbar-list-card"}
+                  />
+                </div>
+                <div className={styles.counterMobile}>
+                  <CounterAnimation tasksLength={listsCount} />
+                </div>
+              </section>
+            ) : (
+              <>
+                <div className={styles.moreConfigMenu}>
+                  <ConfigMenu
+                    iconWidth={"23px"}
+                    configOptions={configOptions}
+                    idScrollArea={"list-container"}
+                    uniqueId={"navbar-list-card"}
+                  />
+                </div>
+                <div className={styles.counter}>
+                  <CounterAnimation tasksLength={listsCount} />
+                </div>
+              </>
+            )}
+          </section>
+        )}
       </div>
       {open /*&& !isCurrentlyDraggingThis*/ && (
         <div
           className={styles.listWrapper}
           style={
             {
-              "--bgColor": folder.folder_color ?? "transparent",
+              "--bgColor": colorTemp ?? "transparent",
             } as React.CSSProperties
           }
         >
