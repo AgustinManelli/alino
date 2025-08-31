@@ -257,6 +257,9 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     const previousIndex = originalList.index;
     const previousFolder = originalList.folder;
 
+    console.log(previousFolder);
+    console.log(folder_id);
+
     try {
       set((state) => ({
         lists: state.lists.map((currentItem) =>
@@ -279,7 +282,6 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
             : currentItem
         ),
       }));
-
       handleError(err);
     }
   },

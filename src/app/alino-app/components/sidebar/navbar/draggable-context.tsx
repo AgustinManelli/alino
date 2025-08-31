@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, memo, useRef, useEffect } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { motion } from "motion/react";
 import {
   DndContext,
@@ -12,30 +12,25 @@ import {
   TouchSensor,
   DragOverlay,
   Modifier,
-  pointerWithin,
-  CollisionDetection,
   rectIntersection,
-  DragOverEvent,
-  useDroppable,
 } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { useShallow } from "zustand/shallow";
 
-import { ListsType, FolderType } from "@/lib/schemas/todo-schema";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 import { DragListCard } from "../list-card/drag-list-card";
 import { ListCard } from "../list-card";
 import { SortableFolder } from "../folders/sortable-folder";
-
-import styles from "./DraggableContext.module.css";
 import { DragSortableFolder } from "../folders/drag-sortable-folder";
+
+import { ListsType, FolderType } from "@/lib/schemas/todo-schema";
+import styles from "./DraggableContext.module.css";
 
 const variants = {
   visible: {
@@ -62,6 +57,7 @@ type NormalizedItem = {
 
 export const DraggableContext = () => {
   const [draggedItem, setDraggedItem] = useState<NormalizedItem | null>(null);
+  const [tempListLength, setTempListLenght] = useState<number>(0);
 
   const {
     lists,
@@ -125,7 +121,6 @@ export const DraggableContext = () => {
   );
 
   const scrollContainerRef = useRef<HTMLElement | null>(null);
-
   useEffect(() => {
     scrollContainerRef.current = document.getElementById("list-container");
   }, []);
@@ -158,7 +153,13 @@ export const DraggableContext = () => {
         (it) => it.id === (active.id as string)
       );
       if (current) {
+        const activeType = active.data?.current?.type;
         setDraggedItem(current);
+        if (activeType === "folder") {
+          setTempListLenght(
+            lists.filter((ls) => ls.folder === active.id).length
+          );
+        }
       }
     },
     [combinedItems]
@@ -168,9 +169,10 @@ export const DraggableContext = () => {
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
-      //Cancelar si es sobre el mismo id, significa que no se movió
+
       if (active.id === over?.id) {
         setDraggedItem(null);
+        setTempListLenght(0);
         return;
       }
 
@@ -207,17 +209,15 @@ export const DraggableContext = () => {
       );
       if (oldIndex === -1 || newIndex === -1) {
         setDraggedItem(null);
+        setTempListLenght(0);
         return;
       }
 
-      // mueve la posición en el array normalizado
       const newOrder = arrayMove(combinedItems.slice(), oldIndex, newIndex);
       const moved = newOrder[newIndex];
 
       const activeType = active.data?.current?.type;
-      //Obtenemos el id del elemento sobre el que se hace drop, si no existe, es el root
       if (over) {
-        //Si se hace drop sobre un folder-dropzone o sobre algun elemento que tiene parentId
         if (
           over.data?.current?.type === "folder-dropzone" ||
           over.data?.current?.parentId
@@ -231,22 +231,22 @@ export const DraggableContext = () => {
               const computedIndex = calcNewIndex(newOrder, newIndex);
               movedList.index = computedIndex;
               newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
-              // updateIndexList(
-              //   movedList.list_id,
-              //   computedIndex,
-              //   active.data?.current?.parentId
-              // );
+              updateIndexList(
+                movedList.list_id,
+                computedIndex,
+                movedList.folder
+              );
             } else {
               const computedIndex = calcNewIndex(newOrder, newIndex);
               movedList.index = computedIndex;
               movedList.folder =
                 over.data.current.parentId ?? over.data.current.folderId;
               newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
-              // updateIndexList(
-              //   movedList.list_id,
-              //   computedIndex,
-              //   over.data.current.parentId
-              // );
+              updateIndexList(
+                movedList.list_id,
+                computedIndex,
+                over.data.current.parentId ?? over.data.current.folderId
+              );
             }
           }
         } else {
@@ -256,18 +256,14 @@ export const DraggableContext = () => {
             movedList.index = computedIndex;
             movedList.folder = null;
             newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
-            // updateIndexList(
-            //   movedList.list_id,
-            //   computedIndex,
-            //   null
-            // );
+            updateIndexList(movedList.list_id, computedIndex, null);
           }
           if (activeType === "folder") {
             const movedFolder = { ...(moved.data as FolderType) };
             const computedIndex = calcNewIndex(newOrder, newIndex);
             movedFolder.index = computedIndex;
             newOrder[newIndex] = { ...newOrder[newIndex], data: movedFolder };
-            //updateIndexFolders(movedFolder.folder_id, computedIndex);
+            updateIndexFolders(movedFolder.folder_id, computedIndex);
           }
         }
       } else {
@@ -277,18 +273,14 @@ export const DraggableContext = () => {
           movedList.index = computedIndex;
           movedList.folder = null;
           newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
-          // updateIndexList(
-          //   movedList.list_id,
-          //   computedIndex,
-          //   null
-          // );
+          updateIndexList(movedList.list_id, computedIndex, null);
         }
         if (activeType === "folder") {
           const movedFolder = { ...(moved.data as FolderType) };
           const computedIndex = calcNewIndex(newOrder, newIndex);
           movedFolder.index = computedIndex;
           newOrder[newIndex] = { ...newOrder[newIndex], data: movedFolder };
-          //updateIndexFolders(movedFolder.folder_id, computedIndex);
+          updateIndexFolders(movedFolder.folder_id, computedIndex);
         }
       }
 
@@ -303,6 +295,7 @@ export const DraggableContext = () => {
       setLists(updatedLists);
       setFolders(updatedFolders);
       setDraggedItem(null);
+      setTempListLenght(0);
     },
     [combinedItems, setLists, setFolders, updateIndexList, updateIndexFolders]
   );
@@ -327,30 +320,30 @@ export const DraggableContext = () => {
   };
 
   //Colisión personalizada
-  const customCollisionDetection: CollisionDetection = (args) => {
-    const { active } = args;
-    const activeData = active.data.current;
+  // const customCollisionDetection: CollisionDetection = (args) => {
+  //   const { active } = args;
+  //   const activeData = active.data.current;
 
-    if (activeData?.parentId) {
-      return rectIntersection(args);
-    }
+  //   if (activeData?.parentId) {
+  //     return rectIntersection(args);
+  //   }
 
-    const pointerCollisions = pointerWithin(args);
-    const overFolderDropzone = pointerCollisions.find((collision) =>
-      String(collision.id).endsWith("-dropzone")
-    );
+  //   const pointerCollisions = pointerWithin(args);
+  //   const overFolderDropzone = pointerCollisions.find((collision) =>
+  //     String(collision.id).endsWith("-dropzone")
+  //   );
 
-    if (overFolderDropzone) {
-      return [overFolderDropzone];
-    }
+  //   if (overFolderDropzone) {
+  //     return [overFolderDropzone];
+  //   }
 
-    return rectIntersection(args);
-  };
+  //   return rectIntersection(args);
+  // };
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    console.log(active, over);
-  };
+  // const handleDragOver = (event: DragOverEvent) => {
+  //   const { active, over } = event;
+  //   console.log(active, over);
+  // };
 
   return (
     <>
@@ -360,6 +353,7 @@ export const DraggableContext = () => {
         onDragStart={handleDragStart}
         onDragCancel={() => {
           setDraggedItem(null);
+          setTempListLenght(0);
         }}
         collisionDetection={rectIntersection}
         // onDragOver={handleDragOver}
@@ -406,6 +400,7 @@ export const DraggableContext = () => {
                     folder={folder}
                     lists={lists.filter((ls) => ls.folder === folder.folder_id)}
                     isDragging={!!draggedItem}
+                    dropAllowed={draggedItem?.kind === "list"}
                   />
                 </motion.div>
               );
@@ -450,7 +445,10 @@ export const DraggableContext = () => {
               draggedItem.kind === "list" ? (
                 <DragListCard list={draggedItem.data as ListsType} />
               ) : (
-                <DragSortableFolder folder={draggedItem.data as FolderType} />
+                <DragSortableFolder
+                  folder={draggedItem.data as FolderType}
+                  listCount={tempListLength}
+                />
               )
             ) : null}
           </DragOverlay>
