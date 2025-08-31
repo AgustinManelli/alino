@@ -20,15 +20,14 @@ import { useMemo } from "react";
 const variants: Variants = {
   hidden: { opacity: 1 },
   visible: {
-    rotate: [1, -1, 1],
+    rotate: [-1, 1],
+    x: [-0.5, 0.5],
+    y: [-0.5, 0.5],
     transition: {
-      type: "spring",
-      stiffness: 50,
-      rotate: {
-        repeat: Infinity,
-        duration: 0.2,
-        ease: "easeInOut",
-      },
+      duration: 0.12,
+      ease: "easeInOut",
+      repeat: Infinity,
+      repeatType: "reverse",
     },
   },
 };

@@ -18,6 +18,7 @@ interface SortableFolderProps {
   folder: FolderType;
   lists: ListsType[];
   isDragging: boolean;
+  dropAllowed?: boolean;
 }
 import {
   ArrowThin,
@@ -40,6 +41,7 @@ export const SortableFolder = ({
   folder,
   lists,
   isDragging,
+  dropAllowed = true,
 }: SortableFolderProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const [containsOver, setContainsOver] = useState<boolean>(false);
@@ -111,9 +113,12 @@ export const SortableFolder = ({
     pointerEvents: isCurrentlyDraggingThis ? "none" : "auto",
     zIndex: isCurrentlyDraggingThis ? 99 : 1,
     opacity: isCurrentlyDraggingThis ? 0.3 : 1,
-    border:
-      containsOver && !isCurrentlyDraggingThis
+    border: dropAllowed
+      ? containsOver && !isCurrentlyDraggingThis
         ? "1px solid #3ebb00"
+        : "1px solid var(--border-container-color)"
+      : containsOver && !isCurrentlyDraggingThis
+        ? "1px solid #ef4444"
         : "1px solid var(--border-container-color)",
   } as CSSProperties;
 
