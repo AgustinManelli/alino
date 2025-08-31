@@ -20,6 +20,7 @@ interface Props {
   optionalState?: (value: boolean) => void;
   idScrollArea?: string;
   uniqueId?: string;
+  withoutBg?: boolean;
 }
 
 export const ConfigMenu = memo(function ConfigMenu({
@@ -28,6 +29,7 @@ export const ConfigMenu = memo(function ConfigMenu({
   optionalState,
   idScrollArea,
   uniqueId = "",
+  withoutBg = false,
 }: Props) {
   const [open, setOpen] = useState<boolean>(false);
 
@@ -107,9 +109,11 @@ export const ConfigMenu = memo(function ConfigMenu({
           style={{
             width: iconWidth,
             height: iconWidth,
-            backgroundColor: open
-              ? "var(--background-over-container-hover)"
-              : "var(--background-over-container)",
+            backgroundColor: withoutBg
+              ? "transparent"
+              : open
+                ? "var(--background-over-container-hover)"
+                : "var(--background-over-container)",
           }}
           onClick={handleTriggerClick}
         >

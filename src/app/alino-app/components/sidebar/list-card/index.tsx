@@ -255,7 +255,11 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
                 </div>
                 <div className={styles.configsContainer}>
                   <p className={`${styles.counter} ${styles.Mobile}`}>
-                    <CounterAnimation tasksLength={taskCount} />
+                    {animations && !inFolder ? (
+                      <CounterAnimation tasksLength={taskCount} />
+                    ) : (
+                      taskCount
+                    )}
                   </p>
                 </div>
               </>

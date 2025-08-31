@@ -380,6 +380,38 @@ export const updateDataList = async (
   }
 };
 
+export const updateDataFolder = async (
+  folder_id: string,
+  folder_name: string,
+  folder_color: string | null
+) => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase
+      .from("list_folders")
+      .update({
+        folder_name: folder_name,
+        folder_color: folder_color,
+      })
+      .eq("folder_id", folder_id);
+
+    if (error) {
+      throw new Error(
+        "No se pudo actualizar la carpeta. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
 export const updatePinnedList = async (list_id: string, pinned: boolean) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
