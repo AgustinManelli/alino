@@ -35,6 +35,7 @@ import { ListCard } from "../list-card";
 import { SortableFolder } from "../folders/sortable-folder";
 
 import styles from "./DraggableContext.module.css";
+import { DragSortableFolder } from "../folders/drag-sortable-folder";
 
 const variants = {
   visible: {
@@ -192,7 +193,14 @@ export const DraggableContext = () => {
           );
         }
       }
-
+      if (!over && active) {
+        const lastItemIndexInFolder = combinedItems.findLastIndex(
+          (item) => item
+        );
+        if (lastItemIndexInFolder !== -1) {
+          newIndex = lastItemIndexInFolder;
+        }
+      }
       oldIndex = combinedItems.findIndex(
         (it) => it.id === (active.id as string)
       );
@@ -262,7 +270,25 @@ export const DraggableContext = () => {
           }
         }
       } else {
-        console.log("root");
+        if (activeType === "item") {
+          const movedList = { ...(moved.data as ListsType) };
+          const computedIndex = calcNewIndex(newOrder, newIndex);
+          movedList.index = computedIndex;
+          movedList.folder = null;
+          newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
+          // updateIndexList(
+          //   movedList.list_id,
+          //   computedIndex,
+          //   null
+          // );
+        }
+        if (activeType === "folder") {
+          const movedFolder = { ...(moved.data as FolderType) };
+          const computedIndex = calcNewIndex(newOrder, newIndex);
+          movedFolder.index = computedIndex;
+          newOrder[newIndex] = { ...newOrder[newIndex], data: movedFolder };
+          //updateIndexFolders(movedFolder.folder_id, computedIndex);
+        }
       }
 
       const updatedFolders = newOrder
@@ -419,14 +445,7 @@ export const DraggableContext = () => {
               draggedItem.kind === "list" ? (
                 <DragListCard list={draggedItem.data as ListsType} />
               ) : (
-                <SortableFolder
-                  folder={draggedItem.data as FolderType}
-                  lists={lists.filter(
-                    (ls) =>
-                      ls.folder === (draggedItem.data as FolderType).folder_id
-                  )}
-                  isDragging
-                />
+                <DragSortableFolder folder={draggedItem.data as FolderType} />
               )
             ) : null}
           </DragOverlay>
