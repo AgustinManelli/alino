@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback, useRef, useEffect } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   DndContext,
   useSensor,
@@ -92,12 +92,14 @@ export const DraggableContext = () => {
       : [];
 
     const listsNormalized: NormalizedItem[] = lists
-      ? lists.map((l) => ({
-          id: l.list_id,
-          kind: "list",
-          data: l,
-          index: (l as any).index ?? 0,
-        }))
+      ? lists
+          .filter((l) => l.pinned !== true)
+          .map((l) => ({
+            id: l.list_id,
+            kind: "list",
+            data: l,
+            index: (l as any).index ?? 0,
+          }))
       : [];
 
     const combined = [...foldersNormalized, ...listsNormalized];
@@ -118,6 +120,11 @@ export const DraggableContext = () => {
   const combinedIds = useMemo(
     () => topLevelItems.map((i) => i.id),
     [topLevelItems]
+  );
+
+  const pinnedLists = useMemo(
+    () => lists.filter((l) => l.pinned === true),
+    [lists]
   );
 
   const scrollContainerRef = useRef<HTMLElement | null>(null);
@@ -364,6 +371,71 @@ export const DraggableContext = () => {
           items={combinedIds}
           strategy={verticalListSortingStrategy}
         >
+          <DndContext>
+            <AnimatePresence mode="popLayout">
+              {pinnedLists.map((list) => (
+                <motion.div
+                  layout={draggedItem ? false : true}
+                  variants={animations ? variants : undefined}
+                  initial={animations ? { scale: 0, opacity: 0 } : undefined}
+                  // transition={
+                  //   animations
+                  //     ? {
+                  //         scale: {
+                  //           duration: 0.2,
+                  //           ease: "easeInOut",
+                  //         },
+                  //       }
+                  //     : undefined
+                  // }
+                  whileInView="visible"
+                  exit={
+                    animations
+                      ? {
+                          scale: 1.3,
+                          opacity: 0,
+                          filter: "blur(30px) grayscale(100%)",
+                          y: -30,
+                          transition: {
+                            duration: 1,
+                          },
+                          zIndex: "-1",
+                        }
+                      : undefined
+                  }
+                  key={`pinned-${list.list_id}`}
+                  id={`pinned-${list.list_id}`}
+                  viewport={{
+                    root: scrollContainerRef,
+                    once: true,
+                    amount: 0.1,
+                  }}
+                >
+                  <ListCard list={list} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </DndContext>
+          {pinnedLists.length > 0 && (
+            <motion.div
+              animate={{
+                backgroundPosition: ["200% center", "0% center"],
+              }}
+              transition={{
+                duration: 1,
+                ease: "linear",
+                delay: 0.2,
+              }}
+              id="separator"
+              style={{
+                width: "100%",
+                height: "2px",
+                background: `linear-gradient(to right,var(--hover-over-container) 80%, var(--border-container-color) 100%) 0% center / 200% no-repeat`,
+                backgroundSize: "200% auto",
+                backgroundRepeat: "no-repeat",
+              }}
+            ></motion.div>
+          )}
           {topLevelItems.map((item) => {
             if (item.kind === "folder") {
               const folder = item.data as FolderType;
