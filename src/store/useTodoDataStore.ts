@@ -324,26 +324,43 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     const originalList = get().lists.find((list) => list.list_id === list_id);
     if (!originalList) return;
     const previousIndex = originalList.pinned;
+    const previousFolder = originalList.folder;
+    let errorResult;
 
     try {
-      set((state) => ({
-        lists: state.lists.map((currentItem) =>
-          currentItem.list_id === list_id
-            ? { ...currentItem, pinned }
-            : currentItem
-        ),
-      }));
+      if (pinned === true) {
+        set((state) => ({
+          lists: state.lists.map((currentItem) =>
+            currentItem.list_id === list_id
+              ? { ...currentItem, pinned, folder: null }
+              : currentItem
+          ),
+        }));
+        const { error } = await updatePinnedList(list_id, pinned, null);
+        errorResult = error;
+      } else {
+        const lists = get().lists;
+        const folders = get().folders;
+        const index = calculateNewIndex(lists, folders);
+        set((state) => ({
+          lists: state.lists.map((currentItem) =>
+            currentItem.list_id === list_id
+              ? { ...currentItem, pinned, index }
+              : currentItem
+          ),
+        }));
+        const { error } = await updatePinnedList(list_id, pinned, index);
+        errorResult = error;
+      }
 
-      const { error } = await updatePinnedList(list_id, pinned);
-
-      if (error) {
-        throw new Error(error);
+      if (errorResult) {
+        throw new Error(errorResult);
       }
     } catch (err) {
       set((state) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === list_id
-            ? { ...currentItem, pinned: previousIndex }
+            ? { ...currentItem, pinned: previousIndex, folder: previousFolder }
             : currentItem
         ),
       }));

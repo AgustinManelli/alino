@@ -412,24 +412,43 @@ export const updateDataFolder = async (
   }
 };
 
-export const updatePinnedList = async (list_id: string, pinned: boolean) => {
+export const updatePinnedList = async (
+  list_id: string,
+  pinned: boolean,
+  index: number | null
+) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
+    let errorResult;
+    let dataResult;
 
-    const { data, error } = await supabase
-      .from("list_memberships")
-      .update({ pinned })
-      .eq("list_id", list_id)
-      .eq("user_id", user.id)
-      .select();
+    if (index) {
+      const { data, error } = await supabase
+        .from("list_memberships")
+        .update({ pinned, index })
+        .eq("list_id", list_id)
+        .eq("user_id", user.id)
+        .select();
+      errorResult = error;
+      dataResult = data;
+    } else {
+      const { data, error } = await supabase
+        .from("list_memberships")
+        .update({ pinned, folder: null })
+        .eq("list_id", list_id)
+        .eq("user_id", user.id)
+        .select();
+      errorResult = error;
+      dataResult = data;
+    }
 
-    if (error) {
+    if (errorResult) {
       throw new Error(
         "No se pudo actualizar la lista. Intentalo nuevamente o contacta con soporte."
       );
     }
 
-    return { data };
+    return { dataResult };
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return { error: error.errors[0].message };
