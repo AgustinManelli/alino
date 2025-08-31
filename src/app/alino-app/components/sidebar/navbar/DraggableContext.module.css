@@ -6,3 +6,12 @@
   inset: 0;
   z-index: 100;
 }
+
+.droppableRootContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  height: fit-content;
+  height: 100%;
+}

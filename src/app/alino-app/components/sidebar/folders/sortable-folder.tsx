@@ -93,18 +93,19 @@ export const SortableFolder = ({
     transition,
     pointerEvents: isCurrentlyDraggingThis ? "none" : "auto",
     zIndex: isCurrentlyDraggingThis ? 99 : 1,
-    opacity: isCurrentlyDraggingThis ? 0 : 1,
-    border: containsOver
-      ? "1px solid green"
-      : "1px solid var(--border-container-color)",
+    opacity: isCurrentlyDraggingThis ? 0.3 : 1,
+    border:
+      containsOver && !isCurrentlyDraggingThis
+        ? "1px solid #3ebb00"
+        : "1px solid var(--border-container-color)",
   } as CSSProperties;
 
   // useEffect(() => {
   //   let timer: NodeJS.Timeout;
-  //   if (containsOver) {
+  //   if (containsOver && !isCurrentlyDraggingThis) {
   //     timer = setTimeout(() => {
   //       setOpen(true);
-  //     }, 500);
+  //     }, 1000);
   //   }
   //   return () => clearTimeout(timer);
   // }, [containsOver, isCurrentlyDraggingThis]);
@@ -191,7 +192,13 @@ export const SortableFolder = ({
               }}
             />
           )}
-          <p>{folder.folder_name}</p>
+          <p
+            style={{
+              color: folder.folder_color ?? "var(--text-not-available)",
+            }}
+          >
+            {folder.folder_name}
+          </p>
         </div>
         <section className={styles.buttonsContainer}>
           <ConfigMenu
@@ -213,7 +220,7 @@ export const SortableFolder = ({
           </div>
         </section>
       </div>
-      {open && !isCurrentlyDraggingThis && (
+      {open /*&& !isCurrentlyDraggingThis*/ && (
         <div
           className={styles.listWrapper}
           style={
