@@ -19,6 +19,10 @@
   height: 100%;
 }
 
+.mainButton.inactive {
+  pointer-events: none;
+}
+
 .renderIconContainer {
   display: flex;
   justify-content: center;
