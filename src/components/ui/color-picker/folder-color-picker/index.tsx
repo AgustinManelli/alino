@@ -104,7 +104,7 @@ export function FolderColorPicker({
         <AnimatePresence>
           <motion.button
             key={"color-picker-selector"}
-            className={styles.mainButton}
+            className={`${styles.mainButton} ${!active ? styles.inactive : ""}`}
             animate={
               animations ? { paddingLeft: active ? "10px" : "0px" } : undefined
             }
@@ -118,12 +118,14 @@ export function FolderColorPicker({
               paddingLeft: animations ? undefined : active ? "10px" : "5px",
             }}
             onClick={(e) => {
+              if (!active) return;
               e.preventDefault();
               e.stopPropagation();
-              active && setIsOpenPicker(!isOpenPicker);
+              setIsOpenPicker((v) => !v);
               setType("color");
             }}
-            disabled={!active}
+            aria-disabled={!active}
+            tabIndex={active ? 0 : -1}
           >
             {renderIcon()}
             <AnimatePresence>
@@ -375,15 +377,6 @@ function SquircleColorSelector({
         }}
       >
         <SquircleIcon style={{ fill: `${colorHex}`, width: "18px" }} />
-        {/* <FolderOpen
-          style={{
-            stroke: colorHex,
-            width: "15px",
-            height: "15px",
-            strokeWidth: 2,
-            transition: "fill 0.3s ease-in-out",
-          }}
-        /> */}
         <SquircleIcon
           style={{
             fill: "transparent",
