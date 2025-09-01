@@ -6,7 +6,6 @@ import { ThemeInitializer } from "@/components/useThemeInicializer";
 import { MobileSizeListener } from "@/components/useMobileSizeListener";
 import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
 import { Loader } from "@/components/ui/loader";
-import { RealtimeProvider } from "@/components/RealtimeProvider";
 
 import { inter } from "../lib/fonts";
 import "./globals.css";
@@ -96,7 +95,6 @@ export default function RootLayout({
       <body className={`${inter.className}`}>
         <ThemeInitializer />
         <MobileSizeListener />
-        <RealtimeProvider />
         <Toaster />
         <Loader />
 
