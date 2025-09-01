@@ -43,7 +43,9 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
   //estados locales
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
-  const [colorTemp, setColorTemp] = useState<string>(list.list.color);
+  const [colorTemp, setColorTemp] = useState<string>(
+    list.list.color ?? "#87189d"
+  );
   const [emoji, setEmoji] = useState<string | null>(list.list.icon);
 
   //estados globales
