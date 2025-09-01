@@ -357,55 +357,37 @@ export const DraggableContext = () => {
         // collisionDetection={customCollisionDetection}
         // modifiers={[restrictToVerticalAxis]}
       >
+        <AnimatePresence mode="popLayout">
+          {pinnedLists.map((list) => (
+            <motion.div
+              variants={animations ? variants : undefined}
+              initial={animations ? { scale: 0, opacity: 0 } : undefined}
+              animate={"visible"}
+              exit={
+                animations
+                  ? {
+                      scale: 1.3,
+                      opacity: 0,
+                      filter: "blur(30px) grayscale(100%)",
+                      y: -30,
+                      transition: {
+                        duration: 1,
+                      },
+                      zIndex: "-1",
+                    }
+                  : undefined
+              }
+              key={`pinned-${list.list_id}`}
+              id={`pinned-${list.list_id}`}
+            >
+              <ListCard list={list} />
+            </motion.div>
+          ))}
+        </AnimatePresence>
         <SortableContext
           items={combinedIds}
           strategy={verticalListSortingStrategy}
         >
-          <DndContext>
-            <AnimatePresence mode="popLayout">
-              {pinnedLists.map((list) => (
-                <motion.div
-                  layout={draggedItem ? false : true}
-                  variants={animations ? variants : undefined}
-                  initial={animations ? { scale: 0, opacity: 0 } : undefined}
-                  // transition={
-                  //   animations
-                  //     ? {
-                  //         scale: {
-                  //           duration: 0.2,
-                  //           ease: "easeInOut",
-                  //         },
-                  //       }
-                  //     : undefined
-                  // }
-                  whileInView="visible"
-                  exit={
-                    animations
-                      ? {
-                          scale: 1.3,
-                          opacity: 0,
-                          filter: "blur(30px) grayscale(100%)",
-                          y: -30,
-                          transition: {
-                            duration: 1,
-                          },
-                          zIndex: "-1",
-                        }
-                      : undefined
-                  }
-                  key={`pinned-${list.list_id}`}
-                  id={`pinned-${list.list_id}`}
-                  viewport={{
-                    root: scrollContainerRef,
-                    once: true,
-                    amount: 0.1,
-                  }}
-                >
-                  <ListCard list={list} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </DndContext>
           {pinnedLists.length > 0 && (
             <motion.div
               animate={{
@@ -435,7 +417,7 @@ export const DraggableContext = () => {
                   initial={
                     animations ? { scale: 0, opacity: 0, zIndex: 1 } : undefined
                   }
-                  whileInView="visible"
+                  animate={"visible"}
                   exit={
                     animations
                       ? {
@@ -450,13 +432,8 @@ export const DraggableContext = () => {
                         }
                       : undefined
                   }
-                  key={item.id}
+                  key={`folder-${item.id}`}
                   id={item.id}
-                  viewport={{
-                    root: scrollContainerRef,
-                    once: true,
-                    amount: 0.1,
-                  }}
                 >
                   <SortableFolder
                     folder={folder}
@@ -474,7 +451,7 @@ export const DraggableContext = () => {
                   initial={
                     animations ? { scale: 0, opacity: 0, zIndex: 1 } : undefined
                   }
-                  whileInView="visible"
+                  animate={"visible"}
                   exit={
                     animations
                       ? {
@@ -489,13 +466,8 @@ export const DraggableContext = () => {
                         }
                       : undefined
                   }
-                  key={item.id}
+                  key={`list-${item.id}`}
                   id={item.id}
-                  viewport={{
-                    root: scrollContainerRef,
-                    once: true,
-                    amount: 0.1,
-                  }}
                 >
                   <ListCard list={list} />
                 </motion.div>

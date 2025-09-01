@@ -33,11 +33,6 @@ export const metadata: Metadata = {
   },
   description: APP_DESCRIPTION,
   manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: APP_DEFAULT_TITLE,
-  },
   formatDetection: {
     telephone: false,
   },

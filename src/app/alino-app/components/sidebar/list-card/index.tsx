@@ -69,13 +69,13 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
 
   //funciones
   const handleLeave = useCallback(() => {
-    if (pathname === `/alino-app/${list.list_id}`) router.replace("/alino-app");
+    // if (pathname === `/alino-app/${list.list_id}`) router.replace("/alino-app");
     if (!list) return;
     leaveList(list.list_id);
   }, [list, leaveList, pathname]);
 
   const handleDelete = useCallback(() => {
-    if (pathname === `/alino-app/${list.list_id}`) router.replace("/alino-app");
+    // if (pathname === `/alino-app/${list.list_id}`) router.replace("/alino-app");
     if (!list) return;
     deleteList(list.list_id);
   }, [list, deleteList, pathname]);
@@ -322,19 +322,22 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
   ]);
 
   return (
-    <div ref={setNodeRef} className={styles.allContainer}>
+    <div
+      ref={setNodeRef}
+      className={styles.allContainer}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isNameChange) return;
+        router.replace(`/alino-app/${list.list_id}`);
+        setNavbarStatus(false);
+      }}
+    >
       <section
         {...attributes}
         {...listeners}
         ref={divRef}
         className={styles.container}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (isNameChange) return;
-          router.push(`/alino-app/${list.list_id}`);
-          setNavbarStatus(false);
-        }}
         style={style}
       >
         <div
