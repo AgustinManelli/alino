@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AnimatePresence } from "motion/react";
 
 import { useUserDataStore } from "@/store/useUserDataStore";
@@ -20,15 +20,13 @@ interface Props {
   user: UserType;
 }
 
-export const AppContent = memo(({ user }: Props) => {
+export const AppContent = ({ user }: Props) => {
   const initialized = useRef(false);
 
   useEffect(() => {
     if (!initialized.current) {
       useUserDataStore.setState({ user: user });
       initialized.current = true;
-    } else {
-      useUserDataStore.setState({ user });
     }
   }, []);
 
@@ -42,7 +40,7 @@ export const AppContent = memo(({ user }: Props) => {
 
   return (
     <>
-      {/* <RealtimeProvider /> */}
+      <RealtimeProvider />
       {showConfiguration && (
         <AnimatePresence>
           <InitialUserConfiguration onComplete={handleConfigurationComplete} />
@@ -61,4 +59,4 @@ export const AppContent = memo(({ user }: Props) => {
       )}
     </>
   );
-});
+};

@@ -88,13 +88,13 @@ export const Manager = memo(function Manager({
 
   const handleDelete = useCallback(() => {
     if (!setList) return;
-    router.replace("/alino-app");
+    // router.replace("/alino-app");
     deleteList(setList.list_id);
   }, [setList, deleteList]);
 
   const handleLeave = useCallback(() => {
     if (!setList) return;
-    router.replace("/alino-app");
+    // router.replace("/alino-app");
     leaveList(setList.list_id);
   }, [setList, leaveList]);
 

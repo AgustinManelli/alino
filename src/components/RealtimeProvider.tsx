@@ -34,7 +34,6 @@ export const RealtimeProvider = () => {
           const exists = store.lists.some(
             (list) => list.list_id === newMembership.list_id
           );
-
           if (!exists) subscriptionAddList(newMembership);
         }
       )
