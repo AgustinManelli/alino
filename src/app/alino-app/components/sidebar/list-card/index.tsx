@@ -320,23 +320,20 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
   ]);
 
   return (
-    <div
-      ref={setNodeRef}
-      className={styles.allContainer}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isNameChange) return;
-        router.replace(`/alino-app/${list.list_id}`);
-        setNavbarStatus(false);
-      }}
-    >
+    <div ref={setNodeRef} className={styles.allContainer}>
       <section
         {...attributes}
         {...listeners}
         ref={divRef}
         className={styles.container}
         style={style}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (isNameChange) return;
+          router.replace(`/alino-app/${list.list_id}`);
+          setNavbarStatus(false);
+        }}
       >
         <div
           className={styles.cardFx}

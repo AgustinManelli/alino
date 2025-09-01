@@ -103,9 +103,10 @@
   position: absolute;
   right: 0;
   z-index: 1;
+  transition: opacity 0.2s ease-in-out;
 }
 
-.folderContainer:hover .moreConfigMenu {
+.folderHeader:hover .moreConfigMenu {
   opacity: 1;
 }
 
@@ -120,9 +121,10 @@
   align-items: center;
   border-radius: 5px;
   right: 0;
+  transition: opacity 0.2s ease-in-out;
 }
 
-.folderContainer:hover .counter {
+.folderHeader:hover .counter {
   opacity: 0;
 }
 
