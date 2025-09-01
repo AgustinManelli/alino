@@ -25,6 +25,7 @@ interface props {
   active?: boolean;
   setOriginalColor: () => void;
   folderOpen?: boolean;
+  animation?: boolean;
 }
 
 export function FolderColorPicker({
@@ -33,6 +34,7 @@ export function FolderColorPicker({
   active = true, //activar o desactivar funcion de cambiar de color (estatico o color-picker)
   setOriginalColor,
   folderOpen = false,
+  animation = true,
 }: props) {
   //estados locales
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false); //estado para abrir o cerrar color-picker-container
@@ -116,7 +118,6 @@ export function FolderColorPicker({
                 ? "var(--background-over-container)"
                 : "transparent",
               paddingLeft: animations ? undefined : active ? "10px" : "5px",
-              cursor: active ? "pointer" : "default",
             }}
             onClick={(e) => {
               e.preventDefault();

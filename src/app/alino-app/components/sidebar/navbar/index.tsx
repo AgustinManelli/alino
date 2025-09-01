@@ -1,8 +1,8 @@
 "use client";
 
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useRef } from "react";
 import { motion } from "motion/react";
-import { shallow, useShallow } from "zustand/shallow";
+import { useShallow } from "zustand/shallow";
 
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useUIStore } from "@/store/useUIStore";
@@ -16,15 +16,6 @@ import { NavbarButton } from "./navbar-button";
 
 import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
 import styles from "./navbar.module.css";
-
-// const containerFMVariant = {
-//   visible: {
-//     transition: {
-//       delayChildren: 0.1,
-//       staggerChildren: 0.1,
-//     },
-//   },
-// } as const;
 
 interface Props {
   initialFetching?: boolean;
@@ -56,6 +47,7 @@ export const Navbar = memo(({ initialFetching }: Props) => {
       <div
         className={`${styles.sidebarContainer} ${navbarStatus ? styles.open : ""}`}
         ref={Ref}
+        id="navbar-all-container"
       >
         <div className={styles.navbar}>
           <div className={styles.logoContainer}>
@@ -87,13 +79,7 @@ export const Navbar = memo(({ initialFetching }: Props) => {
                   ))}
               </div>
             ) : (
-              <section
-                className={styles.cardsContainer}
-                // variants={containerFMVariant}
-                // initial="hidden"
-                // animate="visible"
-                // exit="exit"
-              >
+              <section className={styles.cardsContainer}>
                 <HomeCard
                   handleCloseNavbar={handleCloseNavbar}
                   key={"homecard"}

@@ -13,6 +13,8 @@ import {
   DragOverlay,
   Modifier,
   rectIntersection,
+  MeasuringStrategy,
+  KeyboardSensor,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -31,6 +33,7 @@ import { DragSortableFolder } from "../folders/drag-sortable-folder";
 
 import { ListsType, FolderType } from "@/lib/schemas/todo-schema";
 import styles from "./DraggableContext.module.css";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 
 const variants = {
   visible: {
@@ -53,6 +56,12 @@ type NormalizedItem = {
   kind: CombinedKind;
   data: CombinedType;
   index: number;
+};
+
+const measuring = {
+  droppable: {
+    strategy: MeasuringStrategy.Always,
+  },
 };
 
 export const DraggableContext = () => {
@@ -79,6 +88,7 @@ export const DraggableContext = () => {
   const animations = useUserPreferencesStore(
     useShallow((state) => state.animations)
   );
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
 
   //Tipos combinados para normalización de la lista.
   const combinedItems = useMemo<NormalizedItem[]>(() => {
@@ -274,7 +284,7 @@ export const DraggableContext = () => {
           }
         }
       } else {
-        if (activeType === "item") {
+        if (activeType === "item" && active.data?.current?.parentId) {
           const movedList = { ...(moved.data as ListsType) };
           const computedIndex = calcNewIndex(newOrder, newIndex);
           movedList.index = computedIndex;
@@ -282,13 +292,13 @@ export const DraggableContext = () => {
           newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
           updateIndexList(movedList.list_id, computedIndex, null);
         }
-        if (activeType === "folder") {
-          const movedFolder = { ...(moved.data as FolderType) };
-          const computedIndex = calcNewIndex(newOrder, newIndex);
-          movedFolder.index = computedIndex;
-          newOrder[newIndex] = { ...newOrder[newIndex], data: movedFolder };
-          updateIndexFolders(movedFolder.folder_id, computedIndex);
-        }
+        // if (activeType === "folder") {
+        //   const movedFolder = { ...(moved.data as FolderType) };
+        //   const computedIndex = calcNewIndex(newOrder, newIndex);
+        //   movedFolder.index = computedIndex;
+        //   newOrder[newIndex] = { ...newOrder[newIndex], data: movedFolder };
+        //   updateIndexFolders(movedFolder.folder_id, computedIndex);
+        // }
       }
 
       const updatedFolders = newOrder
@@ -326,31 +336,10 @@ export const DraggableContext = () => {
     };
   };
 
-  //Colisión personalizada
-  // const customCollisionDetection: CollisionDetection = (args) => {
-  //   const { active } = args;
-  //   const activeData = active.data.current;
-
-  //   if (activeData?.parentId) {
-  //     return rectIntersection(args);
-  //   }
-
-  //   const pointerCollisions = pointerWithin(args);
-  //   const overFolderDropzone = pointerCollisions.find((collision) =>
-  //     String(collision.id).endsWith("-dropzone")
-  //   );
-
-  //   if (overFolderDropzone) {
-  //     return [overFolderDropzone];
-  //   }
-
-  //   return rectIntersection(args);
-  // };
-
-  // const handleDragOver = (event: DragOverEvent) => {
-  //   const { active, over } = event;
-  //   console.log(active, over);
-  // };
+  const ref = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    ref.current = document.getElementById("navbar-all-container");
+  }, []);
 
   return (
     <>
@@ -363,6 +352,7 @@ export const DraggableContext = () => {
           setTempListLenght(0);
         }}
         collisionDetection={rectIntersection}
+        measuring={measuring}
         // onDragOver={handleDragOver}
         // collisionDetection={customCollisionDetection}
         // modifiers={[restrictToVerticalAxis]}

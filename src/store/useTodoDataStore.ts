@@ -127,7 +127,6 @@ const calculateNewIndex = (
 };
 
 function handleError(err: unknown) {
-  console.log(err);
   toast.error((err as Error).message || "Error desconocido");
 }
 
@@ -167,8 +166,6 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       if (error) {
         throw new Error(error);
       }
-
-      console.log(data?.folders);
 
       set(() => ({
         lists: data?.lists,
@@ -256,9 +253,6 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     if (!originalList) return;
     const previousIndex = originalList.index;
     const previousFolder = originalList.folder;
-
-    console.log(previousFolder);
-    console.log(folder_id);
 
     try {
       set((state) => ({
@@ -377,8 +371,6 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
 
     const index = calculateNewIndex(lists, folders);
     const now = new Date().toISOString();
-
-    console.log(index);
 
     const optimistic: ListsType = {
       folder: null,
@@ -709,8 +701,6 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       const res = await getUsersMembersList(listId);
       if (res.data) {
         return res.data;
-      } else {
-        console.error("Error fetching members:", res.error);
       }
     } catch (err) {
       handleError(err);
