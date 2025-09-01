@@ -80,11 +80,15 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   }
 
   const handleAdd = () => {
-    // const formatText = task.replace(/\s+/g, " ").trim();
+    // const formatText = task
+    //   .trim()
+    //   .replace(/[ \t]+/g, " ")
+    //   .replace(/\n{3,}/g, "\n\n");
     const formatText = task
-      .trim()
-      .replace(/[ \t]+/g, " ")
-      .replace(/\n{3,}/g, "\n\n");
+      .replace(/\r\n/g, "\n")
+      .replace(/ {2,}/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .replace(/^[ ]+|[ ]+$/g, "");
     if (formatText.length < 1) {
       setTask("");
       setSelected(undefined);
@@ -436,6 +440,20 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   setTask(e.target.value);
                 }}
                 onKeyDown={(e) => {
+                  if (e.key === "Tab") {
+                    e.preventDefault();
+                    const el = e.currentTarget as HTMLTextAreaElement;
+                    const start = el.selectionStart;
+                    const end = el.selectionEnd;
+                    const value = el.value;
+                    const newValue =
+                      value.substring(0, start) + "\t" + value.substring(end);
+                    setTask(newValue);
+                    requestAnimationFrame(() => {
+                      el.selectionStart = el.selectionEnd = start + 1;
+                    });
+                    return;
+                  }
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     handleAdd();

@@ -68,9 +68,10 @@ export const TaskCard = memo(
       closeModal();
 
       const formatText = inputName
-        .trim()
-        .replace(/[ \t]+/g, " ")
-        .replace(/\n{3,}/g, "\n\n");
+        .replace(/\r\n/g, "\n")
+        .replace(/ {2,}/g, " ")
+        .replace(/\n{3,}/g, "\n\n")
+        .replace(/^[ ]+|[ ]+$/g, "");
 
       if (
         (task.task_content === formatText && completed === task.completed) ||
@@ -159,6 +160,20 @@ export const TaskCard = memo(
     const handleKeyDown = useCallback(
       (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (!inputRef.current) return;
+        if (e.key === "Tab") {
+          e.preventDefault();
+          const el = e.currentTarget as HTMLTextAreaElement;
+          const start = el.selectionStart;
+          const end = el.selectionEnd;
+          const value = el.value;
+          const newValue =
+            value.substring(0, start) + "\t" + value.substring(end);
+          setInputName(newValue);
+          requestAnimationFrame(() => {
+            el.selectionStart = el.selectionEnd = start + 1;
+          });
+          return;
+        }
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
           handleSaveName();
