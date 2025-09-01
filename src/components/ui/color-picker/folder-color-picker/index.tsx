@@ -25,7 +25,6 @@ interface props {
   active?: boolean;
   setOriginalColor: () => void;
   folderOpen?: boolean;
-  animation?: boolean;
 }
 
 export function FolderColorPicker({
@@ -34,7 +33,6 @@ export function FolderColorPicker({
   active = true, //activar o desactivar funcion de cambiar de color (estatico o color-picker)
   setOriginalColor,
   folderOpen = false,
-  animation = true,
 }: props) {
   //estados locales
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false); //estado para abrir o cerrar color-picker-container
@@ -377,6 +375,15 @@ function SquircleColorSelector({
         }}
       >
         <SquircleIcon style={{ fill: `${colorHex}`, width: "18px" }} />
+        {/* <FolderOpen
+          style={{
+            stroke: colorHex,
+            width: "15px",
+            height: "15px",
+            strokeWidth: 2,
+            transition: "fill 0.3s ease-in-out",
+          }}
+        /> */}
         <SquircleIcon
           style={{
             fill: "transparent",

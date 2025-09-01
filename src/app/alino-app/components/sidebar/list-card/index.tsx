@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   memo,
+  useCallback,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSortable } from "@dnd-kit/sortable";
@@ -47,6 +48,7 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
 
   //estados globales
   const deleteList = useTodoDataStore((state) => state.deleteList);
+  const leaveList = useTodoDataStore((state) => state.leaveList);
   const updatePinnedList = useTodoDataStore((state) => state.updatePinnedList);
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const animations = useUserPreferencesStore((state) => state.animations);
@@ -69,6 +71,12 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
     [pathname, list.list_id]
   );
 
+  const handleLeave = useCallback(() => {
+    if (!list) return;
+    router.push(`${location.origin}/alino-app`);
+    leaveList(list.list_id);
+  }, [list, router, leaveList]);
+
   const handleConfirm = () => {
     openModal({
       text: `¿Desea eliminar la lista "${list.list.list_name}"?`,
@@ -77,6 +85,15 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
         "Esta acción es irreversible y eliminará todas las tareas de la lista.",
     });
   };
+
+  const handleConfirmLeave = useCallback(() => {
+    openModal({
+      text: `¿Desea salir de la lista "${list.list.list_name}"?`,
+      onConfirm: handleLeave,
+      additionalText: "Puedes regresar a ella con otra invitación.",
+      actionButton: "Salir",
+    });
+  }, [openModal, list, handleLeave]);
 
   const handleDelete = () => {
     if (isActiveList) router.push(`${location.origin}/alino-app`);
@@ -170,7 +187,7 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
       {
         name: "Salir",
         icon: <LogOut style={iconStyle} />,
-        action: () => {},
+        action: handleConfirmLeave,
         enabled: owner,
       },
       {
