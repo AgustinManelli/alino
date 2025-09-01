@@ -14,6 +14,7 @@ import { EditTaskModal } from "@/components/ui/edit-task-modal";
 
 import { UserType } from "@/lib/schemas/todo-schema";
 import styles from "./AlinoAppLayout.module.css";
+import { RealtimeProvider } from "@/components/RealtimeProvider";
 
 interface Props {
   user: UserType;
@@ -41,6 +42,7 @@ export const AppContent = memo(({ user }: Props) => {
 
   return (
     <>
+      {/* <RealtimeProvider /> */}
       {showConfiguration && (
         <AnimatePresence>
           <InitialUserConfiguration onComplete={handleConfigurationComplete} />

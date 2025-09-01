@@ -69,16 +69,16 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
 
   //funciones
   const handleLeave = useCallback(() => {
-    if (!list) return;
     if (pathname === `/alino-app/${list.list_id}`) router.replace("/alino-app");
+    if (!list) return;
     leaveList(list.list_id);
-  }, [list, leaveList]);
+  }, [list, leaveList, pathname]);
 
   const handleDelete = useCallback(() => {
-    if (!list) return;
     if (pathname === `/alino-app/${list.list_id}`) router.replace("/alino-app");
+    if (!list) return;
     deleteList(list.list_id);
-  }, [list, deleteList]);
+  }, [list, deleteList, pathname]);
 
   const handleConfirm = () => {
     openModal({
