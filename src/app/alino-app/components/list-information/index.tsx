@@ -1,3 +1,5 @@
+"use client";
+
 import { WindowComponent } from "@/components/ui/window-component";
 import styles from "./ListInformation.module.css";
 import React from "react";

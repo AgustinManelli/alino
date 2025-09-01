@@ -44,6 +44,7 @@ type TodoStore = {
   lists: ListsType[];
   tasks: TaskType[];
   folders: FolderType[];
+  initialFetch: boolean;
   loadingQueue: number;
   setLists: (list: ListsType[]) => Promise<void>;
   setFolders: (folders: FolderType[]) => Promise<void>;
@@ -147,6 +148,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   lists: [],
   tasks: [],
   folders: [],
+  initialFetch: false,
   loadingQueue: 0,
 
   setLists: async (list) => {
@@ -158,6 +160,10 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   getLists: async () => {
+    if (get().initialFetch) {
+      return;
+    }
+
     set((state) => ({ ...state, loadingQueue: state.loadingQueue + 1 }));
 
     try {
@@ -171,6 +177,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         lists: data?.lists,
         tasks: data?.tasks,
         folders: data?.folders,
+        initialFetch: true,
       }));
     } catch (err) {
       handleError(err);
@@ -382,7 +389,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       shared_since: now,
       user_id: user_id || "",
       list: {
-        color,
+        color: color ?? "#87189d",
         created_at: now,
         description: null,
         icon: icon ?? null,
