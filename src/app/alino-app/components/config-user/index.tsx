@@ -5,7 +5,7 @@ import React from "react";
 import { WindowComponent } from "@/components/ui/window-component";
 
 import styles from "./ConfigUser.module.css";
-import { UserIcon } from "@/components/ui/icons/icons";
+import { Edit, UserIcon } from "@/components/ui/icons/icons";
 import { Database } from "@/lib/schemas/todo-schema";
 
 type UserComplete = Database["public"]["Tables"]["users"]["Row"];
@@ -41,6 +41,16 @@ export default function ConfigUser({ handleCloseConfig, user }: props) {
               opacity: user?.avatar_url ? 1 : 0.3,
             }}
           >
+            {/* <button className={styles.configUserIconEditorButton}>
+              <Edit
+                style={{
+                  stroke: "var(--text-not-available)",
+                  strokeWidth: "2",
+                  width: "15px",
+                  height: "15px",
+                }}
+              />
+            </button> */}
             {!user?.avatar_url && (
               <UserIcon
                 style={{
@@ -55,10 +65,37 @@ export default function ConfigUser({ handleCloseConfig, user }: props) {
           <h1 className={styles.displayName}>{user?.display_name}</h1>
           <p className={styles.username}>@{user?.username}</p>
         </section>
-        <section className={styles.userEditorContainer}>
-          <div className={styles.editionContainer}></div>
-        </section>
+        <EditionSection
+          title={"Nombre"}
+          data={user?.display_name}
+          btnText={"Cambiar nombre"}
+        />
+        <EditionSection
+          title={"Usuario"}
+          data={user?.username}
+          btnText={"Cambiar usuario"}
+        />
       </div>
     </WindowComponent>
   );
 }
+
+interface ESProps {
+  title: string;
+  data: string | undefined;
+  btnText: string;
+}
+
+const EditionSection = ({ title, data, btnText }: ESProps) => {
+  return (
+    <section className={styles.userEditorContainer}>
+      <div className={styles.editionContainer}>
+        <div>
+          <h4>{title}</h4>
+          <p>{data}</p>
+        </div>
+        <button>{btnText}</button>
+      </div>
+    </section>
+  );
+};
