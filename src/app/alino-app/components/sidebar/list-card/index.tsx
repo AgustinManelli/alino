@@ -68,16 +68,17 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
   const router = useRouter();
 
   //funciones
-  const isActiveList = useMemo(
-    () => pathname === `/alino-app/${list.list_id}`,
-    [pathname, list.list_id]
-  );
-
   const handleLeave = useCallback(() => {
     if (!list) return;
-    router.push(`${location.origin}/alino-app`);
+    if (pathname === `/alino-app/${list.list_id}`) router.replace("/alino-app");
     leaveList(list.list_id);
-  }, [list, router, leaveList]);
+  }, [list, leaveList]);
+
+  const handleDelete = useCallback(() => {
+    if (!list) return;
+    if (pathname === `/alino-app/${list.list_id}`) router.replace("/alino-app");
+    deleteList(list.list_id);
+  }, [list, deleteList]);
 
   const handleConfirm = () => {
     openModal({
@@ -96,11 +97,6 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
       actionButton: "Salir",
     });
   }, [openModal, list, handleLeave]);
-
-  const handleDelete = () => {
-    if (isActiveList) router.push(`${location.origin}/alino-app`);
-    deleteList(list.list_id);
-  };
 
   const handleNameChange = () => {
     setIsNameChange(true);

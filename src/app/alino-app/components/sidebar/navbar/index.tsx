@@ -16,16 +16,15 @@ import { NavbarButton } from "./navbar-button";
 
 import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
 import styles from "./navbar.module.css";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 
-interface Props {
-  initialFetching?: boolean;
-}
-
-export const Navbar = memo(({ initialFetching }: Props) => {
+export const Navbar = () => {
   const navbarStatus = useUIStore((state) => state.navbarStatus);
   const setNavbarStatus = useUIStore((state) => state.setNavbarStatus);
 
   const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile));
+
+  const initialFetch = useTodoDataStore((state) => state.initialFetch);
 
   const Ref = useRef<HTMLDivElement | null>(null);
 
@@ -62,7 +61,7 @@ export const Navbar = memo(({ initialFetching }: Props) => {
             />
           </div>
           <motion.section className={styles.cardsSection} id="list-container">
-            {initialFetching ? (
+            {!initialFetch ? (
               <div className={styles.cardsContainer}>
                 {Array(3)
                   .fill(null)
@@ -95,4 +94,4 @@ export const Navbar = memo(({ initialFetching }: Props) => {
       </div>
     </>
   );
-});
+};

@@ -9,7 +9,6 @@ import {
   memo,
   useLayoutEffect,
 } from "react";
-import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
@@ -32,10 +31,11 @@ import {
 } from "@/components/ui/icons/icons";
 import { TaskCardStatic } from "../task-card/task-card-static";
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { useRouter } from "next/navigation";
 
 export const Manager = memo(function Manager({
   setList,
-  h,
+  h = false,
 }: {
   setList?: ListsType;
   h?: boolean;
@@ -51,6 +51,7 @@ export const Manager = memo(function Manager({
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
 
   const router = useRouter();
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const section1Ref = useRef<HTMLDivElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
@@ -87,15 +88,15 @@ export const Manager = memo(function Manager({
 
   const handleDelete = useCallback(() => {
     if (!setList) return;
-    router.push(`${location.origin}/alino-app`);
+    router.replace("/alino-app");
     deleteList(setList.list_id);
-  }, [setList, router, deleteList]);
+  }, [setList, deleteList]);
 
   const handleLeave = useCallback(() => {
     if (!setList) return;
-    router.push(`${location.origin}/alino-app`);
+    router.replace("/alino-app");
     leaveList(setList.list_id);
-  }, [setList, router, leaveList]);
+  }, [setList, leaveList]);
 
   const handleConfirmDelete = useCallback(() => {
     openModal({
@@ -155,9 +156,10 @@ export const Manager = memo(function Manager({
   ]);
 
   useEffect(() => {
-    if (!setList) return;
-    setColorTemp(setList.list.color);
-    setEmoji(setList.list.icon);
+    if (setList) {
+      setColorTemp(setList.list.color);
+      setEmoji(setList.list.icon);
+    }
   }, [setList]);
 
   useEffect(() => {

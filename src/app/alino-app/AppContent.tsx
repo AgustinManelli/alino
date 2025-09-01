@@ -17,16 +17,17 @@ import styles from "./AlinoAppLayout.module.css";
 
 interface Props {
   user: UserType;
-  children: React.ReactNode;
 }
 
-export const AppContent = memo(({ user, children }: Props) => {
+export const AppContent = memo(({ user }: Props) => {
   const initialized = useRef(false);
 
   useEffect(() => {
     if (!initialized.current) {
       useUserDataStore.setState({ user: user });
       initialized.current = true;
+    } else {
+      useUserDataStore.setState({ user });
     }
   }, []);
 
@@ -39,7 +40,7 @@ export const AppContent = memo(({ user, children }: Props) => {
   };
 
   return (
-    <div className={styles.appContentContainer}>
+    <>
       {showConfiguration && (
         <AnimatePresence>
           <InitialUserConfiguration onComplete={handleConfigurationComplete} />
@@ -54,9 +55,8 @@ export const AppContent = memo(({ user, children }: Props) => {
             <ConfigSection />
           </section>
           <Sidebar />
-          {children}
         </>
       )}
-    </div>
+    </>
   );
 });

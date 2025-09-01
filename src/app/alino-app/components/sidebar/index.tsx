@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 
@@ -12,7 +12,6 @@ import data from "@/components/ui/emoji-mart/apple.json";
 init({ data });
 
 export const Sidebar = () => {
-  const [initialFetching, setInitialFetching] = useState<boolean>(true);
   const executedRef = useRef(false);
 
   const getLists = useTodoDataStore((state) => state.getLists);
@@ -23,14 +22,9 @@ export const Sidebar = () => {
 
     const fetchInitialData = async () => {
       await getLists();
-
-      setTimeout(() => {
-        setInitialFetching(false);
-      }, 250);
     };
-
     fetchInitialData();
   }, []);
 
-  return <Navbar initialFetching={initialFetching} />;
+  return <Navbar />;
 };

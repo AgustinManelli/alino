@@ -1,5 +1,10 @@
 import { Todo } from "../components/todo/todo";
 
-export default function ListTodoPage({ params }: { params: { list: string } }) {
-  return <Todo params={params} />;
+export default async function ListTodoPage({
+  params,
+}: {
+  params: Promise<{ list: string }>;
+}) {
+  const { list } = await params;
+  return <Todo list={list} />;
 }

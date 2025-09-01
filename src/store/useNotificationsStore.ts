@@ -25,6 +25,7 @@ import { getNotifications, updateInvitationList } from "@/lib/api/actions";
 
 type UNS = {
   notifications: InvitationRow[] | [];
+  initialFetch: boolean;
   getNotifications: () => Promise<void>;
   updateInvitationList: (
     notification_id: string,
@@ -39,6 +40,7 @@ function handleError(err: unknown) {
 
 export const useNotificationsStore = create<UNS>()((set, get) => ({
   notifications: [],
+  initialFetch: false,
   getNotifications: async () => {
     const { data, error } = await getNotifications();
 
@@ -47,7 +49,7 @@ export const useNotificationsStore = create<UNS>()((set, get) => ({
       return;
     }
 
-    set(() => ({ notifications: data?.notifications }));
+    set(() => ({ notifications: data?.notifications, initialFetch: true }));
   },
 
   updateInvitationList: async (notification_id: string, status: string) => {

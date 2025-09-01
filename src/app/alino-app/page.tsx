@@ -9,7 +9,7 @@ const style = {
   alignItems: "center",
 } as React.CSSProperties;
 
-export default async function AlinoAppPage() {
+export default function HomePage() {
   return (
     <div style={style}>
       <Manager h />
