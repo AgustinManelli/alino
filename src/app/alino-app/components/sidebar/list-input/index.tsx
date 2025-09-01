@@ -223,7 +223,7 @@ export const ListInput = memo(() => {
           <motion.input
             maxLength={30}
             type="text"
-            placeholder="Cree una lista nueva"
+            placeholder={`Cree una ${isList ? "lista" : "carpeta"} nueva`}
             value={inputValue}
             ref={inputRef}
             onChange={(e) => setInputValue(e.target.value)}
