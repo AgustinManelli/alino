@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback, useRef } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useShallow } from "zustand/shallow";
 
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
