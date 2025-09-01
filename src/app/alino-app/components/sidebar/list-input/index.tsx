@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
 import { Dropdown } from "@/components/ui/dropdown";
+import { FolderColorPicker } from "@/components/ui/color-picker/folder-color-picker";
 
 const DEFAULT_COLOR = "#87189d";
 const DEFAULT_FOLDER_COLOR = null;
@@ -97,8 +98,16 @@ export const ListInput = memo(() => {
     const colorPickerContainer = document.getElementById(
       "color-picker-container-navbar-list-card"
     );
+    const FolderPickerContainer = document.getElementById(
+      "color-picker-container-folder"
+    );
     const dropdownComponent = document.getElementById("dropdown-component");
-    if (inputValue === "" && !colorPickerContainer && !dropdownComponent) {
+    if (
+      inputValue === "" &&
+      !colorPickerContainer &&
+      !FolderPickerContainer &&
+      !dropdownComponent
+    ) {
       resetForm();
     }
   }, [inputValue, resetForm]);
@@ -189,18 +198,27 @@ export const ListInput = memo(() => {
           exit={animations ? { scale: 0, opacity: 0 } : undefined}
         >
           <div className={styles.colorPickerContainer}>
-            <ColorPicker
-              color={color}
-              setColor={handleSetColor}
-              emoji={emoji}
-              setEmoji={handleSetEmoji}
-              setOriginalColor={() => {
-                setColor(isList ? DEFAULT_COLOR : DEFAULT_FOLDER_COLOR);
-                setEmoji(null);
-              }}
-              uniqueId="navbar-list-card"
-              isFolder={!isList}
-            />
+            {isList ? (
+              <ColorPicker
+                color={color}
+                setColor={handleSetColor}
+                emoji={emoji}
+                setEmoji={handleSetEmoji}
+                setOriginalColor={() => {
+                  setColor(DEFAULT_COLOR);
+                  setEmoji(null);
+                }}
+                uniqueId="navbar-list-card"
+              />
+            ) : (
+              <FolderColorPicker
+                color={color}
+                setColor={handleSetColor}
+                setOriginalColor={() => {
+                  setColor(DEFAULT_FOLDER_COLOR);
+                }}
+              />
+            )}
           </div>
           <motion.input
             maxLength={30}

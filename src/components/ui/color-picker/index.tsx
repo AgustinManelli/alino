@@ -30,7 +30,6 @@ interface props {
   setOriginalColor: () => void;
   uniqueId?: string;
   big?: boolean;
-  isFolder?: boolean;
 }
 
 export function ColorPicker({
@@ -42,7 +41,6 @@ export function ColorPicker({
   setOriginalColor,
   uniqueId = "",
   big = false,
-  isFolder = false,
 }: props) {
   //estados locales
   const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false); //estado para abrir o cerrar color-picker-container
@@ -235,21 +233,17 @@ export function ColorPicker({
               id={`color-picker-container-${uniqueId}`}
             >
               <section className={styles.titleSection}>
-                {!isFolder ? (
-                  <div
-                    className={styles.titleButtons}
-                    style={{
-                      justifyContent:
-                        "flex-" + (type === "color" ? "start" : "end"),
-                    }}
-                  >
-                    <motion.div className={styles.titleSelector} layout />
-                    {titleButtons("color", "color")}
-                    {titleButtons("emoji", "emoji")}
-                  </div>
-                ) : (
-                  <p className={styles.titleText}>Color de carpeta</p>
-                )}
+                <div
+                  className={styles.titleButtons}
+                  style={{
+                    justifyContent:
+                      "flex-" + (type === "color" ? "start" : "end"),
+                  }}
+                >
+                  <motion.div className={styles.titleSelector} layout />
+                  {titleButtons("color", "color")}
+                  {titleButtons("emoji", "emoji")}
+                </div>
               </section>
 
               <div className={styles.separator}></div>

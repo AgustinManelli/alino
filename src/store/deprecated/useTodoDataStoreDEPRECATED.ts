@@ -90,7 +90,6 @@
 //       }
 
 //       toast.error(errorMessage);
-//       console.error(errorMessage);
 //     }
 //   },
 
@@ -188,7 +187,6 @@
 //       }
 
 //       toast.error(errorMessage);
-//       console.error(errorMessage);
 
 //       //eliminado de la lista temporal creada cuando ocurre un error en su creación
 //       const filtered = lists.filter((all) => all.id !== id);
@@ -226,7 +224,6 @@
 //       }
 
 //       toast.error(errorMessage);
-//       console.error(errorMessage);
 
 //       // Revertir los cambios en la UI si la eliminación falla
 //       set(() => ({ lists }));

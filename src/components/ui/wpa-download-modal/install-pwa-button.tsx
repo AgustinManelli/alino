@@ -48,7 +48,6 @@ export default function InstallPWAButton({
         handleCloseModal();
       }
     } catch (error) {
-      console.error("Error al instalar la PWA:", error);
     } finally {
       setInstallPrompt(null);
     }

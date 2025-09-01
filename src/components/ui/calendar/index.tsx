@@ -51,7 +51,6 @@ export function Calendar({
   const handleDateSelect = (date: Date | undefined) => {
     setSelected(date);
     setTempMonth(date);
-    console.log(date);
   };
 
   const handleCancel = () => {
