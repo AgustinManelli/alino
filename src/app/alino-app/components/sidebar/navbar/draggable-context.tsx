@@ -309,8 +309,34 @@ export const DraggableContext = () => {
         .filter((it) => it.kind === "list")
         .map((it) => it.data as ListsType);
 
-      setLists(updatedLists);
-      setFolders(updatedFolders);
+      const movedListsMap = new Map(updatedLists.map((l) => [l.list_id, l]));
+      const movedFoldersMap = new Map(
+        updatedFolders.map((f) => [f.folder_id, f])
+      );
+
+      const finalLists = lists.map((orig) =>
+        movedListsMap.has(orig.list_id)
+          ? { ...(movedListsMap.get(orig.list_id) as ListsType) }
+          : orig
+      );
+
+      updatedLists.forEach((l) => {
+        if (!finalLists.find((x) => x.list_id === l.list_id))
+          finalLists.push(l);
+      });
+
+      const finalFolders = list_folders.map((orig) =>
+        movedFoldersMap.has(orig.folder_id)
+          ? { ...(movedFoldersMap.get(orig.folder_id) as FolderType) }
+          : orig
+      );
+      updatedFolders.forEach((f) => {
+        if (!finalFolders.find((x) => x.folder_id === f.folder_id))
+          finalFolders.push(f);
+      });
+
+      setLists(finalLists);
+      setFolders(finalFolders);
       setDraggedItem(null);
       setTempListLenght(0);
     },
@@ -383,11 +409,6 @@ export const DraggableContext = () => {
               <ListCard list={list} />
             </motion.div>
           ))}
-        </AnimatePresence>
-        <SortableContext
-          items={combinedIds}
-          strategy={verticalListSortingStrategy}
-        >
           {pinnedLists.length > 0 && (
             <motion.div
               animate={{
@@ -408,72 +429,85 @@ export const DraggableContext = () => {
               }}
             ></motion.div>
           )}
-          {topLevelItems.map((item) => {
-            if (item.kind === "folder") {
-              const folder = item.data as FolderType;
-              return (
-                <motion.div
-                  variants={animations ? variants : undefined}
-                  initial={
-                    animations ? { scale: 0, opacity: 0, zIndex: 1 } : undefined
-                  }
-                  animate={"visible"}
-                  exit={
-                    animations
-                      ? {
-                          scale: 1.3,
-                          opacity: 0,
-                          filter: "blur(30px) grayscale(100%)",
-                          y: -30,
-                          transition: {
-                            duration: 1,
-                          },
-                          zIndex: "0",
-                        }
-                      : undefined
-                  }
-                  key={`folder-${item.id}`}
-                  id={item.id}
-                >
-                  <SortableFolder
-                    folder={folder}
-                    lists={lists.filter((ls) => ls.folder === folder.folder_id)}
-                    isDragging={!!draggedItem}
-                    dropAllowed={draggedItem?.kind === "list"}
-                  />
-                </motion.div>
-              );
-            } else {
-              const list = item.data as ListsType;
-              return (
-                <motion.div
-                  variants={animations ? variants : undefined}
-                  initial={
-                    animations ? { scale: 0, opacity: 0, zIndex: 1 } : undefined
-                  }
-                  animate={"visible"}
-                  exit={
-                    animations
-                      ? {
-                          scale: 1.3,
-                          opacity: 0,
-                          filter: "blur(30px) grayscale(100%)",
-                          y: -30,
-                          transition: {
-                            duration: 1,
-                          },
-                          zIndex: "0",
-                        }
-                      : undefined
-                  }
-                  key={`list-${item.id}`}
-                  id={item.id}
-                >
-                  <ListCard list={list} />
-                </motion.div>
-              );
-            }
-          })}
+        </AnimatePresence>
+        <SortableContext
+          items={combinedIds}
+          strategy={verticalListSortingStrategy}
+        >
+          <AnimatePresence>
+            {topLevelItems.map((item) => {
+              if (item.kind === "folder") {
+                const folder = item.data as FolderType;
+                return (
+                  <motion.div
+                    variants={animations ? variants : undefined}
+                    initial={
+                      animations
+                        ? { scale: 0, opacity: 0, zIndex: 1 }
+                        : undefined
+                    }
+                    animate={"visible"}
+                    exit={
+                      animations
+                        ? {
+                            scale: 1.3,
+                            opacity: 0,
+                            filter: "blur(30px) grayscale(100%)",
+                            y: -30,
+                            transition: {
+                              duration: 1,
+                            },
+                            zIndex: "0",
+                          }
+                        : undefined
+                    }
+                    key={`folder-${item.id}`}
+                    id={item.id}
+                  >
+                    <SortableFolder
+                      folder={folder}
+                      lists={lists.filter(
+                        (ls) => ls.folder === folder.folder_id
+                      )}
+                      isDragging={!!draggedItem}
+                      dropAllowed={draggedItem?.kind === "list"}
+                    />
+                  </motion.div>
+                );
+              } else {
+                const list = item.data as ListsType;
+                return (
+                  <motion.div
+                    variants={animations ? variants : undefined}
+                    initial={
+                      animations
+                        ? { scale: 0, opacity: 0, zIndex: 1 }
+                        : undefined
+                    }
+                    animate={"visible"}
+                    exit={
+                      animations
+                        ? {
+                            scale: 1.3,
+                            opacity: 0,
+                            filter: "blur(30px) grayscale(100%)",
+                            y: -30,
+                            transition: {
+                              duration: 1,
+                            },
+                            zIndex: "0",
+                          }
+                        : undefined
+                    }
+                    key={`list-${item.id}`}
+                    id={item.id}
+                  >
+                    <ListCard list={list} />
+                  </motion.div>
+                );
+              }
+            })}
+          </AnimatePresence>
           <DragOverlay modifiers={[adjustForLayoutPadding]}>
             {draggedItem ? (
               draggedItem.kind === "list" ? (
