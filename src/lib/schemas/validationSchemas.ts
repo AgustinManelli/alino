@@ -7,22 +7,21 @@ export const hexColorSchema = z
       return /^#([A-Fa-f0-9]{3,4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/.test(value);
     },
     {
-      message: "Formato inválido. Debe ser: #RGB, #RGBA, #RRGGBB o #RRGGBBAA",
+      message: "No no, tu color debe ser un formato hex válido.",
     }
   )
   .nullable();
 
 export const shortcodeEmojiSchema = z
   .string()
-  // .refine(
-  //   (value) => {
-  //     // Regex que valida la estructura :palabra:
-  //     return /^:[a-z0-9_]+(?:(?:-[a-z0-9_]+)+)?:$/.test(value);
-  //   },
-  //   {
-  //     message: "Formato inválido. Debe ser: :ejemplo: o :ejemplo_123:",
-  //   }
-  // )
+  .refine(
+    (value) => {
+      return /^:[a-z0-9_]+(?:(?:-[a-z0-9_]+)+)?:$/.test(value);
+    },
+    {
+      message: "No no, el formato del emoji no es correcto.",
+    }
+  )
   .nullable();
 
 export const ListSchema = z.object({
