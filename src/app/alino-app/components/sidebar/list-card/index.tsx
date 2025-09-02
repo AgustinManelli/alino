@@ -17,7 +17,7 @@ import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-import { useUIStore } from "@/store/useUIStore";
+import { useSidebarStateStore } from "@/store/useSidebarStateStore";
 import { ListsType } from "@/lib/schemas/todo-schema";
 
 import { ConfigMenu } from "@/components/ui/config-menu";
@@ -58,7 +58,9 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
     state.getTaskCountByListId(list.list_id)
   );
   const openModal = useConfirmationModalStore((state) => state.openModal);
-  const setNavbarStatus = useUIStore((state) => state.setNavbarStatus);
+  const setNavbarStatus = useSidebarStateStore(
+    (state) => state.setNavbarStatus
+  );
 
   //ref's
   const divRef = useRef<HTMLInputElement | null>(null);

@@ -1,11 +1,12 @@
 "use client";
 
-import { memo, useCallback, useRef } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { useCallback, useRef } from "react";
+import { motion } from "motion/react";
 import { useShallow } from "zustand/shallow";
 
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
-import { useUIStore } from "@/store/useUIStore";
+import { useSidebarStateStore } from "@/store/useSidebarStateStore";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
 import { DraggableContext } from "./draggable-context";
@@ -16,36 +17,49 @@ import { NavbarButton } from "./navbar-button";
 
 import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
 import styles from "./navbar.module.css";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
 
 export const Navbar = () => {
-  const navbarStatus = useUIStore((state) => state.navbarStatus);
-  const setNavbarStatus = useUIStore((state) => state.setNavbarStatus);
+  //stores
+  const { navbarStatus, setNavbarStatus, toggleNavbar } = useSidebarStateStore(
+    useShallow((state) => ({
+      navbarStatus: state.navbarStatus,
+      setNavbarStatus: state.setNavbarStatus,
+      toggleNavbar: state.toggleNavbarStatus,
+    }))
+  ); //Open or close navbar
+  const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile)); //Is mobile by width
+  const initialFetch = useTodoDataStore(
+    useShallow((state) => state.initialFetch)
+  ); //finish fetch inital data (lists,tasks,...,etc)
 
-  const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile));
+  const NavbarContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const initialFetch = useTodoDataStore((state) => state.initialFetch);
-
-  const Ref = useRef<HTMLDivElement | null>(null);
-
-  const toggleNavbar = useCallback(() => {
-    setNavbarStatus(!navbarStatus);
-  }, [setNavbarStatus]);
+  const handleToggleNavbar = useCallback(() => {
+    toggleNavbar();
+  }, [toggleNavbar]);
 
   const handleCloseNavbar = () => {
     setNavbarStatus(false);
   };
 
-  useOnClickOutside(Ref, handleCloseNavbar, [], "ignore-sidebar-close");
+  useOnClickOutside(
+    NavbarContainerRef,
+    handleCloseNavbar,
+    [],
+    "ignore-sidebar-close"
+  );
 
   return (
     <>
       {isMobile && (
-        <NavbarButton navbarOpened={navbarStatus} toggleNavbar={toggleNavbar} />
+        <NavbarButton
+          navbarOpened={navbarStatus}
+          toggleNavbar={handleToggleNavbar}
+        />
       )}
       <div
         className={`${styles.sidebarContainer} ${navbarStatus ? styles.open : ""}`}
-        ref={Ref}
+        ref={NavbarContainerRef}
         id="navbar-all-container"
       >
         <div className={styles.navbar}>
@@ -79,10 +93,7 @@ export const Navbar = () => {
               </div>
             ) : (
               <section className={styles.cardsContainer}>
-                <HomeCard
-                  handleCloseNavbar={handleCloseNavbar}
-                  key={"homecard"}
-                />
+                <HomeCard key={"homecard"} />
                 <DraggableContext />
               </section>
             )}
