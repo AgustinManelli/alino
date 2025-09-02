@@ -33,6 +33,11 @@ import { DragSortableFolder } from "../folders/drag-sortable-folder";
 import { ListsType, FolderType } from "@/lib/schemas/todo-schema";
 
 const variants = {
+  initial: {
+    scale: 0,
+    opacity: 0,
+    zIndex: 1,
+  },
   visible: {
     opacity: 1,
     scale: 1,
@@ -41,6 +46,16 @@ const variants = {
       type: "spring",
       stiffness: 50,
     },
+  },
+  exit: {
+    scale: 1.3,
+    opacity: 0,
+    filter: "blur(30px) grayscale(100%)",
+    y: -30,
+    transition: {
+      duration: 1,
+    },
+    zIndex: "0",
   },
 } as const;
 
@@ -72,10 +87,12 @@ export const DraggableContext = () => {
     setFolders,
     updateIndexList,
     updateIndexFolders,
+    initialFetch,
   } = useTodoDataStore(
     useShallow((state) => ({
       lists: state.lists,
       list_folders: state.folders,
+      initialFetch: state.initialFetch,
       setLists: state.setLists,
       setFolders: state.setFolders,
       updateIndexList: state.updateIndexList,
@@ -367,35 +384,23 @@ export const DraggableContext = () => {
     <>
       <DndContext
         sensors={sensors}
+        collisionDetection={rectIntersection}
+        measuring={measuring}
         onDragEnd={handleDragEnd}
         onDragStart={handleDragStart}
         onDragCancel={() => {
           setDraggedItem(null);
           setTempListLenght(0);
         }}
-        collisionDetection={rectIntersection}
-        measuring={measuring}
       >
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence>
           {pinnedLists.map((list) => (
             <motion.div
+              layout
               variants={animations ? variants : undefined}
-              initial={animations ? { scale: 0, opacity: 0 } : undefined}
+              initial={"initial"}
               animate={"visible"}
-              exit={
-                animations
-                  ? {
-                      scale: 1.3,
-                      opacity: 0,
-                      filter: "blur(30px) grayscale(100%)",
-                      y: -30,
-                      transition: {
-                        duration: 1,
-                      },
-                      zIndex: "-1",
-                    }
-                  : undefined
-              }
+              exit={"exit"}
               key={`pinned-${list.list_id}`}
               id={`pinned-${list.list_id}`}
             >
@@ -404,6 +409,7 @@ export const DraggableContext = () => {
           ))}
           {pinnedLists.length > 0 && (
             <motion.div
+              layout
               animate={{
                 backgroundPosition: ["200% center", "0% center"],
               }}
@@ -433,27 +439,11 @@ export const DraggableContext = () => {
                 const folder = item.data as FolderType;
                 return (
                   <motion.div
+                    layout
                     variants={animations ? variants : undefined}
-                    initial={
-                      animations
-                        ? { scale: 0, opacity: 0, zIndex: 1 }
-                        : undefined
-                    }
+                    initial={"initial"}
                     animate={"visible"}
-                    exit={
-                      animations
-                        ? {
-                            scale: 1.3,
-                            opacity: 0,
-                            filter: "blur(30px) grayscale(100%)",
-                            y: -30,
-                            transition: {
-                              duration: 1,
-                            },
-                            zIndex: "0",
-                          }
-                        : undefined
-                    }
+                    exit={"exit"}
                     key={`folder-${item.id}`}
                     id={item.id}
                   >
@@ -471,27 +461,11 @@ export const DraggableContext = () => {
                 const list = item.data as ListsType;
                 return (
                   <motion.div
+                    layout
                     variants={animations ? variants : undefined}
-                    initial={
-                      animations
-                        ? { scale: 0, opacity: 0, zIndex: 1 }
-                        : undefined
-                    }
+                    initial={"initial"}
                     animate={"visible"}
-                    exit={
-                      animations
-                        ? {
-                            scale: 1.3,
-                            opacity: 0,
-                            filter: "blur(30px) grayscale(100%)",
-                            y: -30,
-                            transition: {
-                              duration: 1,
-                            },
-                            zIndex: "0",
-                          }
-                        : undefined
-                    }
+                    exit={"exit"}
                     key={`list-${item.id}`}
                     id={item.id}
                   >
