@@ -3,11 +3,20 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { motion } from "motion/react";
 import { useShallow } from "zustand/shallow";
+import { toast } from "sonner";
+
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+
 import { ColorPicker } from "@/components/ui/color-picker";
-import { hexColorSchema } from "@/lib/schemas/validationSchemas";
+import { Dropdown } from "@/components/ui/dropdown";
+import { FolderColorPicker } from "@/components/ui/color-picker/folder-color-picker";
+
+import {
+  hexColorSchema,
+  shortcodeEmojiSchema,
+} from "@/lib/schemas/validationSchemas";
 import {
   FolderOpen,
   ListIcon,
@@ -15,13 +24,16 @@ import {
   SendIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
-import { Dropdown } from "@/components/ui/dropdown";
-import { FolderColorPicker } from "@/components/ui/color-picker/folder-color-picker";
 
 const DEFAULT_COLOR = "#87189d";
 const DEFAULT_FOLDER_COLOR = null;
 
-export const ListInput = memo(() => {
+interface Item {
+  id: number;
+  label: string;
+}
+
+export const ListInput = () => {
   const [activeInput, setActiveInput] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>("");
   const [color, setColor] = useState<string | null>(DEFAULT_COLOR);
@@ -39,28 +51,33 @@ export const ListInput = memo(() => {
   );
 
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const formRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDivElement | null>(null);
 
   const resetForm = useCallback(() => {
-    setInputValue("");
-    setEmoji(null);
-    setColor(DEFAULT_COLOR);
-    setIsList(true);
     setActiveInput(false);
+    setInputValue("");
+    setColor(DEFAULT_COLOR);
+    setEmoji(null);
+    setIsList(true);
   }, []);
 
   const handleSetColor = useCallback(
     (newColor: string | null, isTyping?: boolean) => {
       setColor(newColor);
+
       if (emoji && isTyping) {
         setEmoji(null);
       }
-      if (isTyping) return;
+
+      if (isTyping) {
+        return;
+      }
 
       const validation = hexColorSchema.safeParse(newColor);
       if (!validation.success) {
         setColor(isList ? DEFAULT_COLOR : DEFAULT_FOLDER_COLOR);
         if (emoji) setEmoji(null);
+        toast.error(validation.error.issues[0].message);
       }
       inputRef.current?.focus();
     },
@@ -68,16 +85,24 @@ export const ListInput = memo(() => {
   );
 
   const handleSetEmoji = useCallback((newEmoji: string | null) => {
-    setEmoji(newEmoji);
+    const validation = shortcodeEmojiSchema.safeParse(newEmoji);
+    if (!validation.success) {
+      setEmoji(null);
+      toast.error(validation.error.issues[0].message);
+    } else {
+      setEmoji(newEmoji);
+    }
     inputRef.current?.focus();
   }, []);
 
   const handleSubmit = useCallback(() => {
     const formatText = inputValue.replace(/\s+/g, " ").trim();
+
     if (formatText.length < 1) {
       resetForm();
       return;
     }
+
     isList && color
       ? insertList(formatText, color, emoji as string)
       : insertFolder(formatText, color);
@@ -94,36 +119,13 @@ export const ListInput = memo(() => {
     resetForm();
   }, [inputValue, color, emoji, insertList, insertFolder, resetForm, isList]);
 
-  const handleClickOutside = useCallback(() => {
-    const colorPickerContainer = document.getElementById(
-      "color-picker-container-navbar-list-card"
-    );
-    const FolderPickerContainer = document.getElementById(
-      "color-picker-container-folder"
-    );
-    const dropdownComponent = document.getElementById("dropdown-component");
-    if (
-      inputValue === "" &&
-      !colorPickerContainer &&
-      !FolderPickerContainer &&
-      !dropdownComponent
-    ) {
-      resetForm();
-    }
-  }, [inputValue, resetForm]);
-
-  useOnClickOutside(formRef, handleClickOutside);
+  useOnClickOutside(formRef, resetForm, [], "ignore-sidebar-close");
 
   useEffect(() => {
     if (activeInput) {
       inputRef.current?.focus();
     }
   }, [activeInput]);
-
-  interface Item {
-    id: number;
-    label: string;
-  }
 
   const renderItemType = (item: Item) => {
     return (
@@ -282,4 +284,4 @@ export const ListInput = memo(() => {
       )}
     </motion.div>
   );
-});
+};

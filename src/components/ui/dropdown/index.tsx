@@ -94,7 +94,7 @@ export function Dropdown<T>({
                 damping: 25,
                 duration: 0.3,
               }}
-              className={styles.dropdownMenu}
+              className={`${styles.dropdownMenu} ignore-sidebar-close`}
               ref={sRef}
               id="dropdown-component"
             >

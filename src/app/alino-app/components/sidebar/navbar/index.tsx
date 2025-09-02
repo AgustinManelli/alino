@@ -32,7 +32,7 @@ export const Navbar = () => {
     useShallow((state) => state.initialFetch)
   ); //finish fetch inital data (lists,tasks,...,etc)
 
-  const NavbarContainerRef = useRef<HTMLDivElement | null>(null);
+  const navbarContainerRef = useRef<HTMLDivElement | null>(null);
 
   const handleToggleNavbar = useCallback(() => {
     toggleNavbar();
@@ -43,7 +43,7 @@ export const Navbar = () => {
   };
 
   useOnClickOutside(
-    NavbarContainerRef,
+    navbarContainerRef,
     handleCloseNavbar,
     [],
     "ignore-sidebar-close"
@@ -59,7 +59,7 @@ export const Navbar = () => {
       )}
       <div
         className={`${styles.sidebarContainer} ${navbarStatus ? styles.open : ""}`}
-        ref={NavbarContainerRef}
+        ref={navbarContainerRef}
         id="navbar-all-container"
       >
         <div className={styles.navbar}>
