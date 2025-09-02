@@ -2,25 +2,34 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useShallow } from "zustand/shallow";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { useSidebarStateStore } from "@/store/useSidebarStateStore";
 
 import { CounterAnimation } from "@/components/ui/counter-animation";
 import { HomeIcon2 } from "@/components/ui/icons/icons";
 
 import styles from "./HomeCard.module.css";
 
-interface props {
-  handleCloseNavbar: () => void;
-}
-
-export const HomeCard = ({ handleCloseNavbar }: props) => {
-  const tasksLength = useTodoDataStore((state) => state.tasks.length);
-  const animations = useUserPreferencesStore((state) => state.animations);
+export const HomeCard = () => {
+  const tasksLength = useTodoDataStore(
+    useShallow((state) => state.tasks.length)
+  );
+  const animations = useUserPreferencesStore(
+    useShallow((state) => state.animations)
+  );
+  const setNavbarStatus = useSidebarStateStore(
+    useShallow((state) => state.setNavbarStatus)
+  );
   const pathname = usePathname();
 
   const isActive = pathname === "/alino-app";
+
+  const handleCloseNavbar = () => {
+    setNavbarStatus(false);
+  };
 
   return (
     <Link
