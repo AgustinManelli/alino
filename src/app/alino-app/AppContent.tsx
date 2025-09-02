@@ -9,54 +9,49 @@ import { ConfigSection } from "./components/config-section";
 import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import { InitialUserConfiguration } from "./components/initial-user-configuration";
+import { RealtimeProvider } from "@/components/RealtimeProvider";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { EditTaskModal } from "@/components/ui/edit-task-modal";
 
 import { UserType } from "@/lib/schemas/todo-schema";
 import styles from "./AlinoAppLayout.module.css";
-import { RealtimeProvider } from "@/components/RealtimeProvider";
 
 interface Props {
   user: UserType;
 }
 
 export const AppContent = ({ user }: Props) => {
-  const initialized = useRef(false);
-
-  useEffect(() => {
-    if (!initialized.current) {
-      useUserDataStore.setState({ user: user });
-      initialized.current = true;
-    }
-  }, []);
-
   const [showConfiguration, setShowConfiguration] = useState(
     user.user_private?.initial_username_prompt_shown ?? false
   );
+
+  const initialized = useRef(false);
 
   const handleConfigurationComplete = () => {
     setShowConfiguration(false);
   };
 
-  return (
+  useEffect(() => {
+    if (!initialized.current) {
+      useUserDataStore.setState({ user });
+      initialized.current = true;
+    }
+  }, [user]);
+
+  return showConfiguration ? (
+    <AnimatePresence>
+      <InitialUserConfiguration onComplete={handleConfigurationComplete} />
+    </AnimatePresence>
+  ) : (
     <>
       <RealtimeProvider />
-      {showConfiguration && (
-        <AnimatePresence>
-          <InitialUserConfiguration onComplete={handleConfigurationComplete} />
-        </AnimatePresence>
-      )}
-      {!showConfiguration && (
-        <>
-          <EditTaskModal />
-          <ConfirmationModal />
-          <section className={styles.topButtons}>
-            <NotificationsSection />
-            <ConfigSection />
-          </section>
-          <Sidebar />
-        </>
-      )}
+      <EditTaskModal />
+      <ConfirmationModal />
+      <section className={styles.topButtons}>
+        <NotificationsSection />
+        <ConfigSection />
+      </section>
+      <Sidebar />
     </>
   );
 };
