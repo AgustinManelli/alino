@@ -1,6 +1,14 @@
 import { Manager } from "@/app/alino-app/components/todo/manager";
 
-const style = {
+export default function HomePage() {
+  return (
+    <div style={Style}>
+      <Manager h />
+    </div>
+  );
+}
+
+const Style = {
   width: "100%",
   height: "100%",
   display: "flex",
@@ -8,11 +16,3 @@ const style = {
   justifyContent: "center",
   alignItems: "center",
 } as React.CSSProperties;
-
-export default function HomePage() {
-  return (
-    <div style={style}>
-      <Manager h />
-    </div>
-  );
-}
