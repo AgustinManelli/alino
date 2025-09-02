@@ -14,7 +14,6 @@ import {
   Modifier,
   rectIntersection,
   MeasuringStrategy,
-  KeyboardSensor,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -32,8 +31,6 @@ import { SortableFolder } from "../folders/sortable-folder";
 import { DragSortableFolder } from "../folders/drag-sortable-folder";
 
 import { ListsType, FolderType } from "@/lib/schemas/todo-schema";
-import styles from "./DraggableContext.module.css";
-import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 
 const variants = {
   visible: {
@@ -88,7 +85,6 @@ export const DraggableContext = () => {
   const animations = useUserPreferencesStore(
     useShallow((state) => state.animations)
   );
-  const isMobile = usePlatformInfoStore((state) => state.isMobile);
 
   //Tipos combinados para normalización de la lista.
   const combinedItems = useMemo<NormalizedItem[]>(() => {
@@ -379,9 +375,6 @@ export const DraggableContext = () => {
         }}
         collisionDetection={rectIntersection}
         measuring={measuring}
-        // onDragOver={handleDragOver}
-        // collisionDetection={customCollisionDetection}
-        // modifiers={[restrictToVerticalAxis]}
       >
         <AnimatePresence mode="popLayout">
           {pinnedLists.map((list) => (
