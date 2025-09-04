@@ -59,7 +59,7 @@ export function useDragHandlers({
       const { active, over } = event;
       const currentItems = combinedRef.current;
 
-      if (!over || active.id === over.id) {
+      if (active.id === over?.id) {
         setDraggedItem(null);
         setTempListLength(0);
         return;
@@ -99,7 +99,7 @@ export function useDragHandlers({
       const newOrder = arrayMove(currentItems.slice(), oldIndex, newIndex);
       const moved = newOrder[newIndex];
       const activeType = active.data?.current?.type;
-
+      console.log(over);
       if (over) {
         if (
           over.data?.current?.type === "folder-dropzone" ||
