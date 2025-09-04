@@ -25,7 +25,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   const lists = useTodoDataStore((state) => state.lists);
   const [task, setTask] = useState<string>("");
   const [focus, setFocus] = useState<boolean>(false);
-  const [selected, setSelected] = useState<Date | undefined>(new Date());
+  const [selected, setSelected] = useState<Date | undefined>(undefined);
   const [hour, setHour] = useState<string | undefined>(undefined);
   const [isNote, setIsNote] = useState<boolean>(false);
   const executedRef = useRef(false);
