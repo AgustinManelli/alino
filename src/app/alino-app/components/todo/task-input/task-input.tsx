@@ -25,8 +25,8 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   const lists = useTodoDataStore((state) => state.lists);
   const [task, setTask] = useState<string>("");
   const [focus, setFocus] = useState<boolean>(false);
-  const [selected, setSelected] = useState<Date>();
-  const [hour, setHour] = useState<string | undefined>();
+  const [selected, setSelected] = useState<Date | undefined>(new Date());
+  const [hour, setHour] = useState<string | undefined>(undefined);
   const [isNote, setIsNote] = useState<boolean>(false);
   const executedRef = useRef(false);
   const [selectedListHome, setSelectedListHome] = useState<
@@ -34,7 +34,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   >(lists[0]);
 
   useEffect(() => {
-    // if (executedRef.current) return;
     executedRef.current = true;
     if (
       (lists.length > 0 && !selectedListHome) ||
@@ -80,10 +79,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   }
 
   const handleAdd = () => {
-    // const formatText = task
-    //   .trim()
-    //   .replace(/[ \t]+/g, " ")
-    //   .replace(/\n{3,}/g, "\n\n");
     const formatText = task
       .replace(/\r\n/g, "\n")
       .replace(/ {2,}/g, " ")
