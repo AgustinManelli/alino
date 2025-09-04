@@ -1,10 +1,7 @@
+"use client";
 import { Todo } from "../components/todo/todo";
 
-export default async function ListTodoPage({
-  params,
-}: {
-  params: Promise<{ list: string }>;
-}) {
-  const { list } = await params;
+export default function ListTodoPage({ params }: { params: { list: string } }) {
+  const { list } = params;
   return <Todo list={list} />;
 }

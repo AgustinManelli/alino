@@ -1,3 +1,5 @@
+"use client";
+
 import { Manager } from "@/app/alino-app/components/todo/manager";
 
 export default function HomePage() {
