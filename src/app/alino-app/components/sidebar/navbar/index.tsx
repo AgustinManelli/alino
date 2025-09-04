@@ -1,5 +1,27 @@
 "use client";
 
+/**
+ * Componente `Navbar`
+ *
+ * Renderiza la barra lateral de navegación de la aplicación.
+ * Incluye:
+ * - Un botón de toggle (solo en mobile).
+ * - Una sección con logo y tarjetas (incluyendo soporte para drag & drop).
+ * - Un input para crear nuevas listas.
+ *
+ * También gestiona:
+ * - Estado de apertura/cierre del navbar.
+ * - Comportamiento responsive (desktop vs mobile).
+ * - Detección de clics fuera del navbar para cerrarlo.
+ *
+ * @component
+ * @returns {JSX.Element}
+ *
+ * @example
+ * // Ejemplo de uso (se renderiza automáticamente en la aplicación principal)
+ * <Navbar />
+ */
+
 import { useCallback, useRef } from "react";
 import { motion } from "motion/react";
 import { useShallow } from "zustand/shallow";
@@ -19,18 +41,22 @@ import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
 import styles from "./navbar.module.css";
 
 export const Navbar = () => {
-  //stores
+  //Estado global del sidebar (cerrado / abierto) manejado de manera global con zustand
   const { navbarStatus, setNavbarStatus, toggleNavbar } = useSidebarStateStore(
     useShallow((state) => ({
       navbarStatus: state.navbarStatus,
       setNavbarStatus: state.setNavbarStatus,
       toggleNavbar: state.toggleNavbarStatus,
     }))
-  ); //Open or close navbar
-  const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile)); //Is mobile by width
+  );
+
+  //Estado para saber si se está en mobile basado en ancho de pantalla.
+  const isMobile = usePlatformInfoStore(useShallow((state) => state.isMobile));
+
+  //Flag para conocer si ya se recuperaron los datos iniciales de la base de datos
   const initialFetch = useTodoDataStore(
     useShallow((state) => state.initialFetch)
-  ); //finish fetch inital data (lists,tasks,...,etc)
+  );
 
   const navbarContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -42,6 +68,7 @@ export const Navbar = () => {
     setNavbarStatus(false);
   };
 
+  //Custom hook para cerrar navbar al hacer click fuera (excluye refs & clase 'ignore-sidebar-close')
   useOnClickOutside(
     navbarContainerRef,
     handleCloseNavbar,
@@ -51,14 +78,17 @@ export const Navbar = () => {
 
   return (
     <>
+      {/*Botón para abrir / cerrar sidebar */}
       {isMobile && (
         <NavbarButton
           navbarOpened={navbarStatus}
           toggleNavbar={handleToggleNavbar}
         />
       )}
+
+      {/*Contenedor del sidebar */}
       <div
-        className={`${styles.sidebarContainer} ${navbarStatus ? styles.open : ""}`}
+        className={`${styles.navbarContainer} ${navbarStatus ? styles.open : ""}`}
         ref={navbarContainerRef}
         id="navbar-all-container"
       >
@@ -69,34 +99,38 @@ export const Navbar = () => {
                 height: "20px",
                 width: "auto",
                 fill: "var(--text)",
-                opacity: "0.2",
                 overflow: "visible",
               }}
             />
           </div>
-          <motion.section className={styles.cardsSection} id="list-container">
-            {!initialFetch ? (
-              <div className={styles.cardsContainer}>
-                {Array(3)
-                  .fill(null)
-                  .map((_, index) => (
-                    <Skeleton
-                      style={{
-                        width: "100%",
-                        height: "45px",
-                        borderRadius: "15px",
-                      }}
-                      delay={index * 0.15}
-                      key={`skeleton-${index}`}
-                    />
-                  ))}
-              </div>
-            ) : (
-              <section className={styles.cardsContainer}>
-                <HomeCard key={"homecard"} />
-                <DraggableContext />
-              </section>
-            )}
+          <motion.section
+            className={styles.elementsSection}
+            id="list-container"
+          >
+            <div className={styles.cardsContainer}>
+              {!initialFetch ? (
+                <>
+                  {Array(3)
+                    .fill(null)
+                    .map((_, index) => (
+                      <Skeleton
+                        style={{
+                          width: "100%",
+                          height: "45px",
+                          borderRadius: "15px",
+                        }}
+                        delay={index * 0.15}
+                        key={`skeleton-${index}`}
+                      />
+                    ))}
+                </>
+              ) : (
+                <>
+                  <HomeCard key={"homecard"} />
+                  <DraggableContext />
+                </>
+              )}
+            </div>
           </motion.section>
           <div className={styles.inputContainer}>
             <ListInput key={"input"} />
