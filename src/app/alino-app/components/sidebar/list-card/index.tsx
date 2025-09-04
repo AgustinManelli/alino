@@ -41,12 +41,13 @@ interface props {
 
 export const ListCard = memo(({ list, inFolder = false }: props) => {
   //estados locales
+  if (!list?.list) return null;
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(
-    list.list.color ?? "#87189d"
+    list?.list?.color ?? "#87189d"
   );
-  const [emoji, setEmoji] = useState<string | null>(list.list.icon);
+  const [emoji, setEmoji] = useState<string | null>(list.list.icon ?? null);
 
   //estados globales
   const deleteList = useTodoDataStore((state) => state.deleteList);
@@ -116,7 +117,7 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
   }, [isNameChange]);
 
   useEffect(() => {
-    if (!list) return;
+    if (!list?.list) return;
     setColorTemp(list.list.color);
     setEmoji(list.list.icon);
   }, [list]);
