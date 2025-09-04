@@ -31,7 +31,7 @@ import { useSidebarStateStore } from "@/store/useSidebarStateStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
-import { DraggableContext } from "./draggable-context";
+import { DraggableBoard } from "../draggable-board";
 import { HomeCard } from "../home-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ListInput } from "../list-input";
@@ -127,7 +127,7 @@ export const Navbar = () => {
               ) : (
                 <>
                   <HomeCard key={"homecard"} />
-                  <DraggableContext />
+                  <DraggableBoard />
                 </>
               )}
             </div>
