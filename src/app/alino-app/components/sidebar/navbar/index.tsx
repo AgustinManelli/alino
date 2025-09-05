@@ -35,10 +35,10 @@ import { DraggableBoard } from "../draggable-board";
 import { HomeCard } from "../home-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ListInput } from "../list-input";
-import { NavbarButton } from "./navbar-button";
+import { NavbarButton } from "./NavbarButton";
 
 import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
-import styles from "./navbar.module.css";
+import styles from "./Navbar.module.css";
 
 export const Navbar = () => {
   //Estado global del sidebar (cerrado / abierto) manejado de manera global con zustand
