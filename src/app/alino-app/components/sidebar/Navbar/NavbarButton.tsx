@@ -1,7 +1,7 @@
 "use client";
 
 import { MenuIcon } from "@/components/ui/icons/icons";
-import styles from "./navbar.module.css";
+import styles from "./Navbar.module.css";
 
 interface Props {
   navbarOpened: boolean;
