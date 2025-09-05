@@ -12,6 +12,9 @@
   border-radius: 15px;
   -webkit-tap-highlight-color: transparent;
   z-index: 100;
+  transition:
+    opacity 0.2s ease-in-out,
+    scale 0.2s ease-in-out;
 }
 
 .navbarContainer {
