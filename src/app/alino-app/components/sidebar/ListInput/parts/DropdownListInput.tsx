@@ -1,0 +1,105 @@
+import { Dropdown } from "@/components/ui/dropdown";
+
+import { FolderOpen, ListIcon } from "@/components/ui/icons/icons";
+
+import styles from "./DropdownListInput.module.css";
+
+interface Item {
+  id: number;
+  label: string;
+}
+
+interface Props {
+  isList: boolean;
+  color: string | null;
+  setIsList: (value: boolean) => void;
+  setColor: (value: string | null) => void;
+  DEFAULT_COLOR: string;
+}
+
+export const DropdownListInput = ({
+  isList,
+  color,
+  setIsList,
+  setColor,
+  DEFAULT_COLOR,
+}: Props) => {
+  const handleSelected = (item: Item) => {
+    if (item.id === 1) {
+      setIsList(true);
+      if (color === null) setColor(DEFAULT_COLOR);
+      return;
+    }
+    if (item.id === 2) {
+      setIsList(false);
+      setColor(null);
+      return;
+    }
+  };
+
+  const renderItemType = (item: Item) => {
+    return (
+      <div
+        className={styles.dropdownItemContainer}
+        style={{ justifyContent: "start" }}
+      >
+        <p>{item.label}</p>
+      </div>
+    );
+  };
+
+  const triggerLabelType = () => {
+    return (
+      <div
+        className={styles.dropdownItemContainer}
+        style={{ justifyContent: "start" }}
+      >
+        <div
+          style={{
+            width: "15px",
+            height: "15px",
+            display: "flex",
+          }}
+        >
+          {isList ? (
+            <ListIcon
+              style={{
+                stroke: "var(--text-not-available)",
+                width: "15px",
+                height: "15px",
+                strokeWidth: 2,
+              }}
+            />
+          ) : (
+            <FolderOpen
+              style={{
+                stroke: "var(--text-not-available)",
+                width: "15px",
+                height: "15px",
+                strokeWidth: 2,
+              }}
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <Dropdown
+      items={[
+        { id: 1, label: "Lista" },
+        { id: 2, label: "Carpeta" },
+      ]}
+      renderItem={renderItemType}
+      triggerLabel={triggerLabelType}
+      selectedListHome={
+        isList ? { id: 1, label: "Tarea" } : { id: 2, label: "Nota" }
+      }
+      setSelectedListHome={handleSelected}
+      boxSize={30}
+      style={{ borderRadius: "10px" }}
+      directionContainerShow={false}
+    />
+  );
+};

@@ -34,7 +34,7 @@ import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { DraggableBoard } from "../draggable-board";
 import { HomeCard } from "../home-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ListInput } from "../list-input";
+import { ListInput } from "../ListInput";
 import { NavbarButton } from "./NavbarButton";
 
 import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
