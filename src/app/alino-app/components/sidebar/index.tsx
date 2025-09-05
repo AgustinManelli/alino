@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 
-import { Navbar } from "./navbar";
+import { Navbar } from "./Navbar";
 
 //INIT EMOJI-MART
 import { init } from "emoji-mart";
