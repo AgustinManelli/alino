@@ -1,6 +1,6 @@
 .rdp-root {
   --rdp-accent-color: var(
-    --text-not-available
+    --text
   ); /* The accent color used for selected days and UI elements. */
   --rdp-accent-background-color: #f0f0ff; /* The accent background color used for selected days and UI elements. */
 
@@ -15,9 +15,7 @@
   --rdp-selected-border: 1px solid var(--rdp-accent-color); /* The border of the selected days. */
   --rdp-disabled-opacity: 0.5; /* The opacity of the disabled days. */
   --rdp-outside-opacity: 0.75; /* The opacity of the days outside the current month. */
-  --rdp-today-color: var(
-    --rdp-accent-color
-  ); /* The color of the today's date. */
+  --rdp-today-color: #87189d; /* The color of the today's date. */
 
   --rdp-dropdown-gap: 0.5rem; /* The gap between the dropdowns used in the month captons. */
 
@@ -66,9 +64,9 @@
   --rdp-weeknumber-text-align: center; /* The text alignment of the weekday cells. */
 
   --rdp-weekday-opacity: 0.5; /* The opacity of the weekday. */
-  --rdp-weekday-padding: 0.5rem 0rem 0.3rem 0rem; /* The padding of the weekday. */
+  --rdp-weekday-padding: 0.5rem 0rem 0.5rem 0rem; /* The padding of the weekday. */
   --rdp-weekday-text-align: center; /* The text alignment of the weekday cells. */
-
+  --rdp-weekday-text-transform: uppercase;
   --rdp-gradient-direction: 90deg;
 }
 
@@ -156,14 +154,14 @@
   position: relative;
   appearance: none;
 
-  background-color: var(--background-over-container);
+  /* background-color: var(--background-over-container);
   border: solid 1px var(--border-container-color);
-  border-radius: 10px;
+  border-radius: 10px; */
 
   -webkit-tap-highlight-color: transparent;
 
-  width: var(--rdp-nav_button-width);
-  height: var(--rdp-nav_button-height);
+  /* width: var(--rdp-nav_button-width);
+  height: var(--rdp-nav_button-height); */
 }
 
 .rdp-button_next:disabled,
@@ -226,10 +224,11 @@
 .rdp-month_caption {
   display: flex;
   align-content: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: var(--rdp-nav-height);
-  font-weight: 600;
-  font-size: 16px;
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
 }
 
 .rdp-months {
@@ -251,7 +250,8 @@
 
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 10px;
 
   height: var(--rdp-nav-height);
   width: 100%;
@@ -261,7 +261,7 @@
   opacity: var(--rdp-weekday-opacity);
   padding: var(--rdp-weekday-padding);
   font-weight: 500;
-  font-size: smaller;
+  font-size: 12px;
   text-align: var(--rdp-weekday-text-align);
   text-transform: var(--rdp-weekday-text-transform);
   color: var(--text-not-available);
@@ -280,12 +280,12 @@
 
 /* DAY MODIFIERS */
 .rdp-today:not(.rdp-outside) {
-  color: var(--rdp-today-color);
+  color: var(--text);
 }
 
 .rdp-today .rdp-day_button {
   background-color: var(--border-container-color);
-  font-weight: 700;
+  /* font-weight: 700; */
 }
 
 .rdp-selected {
