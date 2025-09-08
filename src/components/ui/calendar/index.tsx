@@ -1,38 +1,36 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { DayPicker } from "react-day-picker";
 import { es } from "react-day-picker/locale";
-import { AnimatePresence, motion } from "motion/react";
 
+import { useModalUbication } from "@/hooks/useModalUbication";
+
+import { ClientOnlyPortal } from "../client-only-portal";
 import { Hour } from "./hour";
 
 import { ArrowThin, Calendar as Icon } from "@/components/ui/icons/icons";
 import styles from "./Calendar.module.css";
 import "./DayPicker.css";
-import { ClientOnlyPortal } from "../client-only-portal";
-import { useModalUbication } from "@/hooks/useModalUbication";
 
-interface props {
+interface Props {
   selected: Date | undefined;
   setSelected: (value: Date | undefined) => void;
   hour: string | undefined;
   setHour: (value: string | undefined) => void;
   focusToParentInput?: () => void;
-  trigger?: React.ReactNode;
 }
 
-export function Calendar({
+export const Calendar = ({
   selected,
   setSelected,
   hour,
   setHour,
   focusToParentInput,
-  trigger,
-}: props) {
+}: Props) => {
   const [open, setOpen] = useState<boolean>(false);
-  const [step, setStep] = useState<boolean>(false);
+  const [step, setStep] = useState<number>(1);
   const [tempMonth, setTempMonth] = useState<Date | undefined>(new Date());
 
   const Ref = useRef<HTMLButtonElement>(null);
@@ -43,10 +41,14 @@ export function Calendar({
     sRef,
     () => {
       setOpen(false);
-      setStep(false);
+      setStep(1);
     },
     false
   );
+
+  const handleOpenCalendar = () => {
+    setOpen((prev) => !prev);
+  };
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelected(date);
@@ -63,36 +65,26 @@ export function Calendar({
     <>
       <button
         ref={Ref}
-        className={styles.button}
+        className={styles.triggerButton}
         style={{
-          height: trigger ? "25px" : "30px",
-          padding: trigger ? "0" : "5px",
-          width: "auto",
-          aspectRatio: "1 / 1",
           backgroundColor: open
             ? "var(--background-over-container-hover)"
             : "var(--background-over-container)",
         }}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setOpen((prev) => !prev);
-        }}
+        onClick={handleOpenCalendar}
       >
         <div
           className={styles.notification}
           style={{ opacity: selected ? 1 : 0 }}
-        ></div>
-        {trigger ?? (
-          <Icon
-            style={{
-              width: "100%",
-              height: "auto",
-              stroke: "var(--icon-color)",
-              strokeWidth: "1.5",
-            }}
-          />
-        )}
+        />
+        <Icon
+          style={{
+            width: "90%",
+            height: "auto",
+            stroke: "var(--icon-color)",
+            strokeWidth: "1.5",
+          }}
+        />
       </button>
       <ClientOnlyPortal>
         <AnimatePresence mode="wait">
@@ -100,40 +92,48 @@ export function Calendar({
             <motion.section
               initial={{
                 opacity: 0,
-                filter: "blur(10px)",
-                z: -50,
-                rotateX: 10,
-                rotateY: -25,
               }}
               animate={{
                 opacity: 1,
-                filter: "blur(0px)",
-                z: 0,
-                rotateX: 0,
-                rotateY: 0,
               }}
               exit={{
                 opacity: 0,
-                filter: "blur(10px)",
-                z: -50,
-                rotateX: 10,
-                rotateY: -25,
               }}
               transition={{
-                type: "spring",
-                stiffness: 150,
-                damping: 25,
-                duration: 0.3,
+                duration: 0.1,
               }}
               className={styles.container}
               ref={sRef}
               id="calendar-component"
             >
               <div className={styles.optionsContainer}>
-                {step ? (
+                <section className={styles.titleContainer}>
+                  {step === 2 && (
+                    <button
+                      className={styles.backButton}
+                      onClick={() => {
+                        setStep(1);
+                      }}
+                    >
+                      <ArrowThin
+                        style={{
+                          width: "auto",
+                          height: "16px",
+                          stroke: "var(--text-not-available)",
+                          strokeWidth: "2",
+                          transform: "rotate(90deg)",
+                        }}
+                      />
+                    </button>
+                  )}
+                  {step === 1 && <p>Seleccionar fecha</p>}
+                  {step === 2 && <p>Seleccionar hora</p>}
+                </section>
+                {step === 2 ? (
                   <div className={styles.hourPicker}>
                     <div className={styles.supportButtons}>
                       <button
+                        className={styles.supportButtonsElement}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -149,6 +149,7 @@ export function Calendar({
                         9 am
                       </button>
                       <button
+                        className={styles.supportButtonsElement}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -164,6 +165,7 @@ export function Calendar({
                         12 pm
                       </button>
                       <button
+                        className={styles.supportButtonsElement}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -183,10 +185,10 @@ export function Calendar({
                     <Hour value={hour} onChange={setHour} />
 
                     <div className={styles.footerButtonsContainer}>
-                      <button
+                      {/* <button
                         className={`${styles.footerButton} ${styles.fb1}`}
                         onClick={() => {
-                          setStep(false);
+                          setStep(1);
                         }}
                       >
                         <ArrowThin
@@ -199,14 +201,15 @@ export function Calendar({
                           }}
                         />
                         atrás
-                      </button>
+                      </button> */}
                       <button
-                        className={styles.hourButtonOmit}
+                        className={`${styles.footerButton} ${styles.fb1}`}
+                        // className={styles.hourButtonOmit}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
                           setOpen(false);
-                          setStep(false);
+                          setStep(1);
                           setHour(undefined);
                           focusToParentInput && focusToParentInput();
                         }}
@@ -220,7 +223,7 @@ export function Calendar({
                           e.preventDefault();
                           e.stopPropagation();
                           setOpen(false);
-                          setStep(false);
+                          setStep(1);
                           if (!hour) {
                             setHour(
                               new Date().toLocaleTimeString("es-AR", {
@@ -241,6 +244,7 @@ export function Calendar({
                   <>
                     <div className={styles.supportButtons}>
                       <button
+                        className={styles.supportButtonsElement}
                         onClick={() => {
                           handleDateSelect(new Date());
                         }}
@@ -255,6 +259,7 @@ export function Calendar({
                         Hoy
                       </button>
                       <button
+                        className={styles.supportButtonsElement}
                         onClick={() => {
                           const date = new Date();
                           date.setDate(date.getDate() + 7);
@@ -273,6 +278,7 @@ export function Calendar({
                         7 días
                       </button>
                       <button
+                        className={styles.supportButtonsElement}
                         onClick={() => {
                           const date = new Date();
                           date.setMonth(date.getMonth() + 1);
@@ -319,14 +325,14 @@ export function Calendar({
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          setStep(true);
+                          setStep(2);
                           if (!selected) {
                             setSelected(new Date());
                           }
                         }}
                       >
                         siguiente
-                        <ArrowThin
+                        {/* <ArrowThin
                           style={{
                             width: "auto",
                             height: "15px",
@@ -334,7 +340,7 @@ export function Calendar({
                             strokeWidth: "3",
                             transform: "rotate(-90deg)",
                           }}
-                        />
+                        /> */}
                       </button>
                     </div>
                   </>
@@ -346,4 +352,4 @@ export function Calendar({
       </ClientOnlyPortal>
     </>
   );
-}
+};
