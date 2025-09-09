@@ -1,15 +1,16 @@
 "use client";
 
-import { motion, useAnimation } from "motion/react";
+import { motion } from "motion/react";
 import { useState } from "react";
 
-interface props {
+interface Props {
   value: boolean;
   action: () => void;
   width: number;
+  disabled?: boolean;
 }
 
-export function Switch({ value, action, width = 40 }: props) {
+export function Switch({ value, action, width = 40, disabled = false }: Props) {
   const [isPressed, setIsPressed] = useState(false);
 
   const toggleSwitch = () => action();
@@ -36,11 +37,13 @@ export function Switch({ value, action, width = 40 }: props) {
         overflow: "hidden",
         WebkitTapHighlightColor: "transparent",
         touchAction: "manipulation",
+        opacity: disabled ? "0.4" : "1",
       }}
       onClick={toggleSwitch}
       onTapStart={() => setIsPressed(true)}
       onTap={() => setIsPressed(false)}
       onTapCancel={() => setIsPressed(false)}
+      disabled={disabled}
     >
       <motion.div
         layout

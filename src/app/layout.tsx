@@ -38,6 +38,21 @@ export const metadata: Metadata = {
     title: APP_DEFAULT_TITLE,
     // startUpImage: [],
   },
+  icons: {
+    icon: [
+      {
+        rel: "icon",
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        rel: "icon",
+        url: "/favicon.ico",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+  },
   manifest: "/manifest.json",
   formatDetection: {
     telephone: false,
