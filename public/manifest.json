@@ -1,5 +1,4 @@
 {
-  "id": "alino.app",
   "version": "0.1.0",
   "name": "Alino",
   "short_name": "Alino",
@@ -10,7 +9,8 @@
   "orientation": "portrait",
   "scope": "/",
   "start_url": "/sign-in",
-  "lang": "es-ES",
+  "lang": "es",
+  "dir": "ltr",
   "categories": ["productivity", "todo"],
   "icons": [
     {

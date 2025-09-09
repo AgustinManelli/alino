@@ -65,6 +65,16 @@ export default function RootLayout({
   return (
     <html lang="es" data-theme={initialTheme} suppressHydrationWarning>
       <head>
+        <meta
+          name="theme-color"
+          content="#F0F0F0"
+          media="(prefers-color-scheme: light)"
+        />
+        <meta
+          name="theme-color"
+          content="#242629"
+          media="(prefers-color-scheme: dark)"
+        />
         <script
           id="theme-init"
           dangerouslySetInnerHTML={{
