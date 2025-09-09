@@ -40,7 +40,6 @@
 
 .button:disabled {
   opacity: 0.5;
-  /* cursor: not-allowed; */
 }
 
 .input {
@@ -58,15 +57,14 @@
   justify-content: center;
   align-items: center;
   user-select: none;
-  background-color: var(--background-over-container);
-  border: 1px solid var(--border-container-color);
-  border-radius: 10px;
+  /* background-color: var(--background-over-container); */
+  /* border: 1px solid var(--border-container-color); */
+  /* border-radius: 10px; */
   -webkit-user-select: none;
 }
 
 .input:disabled {
   opacity: 0.5;
-  /* cursor: not-allowed; */
 }
 
 .separator {
