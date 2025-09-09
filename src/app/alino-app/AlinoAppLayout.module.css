@@ -27,6 +27,7 @@
 @media all and (display-mode: standalone) {
   .alinoAppLayoutContainer {
     height: 100vh;
+    overflow: visible;
     padding: calc(env(safe-area-inset-top) + 15px) 15px
       calc(env(safe-area-inset-bottom) + 15px) 15px;
   }

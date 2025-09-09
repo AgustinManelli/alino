@@ -32,6 +32,12 @@ export const metadata: Metadata = {
     template: APP_TITLE_TEMPLATE,
   },
   description: APP_DESCRIPTION,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: APP_DEFAULT_TITLE,
+    // startUpImage: [],
+  },
   manifest: "/manifest.json",
   formatDetection: {
     telephone: false,
@@ -63,7 +69,12 @@ export default function RootLayout({
   const cookie = cookies().get("theme-storage");
   const initialTheme = cookie?.value ?? undefined;
   return (
-    <html lang="es" data-theme={initialTheme} suppressHydrationWarning>
+    <html
+      lang="es"
+      dir="ltr"
+      data-theme={initialTheme}
+      suppressHydrationWarning
+    >
       <head>
         <meta
           name="theme-color"
