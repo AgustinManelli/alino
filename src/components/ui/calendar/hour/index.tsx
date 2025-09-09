@@ -6,7 +6,7 @@ import styles from "./Hour.module.css";
 import { CounterAnimation } from "../../counter-animation";
 
 interface TimePickerProps {
-  value?: string; // Formato "HH:mm"
+  value?: string;
   onChange: (time: string) => void;
   disabled?: boolean;
 }
@@ -25,7 +25,6 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isTouchEventRef = useRef(false);
 
-  // Valor controlado o el interno
   const currentTime = value || internalTime;
   const [hours, minutes] = currentTime.split(":").map(Number);
 
@@ -37,23 +36,6 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
     hoursRef.current = hours;
     minutesRef.current = minutes;
   }, [hours, minutes]);
-
-  // Actualización del tiempo interno si no está controlado
-  // useEffect(() => {
-  //   if (!value) {
-  //     const interval = setInterval(() => {
-  //       setInternalTime(
-  //         new Date().toLocaleTimeString("es-AR", {
-  //           hour: "2-digit",
-  //           minute: "2-digit",
-  //           hour12: false,
-  //         })
-  //       );
-  //     }, 1000);
-
-  //     return () => clearInterval(interval);
-  //   }
-  // }, [value]);
 
   useEffect(() => {
     const getCurrentTime = () => {
@@ -74,12 +56,10 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
       const interval = setInterval(() => {
         const newTime = getCurrentTime();
 
-        // Actualizar solo si estamos en modo no controlado o el value coincide
         if (!value) {
           setInternalTime(newTime);
         }
 
-        // Si tenemos value pero ya no coincide, detener el intervalo
         if (value && value !== newTime) {
           clearInterval(interval);
         }
@@ -116,7 +96,6 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
         type === "hour" ? hoursRef.current : minutesRef.current;
       const max = type === "hour" ? 24 : 60;
 
-      // Cálculo seguro con módulo
       const newValue = (currentValue + delta + max) % max;
 
       if (type === "hour") {
@@ -134,10 +113,8 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
         e?.preventDefault();
         stopAction();
 
-        // Primer cambio inmediato
         handleTimeChange(type, delta);
 
-        // Configurar repetición después de 300ms
         timeoutRef.current = setTimeout(() => {
           intervalRef.current = setInterval(() => {
             handleTimeChange(type, delta);
@@ -147,7 +124,6 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
     [handleTimeChange, stopAction]
   );
 
-  // Limpieza al desmontar
   useEffect(() => stopAction, [stopAction]);
 
   return (
@@ -171,7 +147,6 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
   );
 }
 
-// Componente auxiliar para unidades de tiempo
 const TimeUnit = ({
   type,
   value,
@@ -212,7 +187,7 @@ const TimeUnit = ({
           style={{
             width: "25px",
             height: "auto",
-            stroke: "#87189d",
+            stroke: "var(--text)",
             strokeWidth: "2",
             transform: "rotate(90deg)",
           }}
@@ -245,7 +220,7 @@ const TimeUnit = ({
           style={{
             width: "25px",
             height: "auto",
-            stroke: "#87189d",
+            stroke: "var(--text)",
             strokeWidth: "2",
             transform: "rotate(-90deg)",
           }}

@@ -69,30 +69,15 @@ export function Dropdown<T>({
             <motion.section
               initial={{
                 opacity: 0,
-                filter: "blur(10px)",
-                z: -50,
-                rotateX: 10,
-                rotateY: -25,
               }}
               animate={{
                 opacity: 1,
-                filter: "blur(0px)",
-                z: 0,
-                rotateX: 0,
-                rotateY: 0,
               }}
               exit={{
                 opacity: 0,
-                filter: "blur(10px)",
-                z: -50,
-                rotateX: 10,
-                rotateY: -25,
               }}
               transition={{
-                type: "spring",
-                stiffness: 150,
-                damping: 25,
-                duration: 0.3,
+                duration: 0.1,
               }}
               className={`${styles.dropdownMenu} ignore-sidebar-close`}
               ref={sRef}

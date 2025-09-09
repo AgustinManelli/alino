@@ -10,9 +10,9 @@ interface props {
   title: string;
   user?: boolean;
   subtitle?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   onClose: () => void;
-  iconRef: React.RefObject<HTMLDivElement>;
+  iconRef: React.RefObject<HTMLDivElement | HTMLButtonElement>;
 }
 
 export function ModalBox({

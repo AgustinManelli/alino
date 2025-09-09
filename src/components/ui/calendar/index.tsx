@@ -13,6 +13,7 @@ import { Hour } from "./hour";
 import { ArrowThin, Calendar as Icon } from "@/components/ui/icons/icons";
 import styles from "./Calendar.module.css";
 import "./DayPicker.css";
+import { DATE_PRESETS, TIME_PRESETS } from "./constants";
 
 interface Props {
   selected: Date | undefined;
@@ -61,6 +62,10 @@ export const Calendar = ({
     setOpen(false);
   };
 
+  const handleSetHour = (value: string) => {
+    setHour(value);
+  };
+
   return (
     <>
       <button
@@ -102,11 +107,11 @@ export const Calendar = ({
               transition={{
                 duration: 0.1,
               }}
-              className={styles.container}
+              className={styles.calendarContainer}
               ref={sRef}
               id="calendar-component"
             >
-              <div className={styles.optionsContainer}>
+              <div className={styles.contentContainer}>
                 <section className={styles.titleContainer}>
                   {step === 2 && (
                     <button
@@ -119,7 +124,7 @@ export const Calendar = ({
                         style={{
                           width: "auto",
                           height: "16px",
-                          stroke: "var(--text-not-available)",
+                          stroke: "var(--text)",
                           strokeWidth: "2",
                           transform: "rotate(90deg)",
                         }}
@@ -129,82 +134,33 @@ export const Calendar = ({
                   {step === 1 && <p>Seleccionar fecha</p>}
                   {step === 2 && <p>Seleccionar hora</p>}
                 </section>
+                <div className={styles.divisor} />
                 {step === 2 ? (
                   <div className={styles.hourPicker}>
                     <div className={styles.supportButtons}>
-                      <button
-                        className={styles.supportButtonsElement}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setHour("09:00");
-                        }}
-                        style={{
-                          borderColor:
-                            hour === "09:00"
-                              ? "#87189d"
-                              : "var(--border-container-color)",
-                        }}
-                      >
-                        9 am
-                      </button>
-                      <button
-                        className={styles.supportButtonsElement}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setHour("12:00");
-                        }}
-                        style={{
-                          borderColor:
-                            hour === "12:00"
-                              ? "#87189d"
-                              : "var(--border-container-color)",
-                        }}
-                      >
-                        12 pm
-                      </button>
-                      <button
-                        className={styles.supportButtonsElement}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setHour("17:00");
-                        }}
-                        style={{
-                          borderColor:
-                            hour === "17:00"
-                              ? "#87189d"
-                              : "var(--border-container-color)",
-                        }}
-                      >
-                        5 pm
-                      </button>
+                      {TIME_PRESETS.map((item) => (
+                        <button
+                          className={styles.supportButtonsElement}
+                          onClick={() => {
+                            handleSetHour(item.value);
+                          }}
+                          style={{
+                            borderColor:
+                              hour === item.value
+                                ? "#87189d"
+                                : "var(--border-container-color)",
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
                     </div>
 
                     <Hour value={hour} onChange={setHour} />
 
                     <div className={styles.footerButtonsContainer}>
-                      {/* <button
-                        className={`${styles.footerButton} ${styles.fb1}`}
-                        onClick={() => {
-                          setStep(1);
-                        }}
-                      >
-                        <ArrowThin
-                          style={{
-                            width: "auto",
-                            height: "15px",
-                            stroke: "var(--text)",
-                            strokeWidth: "2",
-                            transform: "rotate(90deg)",
-                          }}
-                        />
-                        atrás
-                      </button> */}
                       <button
                         className={`${styles.footerButton} ${styles.fb1}`}
-                        // className={styles.hourButtonOmit}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -224,15 +180,6 @@ export const Calendar = ({
                           e.stopPropagation();
                           setOpen(false);
                           setStep(1);
-                          if (!hour) {
-                            setHour(
-                              new Date().toLocaleTimeString("es-AR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: false,
-                              })
-                            );
-                          }
                           focusToParentInput && focusToParentInput();
                         }}
                       >
@@ -241,64 +188,27 @@ export const Calendar = ({
                     </div>
                   </div>
                 ) : (
-                  <>
+                  <div className={styles.datePicker}>
                     <div className={styles.supportButtons}>
-                      <button
-                        className={styles.supportButtonsElement}
-                        onClick={() => {
-                          handleDateSelect(new Date());
-                        }}
-                        style={{
-                          borderColor:
-                            selected?.toDateString() ===
-                            new Date().toDateString()
-                              ? "#87189d"
-                              : "var(--border-container-color)",
-                        }}
-                      >
-                        Hoy
-                      </button>
-                      <button
-                        className={styles.supportButtonsElement}
-                        onClick={() => {
-                          const date = new Date();
-                          date.setDate(date.getDate() + 7);
-                          handleDateSelect(date);
-                        }}
-                        style={{
-                          borderColor:
-                            selected?.toDateString() ===
-                            new Date(
-                              new Date().setDate(new Date().getDate() + 7)
-                            ).toDateString()
-                              ? "#87189d"
-                              : "var(--border-container-color)",
-                        }}
-                      >
-                        7 días
-                      </button>
-                      <button
-                        className={styles.supportButtonsElement}
-                        onClick={() => {
-                          const date = new Date();
-                          date.setMonth(date.getMonth() + 1);
-                          handleDateSelect(date);
-                        }}
-                        style={{
-                          borderColor:
-                            selected?.toDateString() ===
-                            new Date(
-                              new Date().setMonth(new Date().getMonth() + 1)
-                            ).toDateString()
-                              ? "#87189d"
-                              : "var(--border-container-color)",
-                        }}
-                      >
-                        1 mes
-                      </button>
+                      {DATE_PRESETS.map((item) => (
+                        <button
+                          className={styles.supportButtonsElement}
+                          onClick={() => {
+                            handleDateSelect(item.getDate());
+                          }}
+                          style={{
+                            borderColor:
+                              selected?.toDateString() ===
+                              item.getDate().toDateString()
+                                ? "#87189d"
+                                : "var(--border-container-color)",
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
                     </div>
                     <DayPicker
-                      // disabled={{ before: new Date() }}
                       timeZone="America/Buenos_Aires"
                       mode="single"
                       locale={es}
@@ -306,7 +216,6 @@ export const Calendar = ({
                       onSelect={handleDateSelect}
                       month={tempMonth}
                       onMonthChange={setTempMonth}
-                      // startMonth={new Date()}
                       defaultMonth={selected}
                     />
                     <div className={styles.footerButtonsContainer}>
@@ -332,18 +241,9 @@ export const Calendar = ({
                         }}
                       >
                         siguiente
-                        {/* <ArrowThin
-                          style={{
-                            width: "auto",
-                            height: "15px",
-                            stroke: "#fff",
-                            strokeWidth: "3",
-                            transform: "rotate(-90deg)",
-                          }}
-                        /> */}
                       </button>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </motion.section>
