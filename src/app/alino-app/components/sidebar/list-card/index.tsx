@@ -33,6 +33,7 @@ import {
   LogOut,
 } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
+import Link from "next/link";
 
 interface props {
   list: ListsType;
@@ -324,29 +325,26 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
 
   return (
     <div ref={setNodeRef} className={styles.allContainer}>
-      <section
-        {...attributes}
-        {...listeners}
-        ref={divRef}
-        className={styles.container}
-        style={style}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (isNameChange) return;
-          router.replace(`/alino-app/${list.list_id}`);
-          setNavbarStatus(false);
-        }}
-      >
-        <div
-          className={styles.cardFx}
-          style={{
-            boxShadow: `${colorTemp} 100px 50px 50px`,
-            opacity: isActive ? 0.1 : 0,
+      <div {...attributes} {...listeners} ref={divRef}>
+        <Link
+          className={styles.container}
+          style={style}
+          href={isNameChange ? "#" : `/alino-app/${list.list_id}`}
+          onClick={() => {
+            if (isNameChange) return;
+            setNavbarStatus(false);
           }}
-        ></div>
-        {content}
-      </section>
+        >
+          <div
+            className={styles.cardFx}
+            style={{
+              boxShadow: `${colorTemp} 100px 50px 50px`,
+              opacity: isActive ? 0.1 : 0,
+            }}
+          ></div>
+          {content}
+        </Link>
+      </div>
     </div>
   );
 });
