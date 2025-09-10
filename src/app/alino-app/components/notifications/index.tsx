@@ -56,19 +56,6 @@ export const NotificationsSection = () => {
             );
             subscriptionAddNotification(invitation);
           }
-
-          // if (payload.eventType === "UPDATE") {
-          //   const updatedMembership = payload.new as MembershipRow;
-          //   subscriptionUpdateMembership(updatedMembership);
-          // }
-
-          // if (payload.eventType === "DELETE") {
-          // const oldMembership = payload.old as MembershipRow;
-
-          // if (oldMembership) {
-          //   subscriptionDeleteList(oldMembership);
-          // }
-          // }
         }
       )
       .subscribe();
