@@ -330,6 +330,7 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
           className={styles.container}
           style={style}
           href={isNameChange ? "#" : `/alino-app/${list.list_id}`}
+          prefetch={false}
           onClick={() => {
             if (isNameChange) return;
             setNavbarStatus(false);
