@@ -40,3 +40,5 @@ public/sw*
 public/swe-worker*
 
 subscriptions.json
+*storybook.log
+storybook-static
