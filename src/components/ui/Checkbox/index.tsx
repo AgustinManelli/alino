@@ -6,7 +6,7 @@ import { animate } from "motion";
 
 import { interpolate } from "flubber";
 
-import styles from "./checkbox.module.css";
+import styles from "./Checkbox.module.css";
 
 const paths = {
   normal: {
