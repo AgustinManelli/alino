@@ -13,7 +13,7 @@ import { useLineCalculator } from "@/hooks/useLineCalculator";
 
 import { ConfigMenu } from "@/components/ui/config-menu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { linkifyWithIcon } from "@/components/utils/linkify";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
 
