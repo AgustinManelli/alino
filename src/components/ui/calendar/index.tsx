@@ -5,10 +5,10 @@ import { AnimatePresence, motion } from "motion/react";
 import { DayPicker } from "react-day-picker";
 import { es } from "react-day-picker/locale";
 
-import { useModalUbication } from "@/hooks/useModalUbication";
+import { useDynamicModalPosition } from "@/hooks/useDynamicModalPosition";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
-import { ClientOnlyPortal } from "../client-only-portal";
-import { Hour } from "./hour";
+import { HourPicker } from "./HourPicker";
 
 import { DATE_PRESETS, TIME_PRESETS } from "./constants";
 import {
@@ -39,18 +39,18 @@ export const Calendar = ({
   const [tempMonth, setTempMonth] = useState<Date | undefined>(new Date());
   const [tempHour, setTempHour] = useState<string | undefined>(undefined);
 
-  const Ref = useRef<HTMLButtonElement>(null);
-  const sRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  useModalUbication(
-    Ref,
-    sRef,
-    () => {
-      setOpen(false);
-      setStep(1);
-    },
-    false
-  );
+  useDynamicModalPosition({
+    anchorRef: triggerRef,
+    contentRef: containerRef,
+    isOpen: open,
+  });
+
+  useOnClickOutside(containerRef, () => {
+    setOpen(false);
+  }, [triggerRef]);
 
   const handleOpenCalendar = () => {
     setOpen((prev) => !prev);
@@ -81,7 +81,7 @@ export const Calendar = ({
   return (
     <>
       <button
-        ref={Ref}
+        ref={triggerRef}
         className={styles.triggerButton}
         style={
           {
@@ -95,6 +95,7 @@ export const Calendar = ({
           e.stopPropagation();
           handleOpenCalendar();
         }}
+        aria-label="Abrir calendario"
       >
         <Icon
           style={{
@@ -105,184 +106,182 @@ export const Calendar = ({
           }}
         />
       </button>
-      <ClientOnlyPortal>
-        <AnimatePresence mode="wait">
-          {open && (
-            <motion.section
-              initial={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
-              }}
-              transition={{
-                duration: 0.1,
-              }}
-              className={styles.calendarContainer}
-              ref={sRef}
-              id="calendar-component"
-            >
-              <div className={styles.contentContainer}>
-                <section className={styles.titleContainer}>
-                  <section className={styles.titleSection}>
-                    {step === 2 && (
-                      <button
-                        className={styles.backButton}
-                        onClick={() => {
-                          setStep(1);
-                        }}
-                      >
-                        <ArrowThin
-                          style={{
-                            width: "auto",
-                            height: "15px",
-                            stroke: "var(--text)",
-                            strokeWidth: "2",
-                            transform: "rotate(90deg)",
-                          }}
-                        />
-                      </button>
-                    )}
-                    <p>{HEADER_TITLE}</p>
-                  </section>
-                  <button className={styles.cleanButton} onClick={handleClean}>
-                    <DeleteIcon
-                      style={{
-                        width: "auto",
-                        height: "15px",
-                        stroke: "var(--text)",
-                        strokeWidth: "2",
+      <AnimatePresence mode="wait">
+        {open && (
+          <motion.section
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+            transition={{
+              duration: 0.1,
+            }}
+            className={styles.calendarContainer}
+            ref={containerRef}
+            id="calendar-component"
+          >
+            <div className={styles.contentContainer}>
+              <section className={styles.titleContainer}>
+                <section className={styles.titleSection}>
+                  {step === 2 && (
+                    <button
+                      className={styles.backButton}
+                      onClick={() => {
+                        setStep(1);
                       }}
-                    />
-                  </button>
+                    >
+                      <ArrowThin
+                        style={{
+                          width: "auto",
+                          height: "15px",
+                          stroke: "var(--text)",
+                          strokeWidth: "2",
+                          transform: "rotate(90deg)",
+                        }}
+                      />
+                    </button>
+                  )}
+                  <p>{HEADER_TITLE}</p>
                 </section>
-                <div className={styles.divisor} />
-                {step === 1 ? (
-                  <div className={styles.datePicker}>
-                    <div className={styles.supportButtons}>
-                      {DATE_PRESETS.map((item) => (
-                        <button
-                          className={styles.supportButtonsElement}
-                          onClick={() => {
-                            handleDateSelect(item.getDate());
-                          }}
-                          style={{
-                            borderColor:
-                              selected?.toDateString() ===
-                              item.getDate().toDateString()
-                                ? "#87189d"
-                                : "var(--border-container-color)",
-                          }}
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                    <DayPicker
-                      timeZone="America/Buenos_Aires"
-                      mode="single"
-                      locale={es}
-                      selected={selected}
-                      onSelect={handleDateSelect}
-                      month={tempMonth}
-                      onMonthChange={setTempMonth}
-                      defaultMonth={selected}
-                    />
-                    <div className={styles.footerButtonsContainer}>
+                <button className={styles.cleanButton} onClick={handleClean}>
+                  <DeleteIcon
+                    style={{
+                      width: "auto",
+                      height: "15px",
+                      stroke: "var(--text)",
+                      strokeWidth: "2",
+                    }}
+                  />
+                </button>
+              </section>
+              <div className={styles.divisor} />
+              {step === 1 ? (
+                <div className={styles.datePicker}>
+                  <div className={styles.supportButtons}>
+                    {DATE_PRESETS.map((item) => (
                       <button
-                        className={`${styles.footerButton} ${styles.fb1}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCancel();
+                        className={styles.supportButtonsElement}
+                        onClick={() => {
+                          handleDateSelect(item.getDate());
+                        }}
+                        style={{
+                          borderColor:
+                            selected?.toDateString() ===
+                            item.getDate().toDateString()
+                              ? "#87189d"
+                              : "var(--border-container-color)",
                         }}
                       >
-                        cancelar
+                        {item.label}
                       </button>
-                      <button
-                        className={`${styles.footerButton} ${styles.fb2}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setStep(2);
-                          if (!selected) {
-                            setSelected(new Date());
-                          }
-                        }}
-                      >
-                        siguiente
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                ) : (
-                  <div className={styles.hourPicker}>
-                    <div className={styles.supportButtons}>
-                      {TIME_PRESETS.map((item) => (
-                        <button
-                          className={styles.supportButtonsElement}
-                          onClick={() => {
-                            handleSetHour(item.value);
-                          }}
-                          style={{
-                            borderColor:
-                              tempHour === item.value
-                                ? "#87189d"
-                                : "var(--border-container-color)",
-                          }}
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    <Hour
-                      value={hour}
-                      tempHour={tempHour}
-                      setTempHour={setTempHour}
-                    />
-
-                    <div className={styles.footerButtonsContainer}>
-                      <button
-                        className={`${styles.footerButton} ${styles.fb1}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpen(false);
-                          setStep(1);
-                          setHour(undefined);
-                          focusToParentInput?.();
-                        }}
-                      >
-                        omitir
-                      </button>
-                      <button
-                        className={`${styles.footerButton} ${styles.fb2}`}
-                        style={{ backgroundColor: "#87189d", color: "#fff" }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpen(false);
-                          setStep(1);
-                          setHour(
-                            tempHour ??
-                              new Date().toLocaleTimeString("es-AR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: false,
-                              })
-                          );
-                          focusToParentInput?.();
-                        }}
-                      >
-                        aplicar
-                      </button>
-                    </div>
+                  <DayPicker
+                    timeZone="America/Buenos_Aires"
+                    mode="single"
+                    locale={es}
+                    selected={selected}
+                    onSelect={handleDateSelect}
+                    month={tempMonth}
+                    onMonthChange={setTempMonth}
+                    defaultMonth={selected}
+                  />
+                  <div className={styles.footerButtonsContainer}>
+                    <button
+                      className={`${styles.footerButton} ${styles.fb1}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCancel();
+                      }}
+                    >
+                      cancelar
+                    </button>
+                    <button
+                      className={`${styles.footerButton} ${styles.fb2}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStep(2);
+                        if (!selected) {
+                          setSelected(new Date());
+                        }
+                      }}
+                    >
+                      siguiente
+                    </button>
                   </div>
-                )}
-              </div>
-            </motion.section>
-          )}
-        </AnimatePresence>
-      </ClientOnlyPortal>
+                </div>
+              ) : (
+                <div className={styles.hourPicker}>
+                  <div className={styles.supportButtons}>
+                    {TIME_PRESETS.map((item) => (
+                      <button
+                        className={styles.supportButtonsElement}
+                        onClick={() => {
+                          handleSetHour(item.value);
+                        }}
+                        style={{
+                          borderColor:
+                            tempHour === item.value
+                              ? "#87189d"
+                              : "var(--border-container-color)",
+                        }}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <HourPicker
+                    value={hour}
+                    tempHour={tempHour}
+                    setTempHour={setTempHour}
+                  />
+
+                  <div className={styles.footerButtonsContainer}>
+                    <button
+                      className={`${styles.footerButton} ${styles.fb1}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpen(false);
+                        setStep(1);
+                        setHour(undefined);
+                        focusToParentInput?.();
+                      }}
+                    >
+                      omitir
+                    </button>
+                    <button
+                      className={`${styles.footerButton} ${styles.fb2}`}
+                      style={{ backgroundColor: "#87189d", color: "#fff" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpen(false);
+                        setStep(1);
+                        setHour(
+                          tempHour ??
+                            new Date().toLocaleTimeString("es-AR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            })
+                        );
+                        focusToParentInput?.();
+                      }}
+                    >
+                      aplicar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
     </>
   );
 };

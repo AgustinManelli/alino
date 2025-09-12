@@ -1,14 +1,42 @@
 import React, { useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Calendar } from "./index";
-import "./Calendar.module.css";
-import { inter } from "../../../lib/fonts";
 
 const meta: Meta<typeof Calendar> = {
   title: "Components/Calendar",
   component: Calendar,
-  parameters: { layout: "centered" },
+  parameters: {
+    layout: "centered",
+    docs: {
+      description: {
+        component: "Selector de fecha y hora.",
+      },
+    },
+  },
   tags: ["autodocs"],
+  argTypes: {
+    selected: {
+      control: "date",
+      description: "Define la fecha seleccionada y activa.",
+    },
+    setSelected: {
+      action: "setSelected called",
+      description: "Función callback para seleccionar fecha.",
+    },
+    hour: {
+      control: "text",
+      description: "Define la hora seleccionada y activa.",
+    },
+    setHour: {
+      action: "setHour called",
+      description: "Función callback para seleccionar hora.",
+    },
+    focusToParentInput: {
+      action: "focusToParentInput called",
+      description:
+        "Función callback para hacer focus en input al cerrar el calendario.",
+    },
+  },
 };
 export default meta;
 
@@ -22,18 +50,7 @@ export const Default: Story = {
     const focusToParentInput = () => inputRef.current?.focus();
 
     return (
-      <div
-        style={{
-          padding: 24,
-          display: "flex",
-          gap: 16,
-          alignItems: "flex-start",
-          fontFamily: "inter",
-          position: "absolute",
-          top: 0,
-        }}
-        className={`${inter.className}`}
-      >
+      <div style={{ position: "absolute", top: "10%" }}>
         <Calendar
           selected={selected}
           setSelected={setSelected}
@@ -41,46 +58,6 @@ export const Default: Story = {
           setHour={setHour}
           focusToParentInput={focusToParentInput}
         />
-        <div style={{ minWidth: 220, fontFamily: "inter" }}>
-          <div>selected: {selected ? selected.toISOString() : "undefined"}</div>
-          <div>hour: {hour ?? "undefined"}</div>
-        </div>
-      </div>
-    );
-  },
-};
-
-export const WithInitialValue: Story = {
-  name: "With Initial Value",
-  render: () => {
-    const [selected, setSelected] = useState<Date | undefined>(new Date());
-    const [hour, setHour] = useState<string | undefined>("10:00");
-
-    return (
-      <div
-        style={{
-          padding: 24,
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-        }}
-      >
-        <Calendar
-          selected={selected}
-          setSelected={setSelected}
-          hour={hour}
-          setHour={setHour}
-        />
-        <div>
-          <button
-            onClick={() => {
-              setSelected(undefined);
-              setHour(undefined);
-            }}
-          >
-            Clear
-          </button>
-        </div>
       </div>
     );
   },
