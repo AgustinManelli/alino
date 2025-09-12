@@ -5,10 +5,6 @@ import { Calendar } from "./index";
 import "./Calendar.module.css";
 import { inter } from "../../../lib/fonts";
 
-// Asumo que la importación de CSS debe hacerse en .storybook/preview.ts
-// pero si necesitas importarla aquí, está bien.
-// import "../src/app/globals.css";
-
 // 1. Tipa el objeto meta
 const meta: Meta<typeof Calendar> = {
   title: "Components/Calendar",
@@ -31,33 +27,30 @@ export const Default: Story = {
     const focusToParentInput = () => inputRef.current?.focus();
 
     return (
-      <>
-        <div id="portal-root"></div>
-
-        <div
-          style={{
-            padding: 24,
-            display: "flex",
-            gap: 16,
-            alignItems: "flex-start",
-          }}
-          className={`${inter.className}`}
-        >
-          <Calendar
-            selected={selected}
-            setSelected={setSelected}
-            hour={hour}
-            setHour={setHour}
-            focusToParentInput={focusToParentInput}
-          />
-          <div style={{ minWidth: 220, fontFamily: "monospace" }}>
-            <div>
-              selected: {selected ? selected.toISOString() : "undefined"}
-            </div>
-            <div>hour: {hour ?? "undefined"}</div>
-          </div>
+      <div
+        style={{
+          padding: 24,
+          display: "flex",
+          gap: 16,
+          alignItems: "flex-start",
+          fontFamily: "inter",
+          position: "absolute",
+          top: 0,
+        }}
+        className={`${inter.className}`}
+      >
+        <Calendar
+          selected={selected}
+          setSelected={setSelected}
+          hour={hour}
+          setHour={setHour}
+          focusToParentInput={focusToParentInput}
+        />
+        <div style={{ minWidth: 220, fontFamily: "inter" }}>
+          <div>selected: {selected ? selected.toISOString() : "undefined"}</div>
+          <div>hour: {hour ?? "undefined"}</div>
         </div>
-      </>
+      </div>
     );
   },
 };

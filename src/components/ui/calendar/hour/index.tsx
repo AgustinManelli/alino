@@ -1,31 +1,32 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { ArrowThin } from "../../icons/icons";
-import styles from "./Hour.module.css";
-import { CounterAnimation } from "../../counter-animation";
 
-interface TimePickerProps {
+import { CounterAnimation } from "@/components/ui/counter-animation";
+
+import { ArrowThin } from "@/components/ui/icons/icons";
+import styles from "./Hour.module.css";
+
+interface Props {
   value?: string;
-  onChange: (time: string) => void;
-  disabled?: boolean;
+  tempHour: string | undefined;
+  setTempHour: (value: string | undefined) => void;
 }
 
-export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
-  const [internalTime, setInternalTime] = useState(
-    value ||
-      new Date().toLocaleTimeString("es-AR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      })
-  );
+const getNowHHMM = () =>
+  new Date().toLocaleTimeString("es-AR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+export function Hour({ value, tempHour, setTempHour }: Props) {
+  const [internalTime, setInternalTime] = useState(value ?? getNowHHMM);
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const isTouchEventRef = useRef(false);
 
-  const currentTime = value || internalTime;
+  const currentTime = tempHour || internalTime;
   const [hours, minutes] = currentTime.split(":").map(Number);
 
   // Refs
@@ -83,15 +84,13 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
       ).padStart(2, "0")}`;
 
       if (!value) setInternalTime(formattedTime);
-      onChange(formattedTime);
+      setTempHour(formattedTime);
     },
-    [onChange, value]
+    [setTempHour, value]
   );
 
   const handleTimeChange = useCallback(
     (type: "hour" | "minute", delta: number) => {
-      if (disabled) return;
-
       const currentValue =
         type === "hour" ? hoursRef.current : minutesRef.current;
       const max = type === "hour" ? 24 : 60;
@@ -104,7 +103,7 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
         updateTime(hoursRef.current, newValue);
       }
     },
-    [disabled, updateTime]
+    [updateTime]
   );
 
   const createStartHandler = useCallback(
@@ -131,7 +130,6 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
       <TimeUnit
         type="hour"
         value={hours}
-        disabled={disabled}
         createStartHandler={createStartHandler}
       />
 
@@ -140,7 +138,6 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
       <TimeUnit
         type="minute"
         value={minutes}
-        disabled={disabled}
         createStartHandler={createStartHandler}
       />
     </div>
@@ -150,12 +147,10 @@ export function Hour({ value, onChange, disabled = false }: TimePickerProps) {
 const TimeUnit = ({
   type,
   value,
-  disabled,
   createStartHandler,
 }: {
   type: "hour" | "minute";
   value: number;
-  disabled: boolean;
   createStartHandler: (
     type: "hour" | "minute",
     delta: number
@@ -167,7 +162,6 @@ const TimeUnit = ({
     <div className={styles.timeUnit}>
       <button
         type="button"
-        disabled={disabled}
         className={styles.button}
         onMouseDown={(e) => {
           if (!isTouchEventRef.current) {
@@ -200,7 +194,6 @@ const TimeUnit = ({
 
       <button
         type="button"
-        disabled={disabled}
         className={styles.button}
         onMouseDown={(e) => {
           if (!isTouchEventRef.current) {

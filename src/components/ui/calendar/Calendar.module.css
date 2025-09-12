@@ -2,6 +2,9 @@
   position: relative;
   width: auto;
   height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border: none;
   border-radius: 10px;
   background-color: var(--background-over-container);
@@ -16,16 +19,18 @@
   background-color: var(--background-over-container-hover) !important;
 }
 
-.notification {
+.triggerButton::after {
+  content: "";
   position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 15px;
-  height: 15px;
+  top: -3px;
+  right: -3px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background-color: #87189d;
   border: solid 3px var(--background-container);
   transition: opacity 0.3s ease-in-out;
+  opacity: var(--notification);
 }
 
 .calendarContainer {
@@ -48,6 +53,7 @@
   user-select: none;
   -webkit-user-drag: none;
   overflow: hidden;
+  font-family: inter;
 }
 
 .contentContainer {
@@ -64,16 +70,22 @@
 .titleContainer {
   width: 100%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
-  gap: 5px;
   height: 20px;
   padding: 0px 10px;
 }
 
-.titleContainer p {
+.titleSection p {
   font-size: 12px;
   color: var(--text-not-available);
+}
+
+.titleSection {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 5px;
 }
 
 .backButton {
@@ -87,6 +99,12 @@
   background: none;
   background-color: transparent;
   border: none;
+}
+
+.cleanButton {
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 .divisor {
@@ -115,6 +133,7 @@
 
 .supportButtonsElement {
   background-color: var(--background-over-container);
+  width: 100%;
   padding: 5px 10px;
   border-radius: 10px;
   border: solid 1px var(--border-container-color);
@@ -124,7 +143,7 @@
   -webkit-tap-highlight-color: transparent;
   transition:
     border 0.2s ease-in-out,
-    background-color 0.3s ease-in-out;
+    background-color 0.2s ease-in-out;
   text-wrap: nowrap;
 }
 
@@ -145,7 +164,7 @@
   padding: 7px 0px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -166,6 +185,10 @@
   background-color: #87189d;
   color: #fff;
   border: 1px solid transparent;
+}
+
+.fb2:hover {
+  background-color: #6b127c;
 }
 
 .datePicker {

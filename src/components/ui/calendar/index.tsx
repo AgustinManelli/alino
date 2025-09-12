@@ -10,10 +10,14 @@ import { useModalUbication } from "@/hooks/useModalUbication";
 import { ClientOnlyPortal } from "../client-only-portal";
 import { Hour } from "./hour";
 
-import { ArrowThin, Calendar as Icon } from "@/components/ui/icons/icons";
+import { DATE_PRESETS, TIME_PRESETS } from "./constants";
+import {
+  ArrowThin,
+  DeleteIcon,
+  Calendar as Icon,
+} from "@/components/ui/icons/icons";
 import styles from "./Calendar.module.css";
 import "./DayPicker.css";
-import { DATE_PRESETS, TIME_PRESETS } from "./constants";
 
 interface Props {
   selected: Date | undefined;
@@ -33,6 +37,7 @@ export const Calendar = ({
   const [open, setOpen] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
   const [tempMonth, setTempMonth] = useState<Date | undefined>(new Date());
+  const [tempHour, setTempHour] = useState<string | undefined>(undefined);
 
   const Ref = useRef<HTMLButtonElement>(null);
   const sRef = useRef<HTMLDivElement>(null);
@@ -57,37 +62,46 @@ export const Calendar = ({
   };
 
   const handleCancel = () => {
-    setSelected(undefined);
-    setHour(undefined);
     setOpen(false);
   };
 
-  const handleSetHour = (value: string) => {
-    setHour(value);
+  const handleClean = () => {
+    setSelected(undefined);
+    setHour(undefined);
+    setOpen(false);
+    setStep(1);
   };
+
+  const handleSetHour = (value: string) => {
+    setTempHour(value);
+  };
+
+  const HEADER_TITLE = step === 1 ? "Seleccionar fecha" : "Seleccionar hora";
 
   return (
     <>
       <button
         ref={Ref}
         className={styles.triggerButton}
-        style={{
-          backgroundColor: open
-            ? "var(--background-over-container-hover)"
-            : "var(--background-over-container)",
+        style={
+          {
+            backgroundColor: open
+              ? "var(--background-over-container-hover)"
+              : "var(--background-over-container)",
+            "--notification": selected ? 1 : 0,
+          } as React.CSSProperties
+        }
+        onClick={(e) => {
+          e.stopPropagation();
+          handleOpenCalendar();
         }}
-        onClick={handleOpenCalendar}
       >
-        <div
-          className={styles.notification}
-          style={{ opacity: selected ? 1 : 0 }}
-        />
         <Icon
           style={{
-            width: "90%",
+            width: "80%",
             height: "auto",
             stroke: "var(--icon-color)",
-            strokeWidth: "1.5",
+            strokeWidth: "2",
           }}
         />
       </button>
@@ -113,81 +127,40 @@ export const Calendar = ({
             >
               <div className={styles.contentContainer}>
                 <section className={styles.titleContainer}>
-                  {step === 2 && (
-                    <button
-                      className={styles.backButton}
-                      onClick={() => {
-                        setStep(1);
-                      }}
-                    >
-                      <ArrowThin
-                        style={{
-                          width: "auto",
-                          height: "16px",
-                          stroke: "var(--text)",
-                          strokeWidth: "2",
-                          transform: "rotate(90deg)",
+                  <section className={styles.titleSection}>
+                    {step === 2 && (
+                      <button
+                        className={styles.backButton}
+                        onClick={() => {
+                          setStep(1);
                         }}
-                      />
-                    </button>
-                  )}
-                  {step === 1 && <p>Seleccionar fecha</p>}
-                  {step === 2 && <p>Seleccionar hora</p>}
+                      >
+                        <ArrowThin
+                          style={{
+                            width: "auto",
+                            height: "15px",
+                            stroke: "var(--text)",
+                            strokeWidth: "2",
+                            transform: "rotate(90deg)",
+                          }}
+                        />
+                      </button>
+                    )}
+                    <p>{HEADER_TITLE}</p>
+                  </section>
+                  <button className={styles.cleanButton} onClick={handleClean}>
+                    <DeleteIcon
+                      style={{
+                        width: "auto",
+                        height: "15px",
+                        stroke: "var(--text)",
+                        strokeWidth: "2",
+                      }}
+                    />
+                  </button>
                 </section>
                 <div className={styles.divisor} />
-                {step === 2 ? (
-                  <div className={styles.hourPicker}>
-                    <div className={styles.supportButtons}>
-                      {TIME_PRESETS.map((item) => (
-                        <button
-                          className={styles.supportButtonsElement}
-                          onClick={() => {
-                            handleSetHour(item.value);
-                          }}
-                          style={{
-                            borderColor:
-                              hour === item.value
-                                ? "#87189d"
-                                : "var(--border-container-color)",
-                          }}
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    <Hour value={hour} onChange={setHour} />
-
-                    <div className={styles.footerButtonsContainer}>
-                      <button
-                        className={`${styles.footerButton} ${styles.fb1}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setOpen(false);
-                          setStep(1);
-                          setHour(undefined);
-                          focusToParentInput && focusToParentInput();
-                        }}
-                      >
-                        omitir
-                      </button>
-                      <button
-                        className={`${styles.footerButton} ${styles.fb2}`}
-                        style={{ backgroundColor: "#87189d", color: "#fff" }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setOpen(false);
-                          setStep(1);
-                          focusToParentInput && focusToParentInput();
-                        }}
-                      >
-                        aplicar
-                      </button>
-                    </div>
-                  </div>
-                ) : (
+                {step === 1 ? (
                   <div className={styles.datePicker}>
                     <div className={styles.supportButtons}>
                       {DATE_PRESETS.map((item) => (
@@ -222,7 +195,6 @@ export const Calendar = ({
                       <button
                         className={`${styles.footerButton} ${styles.fb1}`}
                         onClick={(e) => {
-                          e.preventDefault();
                           e.stopPropagation();
                           handleCancel();
                         }}
@@ -232,7 +204,6 @@ export const Calendar = ({
                       <button
                         className={`${styles.footerButton} ${styles.fb2}`}
                         onClick={(e) => {
-                          e.preventDefault();
                           e.stopPropagation();
                           setStep(2);
                           if (!selected) {
@@ -241,6 +212,68 @@ export const Calendar = ({
                         }}
                       >
                         siguiente
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.hourPicker}>
+                    <div className={styles.supportButtons}>
+                      {TIME_PRESETS.map((item) => (
+                        <button
+                          className={styles.supportButtonsElement}
+                          onClick={() => {
+                            handleSetHour(item.value);
+                          }}
+                          style={{
+                            borderColor:
+                              tempHour === item.value
+                                ? "#87189d"
+                                : "var(--border-container-color)",
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <Hour
+                      value={hour}
+                      tempHour={tempHour}
+                      setTempHour={setTempHour}
+                    />
+
+                    <div className={styles.footerButtonsContainer}>
+                      <button
+                        className={`${styles.footerButton} ${styles.fb1}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpen(false);
+                          setStep(1);
+                          setHour(undefined);
+                          focusToParentInput?.();
+                        }}
+                      >
+                        omitir
+                      </button>
+                      <button
+                        className={`${styles.footerButton} ${styles.fb2}`}
+                        style={{ backgroundColor: "#87189d", color: "#fff" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpen(false);
+                          setStep(1);
+                          setHour(
+                            tempHour ??
+                              new Date().toLocaleTimeString("es-AR", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              })
+                          );
+                          focusToParentInput?.();
+                        }}
+                      >
+                        aplicar
                       </button>
                     </div>
                   </div>
