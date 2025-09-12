@@ -5,7 +5,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { CounterAnimation } from "@/components/ui/counter-animation";
 
 import { ArrowThin } from "@/components/ui/icons/icons";
-import styles from "./Hour.module.css";
+import styles from "./HourPicker.module.css";
 
 interface Props {
   value?: string;
@@ -20,7 +20,7 @@ const getNowHHMM = () =>
     hour12: false,
   });
 
-export function Hour({ value, tempHour, setTempHour }: Props) {
+export const HourPicker = ({ value, tempHour, setTempHour }: Props) => {
   const [internalTime, setInternalTime] = useState(value ?? getNowHHMM);
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -142,7 +142,7 @@ export function Hour({ value, tempHour, setTempHour }: Props) {
       />
     </div>
   );
-}
+};
 
 const TimeUnit = ({
   type,
