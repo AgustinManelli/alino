@@ -195,7 +195,7 @@ export const TaskCardStatic = memo(
             <Checkbox
               status={completed}
               handleUpdateStatus={handleUpdateStatus}
-              id={task.task_id}
+              ariaLabel="Marcar tarea como completada"
             />
           ) : (
             <Note

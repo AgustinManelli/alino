@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef } from "react";
 import { motion } from "motion/react";
 import { animate } from "motion";
-
 import { interpolate } from "flubber";
 
 import styles from "./Checkbox.module.css";
@@ -17,32 +16,51 @@ const paths = {
   },
 };
 
-export function Checkbox({
+interface Props {
+  /**
+   * El estado actual del checkbox (marcado o no marcado).
+   */
+  status: boolean | null;
+  /**
+   * Función callback que se invoca al hacer clic en el checkbox.
+   */
+  handleUpdateStatus: () => void;
+  /**
+   * Si es `true`, el checkbox se deshabilita y no permite interacción.
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * Etiqueta de accesibilidad para lectores de pantalla.
+   * @default "checkbox"
+   */
+  ariaLabel?: string;
+}
+
+/**
+ * Un componente de checkbox animado que utiliza `flubber` y `motion`
+ * para crear una transición suave entre los estados de marcado y desmarcado.
+ */
+export const Checkbox = ({
   status,
   handleUpdateStatus,
-  id,
-  active = true,
-}: {
-  status: boolean | null;
-  handleUpdateStatus: () => void;
-  id: string;
-  active?: boolean;
-}) {
-  const [tempStatus, setTempStatus] = useState(status);
-
-  useEffect(() => {
-    setTempStatus(status);
-  }, [status]);
+  disabled = false,
+  ariaLabel = "checkbox",
+}: Props) => {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
 
   function togglePath() {
-    setTempStatus((prev) => !prev);
-    const path = document.getElementById(`path-${id}`);
-    const svg = document.getElementById(`svg-${id}`);
-    const check = document.getElementById(`check-${id}`);
+    if (disabled) return;
 
-    if (!path || !svg || !check || path.getAttribute("d") === null) {
+    const path = pathRef.current;
+    const svg = svgRef.current;
+
+    if (!path || !svg) {
       return;
     }
+
+    handleUpdateStatus();
 
     const pathData = path.getAttribute("d") ?? "";
     const mixPaths = interpolate(pathData, paths.clicked.d, {
@@ -74,36 +92,31 @@ export function Checkbox({
 
   return (
     <button
-      className={styles.statusButton}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        togglePath();
-        handleUpdateStatus();
-      }}
-      disabled={!active}
-      style={{ opacity: !active ? 0.3 : 1 }}
+      className={styles.checkbox}
+      onClick={togglePath}
+      disabled={disabled}
+      role="checkbox"
+      aria-checked={!!status}
+      aria-label={ariaLabel}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
+        className={styles.svg}
+        ref={svgRef}
         style={{
           stroke: "var(--icon-colorv2)",
-          fill: tempStatus ? "var(--icon-colorv2)" : "transparent",
+          fill: status ? "var(--icon-colorv2)" : "transparent",
         }}
-        className={styles.svg}
-        id={`svg-${id}`}
       >
-        <path id={`path-${id}`} d={paths.normal.d} />
+        <path ref={pathRef} d={paths.normal.d} />
         <motion.path
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: tempStatus ? 1 : 0 }}
-          id={`check-${id}`}
-          style={{ stroke: "var(--icon-color-inside)", strokeWidth: 2 }}
+          animate={{ pathLength: status ? 1 : 0 }}
+          className={styles.checkPath}
           strokeLinejoin="round"
           d="m6.68,13.58s1.18,0,2.76,2.76c0,0,3.99-7.22,7.88-8.67"
         />
       </svg>
     </button>
   );
-}
+};

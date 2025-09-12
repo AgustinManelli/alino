@@ -20,7 +20,6 @@ const withTheme: Decorator = (Story, context) => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        minHeight: "100vh",
       }}
     >
       <Story />
