@@ -16,7 +16,12 @@ const withTheme: Decorator = (Story, context) => {
     <div
       className={`${inter.className}`}
       data-theme={theme}
-      style={{ minHeight: "100vh" }}
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+      }}
     >
       <Story />
       <div id="portal-root"></div>

@@ -1,7 +1,17 @@
 .statusButton {
   display: flex;
+  justify-content: center;
+  align-items: center;
   border: none;
   background-color: transparent;
   cursor: pointer;
   transition: opacity 0.3s ease-in-out;
+}
+
+.svg {
+  width: 15px;
+  stroke-width: 2;
+  overflow: visible;
+  transform: scale(1);
+  transition: fill 0.1s ease-in-out;
 }

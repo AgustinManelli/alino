@@ -88,14 +88,10 @@ export function Checkbox({
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         style={{
-          width: "15px",
           stroke: "var(--icon-colorv2)",
-          strokeWidth: "2",
-          overflow: "visible",
           fill: tempStatus ? "var(--icon-colorv2)" : "transparent",
-          transition: "fill 0.1s ease-in-out",
-          transform: "scale(1)",
         }}
+        className={styles.svg}
         id={`svg-${id}`}
       >
         <path id={`path-${id}`} d={paths.normal.d} />
