@@ -329,11 +329,17 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
         <Link
           className={styles.container}
           style={style}
-          href={isNameChange ? "#" : `/alino-app/${list.list_id}`}
+          href={isNameChange || isDragging ? "#" : `/alino-app/${list.list_id}`}
           prefetch={false}
-          onClick={() => {
-            if (isNameChange) return;
+          onClick={(e) => {
+            if (isNameChange || isDragging) {
+              e.preventDefault();
+              return;
+            }
             setNavbarStatus(false);
+          }}
+          onContextMenu={(e) => {
+            e.preventDefault();
           }}
         >
           <div
