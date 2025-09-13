@@ -24,8 +24,6 @@ export const ItemTypeDropdown = ({ isNote, setIsNote }: Props) => {
     setIsNote(item.id === 2);
   };
 
-  const selectedItem = isNote ? items[1] : items[0];
-
   const renderItem = (item: Item) => (
     <div
       className={styles.dropdownItemContainer}

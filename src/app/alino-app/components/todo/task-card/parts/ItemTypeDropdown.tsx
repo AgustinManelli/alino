@@ -5,13 +5,11 @@ import { Dropdown } from "@/components/ui/dropdown";
 import { Note } from "@/components/ui/icons/icons";
 import styles from "../task-card.module.css";
 
-// Definimos el tipo para los items del dropdown
 interface Item {
   id: number;
   label: string;
 }
 
-// Props que el componente necesita del padre (TaskCard)
 interface Props {
   completed: boolean | null;
   setCompleted: (value: boolean | null) => void;
@@ -28,15 +26,13 @@ export const ItemTypeSelector = ({
   setCompleted,
   inputRef,
 }: Props) => {
-  // Maneja la selección de un nuevo tipo
   const handleSelected = (item: Item) => {
     if (item.id === 1) {
-      setCompleted(false); // Cambia a Tarea (estado inicial: no completada)
+      setCompleted(false);
     } else {
-      setCompleted(null); // Cambia a Nota
+      setCompleted(null);
     }
 
-    // Devuelve el foco al input principal después de la selección
     if (inputRef.current) {
       const length = inputRef.current.value.length;
       inputRef.current.setSelectionRange(length, length);
@@ -44,9 +40,6 @@ export const ItemTypeSelector = ({
     }
   };
 
-  const selectedItem = completed !== null ? items[0] : items[1];
-
-  // Función para renderizar cada opción en la lista del dropdown
   const renderItem = (item: Item) => (
     <div
       className={styles.dropdownItemContainer}
@@ -80,7 +73,6 @@ export const ItemTypeSelector = ({
     </div>
   );
 
-  // Función para renderizar el botón que activa el dropdown
   const renderTrigger = () => (
     <div className={styles.dropdownItemContainer}>
       <div style={{ width: "15px", height: "15px", display: "flex" }}>
