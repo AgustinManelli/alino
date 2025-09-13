@@ -19,7 +19,6 @@ import type { TaskType } from "@/lib/schemas/todo-schema";
 
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
-import { Dropdown } from "@/components/ui/dropdown";
 import { linkifyWithIcon } from "@/components/utils/linkify";
 
 import { Check, MoreVertical, Note } from "@/components/ui/icons/icons";

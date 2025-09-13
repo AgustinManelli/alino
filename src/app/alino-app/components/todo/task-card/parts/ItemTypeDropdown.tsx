@@ -1,7 +1,7 @@
 "use client";
 
 import { RefObject } from "react";
-import { Dropdown } from "@/components/ui/dropdown";
+import { Dropdown } from "@/components/ui/Dropdown";
 import { Note } from "@/components/ui/icons/icons";
 import styles from "../task-card.module.css";
 
