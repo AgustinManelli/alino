@@ -5,9 +5,9 @@ import { AnimatePresence, motion } from "motion/react";
 import { DayPicker } from "react-day-picker";
 import { es } from "react-day-picker/locale";
 
-import { useDynamicModalPosition } from "@/hooks/useDynamicModalPosition";
-import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { useModalUbication } from "@/hooks/useModalUbication";
 
+import { ClientOnlyPortal } from "../client-only-portal";
 import { HourPicker } from "./HourPicker";
 
 import { DATE_PRESETS, TIME_PRESETS } from "./constants";
@@ -42,15 +42,14 @@ export const Calendar = ({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useDynamicModalPosition({
-    anchorRef: triggerRef,
-    contentRef: containerRef,
-    isOpen: open,
-  });
-
-  useOnClickOutside(containerRef, () => {
-    setOpen(false);
-  }, [triggerRef]);
+  useModalUbication(
+    triggerRef,
+    containerRef,
+    () => {
+      setOpen(false);
+    },
+    false
+  );
 
   const handleOpenCalendar = () => {
     setOpen((prev) => !prev);
@@ -107,180 +106,182 @@ export const Calendar = ({
         />
       </button>
       <AnimatePresence mode="wait">
-        {open && (
-          <motion.section
-            initial={{
-              opacity: 0,
-            }}
-            animate={{
-              opacity: 1,
-            }}
-            exit={{
-              opacity: 0,
-            }}
-            transition={{
-              duration: 0.1,
-            }}
-            className={styles.calendarContainer}
-            ref={containerRef}
-            id="calendar-component"
-          >
-            <div className={styles.contentContainer}>
-              <section className={styles.titleContainer}>
-                <section className={styles.titleSection}>
-                  {step === 2 && (
-                    <button
-                      className={styles.backButton}
-                      onClick={() => {
-                        setStep(1);
-                      }}
-                    >
-                      <ArrowThin
-                        style={{
-                          width: "auto",
-                          height: "15px",
-                          stroke: "var(--text)",
-                          strokeWidth: "2",
-                          transform: "rotate(90deg)",
+        <ClientOnlyPortal>
+          {open && (
+            <motion.section
+              initial={{
+                opacity: 0,
+              }}
+              animate={{
+                opacity: 1,
+              }}
+              exit={{
+                opacity: 0,
+              }}
+              transition={{
+                duration: 0.1,
+              }}
+              className={styles.calendarContainer}
+              ref={containerRef}
+              id="calendar-component"
+            >
+              <div className={styles.contentContainer}>
+                <section className={styles.titleContainer}>
+                  <section className={styles.titleSection}>
+                    {step === 2 && (
+                      <button
+                        className={styles.backButton}
+                        onClick={() => {
+                          setStep(1);
                         }}
-                      />
-                    </button>
-                  )}
-                  <p>{HEADER_TITLE}</p>
+                      >
+                        <ArrowThin
+                          style={{
+                            width: "auto",
+                            height: "15px",
+                            stroke: "var(--text)",
+                            strokeWidth: "2",
+                            transform: "rotate(90deg)",
+                          }}
+                        />
+                      </button>
+                    )}
+                    <p>{HEADER_TITLE}</p>
+                  </section>
+                  <button className={styles.cleanButton} onClick={handleClean}>
+                    <DeleteIcon
+                      style={{
+                        width: "auto",
+                        height: "15px",
+                        stroke: "var(--text)",
+                        strokeWidth: "2",
+                      }}
+                    />
+                  </button>
                 </section>
-                <button className={styles.cleanButton} onClick={handleClean}>
-                  <DeleteIcon
-                    style={{
-                      width: "auto",
-                      height: "15px",
-                      stroke: "var(--text)",
-                      strokeWidth: "2",
-                    }}
-                  />
-                </button>
-              </section>
-              <div className={styles.divisor} />
-              {step === 1 ? (
-                <div className={styles.datePicker}>
-                  <div className={styles.supportButtons}>
-                    {DATE_PRESETS.map((item) => (
+                <div className={styles.divisor} />
+                {step === 1 ? (
+                  <div className={styles.datePicker}>
+                    <div className={styles.supportButtons}>
+                      {DATE_PRESETS.map((item) => (
+                        <button
+                          className={styles.supportButtonsElement}
+                          onClick={() => {
+                            handleDateSelect(item.getDate());
+                          }}
+                          style={{
+                            borderColor:
+                              selected?.toDateString() ===
+                              item.getDate().toDateString()
+                                ? "#87189d"
+                                : "var(--border-container-color)",
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                    <DayPicker
+                      timeZone="America/Buenos_Aires"
+                      mode="single"
+                      locale={es}
+                      selected={selected}
+                      onSelect={handleDateSelect}
+                      month={tempMonth}
+                      onMonthChange={setTempMonth}
+                      defaultMonth={selected}
+                    />
+                    <div className={styles.footerButtonsContainer}>
                       <button
-                        className={styles.supportButtonsElement}
-                        onClick={() => {
-                          handleDateSelect(item.getDate());
-                        }}
-                        style={{
-                          borderColor:
-                            selected?.toDateString() ===
-                            item.getDate().toDateString()
-                              ? "#87189d"
-                              : "var(--border-container-color)",
+                        className={`${styles.footerButton} ${styles.fb1}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancel();
                         }}
                       >
-                        {item.label}
+                        cancelar
                       </button>
-                    ))}
-                  </div>
-                  <DayPicker
-                    timeZone="America/Buenos_Aires"
-                    mode="single"
-                    locale={es}
-                    selected={selected}
-                    onSelect={handleDateSelect}
-                    month={tempMonth}
-                    onMonthChange={setTempMonth}
-                    defaultMonth={selected}
-                  />
-                  <div className={styles.footerButtonsContainer}>
-                    <button
-                      className={`${styles.footerButton} ${styles.fb1}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCancel();
-                      }}
-                    >
-                      cancelar
-                    </button>
-                    <button
-                      className={`${styles.footerButton} ${styles.fb2}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setStep(2);
-                        if (!selected) {
-                          setSelected(new Date());
-                        }
-                      }}
-                    >
-                      siguiente
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className={styles.hourPicker}>
-                  <div className={styles.supportButtons}>
-                    {TIME_PRESETS.map((item) => (
                       <button
-                        className={styles.supportButtonsElement}
-                        onClick={() => {
-                          handleSetHour(item.value);
-                        }}
-                        style={{
-                          borderColor:
-                            tempHour === item.value
-                              ? "#87189d"
-                              : "var(--border-container-color)",
+                        className={`${styles.footerButton} ${styles.fb2}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setStep(2);
+                          if (!selected) {
+                            setSelected(new Date());
+                          }
                         }}
                       >
-                        {item.label}
+                        siguiente
                       </button>
-                    ))}
+                    </div>
                   </div>
+                ) : (
+                  <div className={styles.hourPicker}>
+                    <div className={styles.supportButtons}>
+                      {TIME_PRESETS.map((item) => (
+                        <button
+                          className={styles.supportButtonsElement}
+                          onClick={() => {
+                            handleSetHour(item.value);
+                          }}
+                          style={{
+                            borderColor:
+                              tempHour === item.value
+                                ? "#87189d"
+                                : "var(--border-container-color)",
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
 
-                  <HourPicker
-                    value={hour}
-                    tempHour={tempHour}
-                    setTempHour={setTempHour}
-                  />
+                    <HourPicker
+                      value={hour}
+                      tempHour={tempHour}
+                      setTempHour={setTempHour}
+                    />
 
-                  <div className={styles.footerButtonsContainer}>
-                    <button
-                      className={`${styles.footerButton} ${styles.fb1}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpen(false);
-                        setStep(1);
-                        setHour(undefined);
-                        focusToParentInput?.();
-                      }}
-                    >
-                      omitir
-                    </button>
-                    <button
-                      className={`${styles.footerButton} ${styles.fb2}`}
-                      style={{ backgroundColor: "#87189d", color: "#fff" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpen(false);
-                        setStep(1);
-                        setHour(
-                          tempHour ??
-                            new Date().toLocaleTimeString("es-AR", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })
-                        );
-                        focusToParentInput?.();
-                      }}
-                    >
-                      aplicar
-                    </button>
+                    <div className={styles.footerButtonsContainer}>
+                      <button
+                        className={`${styles.footerButton} ${styles.fb1}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpen(false);
+                          setStep(1);
+                          setHour(undefined);
+                          focusToParentInput?.();
+                        }}
+                      >
+                        omitir
+                      </button>
+                      <button
+                        className={`${styles.footerButton} ${styles.fb2}`}
+                        style={{ backgroundColor: "#87189d", color: "#fff" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpen(false);
+                          setStep(1);
+                          setHour(
+                            tempHour ??
+                              new Date().toLocaleTimeString("es-AR", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              })
+                          );
+                          focusToParentInput?.();
+                        }}
+                      >
+                        aplicar
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </motion.section>
-        )}
+                )}
+              </div>
+            </motion.section>
+          )}
+        </ClientOnlyPortal>
       </AnimatePresence>
     </>
   );
