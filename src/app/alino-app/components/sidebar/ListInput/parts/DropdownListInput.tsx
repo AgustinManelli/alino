@@ -1,4 +1,4 @@
-import { Dropdown } from "@/components/ui/dropdown";
+import { Dropdown } from "@/components/ui/Dropdown";
 
 import { FolderOpen, ListIcon } from "@/components/ui/icons/icons";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Dropdown } from "@/components/ui/dropdown";
+import { Dropdown } from "@/components/ui/Dropdown";
 import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
 import { NoList, SquircleIcon } from "@/components/ui/icons/icons";
 import { ListsType } from "@/lib/schemas/todo-schema";
