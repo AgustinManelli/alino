@@ -18,6 +18,8 @@ import {
 import { motion } from "motion/react";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { TextAnimation } from "@/components/ui/text-animation";
+import { ItemTypeDropdown } from "./parts/ItemTypeDropdown";
+import { ListSelectorDropdown } from "./parts/ListSelectorDropdown";
 
 const MAX_HEIGHT = 200;
 
@@ -399,21 +401,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               animate={{ scale: focus ? 1 : 0 }}
               exit={{ scale: 0 }}
             >
-              <Dropdown
-                items={[
-                  { id: 1, label: "Tarea" },
-                  { id: 2, label: "Nota" },
-                ]}
-                renderItem={renderItemType}
-                triggerLabel={triggerLabelType}
-                selectedListHome={
-                  isNote ? { id: 1, label: "Tarea" } : { id: 2, label: "Nota" }
-                }
-                setSelectedListHome={handleSelected}
-                boxSize={25}
-                style={{ borderRadius: "10px" }}
-                directionContainerShow={true}
-              />
+              <ItemTypeDropdown isNote={isNote} setIsNote={setIsNote} />
             </motion.div>
           </div>
           <motion.div
@@ -497,13 +485,11 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   transition={{ duration: 0.2 }}
                   layout
                 >
-                  <Dropdown
-                    items={lists}
-                    renderItem={renderItem}
-                    triggerLabel={triggerLabel}
-                    selectedListHome={selectedListHome}
-                    setSelectedListHome={setSelectedListHome}
-                    handleFocusToParentInput={handleFocusToParentInput}
+                  <ListSelectorDropdown
+                    lists={lists}
+                    selectedList={selectedListHome}
+                    setSelectedList={setSelectedListHome}
+                    onFocusRequest={handleFocusToParentInput}
                   />
                 </motion.div>
               )}
