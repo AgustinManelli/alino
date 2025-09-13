@@ -63,7 +63,6 @@ export const Default: Story = {
         items={items}
         renderItem={renderItemType}
         triggerLabel={triggerLabel}
-        selectedItem={selectedItem}
         setSelectedItem={handleSetSelectedItem}
         handleFocusToParentInput={() => {}}
         style={{}}
