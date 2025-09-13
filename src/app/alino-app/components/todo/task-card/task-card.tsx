@@ -25,6 +25,7 @@ import { linkifyWithIcon } from "@/components/utils/linkify";
 import { Check, MoreVertical, Note } from "@/components/ui/icons/icons";
 import styles from "./task-card.module.css";
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { ItemTypeSelector } from "./parts/ItemTypeDropdown";
 
 export const TaskCard = memo(
   ({
@@ -387,20 +388,10 @@ export const TaskCard = memo(
               />
             )
           ) : (
-            <Dropdown
-              items={[
-                { id: 1, label: "Tarea" },
-                { id: 2, label: "Nota" },
-              ]}
-              renderItem={renderItem}
-              triggerLabel={triggerLabel}
-              selectedListHome={
-                completed ? { id: 1, label: "Tarea" } : { id: 2, label: "Nota" }
-              }
-              setSelectedListHome={handleSelected}
-              boxSize={25}
-              style={{ borderRadius: "10px" }}
-              directionContainerShow={true}
+            <ItemTypeSelector
+              completed={completed}
+              setCompleted={setCompleted}
+              inputRef={inputRef}
             />
           )}
         </div>

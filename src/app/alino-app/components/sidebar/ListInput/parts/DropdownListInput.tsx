@@ -17,6 +17,11 @@ interface Props {
   DEFAULT_COLOR: string;
 }
 
+const items = [
+  { id: 1, label: "Lista" },
+  { id: 2, label: "Carpeta" },
+];
+
 export const DropdownListInput = ({
   isList,
   color,
@@ -37,7 +42,7 @@ export const DropdownListInput = ({
     }
   };
 
-  const renderItemType = (item: Item) => {
+  const renderItem = (item: Item) => {
     return (
       <div
         className={styles.dropdownItemContainer}
@@ -87,19 +92,11 @@ export const DropdownListInput = ({
 
   return (
     <Dropdown
-      items={[
-        { id: 1, label: "Lista" },
-        { id: 2, label: "Carpeta" },
-      ]}
-      renderItem={renderItemType}
+      items={items}
+      renderItem={renderItem}
       triggerLabel={triggerLabelType}
-      selectedListHome={
-        isList ? { id: 1, label: "Tarea" } : { id: 2, label: "Nota" }
-      }
-      setSelectedListHome={handleSelected}
-      boxSize={30}
-      style={{ borderRadius: "10px" }}
-      directionContainerShow={false}
+      setSelectedItem={handleSelected}
+      style={{ height: "30px", width: "30px", aspectRatio: "1/1" }}
     />
   );
 };

@@ -100,12 +100,3 @@
   display: flex;
   width: 30px;
 }
-
-.typeSelectorContainer {
-  width: 18px;
-  height: 100%;
-  min-width: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}

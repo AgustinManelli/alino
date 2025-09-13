@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useShallow } from "zustand/shallow";
 
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
@@ -55,7 +55,7 @@ export const ListInput = () => {
   }, [activeInput]);
 
   return (
-    <motion.div className={styles.formContainer} layout>
+    <div className={styles.formContainer}>
       {activeInput ? (
         <motion.div
           className={styles.form}
@@ -101,15 +101,13 @@ export const ListInput = () => {
               if (e.key === "Escape") resetForm();
             }}
           />
-          <div className={styles.typeSelectorContainer}>
-            <DropdownListInput
-              isList={isList}
-              color={color}
-              setIsList={setIsList}
-              setColor={handleSetColor}
-              DEFAULT_COLOR={DEFAULT_COLOR}
-            />
-          </div>
+          <DropdownListInput
+            isList={isList}
+            color={color}
+            setIsList={setIsList}
+            setColor={handleSetColor}
+            DEFAULT_COLOR={DEFAULT_COLOR}
+          />
           <button
             className={styles.sendButton}
             onClick={(e) => {
@@ -140,6 +138,6 @@ export const ListInput = () => {
           />
         </motion.button>
       )}
-    </motion.div>
+    </div>
   );
 };
