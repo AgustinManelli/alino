@@ -88,8 +88,20 @@ useUserDataStore.setState({
 export const Default: Story = {
   render: () => {
     return (
-      <div style={{ width: "100%", position: "relative" }}>
-        <TaskCardStatic task={mockTask} />
+      <div
+        style={{
+          width: "100vw",
+          height: "100vh",
+          position: "relative",
+          backgroundColor: "grey",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <section style={{ width: "90%" }}>
+          <TaskCardStatic task={mockTask} />
+        </section>
         <EditTaskModal />
       </div>
     );

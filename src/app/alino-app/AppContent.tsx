@@ -11,7 +11,7 @@ import { NotificationsSection } from "./components/notifications";
 import { InitialUserConfiguration } from "./components/initial-user-configuration";
 import { RealtimeProvider } from "@/components/RealtimeProvider";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
-import { EditTaskModal } from "@/components/ui/edit-task-modal";
+import { EditTaskModal } from "@/components/ui/EditTaskModal";
 
 import { UserType } from "@/lib/schemas/todo-schema";
 import styles from "./AlinoAppLayout.module.css";
