@@ -33,7 +33,7 @@ import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
-import { CounterAnimation } from "@/components/ui/counter-animation";
+import { CounterAnimation } from "@/components/ui/CounterAnimation";
 import { FolderInfoEdit } from "@/components/ui/folder-info-edit";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
