@@ -96,7 +96,8 @@ type TodoStore = {
   updateTaskName: (
     task_id: string,
     task_content: string,
-    completed: boolean | null
+    completed: boolean | null,
+    target_date: string | null,
   ) => Promise<{ error: string | null }>;
   getUsersMembersList: (listId: string) => Promise<UserWithMembershipRole[]>;
   createListInvitation: (
@@ -681,18 +682,18 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     }
   },
 
-  updateTaskName: async (task_id, task_content, completed) => {
+  updateTaskName: async (task_id, task_content, completed, target_date) => {
     const prevTasks = get().tasks.slice();
 
     set((state) => ({
       tasks: state.tasks.map((task) =>
         task.task_id === task_id
-          ? { ...task, task_content: task_content, completed: completed }
+          ? { ...task, task_content: task_content, completed: completed, target_date: target_date}
           : task
       ),
     }));
 
-    const { error } = await updateNameTask(task_id, task_content, completed);
+    const { error } = await updateNameTask(task_id, task_content, completed, target_date);
 
     if (error) {
       handleError(error);

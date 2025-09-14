@@ -29,15 +29,16 @@
   flex-direction: column;
 }
 
-.toolsSection {
+.moreOptions {
   background-color: var(--background-container);
-  height: 40px;
-  width: 50%;
-  margin-top: 15px;
+  position: absolute;
+  bottom: -50px;
+  width: fit-content;
   border-radius: 15px;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
   gap: 10px;
+  padding: 5px 5px;
 }

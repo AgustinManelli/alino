@@ -638,14 +638,15 @@ export const updateCompletedTask = async (
 export const updateNameTask = async (
   task_id: string,
   task_content: string,
-  completed: boolean | null
+  completed: boolean | null,
+  target_date: string | null
 ) => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("tasks")
-      .update({ task_content: task_content, completed: completed })
+      .update({ task_content: task_content, completed: completed, target_date: target_date})
       .eq("task_id", task_id);
 
     if (error) {
