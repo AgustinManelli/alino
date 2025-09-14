@@ -8,8 +8,8 @@ import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useInputActions } from "./hooks/useInputActions";
 
-import { ColorPicker } from "@/components/ui/color-picker";
-import { FolderColorPicker } from "@/components/ui/color-picker/FolderColorPicker";
+import { ColorPicker } from "@/components/ui/ColorPicker";
+import { FolderColorPicker } from "@/components/ui/ColorPicker/FolderColorPicker";
 import { DropdownListInput } from "./parts/DropdownListInput";
 
 import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
