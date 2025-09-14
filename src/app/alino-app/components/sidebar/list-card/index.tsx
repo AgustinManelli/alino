@@ -22,7 +22,7 @@ import { ListsType } from "@/lib/schemas/todo-schema";
 
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";
-import { CounterAnimation } from "@/components/ui/counter-animation";
+import { CounterAnimation } from "@/components/ui/CounterAnimation";
 
 import {
   DeleteIcon,

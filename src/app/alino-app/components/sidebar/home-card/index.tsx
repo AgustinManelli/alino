@@ -8,7 +8,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
 
-import { CounterAnimation } from "@/components/ui/counter-animation";
+import { CounterAnimation } from "@/components/ui/CounterAnimation";
 import { HomeIcon2 } from "@/components/ui/icons/icons";
 
 import styles from "./HomeCard.module.css";

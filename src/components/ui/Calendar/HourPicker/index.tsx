@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 
-import { CounterAnimation } from "@/components/ui/counter-animation";
+import { CounterAnimation } from "@/components/ui/CounterAnimation";
 
 import { ArrowThin } from "@/components/ui/icons/icons";
 import styles from "./HourPicker.module.css";
