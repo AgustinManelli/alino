@@ -6,18 +6,24 @@ import NumberFlow from "@number-flow/react";
 export function CounterAnimation({
   tasksLength = 0,
   format = false,
+  isAnimationEnabled = true,
 }: {
   tasksLength: number | undefined;
   format?: boolean | undefined;
+  isAnimationEnabled?: boolean;
 }) {
-  const [value, setValue] = useState<number>(0);
+  const [animationKey, setAnimationKey] = useState(0);
+
   useEffect(() => {
-    setValue(tasksLength);
-  }, [tasksLength]);
+    if (!isAnimationEnabled) {
+      setAnimationKey((prevKey) => prevKey + 1);
+    }
+  }, [tasksLength, isAnimationEnabled]);
 
   return (
     <NumberFlow
-      value={value}
+      value={tasksLength}
+      key={animationKey}
       format={{
         notation: "compact",
         minimumIntegerDigits: format ? 2 : 1,
