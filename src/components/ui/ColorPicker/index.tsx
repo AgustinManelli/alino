@@ -6,8 +6,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { generatePalette } from "emoji-palette";
 
-import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
-import { EmojiMartPicker } from "@/components/ui/emoji-mart/emoji-mart-picker";
+import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
+import { EmojiMartPicker } from "@/components/ui/EmojiMart/emoji-mart-picker";
 import colorsData from "./colors.json";
 
 import {

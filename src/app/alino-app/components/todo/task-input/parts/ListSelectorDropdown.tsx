@@ -2,7 +2,7 @@
 
 import { RefObject } from "react";
 import { Dropdown } from "@/components/ui/Dropdown";
-import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
+import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
 import { NoList, SquircleIcon } from "@/components/ui/icons/icons";
 import { ListsType } from "@/lib/schemas/todo-schema";
 import styles from "../task-input.module.css";

@@ -7,7 +7,7 @@ import { ListsType } from "@/lib/schemas/todo-schema";
 import { Calendar } from "@/components/ui/Calendar";
 import { usePathname } from "next/navigation";
 import { AnimatePresence } from "motion/react";
-import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
+import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
 import {
   NoList,
   Note,
