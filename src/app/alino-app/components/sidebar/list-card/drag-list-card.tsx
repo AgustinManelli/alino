@@ -11,7 +11,7 @@ import styles from "./ListCard.module.css";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import type { Variants } from "motion/react";
-import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
+import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
