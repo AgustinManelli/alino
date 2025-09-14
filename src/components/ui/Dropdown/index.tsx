@@ -4,7 +4,7 @@ import { useState, ReactNode, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 import { useModalUbication } from "@/hooks/useModalUbication";
-import { ClientOnlyPortal } from "../client-only-portal";
+import { ClientOnlyPortal } from "../ClientOnlyPortal";
 
 import styles from "./Dropdown.module.css";
 

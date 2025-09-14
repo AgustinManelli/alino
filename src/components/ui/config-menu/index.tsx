@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 
-import { ClientOnlyPortal } from "../client-only-portal";
+import { ClientOnlyPortal } from "../ClientOnlyPortal";
 import { ConfigCard } from "./config-card";
 
 import { MoreVertical } from "@/components/ui/icons/icons";

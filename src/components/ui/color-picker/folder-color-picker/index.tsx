@@ -17,7 +17,7 @@ import styles from "./FolderColorPicker.module.css";
 import { hexColorSchema } from "@/lib/schemas/validationSchemas";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useModalUbication } from "@/hooks/useModalUbication";
-import { ClientOnlyPortal } from "../../client-only-portal";
+import { ClientOnlyPortal } from "../../ClientOnlyPortal";
 
 interface props {
   color: string | null;
