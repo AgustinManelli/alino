@@ -13,6 +13,7 @@ import { ClientOnlyPortal } from "../client-only-portal";
 import styles from "./EditTaskModal.module.css";
 
 const computeTargetY = (rectHeight: number, viewportWidth: number) => {
+  if (typeof window === "undefined") return 0;
   const vv = window.visualViewport;
   const vh = vv?.height ?? window.innerHeight;
   const offsetTop = vv?.offsetTop ?? 0;
@@ -63,6 +64,7 @@ export const EditTaskModal = () => {
   );
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const handleResize = () => {
       setWindowSize({
         width: window.innerWidth,

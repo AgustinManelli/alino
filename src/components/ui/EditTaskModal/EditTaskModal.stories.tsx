@@ -100,7 +100,7 @@ export const Default: Story = {
         }}
       >
         <section style={{ width: "90%" }}>
-          <TaskCardStatic task={mockTask} />
+          <TaskCardStatic task={ownTask} />
         </section>
         <EditTaskModal />
       </div>
@@ -108,7 +108,7 @@ export const Default: Story = {
   },
 };
 
-export const TareaPropia: Story = {
+export const TareaDeOtroUsuario: Story = {
   render: () => {
     return (
       <div
@@ -123,7 +123,7 @@ export const TareaPropia: Story = {
         }}
       >
         <section style={{ width: "90%" }}>
-          <TaskCardStatic task={ownTask} />
+          <TaskCardStatic task={mockTask} />
         </section>
         <EditTaskModal />
       </div>
