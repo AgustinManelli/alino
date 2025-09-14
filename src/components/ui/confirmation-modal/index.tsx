@@ -7,7 +7,7 @@ import { useShallow } from "zustand/shallow";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 
-import { ClientOnlyPortal } from "../client-only-portal";
+import { ClientOnlyPortal } from "../ClientOnlyPortal";
 
 import styles from "./ConfirmationModal.module.css";
 

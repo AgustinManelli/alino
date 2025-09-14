@@ -7,7 +7,7 @@ import { es } from "react-day-picker/locale";
 
 import { useModalUbication } from "@/hooks/useModalUbication";
 
-import { ClientOnlyPortal } from "../client-only-portal";
+import { ClientOnlyPortal } from "../ClientOnlyPortal";
 import { HourPicker } from "./HourPicker";
 
 import { DATE_PRESETS, TIME_PRESETS } from "./constants";

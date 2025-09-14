@@ -8,7 +8,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
 
 import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
-import { ClientOnlyPortal } from "../client-only-portal";
+import { ClientOnlyPortal } from "../ClientOnlyPortal";
 
 import styles from "./EditTaskModal.module.css";
 
