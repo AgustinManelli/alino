@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { ButtonLink } from "@/components/ui/button-link";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 
 import { AlinoLogo, HomeIcon } from "@/components/ui/icons/icons";
 import styles from "./Layout.module.css";
