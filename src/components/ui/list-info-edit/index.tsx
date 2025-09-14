@@ -3,7 +3,7 @@
 import { useCallback, useRef, memo } from "react";
 import { motion } from "motion/react";
 
-import { ColorPicker } from "@/components/ui/color-picker";
+import { ColorPicker } from "@/components/ui/ColorPicker";
 import { ListsType } from "@/lib/schemas/todo-schema";
 //import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { TextTitlesAnimation } from "@/components/ui/text-titles-animation";
