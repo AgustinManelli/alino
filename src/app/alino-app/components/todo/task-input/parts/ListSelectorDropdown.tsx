@@ -1,5 +1,6 @@
 "use client";
 
+import { RefObject } from "react";
 import { Dropdown } from "@/components/ui/Dropdown";
 import { EmojiMartComponent } from "@/components/ui/emoji-mart/emoji-mart-component";
 import { NoList, SquircleIcon } from "@/components/ui/icons/icons";
@@ -10,18 +11,23 @@ interface Props {
   lists: ListsType[];
   selectedList: ListsType | undefined;
   setSelectedList: (list: ListsType) => void;
-  onFocusRequest: () => void;
+  inputRef: RefObject<HTMLTextAreaElement>;
 }
 
 export const ListSelectorDropdown = ({
   lists,
   selectedList,
   setSelectedList,
-  onFocusRequest,
+  inputRef,
 }: Props): JSX.Element => {
   const handleItemSelect = (list: ListsType): void => {
     setSelectedList(list);
-    onFocusRequest();
+
+    if (inputRef.current) {
+      const length = inputRef.current.value.length;
+      inputRef.current.setSelectionRange(length, length);
+      inputRef.current.focus();
+    }
   };
 
   const renderTriggerContent = (): JSX.Element => (

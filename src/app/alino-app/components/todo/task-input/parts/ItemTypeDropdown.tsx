@@ -1,5 +1,6 @@
 "use client";
 
+import { RefObject } from "react";
 import { Dropdown } from "@/components/ui/Dropdown";
 import { Note } from "@/components/ui/icons/icons";
 import styles from "../task-input.module.css";
@@ -12,6 +13,7 @@ interface Item {
 interface Props {
   isNote: boolean;
   setIsNote: (value: boolean) => void;
+  inputRef: RefObject<HTMLTextAreaElement>;
 }
 
 const items: Item[] = [
@@ -19,9 +21,19 @@ const items: Item[] = [
   { id: 2, label: "Nota" },
 ];
 
-export const ItemTypeDropdown = ({ isNote, setIsNote }: Props): JSX.Element => {
+export const ItemTypeDropdown = ({
+  isNote,
+  setIsNote,
+  inputRef,
+}: Props): JSX.Element => {
   const handleSelected = (item: Item): void => {
     setIsNote(item.id === 2);
+
+    if (inputRef.current) {
+      const length = inputRef.current.value.length;
+      inputRef.current.setSelectionRange(length, length);
+      inputRef.current.focus();
+    }
   };
 
   const renderTriggerContent = (): JSX.Element => (

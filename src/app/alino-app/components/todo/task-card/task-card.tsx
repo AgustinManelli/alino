@@ -24,7 +24,7 @@ import { linkifyWithIcon } from "@/components/utils/linkify";
 import { Check, MoreVertical, Note } from "@/components/ui/icons/icons";
 import styles from "./task-card.module.css";
 import { useUserDataStore } from "@/store/useUserDataStore";
-import { ItemTypeSelector } from "./parts/ItemTypeDropdown";
+import { ItemTypeDropdown } from "./parts/ItemTypeDropdown";
 
 export const TaskCard = memo(
   ({
@@ -241,7 +241,7 @@ export const TaskCard = memo(
               />
             )
           ) : (
-            <ItemTypeSelector
+            <ItemTypeDropdown
               completed={completed}
               setCompleted={setCompleted}
               inputRef={inputRef}
