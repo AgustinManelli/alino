@@ -11,7 +11,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 
 import { Check } from "@/components/ui/icons/icons";
 import styles from "./FolderInfoEdit.module.css";
-import { FolderColorPicker } from "../color-picker/folder-color-picker";
+import { FolderColorPicker } from "../color-picker/FolderColorPicker";
 
 interface Props {
   folder: FolderType;

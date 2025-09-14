@@ -9,7 +9,7 @@ import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useInputActions } from "./hooks/useInputActions";
 
 import { ColorPicker } from "@/components/ui/color-picker";
-import { FolderColorPicker } from "@/components/ui/color-picker/folder-color-picker";
+import { FolderColorPicker } from "@/components/ui/color-picker/FolderColorPicker";
 import { DropdownListInput } from "./parts/DropdownListInput";
 
 import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
