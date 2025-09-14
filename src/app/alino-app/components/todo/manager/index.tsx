@@ -19,7 +19,7 @@ import { ListsType } from "@/lib/schemas/todo-schema";
 
 import ListInformation from "@/app/alino-app/components/list-information";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";
-import { ConfigMenu } from "@/components/ui/config-menu";
+import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import TaskInput from "../task-input/task-input";
 
 import styles from "./manager.module.css";

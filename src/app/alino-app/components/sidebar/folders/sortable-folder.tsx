@@ -29,7 +29,7 @@ import {
   Pin,
   Unpin,
 } from "@/components/ui/icons/icons";
-import { ConfigMenu } from "@/components/ui/config-menu";
+import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";

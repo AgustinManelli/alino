@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
-import { ConfigCard } from "./config-card";
+import { ConfigCard } from "./ConfigCard";
 
 import { MoreVertical } from "@/components/ui/icons/icons";
 import styles from "./ConfigMenu.module.css";
