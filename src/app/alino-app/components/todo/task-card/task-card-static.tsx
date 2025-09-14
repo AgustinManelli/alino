@@ -58,7 +58,7 @@ export const TaskCardStatic = memo(
         { opacity: isVisible },
         {
           duration: 0,
-          delay: isVisible === 1 ? 0.3 : 0.02,
+          delay: isVisible === 1 ? 0.3 : 0.05,
         }
       );
     }, [isVisible]);

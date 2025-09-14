@@ -117,7 +117,7 @@ export const EditTaskModal = () => {
       x: targetX,
       y: targetY,
       transition: {
-        delay: 0.05,
+        delay: 0.1,
       },
     };
   }, [initialRect, windowSize]);

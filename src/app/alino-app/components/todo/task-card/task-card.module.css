@@ -23,19 +23,18 @@
   height: 100%;
   min-height: 30px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
+  justify-content: flex-start;
+  align-items: center;
 }
 
-@keyframes blink_input_opacity_to_prevent_scrolling_when_focus {
+/* @keyframes blink_input_opacity_to_prevent_scrolling_when_focus {
   0% {
     opacity: 0;
   }
   100% {
     opacity: 1;
   }
-}
+} */
 
 .nameChangerInput {
   border-radius: 10px;
@@ -54,7 +53,7 @@
   box-sizing: border-box;
   color: var(--text);
   overflow-y: auto;
-  animation: blink_input_opacity_to_prevent_scrolling_when_focus 0.3s;
+  /* animation: blink_input_opacity_to_prevent_scrolling_when_focus 0s; */
 }
 
 .nameChangerInput::-webkit-scrollbar {
