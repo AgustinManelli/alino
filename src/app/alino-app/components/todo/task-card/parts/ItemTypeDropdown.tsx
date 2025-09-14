@@ -21,7 +21,7 @@ const items: Item[] = [
   { id: 2, label: "Nota" },
 ];
 
-export const ItemTypeSelector = ({
+export const ItemTypeDropdown = ({
   completed,
   setCompleted,
   inputRef,
@@ -40,7 +40,7 @@ export const ItemTypeSelector = ({
     }
   };
 
-  const renderItem = (item: Item) => (
+  const renderItemContent = (item: Item): JSX.Element => (
     <div
       className={styles.dropdownItemContainer}
       style={{ justifyContent: "start" }}
@@ -73,7 +73,7 @@ export const ItemTypeSelector = ({
     </div>
   );
 
-  const renderTrigger = () => (
+  const renderTriggerContent = (): JSX.Element => (
     <div className={styles.dropdownItemContainer}>
       <div style={{ width: "15px", height: "15px", display: "flex" }}>
         {completed !== null ? (
@@ -113,13 +113,26 @@ export const ItemTypeSelector = ({
   );
 
   return (
-    <Dropdown
-      items={items}
-      renderItem={renderItem}
-      triggerLabel={renderTrigger}
-      setSelectedItem={handleSelected}
-      side
-      style={{ borderRadius: "10px", height: "25px", width: "25px" }}
-    />
+    <Dropdown side>
+      <Dropdown.Trigger
+        style={{
+          borderRadius: "10px",
+          height: "25px",
+          width: "25px",
+        }}
+      >
+        {renderTriggerContent()}
+      </Dropdown.Trigger>
+      <Dropdown.Content>
+        {items.map((item) => (
+          <Dropdown.Item
+            key={`item-type-${item.id}`}
+            onClick={() => handleSelected(item)}
+          >
+            {renderItemContent(item)}
+          </Dropdown.Item>
+        ))}
+      </Dropdown.Content>
+    </Dropdown>
   );
 };

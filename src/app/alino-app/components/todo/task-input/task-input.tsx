@@ -110,199 +110,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   const pathname = usePathname();
   const isHome = pathname === "/alino-app";
 
-  const renderItem = (list: ListsType) => {
-    return (
-      <div
-        className={styles.dropdownItemContainer}
-        style={{ justifyContent: "start" }}
-      >
-        <div
-          style={{
-            width: "16px",
-            height: "16px",
-          }}
-        >
-          {list &&
-            (list.list.icon !== null ? (
-              <EmojiMartComponent shortcodes={list.list.icon} size="16px" />
-            ) : (
-              <SquircleIcon
-                style={{
-                  width: "14px",
-                  fill: `${list.list.color}`,
-                  transition: "fill 0.2s ease-in-out",
-                  display: "flex",
-                }}
-              />
-            ))}
-        </div>
-        <p>{list.list.list_name}</p>
-      </div>
-    );
-  };
-
-  const triggerLabel = () => {
-    return (
-      <div className={styles.dropdownItemContainer}>
-        {selectedListHome ? (
-          selectedListHome.list.icon !== null ? (
-            <div
-              style={{
-                width: "18px",
-                height: "18px",
-              }}
-            >
-              <EmojiMartComponent
-                shortcodes={selectedListHome.list.icon}
-                size="18px"
-              />
-            </div>
-          ) : (
-            <SquircleIcon
-              style={{
-                width: "14px",
-                fill: `${selectedListHome?.list.color}`,
-                transition: "fill 0.2s ease-in-out",
-              }}
-            />
-          )
-        ) : (
-          <NoList
-            style={{
-              width: "15px",
-              height: "auto",
-              stroke: "#1c1c1c",
-              strokeWidth: 2,
-              opacity: 0.3,
-            }}
-          />
-        )}
-        {/* <p>{selectedListHome?.name}</p> */}
-      </div>
-    );
-  };
-
-  interface Item {
-    id: number;
-    label: string;
-  }
-
-  const renderItemType = (item: Item) => {
-    return (
-      <div
-        className={styles.dropdownItemContainer}
-        style={{ justifyContent: "start" }}
-      >
-        <div
-          style={{
-            width: "16px",
-            height: "16px",
-          }}
-        >
-          {item.id === 1 && (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              style={{
-                width: "15px",
-                stroke: "var(--icon-colorv2)",
-                strokeWidth: "2",
-                overflow: "visible",
-                fill: "var(--icon-colorv2)",
-                transition: "fill 0.1s ease-in-out",
-                transform: "scale(1)",
-              }}
-            >
-              <path
-                d={
-                  "M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z"
-                }
-              />
-              <path
-                style={{ stroke: "var(--icon-color-inside)", strokeWidth: 2 }}
-                strokeLinejoin="round"
-                d="m6.68,13.58s1.18,0,2.76,2.76c0,0,3.99-7.22,7.88-8.67"
-              />
-            </svg>
-          )}
-          {item.id === 2 && (
-            <Note
-              style={{
-                width: "15px",
-                stroke: "var(--icon-colorv2)",
-                strokeWidth: "2",
-                overflow: "visible",
-                fill: "transparent",
-                transition: "fill 0.1s ease-in-out",
-                transform: "scale(1)",
-              }}
-            />
-          )}
-        </div>
-        <p>{item.label}</p>
-      </div>
-    );
-  };
-
-  const triggerLabelType = () => {
-    return (
-      <div
-        className={styles.dropdownItemContainer}
-        style={{ justifyContent: "start" }}
-      >
-        <div
-          style={{
-            width: "15px",
-            height: "15px",
-            display: "flex",
-          }}
-        >
-          {!isNote ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              style={{
-                width: "15px",
-                stroke: "var(--icon-colorv2)",
-                strokeWidth: "2",
-                overflow: "visible",
-                fill: "transparent",
-                transition: "fill 0.1s ease-in-out",
-                transform: "scale(1)",
-              }}
-            >
-              <path
-                d={
-                  "M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z"
-                }
-              />
-            </svg>
-          ) : (
-            <Note
-              style={{
-                width: "15px",
-                stroke: "var(--icon-colorv2)",
-                strokeWidth: "2",
-                overflow: "visible",
-                fill: "transparent",
-                transition: "fill 0.1s ease-in-out",
-                transform: "scale(1)",
-              }}
-            />
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const handleSelected = (item: Item) => {
-    if (item.id === 1) {
-      setIsNote(false);
-      return;
-    }
-    setIsNote(true);
-  };
-
   const [height, setHeight] = useState("40px");
   const [isScrollable, setIsScrollable] = useState(false);
   const tempRef = useRef<HTMLDivElement>(null);
@@ -400,7 +207,11 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               animate={{ scale: focus ? 1 : 0 }}
               exit={{ scale: 0 }}
             >
-              <ItemTypeDropdown isNote={isNote} setIsNote={setIsNote} />
+              <ItemTypeDropdown
+                isNote={isNote}
+                setIsNote={setIsNote}
+                inputRef={inputRef}
+              />
             </motion.div>
           </div>
           <motion.div
@@ -488,7 +299,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                     lists={lists}
                     selectedList={selectedListHome}
                     setSelectedList={setSelectedListHome}
-                    onFocusRequest={handleFocusToParentInput}
+                    inputRef={inputRef}
                   />
                 </motion.div>
               )}
