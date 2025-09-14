@@ -9,7 +9,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
 import type { TaskType } from "@/lib/schemas/todo-schema";
 
-import { ConfigMenu } from "@/components/ui/config-menu";
+import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { linkifyWithIcon } from "@/components/utils/linkify";
