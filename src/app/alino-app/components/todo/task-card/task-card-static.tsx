@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
-import { motion } from "motion/react";
 import { useShallow } from "zustand/shallow";
-import { debounce } from "lodash-es";
+import { animate } from "motion";
 
+import { useUserDataStore } from "@/store/useUserDataStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
-//import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import type { TaskType } from "@/lib/schemas/todo-schema";
-import { useLineCalculator } from "@/hooks/useLineCalculator";
 
 import { ConfigMenu } from "@/components/ui/config-menu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
@@ -17,15 +15,8 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { linkifyWithIcon } from "@/components/utils/linkify";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
 
-import {
-  DeleteIcon,
-  Edit,
-  Information,
-  Note,
-} from "@/components/ui/icons/icons";
+import { DeleteIcon, Edit, Note } from "@/components/ui/icons/icons";
 import styles from "./task-card.module.css";
-import { animate } from "motion";
-import { useUserDataStore } from "@/store/useUserDataStore";
 
 export const TaskCardStatic = memo(
   ({
@@ -36,11 +27,13 @@ export const TaskCardStatic = memo(
     editionMode?: boolean;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
-    const [inputName, setInputName] = useState<string>(task.task_content);
 
-    const openModal = useEditTaskModalStore((state) => state.openModal);
-    const taskEditing = useEditTaskModalStore((state) => state.task);
-    //const animations = useUserPreferencesStore((store) => store.animations);
+    const { openModal, taskEditing } = useEditTaskModalStore(
+      useShallow((state) => ({
+        openModal: state.openModal,
+        taskEditing: state.task,
+      }))
+    );
     const { list, deleteTask, updateTaskCompleted } = useTodoDataStore(
       useShallow((state) => ({
         list: state.getListById(task.list_id),
@@ -51,10 +44,8 @@ export const TaskCardStatic = memo(
 
     const user = useUserDataStore((state) => state.user);
 
-    const textRef = useRef<HTMLParagraphElement>(null);
     const cardRef = useRef<HTMLDivElement>(null);
-
-    const { lines, calculateLines } = useLineCalculator(textRef);
+    const textRef = useRef<HTMLParagraphElement>(null);
 
     const isVisible =
       taskEditing?.task_id === task.task_id && !editionMode ? 0 : 1;
@@ -74,27 +65,7 @@ export const TaskCardStatic = memo(
 
     useEffect(() => {
       setCompleted(task.completed);
-      setInputName(task.task_content);
-    }, [task.completed, task.task_content]);
-
-    useEffect(() => {
-      calculateLines();
-      const debouncedCalculateLines = debounce(calculateLines, 150);
-
-      let ro: ResizeObserver | null = null;
-      if (textRef.current && typeof ResizeObserver !== "undefined") {
-        ro = new ResizeObserver(() => debouncedCalculateLines());
-        ro.observe(textRef.current);
-      }
-
-      window.addEventListener("resize", debouncedCalculateLines);
-
-      return () => {
-        debouncedCalculateLines.cancel();
-        window.removeEventListener("resize", debouncedCalculateLines);
-        if (ro && textRef.current) ro.unobserve(textRef.current);
-      };
-    }, [calculateLines, task.task_content]);
+    }, [task.completed]);
 
     const handleUpdateStatus = useCallback(() => {
       const newCompleted = !completed;
@@ -163,33 +134,12 @@ export const TaskCardStatic = memo(
           action: handleDelete,
           enabled: canEditOrDelete,
         },
-        // {
-        //   name: "Información",
-        //   icon: (
-        //     <Information
-        //       style={{
-        //         stroke: "var(--text)",
-        //         width: "14px",
-        //         height: "auto",
-        //         strokeWidth: 2,
-        //       }}
-        //     />
-        //   ),
-        //   action: () => {},
-        //   enabled: true,
-        // },
       ];
       return baseOptions.filter((option) => option.enabled);
     }, [handleEdit, handleDelete]);
 
     return (
-      <div
-        className={styles.cardContainer}
-        ref={cardRef}
-        style={{
-          paddingLeft: "15px",
-        }}
-      >
+      <div className={styles.cardContainer} ref={cardRef}>
         <div className={styles.checkboxContainer}>
           {task.completed !== null ? (
             <Checkbox
@@ -209,6 +159,7 @@ export const TaskCardStatic = memo(
           )}
         </div>
         <div className={styles.textContainer}>
+          {/* <MarkdownText content={task.task_content} /> */}
           <p
             ref={textRef}
             className={styles.text}
@@ -218,7 +169,7 @@ export const TaskCardStatic = memo(
           >
             {linkifyWithIcon(task.task_content)}
           </p>
-          <WavyStrikethrough lines={lines} completed={completed} />
+          <WavyStrikethrough textRef={textRef} completed={completed} />
         </div>
         {user?.user_id !== task.created_by?.user_id && (
           <div

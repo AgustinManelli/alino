@@ -1,14 +1,14 @@
 .cardContainer {
   position: relative;
   width: 100%;
-  background-color: var(--background-container);
   height: fit-content;
-  border-radius: 15px;
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 10px 15px 10px 0px;
   gap: 5px;
+  border-radius: 15px;
+  padding: 10px 15px 10px 15px;
+  background-color: var(--background-container);
 }
 
 .checkboxContainer {
@@ -23,8 +23,9 @@
   height: 100%;
   min-height: 30px;
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 @keyframes blink_input_opacity_to_prevent_scrolling_when_focus {
