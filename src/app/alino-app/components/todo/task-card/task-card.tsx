@@ -277,7 +277,7 @@ export const TaskCard = memo(
               >
                 {linkifyWithIcon(inputName)}
               </p>
-              <WavyStrikethrough lines={lines} completed={completed} />
+              <WavyStrikethrough textRef={textRef} completed={completed} />
             </>
           )}
         </div>
