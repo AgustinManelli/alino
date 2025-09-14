@@ -69,6 +69,7 @@ export const EditTaskModal = () => {
   }, [modalTask]);
 
   const contentRef = useRef<HTMLDivElement>(null);
+  const toolsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const [windowSize, setWindowSize] = useState({
@@ -130,7 +131,7 @@ export const EditTaskModal = () => {
     const targetX = Math.round(viewportWidth / 2 - targetWidth / 2) - 15;
 
     const rectHeight = initialRect?.height ?? 0;
-    const targetY = computeTargetY(rectHeight, viewportWidth);
+    const targetY = computeTargetY(rectHeight + 70, viewportWidth);
 
     return {
       x: targetX,
@@ -167,7 +168,7 @@ export const EditTaskModal = () => {
       setSelected(undefined);
       setHour(undefined);
     },
-    [],
+    [toolsRef],
     "no-close-edit"
   );
 
@@ -197,7 +198,6 @@ export const EditTaskModal = () => {
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
               onAnimationComplete={handleAnimationComplete}
-              ref={contentRef}
             >
               <div
                 style={{
@@ -207,6 +207,7 @@ export const EditTaskModal = () => {
                   overflow: "hidden",
                   maxHeight: `${maxHeightStyle}px`,
                 }}
+                ref={contentRef}
               >
                 {syncedTask && (
                   <TaskCard
@@ -236,6 +237,7 @@ export const EditTaskModal = () => {
                   scale: 0,
                   opacity: 0,
                 }}
+                ref={toolsRef}
               >
                 <Calendar
                   selected={selected}
