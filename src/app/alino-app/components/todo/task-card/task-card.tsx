@@ -9,12 +9,9 @@ import {
   RefObject,
 } from "react";
 import { useShallow } from "zustand/shallow";
-import { debounce } from "lodash-es";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
-import { useLineCalculator } from "@/hooks/useLineCalculator";
-//import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import type { TaskType } from "@/lib/schemas/todo-schema";
 
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
@@ -31,22 +28,26 @@ export const TaskCard = memo(
     task,
     inputRef,
     maxHeight,
+    selected,
+    hour,
   }: {
     task: TaskType;
     inputRef: RefObject<HTMLTextAreaElement>;
     maxHeight: number | null;
+    selected: Date | undefined;
+    hour: string | undefined;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
     const [inputName, setInputName] = useState<string>(task.task_content);
     const [editing, setEditing] = useState<boolean>(true);
 
     const closeModal = useEditTaskModalStore((state) => state.closeModal);
+    const modalEditOpen = useEditTaskModalStore((state) => state.isOpen);
 
     const textRef = useRef<HTMLParagraphElement>(null);
     const cardRef = useRef<HTMLDivElement>(null);
     const checkButtonRef = useRef<HTMLButtonElement>(null);
 
-    //const animations = useUserPreferencesStore((store) => store.animations);
     const { updateTaskName } = useTodoDataStore(
       useShallow((state) => ({
         updateTaskName: state.updateTaskName,
@@ -55,12 +56,34 @@ export const TaskCard = memo(
 
     const user = useUserDataStore((state) => state.user);
 
-    const { lines, calculateLines } = useLineCalculator(textRef);
-
     useEffect(() => {
       setCompleted(task.completed);
       setInputName(task.task_content);
     }, [task.completed, task.task_content]);
+
+    function combineDateAndTime(
+      selected: Date | undefined,
+      hour: string | undefined
+    ) {
+      if (!selected) {
+        return null;
+      }
+
+      // Crear una nueva instancia de Date basada en 'selected'
+      const combined = new Date(selected);
+
+      // Dividir la cadena 'hour' en horas y minutos
+      const [hours, minutes] = (hour ? hour : "23:59").split(":").map(Number);
+
+      // Establecer las horas y minutos en la nueva fecha
+      combined.setHours(hours);
+      combined.setMinutes(minutes);
+      combined.setSeconds(0); // Opcional: establecer segundos a 0
+      combined.setMilliseconds(0); // Opcional: establecer milisegundos a 0
+
+      // Devolver la cadena en formato ISO 8601
+      return combined.toISOString();
+    }
 
     const handleSaveName = useCallback(async () => {
       setEditing(false);
@@ -72,8 +95,12 @@ export const TaskCard = memo(
         .replace(/\n{3,}/g, "\n\n")
         .replace(/^[ ]+|[ ]+$/g, "");
 
+      const combinedDate = combineDateAndTime(selected, hour);
+
       if (
-        (task.task_content === formatText && completed === task.completed) ||
+        (task.task_content === formatText &&
+          completed === task.completed &&
+          task.target_date === combinedDate) ||
         formatText.length < 1
       ) {
         setInputName(task.task_content);
@@ -85,58 +112,39 @@ export const TaskCard = memo(
       const { error } = await updateTaskName(
         task.task_id,
         formatText,
-        completed
+        completed,
+        combinedDate
       );
       if (error) setInputName(task.task_content);
     }, [inputName, completed, task.task_content, task.task_id, updateTaskName]);
 
-    useEffect(() => {
-      calculateLines();
-      const debouncedCalculateLines = debounce(calculateLines, 150);
+    // useEffect(() => {
+    //   const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+    //     const dropdownComponent = document.getElementById("dropdown-component");
+    //     const calendarComponent = document.getElementById("calendar-component");
 
-      let ro: ResizeObserver | null = null;
-      if (textRef.current && typeof ResizeObserver !== "undefined") {
-        ro = new ResizeObserver(() => debouncedCalculateLines());
-        ro.observe(textRef.current);
-      }
+    //     if (
+    //       inputRef.current &&
+    //       !inputRef.current.contains(event.target as Node) &&
+    //       checkButtonRef.current &&
+    //       !checkButtonRef.current.contains(event.target as Node) &&
+    //       cardRef.current &&
+    //       !cardRef.current.contains(event.target as Node) &&
+    //       !dropdownComponent &&
+    //       !calendarComponent
+    //     ) {
+    //       setEditing(false);
+    //       setInputName(task.task_content);
+    //       setCompleted(task.completed);
+    //     }
+    //   };
 
-      window.addEventListener("resize", debouncedCalculateLines);
+    //   document.addEventListener("mousedown", handleClickOutside);
 
-      return () => {
-        debouncedCalculateLines.cancel();
-        window.removeEventListener("resize", debouncedCalculateLines);
-        if (ro && textRef.current) ro.unobserve(textRef.current);
-      };
-    }, [calculateLines, editing, task.task_content]);
-
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-        const dropdownComponent = document.getElementById("dropdown-component");
-        const calendarComponent = document.getElementById("calendar-component");
-
-        if (
-          inputRef.current &&
-          !inputRef.current.contains(event.target as Node) &&
-          checkButtonRef.current &&
-          !checkButtonRef.current.contains(event.target as Node) &&
-          cardRef.current &&
-          !cardRef.current.contains(event.target as Node) &&
-          !dropdownComponent &&
-          !calendarComponent
-        ) {
-          setEditing(false);
-          setInputName(task.task_content);
-          setCompleted(task.completed);
-          closeModal();
-        }
-      };
-
-      document.addEventListener("mousedown", handleClickOutside);
-
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, [editing, task.task_content]);
+    //   return () => {
+    //     document.removeEventListener("mousedown", handleClickOutside);
+    //   };
+    // }, [editing, task.task_content]);
 
     useEffect(() => {
       if (inputRef.current) {
@@ -199,12 +207,12 @@ export const TaskCard = memo(
         className={styles.cardContainer}
         ref={cardRef}
         style={{
-          paddingLeft: editing ? "10px" : "15px",
           maxHeight: maxHeight ? `${maxHeight}px` : "initial",
+          paddingLeft: modalEditOpen ? "10px" : "15px",
         }}
       >
         <div className={styles.checkboxContainer}>
-          {!editing ? (
+          {!modalEditOpen ? (
             task.completed !== null ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -249,7 +257,7 @@ export const TaskCard = memo(
           )}
         </div>
         <div className={styles.textContainer}>
-          {editing ? (
+          {modalEditOpen ? (
             <textarea
               ref={inputRef}
               maxLength={1000}
@@ -311,7 +319,7 @@ export const TaskCard = memo(
             idScrollArea={"task-section-scroll-area"}
             completed={completed}
           />
-          {editing ? (
+          {modalEditOpen ? (
             <button
               onClick={(e) => {
                 e.preventDefault();

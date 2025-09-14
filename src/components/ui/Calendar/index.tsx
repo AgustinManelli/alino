@@ -121,7 +121,7 @@ export const Calendar = ({
               transition={{
                 duration: 0.1,
               }}
-              className={styles.calendarContainer}
+              className={`${styles.calendarContainer} no-close-edit`}
               ref={containerRef}
               id="calendar-component"
             >

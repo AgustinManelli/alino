@@ -11,6 +11,8 @@ import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
 
 import styles from "./EditTaskModal.module.css";
+import { Calendar } from "../Calendar";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
 const computeTargetY = (rectHeight: number, viewportWidth: number) => {
   if (typeof window === "undefined") return 0;
@@ -42,14 +44,31 @@ export const EditTaskModal = () => {
     isOpen,
     task: modalTask,
     initialRect,
+    closeModal,
   } = useEditTaskModalStore(
     useShallow((state) => ({
       isOpen: state.isOpen,
       task: state.task,
       initialRect: state.initialRect,
+      closeModal: state.closeModal,
     }))
   );
+  const [selected, setSelected] = useState<Date | undefined>(undefined);
+  const [hour, setHour] = useState<string | undefined>(undefined);
 
+  useEffect(() => {
+    if (modalTask?.target_date) {
+      const dateObject = new Date(modalTask.target_date);
+
+      setSelected(dateObject);
+
+      const hours = String(dateObject.getHours()).padStart(2, "0");
+      const minutes = String(dateObject.getMinutes()).padStart(2, "0");
+      setHour(`${hours}:${minutes}`);
+    }
+  }, [modalTask]);
+
+  const contentRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const [windowSize, setWindowSize] = useState({
@@ -127,7 +146,7 @@ export const EditTaskModal = () => {
     const viewportHeight = windowSize.height;
 
     if (isMobile) {
-      const maxHeight = viewportHeight / 2 - 20;
+      const maxHeight = viewportHeight / 2 - 70;
       return maxHeight;
     } else {
       const maxHeight = viewportHeight / 2;
@@ -140,6 +159,21 @@ export const EditTaskModal = () => {
       inputRef.current.focus();
     }
   }, []);
+
+  useOnClickOutside(
+    contentRef,
+    () => {
+      closeModal();
+      setSelected(undefined);
+      setHour(undefined);
+    },
+    [],
+    "no-close-edit"
+  );
+
+  const handleFocusOnParentInput = () => {
+    if (inputRef) inputRef.current?.focus();
+  };
 
   return (
     <AnimatePresence>
@@ -163,6 +197,7 @@ export const EditTaskModal = () => {
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
               onAnimationComplete={handleAnimationComplete}
+              ref={contentRef}
             >
               <div
                 style={{
@@ -178,9 +213,38 @@ export const EditTaskModal = () => {
                     task={syncedTask}
                     inputRef={inputRef}
                     maxHeight={maxHeightStyle}
+                    selected={selected}
+                    hour={hour}
                   />
                 )}
               </div>
+              <motion.div
+                className={styles.moreOptions}
+                initial={{
+                  scale: 0,
+                  opacity: 0,
+                }}
+                animate={{
+                  scale: 1,
+                  opacity: 1,
+                  transition: {
+                    duration: 0.2,
+                    delay: 0.2,
+                  },
+                }}
+                exit={{
+                  scale: 0,
+                  opacity: 0,
+                }}
+              >
+                <Calendar
+                  selected={selected}
+                  setSelected={setSelected}
+                  hour={hour}
+                  setHour={setHour}
+                  focusToParentInput={handleFocusOnParentInput}
+                />
+              </motion.div>
             </motion.div>
           </div>
         </ClientOnlyPortal>
