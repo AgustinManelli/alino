@@ -13,38 +13,26 @@ import { ClientOnlyPortal } from "../client-only-portal";
 import styles from "./EditTaskModal.module.css";
 
 const computeTargetY = (rectHeight: number, viewportWidth: number) => {
-  if (typeof window !== "undefined") {
-    const vv = window.visualViewport;
-    const vh = vv?.height ?? window.innerHeight;
-    const offsetTop = vv?.offsetTop ?? 0;
+  const vv = window.visualViewport;
+  const vh = vv?.height ?? window.innerHeight;
+  const offsetTop = vv?.offsetTop ?? 0;
+  const clamp = (n: number, min: number, max: number) =>
+    Math.max(min, Math.min(n, max));
+  const isMobile = viewportWidth < 850;
 
-    const clamp = (n: number, min: number, max: number) =>
-      Math.max(min, Math.min(n, max));
-
-    const isMobile = viewportWidth < 850;
-
-    if (isMobile) {
-      const upperTop = offsetTop;
-      const upperHeight = vh / 2;
-
-      const centerUpper = upperTop + upperHeight / 2;
-
-      const idealTop = centerUpper - rectHeight / 2;
-
-      const minTop = upperTop;
-      const maxTop = upperTop + upperHeight - rectHeight;
-
-      return Math.round(clamp(idealTop, minTop, maxTop));
-    } else {
-      const centerFull = offsetTop + vh / 2;
-      const idealTop = centerFull - rectHeight / 2;
-
-      const minTop = offsetTop;
-      const maxTop = offsetTop + vh - rectHeight;
-      return Math.round(clamp(idealTop, minTop, maxTop));
-    }
+  if (isMobile) {
+    const upperHalfHeight = vh / 2;
+    const centerOfUpperHalf = offsetTop + upperHalfHeight / 2;
+    const idealTop = centerOfUpperHalf - rectHeight / 2;
+    const minTop = offsetTop;
+    const maxTop = offsetTop + upperHalfHeight - rectHeight;
+    return Math.round(clamp(idealTop, minTop, maxTop));
   } else {
-    return 0;
+    const centerFull = offsetTop + vh / 2;
+    const idealTop = centerFull - rectHeight / 2;
+    const minTop = offsetTop;
+    const maxTop = offsetTop + vh - rectHeight;
+    return Math.round(clamp(idealTop, minTop, maxTop)) - 15;
   }
 };
 
@@ -75,19 +63,14 @@ export const EditTaskModal = () => {
   );
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    setWindowSize({
-      width: window.innerWidth,
-      height: window.innerHeight,
-    });
-
     const handleResize = () => {
       setWindowSize({
         width: window.innerWidth,
         height: window.innerHeight,
       });
     };
+
+    handleResize();
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -119,38 +102,36 @@ export const EditTaskModal = () => {
 
   const targetAnimation = useMemo(() => {
     const viewportWidth = windowSize.width;
-
     const preferredWidth = initialRect?.width ?? 500;
-    const MARGIN = 0;
-    const MOBILE_BREAKPOINT = 850;
-    const maxAvailable = Math.max(240, viewportWidth - MARGIN * 2);
+    const maxAvailable = Math.max(240, viewportWidth);
+    const targetWidth = Math.min(preferredWidth, maxAvailable);
 
-    const targetWidth =
-      viewportWidth < MOBILE_BREAKPOINT
-        ? Math.min(preferredWidth, maxAvailable)
-        : Math.min(Math.min(preferredWidth, 500), maxAvailable);
-
-    const centeredX = Math.round(viewportWidth / 2 - targetWidth / 2);
-    const minX = MARGIN;
-    const maxX = Math.max(MARGIN, viewportWidth - targetWidth - MARGIN);
-    const targetX =
-      viewportWidth < MOBILE_BREAKPOINT
-        ? minX
-        : Math.min(Math.max(centeredX, minX), maxX);
+    const targetX = Math.round(viewportWidth / 2 - targetWidth / 2) - 15;
 
     const rectHeight = initialRect?.height ?? 0;
-
     const targetY = computeTargetY(rectHeight, viewportWidth);
 
     return {
       x: targetX,
       y: targetY,
-      // width: Math.round(targetWidth),
       transition: {
         delay: 0.05,
       },
     };
   }, [initialRect, windowSize]);
+
+  const maxHeightStyle = useMemo(() => {
+    const isMobile = windowSize.width < 850;
+    const viewportHeight = windowSize.height;
+
+    if (isMobile) {
+      const maxHeight = viewportHeight / 2 - 20;
+      return maxHeight;
+    } else {
+      const maxHeight = viewportHeight / 2;
+      return maxHeight;
+    }
+  }, [windowSize]);
 
   const handleAnimationComplete = useCallback(() => {
     if (inputRef.current) {
@@ -177,14 +158,27 @@ export const EditTaskModal = () => {
               exit={{
                 x: initialAnimation.x,
                 y: initialAnimation.y,
-                // width: initialAnimation.width,
-                // height: initialAnimation.height,
-                // transition: { delay: 0.3 },
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
               onAnimationComplete={handleAnimationComplete}
             >
-              {syncedTask && <TaskCard task={syncedTask} inputRef={inputRef} />}
+              <div
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  height: "100%",
+                  overflow: "hidden",
+                  maxHeight: `${maxHeightStyle}px`,
+                }}
+              >
+                {syncedTask && (
+                  <TaskCard
+                    task={syncedTask}
+                    inputRef={inputRef}
+                    maxHeight={maxHeightStyle}
+                  />
+                )}
+              </div>
             </motion.div>
           </div>
         </ClientOnlyPortal>

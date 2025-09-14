@@ -30,9 +30,11 @@ export const TaskCard = memo(
   ({
     task,
     inputRef,
+    maxHeight,
   }: {
     task: TaskType;
     inputRef: RefObject<HTMLTextAreaElement>;
+    maxHeight: number | null;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
     const [inputName, setInputName] = useState<string>(task.task_content);
@@ -45,14 +47,11 @@ export const TaskCard = memo(
     const checkButtonRef = useRef<HTMLButtonElement>(null);
 
     //const animations = useUserPreferencesStore((store) => store.animations);
-    const { updateTaskName, deleteTask, updateTaskCompleted } =
-      useTodoDataStore(
-        useShallow((state) => ({
-          updateTaskName: state.updateTaskName,
-          deleteTask: state.deleteTask,
-          updateTaskCompleted: state.updateTaskCompleted,
-        }))
-      );
+    const { updateTaskName } = useTodoDataStore(
+      useShallow((state) => ({
+        updateTaskName: state.updateTaskName,
+      }))
+    );
 
     const user = useUserDataStore((state) => state.user);
 
@@ -186,151 +185,6 @@ export const TaskCard = memo(
       [handleSaveName, setInputName]
     );
 
-    interface Item {
-      id: number;
-      label: string;
-    }
-
-    const renderItem = (item: Item) => {
-      return (
-        <div
-          className={styles.dropdownItemContainer}
-          style={{ justifyContent: "start" }}
-        >
-          <div
-            style={{
-              width: "16px",
-              height: "16px",
-            }}
-          >
-            {item.id === 1 && (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                style={{
-                  width: "15px",
-                  stroke: "var(--icon-colorv2)",
-                  strokeWidth: "2",
-                  overflow: "visible",
-                  fill: task.completed ? "var(--icon-colorv2)" : "transparent",
-                  transition: "fill 0.1s ease-in-out",
-                  transform: "scale(1)",
-                }}
-              >
-                <path
-                  d={
-                    "M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z"
-                  }
-                />
-                <path
-                  style={{
-                    stroke: "var(--icon-color-inside)",
-                    strokeWidth: 2,
-                    opacity: task.completed ? "1" : "0",
-                  }}
-                  strokeLinejoin="round"
-                  d="m6.68,13.58s1.18,0,2.76,2.76c0,0,3.99-7.22,7.88-8.67"
-                />
-              </svg>
-            )}
-            {item.id === 2 && (
-              <Note
-                style={{
-                  width: "15px",
-                  stroke: "var(--icon-colorv2)",
-                  strokeWidth: "2",
-                  overflow: "visible",
-                  fill: "transparent",
-                  transition: "fill 0.1s ease-in-out",
-                  transform: "scale(1)",
-                }}
-              />
-            )}
-          </div>
-          <p>{item.label}</p>
-        </div>
-      );
-    };
-
-    const triggerLabel = () => {
-      return (
-        <div
-          className={styles.dropdownItemContainer}
-          style={{ justifyContent: "start" }}
-        >
-          <div
-            style={{
-              width: "15px",
-              height: "15px",
-              display: "flex",
-            }}
-          >
-            {completed !== null ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                style={{
-                  width: "15px",
-                  stroke: "var(--icon-colorv2)",
-                  strokeWidth: "2",
-                  overflow: "visible",
-                  fill: task.completed ? "var(--icon-colorv2)" : "transparent",
-                  transition: "fill 0.1s ease-in-out",
-                  transform: "scale(1)",
-                }}
-              >
-                <path
-                  d={
-                    "M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z"
-                  }
-                />
-                <path
-                  style={{
-                    stroke: "var(--icon-color-inside)",
-                    strokeWidth: 2,
-                    opacity: task.completed ? "1" : "0",
-                  }}
-                  strokeLinejoin="round"
-                  d="m6.68,13.58s1.18,0,2.76,2.76c0,0,3.99-7.22,7.88-8.67"
-                />
-              </svg>
-            ) : (
-              <Note
-                style={{
-                  width: "15px",
-                  stroke: "var(--icon-colorv2)",
-                  strokeWidth: "2",
-                  overflow: "visible",
-                  fill: "transparent",
-                  transition: "fill 0.1s ease-in-out",
-                  transform: "scale(1)",
-                }}
-              />
-            )}
-          </div>
-        </div>
-      );
-    };
-
-    const handleSelected = (item: Item) => {
-      if (inputRef.current) {
-        const length = inputRef.current.value.length;
-        inputRef.current.setSelectionRange(length, length);
-        inputRef.current.focus();
-      }
-      if (item.id === 1) {
-        setCompleted(false);
-        return;
-      }
-      setCompleted(null);
-    };
-
-    // useEffect(() => {
-    //   if (inputRef.current) {
-    //     inputRef.current.focus();
-    //   }
-    // }, [editing]);
-
     useEffect(() => {
       if (!editing || !inputRef.current) return;
       const textarea = inputRef.current;
@@ -346,7 +200,7 @@ export const TaskCard = memo(
         ref={cardRef}
         style={{
           paddingLeft: editing ? "10px" : "15px",
-          maxHeight: editing ? "300px" : "initial",
+          maxHeight: maxHeight ? `${maxHeight}px` : "initial",
         }}
       >
         <div className={styles.checkboxContainer}>
@@ -401,6 +255,9 @@ export const TaskCard = memo(
               maxLength={1000}
               rows={1}
               className={styles.nameChangerInput}
+              style={{
+                maxHeight: maxHeight ? `${maxHeight - 20}px` : "initial",
+              }}
               value={inputName}
               onChange={(e) => {
                 setInputName(e.target.value);

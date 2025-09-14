@@ -15,6 +15,41 @@ const meta: Meta<typeof Dropdown> = {
     },
   },
   tags: ["autodocs"],
+  argTypes: {
+    items: {
+      description: "Array de objetos que se mostrarán en el dropdown.",
+      control: { disable: true },
+    },
+    renderItem: {
+      description:
+        "Función que renderiza cada elemento de la lista del dropdown. Recibe el `item` y su `index`.",
+      control: { disable: true },
+    },
+    triggerLabel: {
+      description:
+        "Función que renderiza el contenido del botón que activa el dropdown.",
+      control: { disable: true },
+    },
+    setSelectedItem: {
+      description:
+        "Función callback que se ejecuta al seleccionar un ítem. Recibe el `item` seleccionado.",
+      action: "setSelectedItem",
+    },
+    handleFocusToParentInput: {
+      description:
+        "Función callback opcional para manejar el foco después de cerrar el dropdown.",
+      action: "handleFocusToParentInput",
+    },
+    side: {
+      description:
+        "Define el lado de alineación preferido del menú. `false` (defecto) alinea a la derecha del trigger, `true` alinea a la izquierda.",
+      control: "boolean",
+    },
+    style: {
+      description: "Objeto de estilos CSS para aplicar al botón `trigger`.",
+      control: "object",
+    },
+  },
 };
 export default meta;
 

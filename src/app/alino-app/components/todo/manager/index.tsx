@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/icons/icons";
 import { TaskCardStatic } from "../task-card/task-card-static";
 import { useUserDataStore } from "@/store/useUserDataStore";
-import { useRouter } from "next/navigation";
 
 export const Manager = memo(function Manager({
   setList,
@@ -49,8 +48,6 @@ export const Manager = memo(function Manager({
   const user = useUserDataStore((state) => state.user);
   const openModal = useConfirmationModalStore((state) => state.openModal);
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
-
-  const router = useRouter();
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const section1Ref = useRef<HTMLDivElement>(null);
@@ -88,13 +85,11 @@ export const Manager = memo(function Manager({
 
   const handleDelete = useCallback(() => {
     if (!setList) return;
-    // router.replace("/alino-app");
     deleteList(setList.list_id);
   }, [setList, deleteList]);
 
   const handleLeave = useCallback(() => {
     if (!setList) return;
-    // router.replace("/alino-app");
     leaveList(setList.list_id);
   }, [setList, leaveList]);
 
