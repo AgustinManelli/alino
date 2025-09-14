@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 
 interface ButtonConfigProps {

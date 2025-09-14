@@ -10,7 +10,7 @@ import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import { InitialUserConfiguration } from "./components/initial-user-configuration";
 import { RealtimeProvider } from "@/components/RealtimeProvider";
-import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { EditTaskModal } from "@/components/ui/EditTaskModal";
 
 import { UserType } from "@/lib/schemas/todo-schema";
