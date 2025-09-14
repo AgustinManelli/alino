@@ -147,7 +147,7 @@ export const EditTaskModal = () => {
     const viewportHeight = windowSize.height;
 
     if (isMobile) {
-      const maxHeight = viewportHeight / 2 - 70;
+      const maxHeight = viewportHeight / 2 - 120;
       return maxHeight;
     } else {
       const maxHeight = viewportHeight / 2;
