@@ -190,6 +190,7 @@ export const Calendar = ({
                       month={tempMonth}
                       onMonthChange={setTempMonth}
                       defaultMonth={selected}
+                      captionLayout="dropdown"
                     />
                     <div className={styles.footerButtonsContainer}>
                       <button
