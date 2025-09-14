@@ -19,12 +19,44 @@ const items: Item[] = [
   { id: 2, label: "Nota" },
 ];
 
-export const ItemTypeDropdown = ({ isNote, setIsNote }: Props) => {
-  const handleSelected = (item: Item) => {
+export const ItemTypeDropdown = ({ isNote, setIsNote }: Props): JSX.Element => {
+  const handleSelected = (item: Item): void => {
     setIsNote(item.id === 2);
   };
 
-  const renderItem = (item: Item) => (
+  const renderTriggerContent = (): JSX.Element => (
+    <div
+      className={styles.dropdownItemContainer}
+      style={{ justifyContent: "start" }}
+    >
+      <div style={{ width: "15px", height: "15px", display: "flex" }}>
+        {!isNote ? (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            style={{
+              width: "15px",
+              stroke: "var(--icon-colorv2)",
+              strokeWidth: "2",
+              fill: "transparent",
+            }}
+          >
+            <path d="M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z" />
+          </svg>
+        ) : (
+          <Note
+            style={{
+              width: "15px",
+              stroke: "var(--icon-colorv2)",
+              strokeWidth: "2",
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+
+  const renderItemContent = (item: Item): JSX.Element => (
     <div
       className={styles.dropdownItemContainer}
       style={{ justifyContent: "start" }}
@@ -57,46 +89,28 @@ export const ItemTypeDropdown = ({ isNote, setIsNote }: Props) => {
     </div>
   );
 
-  const renderTrigger = () => (
-    <div
-      className={styles.dropdownItemContainer}
-      style={{ justifyContent: "start" }}
-    >
-      <div style={{ width: "15px", height: "15px", display: "flex" }}>
-        {!isNote ? (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            style={{
-              width: "15px",
-              stroke: "var(--icon-colorv2)",
-              strokeWidth: "2",
-              fill: "transparent",
-            }}
-          >
-            <path d="M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z" />
-          </svg>
-        ) : (
-          <Note
-            style={{
-              width: "15px",
-              stroke: "var(--icon-colorv2)",
-              strokeWidth: "2",
-            }}
-          />
-        )}
-      </div>
-    </div>
-  );
-
   return (
-    <Dropdown
-      items={items}
-      renderItem={renderItem}
-      triggerLabel={renderTrigger}
-      setSelectedItem={handleSelected}
-      side
-      style={{ borderRadius: "10px", height: "25px", width: "25px" }}
-    />
+    <Dropdown side>
+      <Dropdown.Trigger
+        style={{
+          borderRadius: "10px",
+          height: "25px",
+          width: "25px",
+        }}
+      >
+        {renderTriggerContent()}
+      </Dropdown.Trigger>
+
+      <Dropdown.Content>
+        {items.map((item) => (
+          <Dropdown.Item
+            key={`item-type-${item.id}`}
+            onClick={() => handleSelected(item)}
+          >
+            {renderItemContent(item)}
+          </Dropdown.Item>
+        ))}
+      </Dropdown.Content>
+    </Dropdown>
   );
 };

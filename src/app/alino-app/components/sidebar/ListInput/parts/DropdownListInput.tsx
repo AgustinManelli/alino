@@ -1,7 +1,5 @@
 import { Dropdown } from "@/components/ui/Dropdown";
-
 import { FolderOpen, ListIcon } from "@/components/ui/icons/icons";
-
 import styles from "./DropdownListInput.module.css";
 
 interface Item {
@@ -17,7 +15,7 @@ interface Props {
   DEFAULT_COLOR: string;
 }
 
-const items = [
+const items: Item[] = [
   { id: 1, label: "Lista" },
   { id: 2, label: "Carpeta" },
 ];
@@ -28,8 +26,8 @@ export const DropdownListInput = ({
   setIsList,
   setColor,
   DEFAULT_COLOR,
-}: Props) => {
-  const handleSelected = (item: Item) => {
+}: Props): JSX.Element => {
+  const handleSelected = (item: Item): void => {
     if (item.id === 1) {
       setIsList(true);
       if (color === null) setColor(DEFAULT_COLOR);
@@ -42,61 +40,72 @@ export const DropdownListInput = ({
     }
   };
 
-  const renderItem = (item: Item) => {
-    return (
+  const renderTriggerContent = (): JSX.Element => (
+    <div
+      className={styles.dropdownItemContainer}
+      style={{ justifyContent: "start" }}
+    >
       <div
-        className={styles.dropdownItemContainer}
-        style={{ justifyContent: "start" }}
+        style={{
+          width: "15px",
+          height: "15px",
+          display: "flex",
+        }}
       >
-        <p>{item.label}</p>
+        {isList ? (
+          <ListIcon
+            style={{
+              stroke: "var(--text-not-available)",
+              width: "15px",
+              height: "15px",
+              strokeWidth: 2,
+            }}
+          />
+        ) : (
+          <FolderOpen
+            style={{
+              stroke: "var(--text-not-available)",
+              width: "15px",
+              height: "15px",
+              strokeWidth: 2,
+            }}
+          />
+        )}
       </div>
-    );
-  };
+    </div>
+  );
 
-  const triggerLabelType = () => {
-    return (
-      <div
-        className={styles.dropdownItemContainer}
-        style={{ justifyContent: "start" }}
-      >
-        <div
-          style={{
-            width: "15px",
-            height: "15px",
-            display: "flex",
-          }}
-        >
-          {isList ? (
-            <ListIcon
-              style={{
-                stroke: "var(--text-not-available)",
-                width: "15px",
-                height: "15px",
-                strokeWidth: 2,
-              }}
-            />
-          ) : (
-            <FolderOpen
-              style={{
-                stroke: "var(--text-not-available)",
-                width: "15px",
-                height: "15px",
-                strokeWidth: 2,
-              }}
-            />
-          )}
-        </div>
-      </div>
-    );
-  };
+  const renderItemContent = (item: Item): JSX.Element => (
+    <div
+      className={styles.dropdownItemContainer}
+      style={{ justifyContent: "start" }}
+    >
+      <p>{item.label}</p>
+    </div>
+  );
 
   return (
-    <Dropdown
-      items={items}
-      renderItem={renderItem}
-      triggerLabel={triggerLabelType}
-      setSelectedItem={handleSelected}
-      style={{ height: "30px", width: "30px", aspectRatio: "1/1" }}
-    />
+    <Dropdown>
+      <Dropdown.Trigger
+        style={{
+          height: "30px",
+          width: "30px",
+          aspectRatio: "1/1",
+        }}
+      >
+        {renderTriggerContent()}
+      </Dropdown.Trigger>
+
+      <Dropdown.Content>
+        {items.map((item, index) => (
+          <Dropdown.Item
+            key={`dropdown-item-${item.id}`}
+            onClick={() => handleSelected(item)}
+          >
+            {renderItemContent(item)}
+          </Dropdown.Item>
+        ))}
+      </Dropdown.Content>
+    </Dropdown>
   );
 };
