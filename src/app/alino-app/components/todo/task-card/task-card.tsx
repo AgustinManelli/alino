@@ -188,6 +188,8 @@ export const TaskCard = memo(
         style={{
           maxHeight: maxHeight ? `${maxHeight}px` : "initial",
           paddingLeft: modalEditOpen ? "10px" : "15px",
+          boxShadow:
+            "rgba(12, 20, 66, 0.02) 0px 4px 12px, rgba(12, 20, 66, 0.08) 0px 30px 80px, rgb(230, 233, 237) 0px 0px 0px 0px inset",
         }}
       >
         <div className={styles.checkboxContainer}>

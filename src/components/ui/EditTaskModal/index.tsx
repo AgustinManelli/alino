@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useShallow } from "zustand/shallow";
 
-import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
 
 import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
@@ -53,6 +52,7 @@ export const EditTaskModal = () => {
       closeModal: state.closeModal,
     }))
   );
+
   const [selected, setSelected] = useState<Date | undefined>(undefined);
   const [hour, setHour] = useState<string | undefined>(undefined);
 
@@ -70,11 +70,6 @@ export const EditTaskModal = () => {
     }
   }, [modalTask]);
 
-  useEffect(() => {
-    console.log(selected);
-    console.log(hour);
-  }, [selected, hour]);
-
   const contentRef = useRef<HTMLDivElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -83,12 +78,6 @@ export const EditTaskModal = () => {
     width: 0,
     height: 0,
   });
-
-  // const modalTaskId = modalTask?.task_id ?? null;
-
-  // const syncedTask = useTodoDataStore((state) =>
-  //   state.tasks.find((t) => t.task_id === modalTaskId)
-  // );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -190,7 +179,7 @@ export const EditTaskModal = () => {
           <motion.div
             className={styles.modalBackdrop}
             initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(5px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(10px)" }}
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.3 }}
           />

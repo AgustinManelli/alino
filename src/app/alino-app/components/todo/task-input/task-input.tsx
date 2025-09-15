@@ -63,19 +63,15 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
       return null;
     }
 
-    // Crear una nueva instancia de Date basada en 'selected'
     const combined = new Date(selected);
 
-    // Dividir la cadena 'hour' en horas y minutos
     const [hours, minutes] = (hour ? hour : "23:59").split(":").map(Number);
 
-    // Establecer las horas y minutos en la nueva fecha
     combined.setHours(hours);
     combined.setMinutes(minutes);
-    combined.setSeconds(0); // Opcional: establecer segundos a 0
-    combined.setMilliseconds(0); // Opcional: establecer milisegundos a 0
+    combined.setSeconds(0);
+    combined.setMilliseconds(0);
 
-    // Devolver la cadena en formato ISO 8601
     return combined.toISOString();
   }
 
@@ -92,6 +88,9 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
       return;
     }
     const combinedDate = combineDateAndTime(selected, hour);
+    console.log(combinedDate);
+    console.log(hour);
+    console.log(selected);
     setTask("");
     setSelected(undefined);
     setHour(undefined);
