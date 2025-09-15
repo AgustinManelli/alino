@@ -29,7 +29,7 @@ const computeTargetY = (rectHeight: number, viewportWidth: number) => {
     const idealTop = centerOfUpperHalf - rectHeight / 2;
     const minTop = offsetTop;
     const maxTop = offsetTop + upperHalfHeight - rectHeight;
-    return Math.round(clamp(idealTop, minTop, maxTop));
+    return Math.round(clamp(idealTop, minTop, maxTop)) + 50;
   } else {
     const centerFull = offsetTop + vh / 2;
     const idealTop = centerFull - rectHeight / 2;
