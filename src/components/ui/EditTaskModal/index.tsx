@@ -57,6 +57,8 @@ export const EditTaskModal = () => {
   const [hour, setHour] = useState<string | undefined>(undefined);
 
   useEffect(() => {
+    setSelected(undefined);
+    setHour(undefined);
     if (modalTask?.target_date) {
       const dateObject = new Date(modalTask.target_date);
 
@@ -68,6 +70,11 @@ export const EditTaskModal = () => {
     }
   }, [modalTask]);
 
+  useEffect(() => {
+    console.log(selected);
+    console.log(hour);
+  }, [selected, hour]);
+
   const contentRef = useRef<HTMLDivElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -77,11 +84,11 @@ export const EditTaskModal = () => {
     height: 0,
   });
 
-  const modalTaskId = modalTask?.task_id ?? null;
+  // const modalTaskId = modalTask?.task_id ?? null;
 
-  const syncedTask = useTodoDataStore((state) =>
-    state.tasks.find((t) => t.task_id === modalTaskId)
-  );
+  // const syncedTask = useTodoDataStore((state) =>
+  //   state.tasks.find((t) => t.task_id === modalTaskId)
+  // );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -209,9 +216,9 @@ export const EditTaskModal = () => {
                 }}
                 ref={contentRef}
               >
-                {syncedTask && (
+                {modalTask && (
                   <TaskCard
-                    task={syncedTask}
+                    task={modalTask}
                     inputRef={inputRef}
                     maxHeight={maxHeightStyle}
                     selected={selected}

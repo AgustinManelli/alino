@@ -99,14 +99,13 @@ export const TaskCard = memo(
 
       if (
         (task.task_content === formatText &&
-          completed === task.completed &&
+          task.completed === completed &&
           task.target_date === combinedDate) ||
         formatText.length < 1
       ) {
         setInputName(task.task_content);
         return;
       }
-
       setInputName(formatText);
 
       const { error } = await updateTaskName(
@@ -116,35 +115,15 @@ export const TaskCard = memo(
         combinedDate
       );
       if (error) setInputName(task.task_content);
-    }, [inputName, completed, task.task_content, task.task_id, updateTaskName]);
-
-    // useEffect(() => {
-    //   const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-    //     const dropdownComponent = document.getElementById("dropdown-component");
-    //     const calendarComponent = document.getElementById("calendar-component");
-
-    //     if (
-    //       inputRef.current &&
-    //       !inputRef.current.contains(event.target as Node) &&
-    //       checkButtonRef.current &&
-    //       !checkButtonRef.current.contains(event.target as Node) &&
-    //       cardRef.current &&
-    //       !cardRef.current.contains(event.target as Node) &&
-    //       !dropdownComponent &&
-    //       !calendarComponent
-    //     ) {
-    //       setEditing(false);
-    //       setInputName(task.task_content);
-    //       setCompleted(task.completed);
-    //     }
-    //   };
-
-    //   document.addEventListener("mousedown", handleClickOutside);
-
-    //   return () => {
-    //     document.removeEventListener("mousedown", handleClickOutside);
-    //   };
-    // }, [editing, task.task_content]);
+    }, [
+      inputName,
+      completed,
+      task.task_content,
+      task.task_id,
+      updateTaskName,
+      selected,
+      hour,
+    ]);
 
     useEffect(() => {
       if (inputRef.current) {
