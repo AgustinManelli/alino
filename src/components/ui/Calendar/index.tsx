@@ -36,8 +36,8 @@ export const Calendar = ({
 }: Props) => {
   const [open, setOpen] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
-  const [tempMonth, setTempMonth] = useState<Date | undefined>(new Date());
-  const [tempHour, setTempHour] = useState<string | undefined>(undefined);
+  const [tempMonth, setTempMonth] = useState<Date | undefined>(selected);
+  const [tempHour, setTempHour] = useState<string | undefined>(hour);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
