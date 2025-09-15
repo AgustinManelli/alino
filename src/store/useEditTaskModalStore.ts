@@ -39,6 +39,7 @@ export const useEditTaskModalStore = create<EditTaskModalState>((set) => ({
       return {
         isOpen: false,
         task: null,
+        onConfirm: () => {},
         initialRect: null,
         tempFocusElement: null,
       };
