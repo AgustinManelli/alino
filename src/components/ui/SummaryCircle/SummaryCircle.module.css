@@ -1,0 +1,43 @@
+.summaryCircleContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.progressSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.progressBackground {
+  fill: none;
+  stroke: var(--background-over-container);
+  stroke-width: 4;
+}
+
+.progressBar {
+  fill: none;
+  stroke: rgb(106, 195, 255);
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: all 0.5s ease-in-out;
+  filter: drop-shadow(0 0 4px rgb(106, 195, 255, 0.3));
+}
+
+.progressText {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.progressPercentage {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(106, 195, 255);
+}

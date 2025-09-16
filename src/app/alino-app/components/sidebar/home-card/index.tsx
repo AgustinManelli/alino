@@ -73,7 +73,7 @@ export const HomeCard = () => {
           home
         </p>
       </div>
-      <div className={styles.listManagerContainer}>
+      {/* <div className={styles.listManagerContainer}>
         <div className={styles.configsContainer}>
           <p className={`${styles.counter} ${styles.Mobile}`}>
             {animations ? (
@@ -83,7 +83,7 @@ export const HomeCard = () => {
             )}
           </p>
         </div>
-      </div>
+      </div> */}
     </Link>
   );
 };

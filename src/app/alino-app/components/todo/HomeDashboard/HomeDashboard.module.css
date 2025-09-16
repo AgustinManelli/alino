@@ -1,0 +1,296 @@
+/* Layout principal */
+.dashboardContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  max-width: 800px;
+}
+
+.dashboardHeader {
+  padding: 30px 10px 10px 10px;
+  z-index: 10;
+  position: relative;
+  width: 100%;
+}
+
+.welcomeSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.welcomeTitle {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.welcomeSubtitle {
+  font-size: 1rem;
+  color: var(--text-not-available);
+  margin: 0;
+}
+
+.dashboardContent {
+  overflow: hidden;
+  position: relative;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  width: 100%;
+  height: 100%;
+}
+
+/* Chrome, Edge y Safari */
+.dashboardContent::-webkit-scrollbar {
+  width: 0px;
+}
+
+/* Weather Widget */
+.weatherWidget {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  height: 100%;
+  justify-content: center;
+}
+
+.weatherIcon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.weatherInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.temperature {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.weatherDescription {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Today Tasks Widget */
+.todayTasks {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  justify-content: center;
+}
+
+.taskCount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.taskNumber {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #3b82f6;
+  line-height: 1;
+}
+
+.taskLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.taskProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Overdue Tasks Widget */
+.overdueTasks {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.overdueHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.overdueCount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ef4444;
+  line-height: 1;
+}
+
+.overdueLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.overdueAlert {
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* New Features Widget */
+.newFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.featureIcon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.featureContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.featureTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.featureDescription {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboardHeader {
+    padding: 1rem 1.5rem;
+  }
+
+  .welcomeSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .welcomeTitle {
+    font-size: 1.5rem;
+  }
+
+  .welcomeSubtitle {
+    font-size: 0.875rem;
+  }
+
+  .userInfo {
+    align-self: flex-end;
+  }
+
+  .userAvatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.875rem;
+  }
+
+  .summaryMain {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .totalNumber {
+    font-size: 1.75rem;
+  }
+
+  .taskNumber,
+  .overdueCount {
+    font-size: 2rem;
+  }
+
+  .temperature {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboardHeader {
+    padding: 1rem;
+  }
+
+  .welcomeTitle {
+    font-size: 1.25rem;
+  }
+
+  .userInfo {
+    gap: 0.5rem;
+  }
+
+  .userName {
+    font-size: 0.875rem;
+  }
+
+  .summaryBreakdown {
+    gap: 0.5rem;
+  }
+
+  .completedStat,
+  .pendingStat {
+    padding: 0.5rem;
+  }
+
+  .statNumber {
+    font-size: 1.25rem;
+  }
+}

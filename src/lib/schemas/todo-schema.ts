@@ -497,3 +497,15 @@ export type InvitationRow =
   Database["public"]["Tables"]["list_invitations"]["Row"];
 
 export type FolderType = Database["public"]["Tables"]["list_folders"]["Row"];
+
+export type DashboardData = {
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  total_tasks: number;
+  pending_tasks: number;
+  completed_tasks: number;
+  overdue_tasks: number;
+  upcoming_tasks: TaskType[];
+  due_today_tasks: TaskType[];
+};

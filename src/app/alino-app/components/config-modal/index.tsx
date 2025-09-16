@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { Switch } from "@/components/ui/switch";
 import { WindowComponent } from "@/components/ui/window-component";
@@ -210,7 +210,7 @@ function SectionContainer({
       <p className={styles.sectionTitle}>{sectionTitle}</p>
       <section className={styles.sectionContent}>
         {configElements.map((element, index) => (
-          <>
+          <React.Fragment key={index}>
             <div key={index} className={styles.sectionElement}>
               <p className={styles.sectionText}>{element.text}</p>
               <div className={styles.sectionAction}>
@@ -220,7 +220,7 @@ function SectionContainer({
             {configElements.length !== index + 1 && (
               <div className={styles.configElementSeparator}></div>
             )}
-          </>
+          </React.Fragment>
         ))}
       </section>
       {sectionDescription && (
