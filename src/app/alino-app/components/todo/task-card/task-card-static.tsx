@@ -22,9 +22,11 @@ export const TaskCardStatic = memo(
   ({
     task,
     editionMode = false,
+    home = false,
   }: {
     task: TaskType;
     editionMode?: boolean;
+    home?: boolean;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
 
@@ -167,7 +169,9 @@ export const TaskCardStatic = memo(
               opacity: completed ? 0.3 : 1,
             }}
           >
-            {linkifyWithIcon(task.task_content)}
+            {linkifyWithIcon(
+              home ? task.task_content.slice(0, 200) : task.task_content
+            )}
           </p>
           <WavyStrikethrough textRef={textRef} completed={completed} />
         </div>
