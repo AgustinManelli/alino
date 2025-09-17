@@ -10,43 +10,112 @@
   max-width: 800px;
 }
 
-.dashboardHeader {
-  padding: 30px 10px 10px 10px;
-  z-index: 10;
-  position: relative;
-  width: 100%;
-}
-
-.welcomeSection {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.welcomeTitle {
-  font-size: 30px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.welcomeSubtitle {
-  font-size: 1rem;
-  color: var(--text-not-available);
-  margin: 0;
-}
-
 .dashboardContent {
   overflow: hidden;
   position: relative;
   overflow-y: auto;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
+  overscroll-behavior: contain;
   width: 100%;
   height: 100%;
+  padding-top: 130px;
 }
 
 /* Chrome, Edge y Safari */
 .dashboardContent::-webkit-scrollbar {
   width: 0px;
+}
+
+.section1 {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  max-width: 850px;
+  height: fit-content;
+  top: 0px;
+  padding-top: 40px;
+  z-index: 10;
+}
+
+.section1::before {
+  content: "";
+  position: absolute;
+  left: -50px;
+  bottom: -20px;
+  height: calc(100% + 35px);
+  width: calc(100% + 100px);
+  mask-image: linear-gradient(rgb(0, 0, 0) 85%, transparent);
+  backdrop-filter: blur(10px);
+  z-index: 25;
+  background-color: var(--background-alino-app-translucent);
+}
+
+.header {
+  position: relative;
+  width: 100%;
+  z-index: 26;
+  max-width: 800px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 15px;
+}
+
+/* ///////HOME////// */
+
+.homeContainer {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  height: 75px;
+}
+
+.homeSubContainer {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  height: fit-content;
+  gap: 5px;
+}
+
+.homeTitle {
+  position: relative;
+  font-size: 30px;
+  font-weight: 900;
+  background: -webkit-linear-gradient(
+    45deg,
+    rgb(173, 243, 255) 0%,
+    rgb(106, 195, 255)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  display: inline-block;
+  width: fit-content;
+  user-select: none;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-wrap: nowrap;
+}
+
+.homeTimeContainer {
+  font-size: 14px;
+  color: var(--text-not-available);
+  user-select: none;
+  text-align: start;
 }
 
 /* Weather Widget */
