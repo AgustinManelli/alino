@@ -11,6 +11,7 @@ import DraggableBentoGrid from "@/components/ui/DraggableBentoGrid/DraggableBent
 import { useEffect, useMemo, useRef } from "react";
 import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
 import { useSummaryStore } from "@/store/useSummaryStore";
+import { useUserDataStore } from "@/store/useUserDataStore";
 
 // Componente de clima
 const WeatherWidget = () => (
@@ -67,6 +68,7 @@ export const HomeDashboard = ({
 }) => {
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
   const setSummary = useSummaryStore((state) => state.setSummary);
+  const user = useUserDataStore((state) => state.user);
 
   const initialized = useRef(false);
 
@@ -133,6 +135,11 @@ export const HomeDashboard = ({
     });
   }, []);
 
+  const displayName = useMemo(
+    () => user?.display_name.split(" ")[0] ?? "Bienvenido",
+    [user]
+  );
+
   return (
     <div className={styles.dashboardContainer}>
       <section className={styles.section1}>
@@ -141,7 +148,7 @@ export const HomeDashboard = ({
             <div className={styles.homeSubContainer}>
               <h1 className={styles.homeTitle}>
                 <span>Hola, </span>
-                <span>de nuevo!</span>
+                <span>{displayName}</span>
               </h1>
               <div className={styles.homeTimeContainer}>
                 <p>
