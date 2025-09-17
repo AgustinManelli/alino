@@ -8,6 +8,9 @@ import { DashboardData } from "@/lib/schemas/todo-schema";
 import { Summary } from "./parts/Summary";
 import { UpcomingTask } from "./parts/UpcomingTasks";
 import DraggableBentoGrid from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";
+import { useEffect, useMemo, useRef } from "react";
+import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
+import { useSummaryStore } from "@/store/useSummaryStore";
 
 // Componente de clima
 const WeatherWidget = () => (
@@ -62,6 +65,22 @@ export const HomeDashboard = ({
 }: {
   data: DashboardData;
 }) => {
+  const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
+  const setSummary = useSummaryStore((state) => state.setSummary);
+
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (!initialized.current) {
+      setSummary(dashboardData);
+      initialized.current = true;
+    }
+  }, [dashboardData]);
+
+  useEffect(() => {
+    setBlurredFx("rgb(106, 195, 255)");
+  }, []);
+
   const bentoItems: BentoItem[] = [
     {
       id: "summary",
@@ -105,18 +124,36 @@ export const HomeDashboard = ({
     },
   ];
 
+  const formattedDate = useMemo(() => {
+    return new Date().toLocaleDateString("es-ES", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }, []);
+
   return (
     <div className={styles.dashboardContainer}>
-      <header className={styles.dashboardHeader}>
-        <div className={styles.welcomeSection}>
-          <div>
-            <h1 className={styles.welcomeTitle}>¡Hola de nuevo!</h1>
-            <p className={styles.welcomeSubtitle}>
-              Aquí tienes un resumen de tu productividad
-            </p>
-          </div>
+      <section className={styles.section1}>
+        <div className={styles.header}>
+          <section className={styles.homeContainer}>
+            <div className={styles.homeSubContainer}>
+              <h1 className={styles.homeTitle}>
+                <span>Hola, </span>
+                <span>de nuevo!</span>
+              </h1>
+              <div className={styles.homeTimeContainer}>
+                <p>
+                  <span>Hoy es </span>
+                  {formattedDate} <br />
+                  <span>Aquí tienes un resumen de tu productividad</span>
+                </p>
+              </div>
+            </div>
+          </section>
         </div>
-      </header>
+      </section>
 
       <main className={styles.dashboardContent}>
         <DraggableBentoGrid

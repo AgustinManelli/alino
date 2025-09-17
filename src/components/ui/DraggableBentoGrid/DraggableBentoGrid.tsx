@@ -65,7 +65,7 @@ function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
             <div className={styles.bentoContent}>
               <header className={styles.bentoHeader}>
                 <h3 className={styles.bentoTitle}>{item.title}</h3>
-                <button
+                <div
                   className={`${styles.dragHandle} dragHandle`}
                   aria-label={`Mover elemento ${item.title}`}
                 >
@@ -84,7 +84,7 @@ function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
                     <circle cx="15" cy="5" r="1" />{" "}
                     <circle cx="15" cy="19" r="1" />
                   </svg>
-                </button>
+                </div>
               </header>
               <main className={styles.bentoBody}>{item.content}</main>
             </div>

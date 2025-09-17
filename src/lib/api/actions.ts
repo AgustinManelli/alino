@@ -852,6 +852,29 @@ export const searchUsers = async (searchTerm: string) => {
   }
 };
 
+export const getSummary = async () => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data: dashboardData, error } = await supabase
+        .from("user_dashboard_view")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+    if (error) {
+      throw new Error(
+        "No se pudo obtener el resumen. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+
+    return { data: { summary: dashboardData } };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
 // export const deleteAllTasks = async () => {
 //   try {
 //     const { supabase, user } = await getAuthenticatedSupabaseClient();

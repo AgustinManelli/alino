@@ -1,30 +1,17 @@
 import { HomeDashboard } from "./components/todo/HomeDashboard";
-import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { DashboardData } from "@/lib/schemas/todo-schema";
+import { getSummary } from "@/lib/api/actions";
 
 export default async function HomePage() {
-  const supabase = createClient();
+  const summary = await getSummary();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
+  if (summary.error) {
+    redirect("/sign-in");
   }
-
-  const { data: dashboardData, error } = await supabase
-    .from("user_dashboard_view")
-    .select("*")
-    .eq("user_id", user.id)
-    .single<DashboardData>();
-
-  if (error) return;
 
   return (
     <div style={Style}>
-      <HomeDashboard data={dashboardData} />
+      <HomeDashboard data={summary.data?.summary} />
     </div>
   );
 }
