@@ -12,6 +12,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
 import { useSummaryStore } from "@/store/useSummaryStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { NewFeature } from "./parts/NewFeatures";
 
 // Componente de clima
 const WeatherWidget = () => (
@@ -49,9 +50,6 @@ const OverdueTasksWidget = ({ count }: { count: number }) => (
         tarea{count > 1 ? "s" : ""} vencida{count > 1 ? "s" : ""}
       </span>
     </div>
-    {count > 0 && (
-      <div className={styles.overdueAlert}>⚠️ Requieren atención inmediata</div>
-    )}
   </div>
 );
 
@@ -97,17 +95,7 @@ export const HomeDashboard = ({
     {
       id: "new-features",
       title: "Nuevo en Alino",
-      content: (
-        <div className={styles.newFeatures}>
-          <div className={styles.featureIcon}>✨</div>
-          <div className={styles.featureContent}>
-            <h4 className={styles.featureTitle}>Arrastrar y soltar</h4>
-            <p className={styles.featureDescription}>
-              Ahora puedes reorganizar tu dashboard como quieras
-            </p>
-          </div>
-        </div>
-      ),
+      content: <NewFeature />,
     },
     {
       id: "overdue-tasks",
@@ -163,16 +151,7 @@ export const HomeDashboard = ({
       </section>
 
       <main className={styles.dashboardContent}>
-        <DraggableBentoGrid
-          items={bentoItems}
-          // onItemsReorder={(newItems) => {
-          //   console.log(
-          //     "Nuevo orden:",
-          //     newItems.map((item) => item.id)
-          //   );
-          //   // Aquí podrías guardar el orden en localStorage o base de datos
-          // }}
-        />
+        <DraggableBentoGrid items={bentoItems} />
       </main>
     </div>
   );

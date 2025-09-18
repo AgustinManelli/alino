@@ -22,6 +22,23 @@
   /* will-change: transform; */
 }
 
+.react-grid-item > .react-resizable-handle {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  pointer-events: auto;
+}
+
+.react-grid-item > .react-resizable-handle.react-resizable-handle-se {
+  bottom: -20px;
+  right: -20px;
+}
+
+.react-grid-item > .react-resizable-handle::after {
+  content: "";
+  display: none;
+}
+
 :root {
   --background-alino-app: rgb(240, 240, 240);
   --background-alino-app-translucent: rgba(240, 240, 240, 0.5);
