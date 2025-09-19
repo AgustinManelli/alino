@@ -1,17 +1,9 @@
 import { HomeDashboard } from "./components/todo/HomeDashboard";
-import { redirect } from "next/navigation";
-import { getSummary } from "@/lib/api/actions";
 
-export default async function HomePage() {
-  const summary = await getSummary();
-
-  if (summary.error) {
-    redirect("/sign-in");
-  }
-
+export default function HomePage() {
   return (
     <div style={Style}>
-      <HomeDashboard data={summary.data?.summary} />
+      <HomeDashboard />
     </div>
   );
 }

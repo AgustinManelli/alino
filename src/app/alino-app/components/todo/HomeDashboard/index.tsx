@@ -8,22 +8,11 @@ import { DashboardData } from "@/lib/schemas/todo-schema";
 import { Summary } from "./parts/Summary";
 import { UpcomingTask } from "./parts/UpcomingTasks";
 import DraggableBentoGrid from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
-import { useSummaryStore } from "@/store/useSummaryStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { NewFeature } from "./parts/NewFeatures";
-
-// Componente de clima
-const WeatherWidget = () => (
-  <div className={styles.weatherWidget}>
-    <div className={styles.weatherIcon}>☀️</div>
-    <div className={styles.weatherInfo}>
-      <div className={styles.temperature}>24°C</div>
-      <div className={styles.weatherDescription}>Soleado</div>
-    </div>
-  </div>
-);
+import { Weather } from "./parts/Weather";
 
 // Componente de tareas del día
 const TodayTasksWidget = ({ count }: { count: number }) => (
@@ -59,23 +48,9 @@ export interface BentoItem {
   content: React.ReactNode;
 }
 
-export const HomeDashboard = ({
-  data: dashboardData,
-}: {
-  data: DashboardData;
-}) => {
+export const HomeDashboard = () => {
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
-  const setSummary = useSummaryStore((state) => state.setSummary);
   const user = useUserDataStore((state) => state.user);
-
-  const initialized = useRef(false);
-
-  useEffect(() => {
-    if (!initialized.current) {
-      setSummary(dashboardData);
-      initialized.current = true;
-    }
-  }, [dashboardData]);
 
   useEffect(() => {
     setBlurredFx("rgb(106, 195, 255)");
@@ -85,33 +60,33 @@ export const HomeDashboard = ({
     {
       id: "summary",
       title: "Resumen de Tareas",
-      content: <Summary dashboardData={dashboardData} />,
+      content: <Summary />,
     },
     {
       id: "upcoming-tasks",
       title: "Próximas Tareas",
-      content: <UpcomingTask tasks={dashboardData.upcoming_tasks} />,
+      content: <UpcomingTask />,
     },
-    {
-      id: "new-features",
-      title: "Nuevo en Alino",
-      content: <NewFeature />,
-    },
-    {
-      id: "overdue-tasks",
-      title: "Tareas Vencidas",
-      content: <OverdueTasksWidget count={dashboardData.overdue_tasks} />,
-    },
-    {
-      id: "today-tasks",
-      title: "Tareas de Hoy",
-      content: <TodayTasksWidget count={8} />,
-    },
-    {
-      id: "weather",
-      title: "Clima",
-      content: <WeatherWidget />,
-    },
+    // {
+    //   id: "new-features",
+    //   title: "Nuevo en Alino",
+    //   content: <NewFeature />,
+    // },
+    // {
+    //   id: "overdue-tasks",
+    //   title: "Tareas Vencidas",
+    //   content: <OverdueTasksWidget count={dashboardData.overdue_tasks} />,
+    // },
+    // {
+    //   id: "today-tasks",
+    //   title: "Tareas de Hoy",
+    //   content: <TodayTasksWidget count={8} />,
+    // },
+    // {
+    //   id: "weather",
+    //   title: "Clima",
+    //   content: <Weather />,
+    // },
   ];
 
   const formattedDate = useMemo(() => {
