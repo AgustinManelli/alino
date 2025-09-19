@@ -6,6 +6,7 @@ import { TaskType } from "@/lib/schemas/todo-schema";
 import styles from "./UpcomingTasks.module.css";
 
 export const UpcomingTask = ({ tasks }: { tasks: TaskType[] }) => {
+  console.log(tasks);
   return (
     <div className={styles.upcomingTasks}>
       <div className={styles.upcomingList}>

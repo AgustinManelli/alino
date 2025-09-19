@@ -856,11 +856,9 @@ export const getSummary = async () => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const { data: dashboardData, error } = await supabase
-        .from("user_dashboard_view")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+    const { data: dashboardData, error } = await supabase.rpc("get_user_dashboard", {
+      p_user_id: user.id,
+    });
 
     if (error) {
       throw new Error(
@@ -868,32 +866,9 @@ export const getSummary = async () => {
       );
     }
 
-    return { data: { summary: dashboardData } };
+    return { data: { summary: dashboardData[0] } };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
     return { error: UNKNOWN_ERROR_MESSAGE };
   }
 };
-
-// export const deleteAllTasks = async () => {
-//   try {
-//     const { supabase, user } = await getAuthenticatedSupabaseClient();
-
-//     const { data, error } = await supabase
-//       .from("tasks")
-//       .delete()
-//       .eq("user_id", user.id);
-
-//     if (error) {
-//       throw new Error("Failed to delete all tasks. Please try again later.");
-//     }
-
-//     return { data };
-//   } catch (error: unknown) {
-//     if (error instanceof Error) {
-//       return { error: error.message };
-//     }
-
-//     return { error: UNKNOWN_ERROR_MESSAGE };
-//   }
-// };
