@@ -872,3 +872,45 @@ export const getSummary = async () => {
     return { error: UNKNOWN_ERROR_MESSAGE };
   }
 };
+
+export const getStats = async () => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data: statsData, error } = await supabase.rpc("get_user_stats", {
+      p_user_id: user.id,
+    });
+
+    if (error) {
+      throw new Error(
+        "No se pudo obtener las estadísticas. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+
+    return { data: statsData[0] };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const getUpcomingTasks = async () => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data: upcomingTasks, error } = await supabase.rpc("get_upcoming_tasks", {
+      p_user_id: user.id,
+    });
+
+    if (error) {
+      throw new Error(
+        "No se pudo obtener las tareas. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+
+    return { data: upcomingTasks };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};

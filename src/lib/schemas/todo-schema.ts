@@ -509,3 +509,10 @@ export type DashboardData = {
   upcoming_tasks: TaskType[];
   due_today_tasks: TaskType[];
 };
+
+export type StatsData = {
+  total_tasks: number;
+  pending_tasks: number;
+  completed_tasks: number;
+  overdue_tasks: number;
+}

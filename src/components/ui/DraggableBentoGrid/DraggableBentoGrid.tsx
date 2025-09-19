@@ -31,13 +31,21 @@ function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
     for (const breakpoint in currentlayout) {
       newLayouts[breakpoint] = currentlayout[
         breakpoint as keyof typeof currentlayout
-      ].map((layoutItem, index) => ({
+      ].map((layoutItem /*, index*/) => ({
         ...layoutItem,
-        i: items[index]?.id || layoutItem.i,
+        i: /*items[index]?.id || */ layoutItem.i,
       }));
     }
     return newLayouts;
   }, [items, currentlayout]);
+
+  const handleDragStart = () => {
+    document.body.classList.add("dragging-grid");
+  };
+
+  const handleDragStop = () => {
+    document.body.classList.remove("dragging-grid");
+  };
 
   return (
     <div style={{ maxWidth: "100%", height: "100%", margin: "auto" }}>
@@ -62,9 +70,11 @@ function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
           );
           // Logica para el guardado de layouts
         }}
+        onDragStart={handleDragStart}
+        onDragStop={handleDragStop}
       >
         {items.map((item) => (
-          <div key={item.id}>
+          <div key={item.id} data-grid-id={item.id}>
             <div className={styles.bentoItem}>
               <div className={styles.bentoContent}>
                 <header className={styles.bentoHeader}>

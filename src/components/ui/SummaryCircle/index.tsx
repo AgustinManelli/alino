@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import styles from "./SummaryCircle.module.css";
+import { Skeleton } from "../skeleton";
 
 interface Props {
   stats?: {
@@ -8,12 +9,16 @@ interface Props {
     pending: number;
     total: number;
   };
+  completedFetch?: boolean;
 }
 
 export const SummaryCircle = ({
-  stats = { completed: 24, pending: 12, total: 36 },
+  stats = { completed: 0, pending: 0, total: 0 },
+  completedFetch = true,
 }: Props) => {
-  const completionRate = Math.round((stats.completed / stats.total) * 100);
+  const completionRate = completedFetch
+    ? Math.round((stats.completed / stats.total) * 100)
+    : 0;
 
   return (
     <div className={styles.summaryCircleContainer}>
@@ -28,7 +33,17 @@ export const SummaryCircle = ({
         />
       </svg>
       <div className={styles.progressText}>
-        <span className={styles.progressPercentage}>{completionRate}%</span>
+        {completedFetch ? (
+          <span className={styles.progressPercentage}>{completionRate}%</span>
+        ) : (
+          <Skeleton
+            style={{
+              width: "20px",
+              height: "20px",
+              borderRadius: "8px",
+            }}
+          />
+        )}
       </div>
     </div>
   );
