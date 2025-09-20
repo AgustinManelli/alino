@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { ListsType, FolderType } from "@/lib/schemas/todo-schema";
+import type { ListsType, FolderType } from "@/lib/schemas/database.types";
 import type { NormalizedItem } from "../utils/types";
 
 export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {

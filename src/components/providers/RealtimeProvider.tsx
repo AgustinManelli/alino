@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { createClient } from "@/utils/supabase/client";
-import { ListsRow, MembershipRow } from "@/lib/schemas/todo-schema";
+import { ListsRow, MembershipRow } from "@/lib/schemas/database.types";
 
 export const RealtimeProvider = () => {
   const supabase = createClient();

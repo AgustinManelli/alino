@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Database } from "@/lib/schemas/todo-schema";
+import { Database } from "@/lib/schemas/database.types";
 import { toast } from "sonner";
 
 type InvitationRow = Database["public"]["Tables"]["list_invitations"]["Row"];
@@ -21,7 +21,7 @@ type InvitationsType = InvitationRow & {
   inviter_avatar_url: UserRow["avatar_url"] | null;
 };
 
-import { getNotifications, updateInvitationList } from "@/lib/api/actions";
+import { getNotifications, updateInvitationList } from "@/lib/api/notification/actions";
 
 type UNS = {
   notifications: InvitationRow[] | [];

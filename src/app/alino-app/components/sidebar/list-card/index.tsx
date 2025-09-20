@@ -18,7 +18,7 @@ import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
-import { ListsType } from "@/lib/schemas/todo-schema";
+import { ListsType } from "@/lib/schemas/database.types";
 
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";

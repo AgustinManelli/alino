@@ -4,7 +4,7 @@
 //   BentoItem,
 // } from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";
 import styles from "./HomeDashboard.module.css";
-import { DashboardData } from "@/lib/schemas/todo-schema";
+import { DashboardData } from "@/lib/schemas/database.types";
 import { Summary } from "./parts/Summary";
 import { UpcomingTask } from "./parts/UpcomingTasks";
 import DraggableBentoGrid from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";

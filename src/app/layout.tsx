@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
 
-import { ThemeInitializer } from "@/components/useThemeInicializer";
-import { MobileSizeListener } from "@/components/useMobileSizeListener";
+import { ThemeInitializer } from "@/hooks/useThemeInicializer";
+import { MobileSizeListener } from "@/hooks/useMobileSizeListener";
 import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
 import { Loader } from "@/components/ui/loader";
 

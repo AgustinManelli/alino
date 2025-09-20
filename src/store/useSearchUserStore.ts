@@ -1,4 +1,4 @@
-import { searchUsers } from "@/lib/api/actions";
+import { searchUsers } from "@/lib/api/user/actions";
 import { toast } from "sonner";
 import { create } from "zustand";
 

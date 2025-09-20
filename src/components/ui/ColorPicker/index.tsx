@@ -17,7 +17,7 @@ import {
   SquircleIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./ColorPicker.module.css";
-import { hexColorSchema } from "@/lib/schemas/validationSchemas";
+import { hexColorSchema } from "@/lib/schemas/list/validation";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useModalUbication } from "@/hooks/useModalUbication";
 

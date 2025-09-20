@@ -1,7 +1,7 @@
 import React from "react";
 import { Variants } from "motion";
 import { motion } from "motion/react";
-import { FolderType } from "@/lib/schemas/todo-schema";
+import { FolderType } from "@/lib/schemas/database.types";
 import {
   ArrowThin,
   FolderClosed,

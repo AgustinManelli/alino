@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { Manager } from "./manager";
 
-import { ListsType } from "@/lib/schemas/todo-schema";
+import { ListsType } from "@/lib/schemas/database.types";
 import styles from "./todo.module.css";
 import { useEffect, useMemo, useState } from "react";
 

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { EditTaskModal } from "./index";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-import type { TaskType } from "@/lib/schemas/todo-schema";
+import type { TaskType } from "@/lib/schemas/database.types";
 import { TaskCardStatic } from "@/app/alino-app/components/todo/task-card/task-card-static";
 import { useUserDataStore } from "@/store/useUserDataStore";
 

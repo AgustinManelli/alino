@@ -7,7 +7,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import {
   hexColorSchema,
   shortcodeEmojiSchema,
-} from "@/lib/schemas/validationSchemas";
+} from "@/lib/schemas/list/validation";
 
 interface Props {
   inputRef: RefObject<HTMLInputElement | null>;

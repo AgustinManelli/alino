@@ -7,7 +7,7 @@ import {
   LoginUserInput,
   ResetUserInput,
   UpdatePasswordInput,
-} from "@/lib/schemas/user-schema";
+} from "@/lib/schemas/user/validation";
 
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
 

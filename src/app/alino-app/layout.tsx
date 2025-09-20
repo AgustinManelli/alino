@@ -1,4 +1,4 @@
-import { getUser } from "@/lib/api/actions";
+import { getUser } from "@/lib/api/user/actions";
 
 import { AppContent } from "./AppContent";
 import { TopBlurEffect } from "@/components/ui/top-blur-effect";

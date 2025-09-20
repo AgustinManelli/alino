@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { TaskType } from "@/lib/schemas/todo-schema";
+import { TaskType } from "@/lib/schemas/database.types";
 
 interface EditTaskModalState {
   isOpen: boolean;
