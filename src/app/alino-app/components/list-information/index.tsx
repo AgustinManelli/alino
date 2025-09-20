@@ -4,7 +4,7 @@ import { WindowComponent } from "@/components/ui/window-component";
 import styles from "./ListInformation.module.css";
 import React from "react";
 
-import { Database } from "@/lib/schemas/todo-schema";
+import { Database } from "@/lib/schemas/database.types";
 import { use, useEffect, useState } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { MemberRow } from "./member-row";

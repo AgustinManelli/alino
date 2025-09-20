@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { SortableFolder } from "../../folders/sortable-folder";
 import { ListCard } from "../../list-card";
-import type { ListsType, FolderType } from "@/lib/schemas/todo-schema";
+import type { ListsType, FolderType } from "@/lib/schemas/database.types";
 import type { NormalizedItem } from "../utils/types";
 import { variants } from "../animations/variants";
 

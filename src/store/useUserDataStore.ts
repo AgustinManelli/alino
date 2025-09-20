@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { toast } from "sonner";
 
-import { getUser, setUsernameFirstTime } from "@/lib/api/actions";
+import { getUser, setUsernameFirstTime } from "@/lib/api/user/actions";
 
-import { UserType } from "@/lib/schemas/todo-schema";
+import { UserType } from "@/lib/schemas/database.types";
 
 type UserData = {
   user: UserType | null;

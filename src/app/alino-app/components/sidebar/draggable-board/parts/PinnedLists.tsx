@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { ListCard } from "../../list-card";
-import type { ListsType } from "@/lib/schemas/todo-schema";
+import type { ListsType } from "@/lib/schemas/database.types";
 import { variants } from "../animations/variants";
 
 export function PinnedLists({

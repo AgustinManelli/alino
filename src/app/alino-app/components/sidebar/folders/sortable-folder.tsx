@@ -11,7 +11,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { FolderType, ListsType } from "@/lib/schemas/todo-schema";
+import { FolderType, ListsType } from "@/lib/schemas/database.types";
 import { ListCard } from "../list-card";
 import styles from "./SortableFolder.module.css";
 interface SortableFolderProps {

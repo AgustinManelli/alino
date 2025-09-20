@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { arrayMove } from "@dnd-kit/sortable";
 import type { DragStartEvent, DragEndEvent } from "@dnd-kit/core";
 import { calcNewIndex } from "../utils/calcNewIndex";
-import type { ListsType, FolderType } from "@/lib/schemas/todo-schema";
+import type { ListsType, FolderType } from "@/lib/schemas/database.types";
 import type { NormalizedItem } from "../utils/types";
 
 type Params = {

@@ -9,11 +9,11 @@ import { ConfigSection } from "./components/config-section";
 import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import { InitialUserConfiguration } from "./components/initial-user-configuration";
-import { RealtimeProvider } from "@/components/RealtimeProvider";
+import { RealtimeProvider } from "@/components/providers/RealtimeProvider";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { EditTaskModal } from "@/components/ui/EditTaskModal";
 
-import { UserType } from "@/lib/schemas/todo-schema";
+import { UserType } from "@/lib/schemas/database.types";
 import styles from "./AlinoAppLayout.module.css";
 
 interface Props {

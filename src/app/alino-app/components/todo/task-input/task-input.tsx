@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import styles from "./task-input.module.css";
-import { ListsType } from "@/lib/schemas/todo-schema";
+import { ListsType } from "@/lib/schemas/database.types";
 import { Calendar } from "@/components/ui/Calendar";
 import { usePathname } from "next/navigation";
 import { AnimatePresence } from "motion/react";

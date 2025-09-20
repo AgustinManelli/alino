@@ -1,6 +1,6 @@
 "use client";
 
-import type { ListsType, FolderType } from "@/lib/schemas/todo-schema";
+import type { ListsType, FolderType } from "@/lib/schemas/database.types";
 
 export type CombinedKind = "list" | "folder";
 

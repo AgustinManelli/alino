@@ -8,35 +8,40 @@ import { createClient } from "@/utils/supabase/client";
 import { useUserDataStore } from "./useUserDataStore";
 
 import {
-  getLists,
-  insertList,
-  deleteList,
-  deleteFolder,
-  leaveList,
-  insertTask,
-  deleteTask,
-  updateDataList,
-  updateCompletedTask,
-  updatePinnedList,
-  updateIndexList,
-  updateNameTask,
-  deleteAllLists,
-  getUsersMembersList,
   createListInvitation,
+  deleteAllLists,
+  deleteFolder,
+  deleteList,
+  getLists,
   getSingleLists,
+  getUsersMembersList,
   insertFolder,
-  updateIndexFolder,
+  insertList,
+  leaveList,
   updateDataFolder,
-} from "@/lib/api/actions";
+  updateDataList,
+  updateIndexFolder,
+  updateIndexList,
+  updatePinnedList,
+} from "@/lib/api/list/actions";
+import {
+  deleteTask,
+  insertTask,
+  updateCompletedTask,
+  updateNameTask,
+} from "@/lib/api/task/actions";
 
 import {
-  ListsType,
+  Database,
+  FolderType,
+  InvitationRow,
   ListsRow,
+  ListsType,
   MembershipRow,
   TaskType,
+  UserProfile,
   UserWithMembershipRole,
-  FolderType,
-} from "@/lib/schemas/todo-schema";
+} from "@/lib/schemas/database.types";
 
 const POS_INDEX = 16384;
 

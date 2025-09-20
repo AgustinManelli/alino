@@ -12,11 +12,11 @@ import { useShallow } from "zustand/shallow";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
-import type { TaskType } from "@/lib/schemas/todo-schema";
+import type { TaskType } from "@/lib/schemas/database.types";
 
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
-import { linkifyWithIcon } from "@/components/utils/linkify";
+import { linkifyWithIcon } from "@/utils/linkify";
 
 import { Check, MoreVertical, Note } from "@/components/ui/icons/icons";
 import styles from "./task-card.module.css";

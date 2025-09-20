@@ -7,12 +7,12 @@ import { animate } from "motion";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
-import type { TaskType } from "@/lib/schemas/todo-schema";
+import type { TaskType } from "@/lib/schemas/database.types";
 
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { linkifyWithIcon } from "@/components/utils/linkify";
+import { linkifyWithIcon } from "@/utils/linkify";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
 
 import { DeleteIcon, Edit, Note } from "@/components/ui/icons/icons";

@@ -15,7 +15,7 @@ import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
-import { ListsType } from "@/lib/schemas/todo-schema";
+import { ListsType } from "@/lib/schemas/database.types";
 
 import ListInformation from "@/app/alino-app/components/list-information";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";

@@ -6,7 +6,7 @@ import { WindowComponent } from "@/components/ui/window-component";
 
 import styles from "./ConfigUser.module.css";
 import { Edit, UserIcon } from "@/components/ui/icons/icons";
-import { Database } from "@/lib/schemas/todo-schema";
+import { Database } from "@/lib/schemas/database.types";
 
 type UserComplete = Database["public"]["Tables"]["users"]["Row"];
 

@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 
 import { useNotificationsStore } from "@/store/useNotificationsStore";
-import { InvitationRow } from "@/lib/schemas/todo-schema";
+import { InvitationRow } from "@/lib/schemas/database.types";
 
 import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
 

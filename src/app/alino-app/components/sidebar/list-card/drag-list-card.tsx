@@ -1,6 +1,6 @@
 "use client";
 
-import { ListsType } from "@/lib/schemas/todo-schema";
+import { ListsType } from "@/lib/schemas/database.types";
 import {
   Colaborate,
   MoreVertical,

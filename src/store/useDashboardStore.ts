@@ -3,8 +3,8 @@
 import { create } from "zustand";
 import { toast } from "sonner";
 
-import { getStats, getUpcomingTasks } from "@/lib/api/actions";
-import { TaskType } from "@/lib/schemas/todo-schema";
+import { getStats, getUpcomingTasks } from "@/lib/api/task/actions";
+import { TaskType } from "@/lib/schemas/database.types";
 
 type UserData = {
   total_tasks: number;

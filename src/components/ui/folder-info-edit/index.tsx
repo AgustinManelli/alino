@@ -3,10 +3,10 @@
 import { useCallback, useRef, memo } from "react";
 import { motion } from "motion/react";
 
-import { FolderType } from "@/lib/schemas/todo-schema";
+import { FolderType } from "@/lib/schemas/database.types";
 import { TextTitlesAnimation } from "@/components/ui/text-titles-animation";
 
-import { hexColorSchema } from "@/lib/schemas/validationSchemas";
+import { hexColorSchema } from "@/lib/schemas/list/validation";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 
 import { Check } from "@/components/ui/icons/icons";
