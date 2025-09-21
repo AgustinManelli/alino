@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 import { useDashboardStore } from "@/store/useDashboardStore";
 
@@ -13,9 +13,16 @@ export const NewFeature = () => {
 
   const [init, setInit] = useState<boolean>(false);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
 
   const initialized = useRef(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Swipe functionality refs
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+  const isDragging = useRef<boolean>(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -33,10 +40,10 @@ export const NewFeature = () => {
 
   // Auto-advance carousel
   useEffect(() => {
-    if (validUpdates.length > 1) {
+    if (validUpdates.length > 1 && !isTransitioning) {
       intervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % validUpdates.length);
-      }, 20000); // Cambia cada 4 segundos
+      }, 20000);
 
       return () => {
         if (intervalRef.current) {
@@ -44,7 +51,7 @@ export const NewFeature = () => {
         }
       };
     }
-  }, [validUpdates.length]);
+  }, [validUpdates.length, isTransitioning]);
 
   // Cleanup interval on unmount
   useEffect(() => {
@@ -55,15 +62,83 @@ export const NewFeature = () => {
     };
   }, []);
 
-  const handleDotClick = (index: number) => {
-    setCurrentIndex(index);
-
-    // Reiniciar el timer cuando el usuario hace click manual
+  const resetInterval = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
+    }
+    if (validUpdates.length > 1) {
       intervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % validUpdates.length);
       }, 20000);
+    }
+  }, [validUpdates.length]);
+
+  const goToSlide = useCallback(
+    (index: number) => {
+      if (index === currentIndex || isTransitioning) return;
+
+      setIsTransitioning(true);
+      setCurrentIndex(index);
+      resetInterval();
+
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    },
+    [currentIndex, isTransitioning, resetInterval]
+  );
+
+  const handleDotClick = (index: number) => {
+    goToSlide(index);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    isDragging.current = true;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging.current) return;
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    handleSwipe();
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    touchStartX.current = e.clientX;
+    isDragging.current = true;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current) return;
+    touchEndX.current = e.clientX;
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    handleSwipe();
+  };
+
+  const handleSwipe = () => {
+    if (validUpdates.length <= 1 || isTransitioning) return;
+
+    const swipeDistance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(swipeDistance) < minSwipeDistance) return;
+
+    if (swipeDistance > 0) {
+      const nextIndex = (currentIndex + 1) % validUpdates.length;
+      goToSlide(nextIndex);
+    } else {
+      const prevIndex =
+        currentIndex === 0 ? validUpdates.length - 1 : currentIndex - 1;
+      goToSlide(prevIndex);
     }
   };
 
@@ -83,7 +158,17 @@ export const NewFeature = () => {
     <div className={styles.newFeatures}>
       {init ? (
         <>
-          <div className={styles.contentContainer}>
+          <div
+            ref={containerRef}
+            className={`${styles.contentContainer} ${isTransitioning ? styles.transitioning : ""}`}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
             {currentUpdate.image_url ? (
               <Image
                 src={currentUpdate.image_url}
@@ -91,6 +176,7 @@ export const NewFeature = () => {
                 className={styles.newFeaturesImage}
                 width={1000}
                 height={563}
+                draggable={false}
               />
             ) : (
               <div className={styles.textContent}>

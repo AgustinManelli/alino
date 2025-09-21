@@ -73,6 +73,8 @@ export const HomeDashboard = () => {
       id: "weather",
       title: "Clima",
       content: <Weather />,
+      withoutTopPadding: true,
+      withoutHeader: true,
     },
     {
       id: "new-features",
