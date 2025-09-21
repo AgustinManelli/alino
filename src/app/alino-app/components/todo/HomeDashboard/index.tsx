@@ -46,6 +46,8 @@ export interface BentoItem {
   id: string;
   title: string;
   content: React.ReactNode;
+  withoutTopPadding?: boolean;
+  withoutHeader?: boolean;
 }
 
 export const HomeDashboard = () => {
@@ -67,11 +69,18 @@ export const HomeDashboard = () => {
       title: "Próximas Tareas",
       content: <UpcomingTask />,
     },
-    // {
-    //   id: "new-features",
-    //   title: "Nuevo en Alino",
-    //   content: <NewFeature />,
-    // },
+    {
+      id: "weather",
+      title: "Clima",
+      content: <Weather />,
+    },
+    {
+      id: "new-features",
+      title: "Nuevo en Alino",
+      content: <NewFeature />,
+      withoutTopPadding: true,
+      withoutHeader: true,
+    },
     // {
     //   id: "overdue-tasks",
     //   title: "Tareas Vencidas",
@@ -82,20 +91,22 @@ export const HomeDashboard = () => {
     //   title: "Tareas de Hoy",
     //   content: <TodayTasksWidget count={8} />,
     // },
-    // {
-    //   id: "weather",
-    //   title: "Clima",
-    //   content: <Weather />,
-    // },
   ];
 
   const formattedDate = useMemo(() => {
     return new Date().toLocaleDateString("es-ES", {
       weekday: "long",
-      year: "numeric",
+      // year: "numeric",
       month: "long",
       day: "numeric",
     });
+  }, []);
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Buen día";
+    if (hour < 19) return "Buenas tardes";
+    return "Buenas noches";
   }, []);
 
   const displayName = useMemo(
@@ -110,7 +121,7 @@ export const HomeDashboard = () => {
           <section className={styles.homeContainer}>
             <div className={styles.homeSubContainer}>
               <h1 className={styles.homeTitle}>
-                <span>Hola, </span>
+                <span>{greeting}, </span>
                 <span>{displayName}</span>
               </h1>
               <div className={styles.homeTimeContainer}>

@@ -18,6 +18,12 @@ const nextConfig = {
         hostname: "lh3.googleusercontent.com",
         protocol: "https",
       },
+      {
+        protocol: "https",
+        hostname: "dftjzbbvaucwuvgjjhbf.supabase.co",
+        port: "",
+        pathname: "/storage/v1/object/public/app-updates/**",
+      },
     ],
   },
 };

@@ -5,11 +5,15 @@ import { Layout, Layouts, Responsive, WidthProvider } from "react-grid-layout";
 import styles from "./DraggableBentoGrid.module.css";
 import { HomeLayouts } from "./layout.helper";
 import { ResizeIcon } from "./ResizeIcon";
+import SimpleBar from "simplebar-react";
+import "simplebar-react/dist/simplebar.min.css";
 
 export interface BentoItem {
   id: string;
   title: string;
   content: React.ReactNode;
+  withoutTopPadding?: boolean;
+  withoutHeader?: boolean;
 }
 
 function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
@@ -53,7 +57,7 @@ function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
         className={!isMounted ? styles.gridInitial : ""}
         style={{ width: "100%", height: "auto" }}
         breakpoints={{ xl: 1200, lg: 700, md: 600, sm: 480, xs: 200 }}
-        cols={{ xl: 3, lg: 3, md: 2, sm: 1, xs: 1 }}
+        cols={{ xl: 3, lg: 3, md: 1, sm: 1, xs: 1 }}
         rowHeight={200}
         layouts={layoutsWithItemIds}
         draggableHandle=".dragHandle"
@@ -77,30 +81,41 @@ function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
           <div key={item.id} data-grid-id={item.id}>
             <div className={styles.bentoItem}>
               <div className={styles.bentoContent}>
-                <header className={styles.bentoHeader}>
-                  <h3 className={styles.bentoTitle}>{item.title}</h3>
-                  <div
-                    className={`${styles.dragHandle} dragHandle`}
-                    aria-label={`Mover elemento ${item.title}`}
+                {!(item.withoutHeader ?? false) && (
+                  <header className={styles.bentoHeader}>
+                    <h3 className={styles.bentoTitle}>{item.title}</h3>
+                  </header>
+                )}
+
+                <div
+                  className={`${styles.dragHandle} dragHandle`}
+                  aria-label={`Mover elemento ${item.title}`}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
                   >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <circle cx="9" cy="12" r="1" />
-                      <circle cx="9" cy="5" r="1" />
-                      <circle cx="9" cy="19" r="1" />
-                      <circle cx="15" cy="12" r="1" />
-                      <circle cx="15" cy="5" r="1" />
-                      <circle cx="15" cy="19" r="1" />
-                    </svg>
-                  </div>
-                </header>
-                <main className={styles.bentoBody}>{item.content}</main>
+                    <circle cx="9" cy="12" r="1" />
+                    <circle cx="9" cy="5" r="1" />
+                    <circle cx="9" cy="19" r="1" />
+                    <circle cx="15" cy="12" r="1" />
+                    <circle cx="15" cy="5" r="1" />
+                    <circle cx="15" cy="19" r="1" />
+                  </svg>
+                </div>
+
+                <SimpleBar
+                  className={styles.bentoBody}
+                  style={{
+                    paddingTop: (item.withoutTopPadding ?? false) ? 0 : "40px",
+                  }}
+                >
+                  {item.content}
+                </SimpleBar>
               </div>
             </div>
           </div>
