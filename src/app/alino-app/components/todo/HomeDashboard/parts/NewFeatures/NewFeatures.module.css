@@ -25,6 +25,20 @@
   align-items: center;
   justify-content: center;
   min-height: 150px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  touch-action: pan-y;
+}
+
+.contentContainer:active {
+  cursor: grabbing;
+}
+
+.contentContainer.transitioning {
+  pointer-events: none;
 }
 
 .newFeaturesImage {
@@ -32,7 +46,17 @@
   height: 100%;
   object-fit: cover;
   z-index: -1;
-  transition: opacity 0.3s ease-in-out;
+  transition:
+    opacity 0.3s ease-in-out,
+    transform 0.3s ease-in-out;
+  border-radius: 8px;
+  pointer-events: none;
+  transform: scale(1.02);
+}
+
+.transitioning .newFeaturesImage {
+  transform: scale(1);
+  opacity: 0.8;
 }
 
 .textContent {
@@ -55,6 +79,13 @@
   transition: all 0.3s ease-in-out;
   position: relative;
   overflow: hidden;
+  pointer-events: none;
+  transform: scale(1.02);
+}
+
+.transitioning .textContent {
+  transform: scale(1);
+  opacity: 0.8;
 }
 
 .textHeader {
@@ -112,6 +143,8 @@
   bottom: 10px;
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 10px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .dot {
@@ -124,6 +157,7 @@
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   padding: 0;
+  z-index: 10;
 }
 
 .dot:hover {
@@ -147,4 +181,27 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .contentContainer {
+    touch-action: pan-y;
+  }
+
+  .dotsContainer {
+    padding: 8px 12px;
+    bottom: 8px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+.contentContainer * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
