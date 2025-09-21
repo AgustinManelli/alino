@@ -14,6 +14,19 @@ export type Database = {
   };
   public: {
     Tables: {
+      app_updates: {
+        Row: {
+          category: Database["public"]["Enums"]["app_update_category"];
+          content: string;
+          created_at: string;
+          id: string;
+          image_url: string | null;
+          is_published: boolean;
+          published_at: string | null;
+          title: string;
+          version: string | null;
+        }
+      }
       list_folders: {
         Row: {
           created_at: string;
@@ -465,6 +478,7 @@ export type Database = {
     Enums: {
       roles_types: "admin" | "editor" | "reader" | "owner";
       status_shared_types: "pending" | "accepted" | "rejected";
+      app_update_category: "new_feature" | "improvement" | "bug_fix" | "announcement";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -497,6 +511,8 @@ export type InvitationRow =
   Database["public"]["Tables"]["list_invitations"]["Row"];
 
 export type FolderType = Database["public"]["Tables"]["list_folders"]["Row"];
+
+export type AppUpdatesType = Database["public"]["Tables"]["app_updates"]["Row"];
 
 export type DashboardData = {
   user_id: string;

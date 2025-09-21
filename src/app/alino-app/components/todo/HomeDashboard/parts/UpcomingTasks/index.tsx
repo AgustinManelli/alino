@@ -1,6 +1,6 @@
 "use client";
 
-import { TaskCardStatic } from "../../../task-card/task-card-static";
+import { TaskCard } from "./TaskCard";
 
 import styles from "./UpcomingTasks.module.css";
 import { useEffect, useRef, useState } from "react";
@@ -31,7 +31,7 @@ export const UpcomingTask = () => {
         {init
           ? upcoming_tasks.map((item, index) => (
               <div className={styles.taskCard} key={index}>
-                <TaskCardStatic task={item} home />
+                <TaskCard task={item} />
               </div>
             ))
           : Array(2)
@@ -47,6 +47,7 @@ export const UpcomingTask = () => {
                   key={`skeleton-${index}`}
                 />
               ))}
+        <div style={{ width: "100%", height: "1px", minHeight: "1px" }} />
       </div>
     </div>
   );

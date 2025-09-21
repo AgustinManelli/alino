@@ -4,7 +4,8 @@ import { create } from "zustand";
 import { toast } from "sonner";
 
 import { getStats, getUpcomingTasks } from "@/lib/api/task/actions";
-import { TaskType } from "@/lib/schemas/database.types";
+import { TaskType, AppUpdatesType} from "@/lib/schemas/database.types";
+import { getAppUpdates } from "@/lib/api/app-updates/actions";
 
 type UserData = {
   total_tasks: number;
@@ -14,8 +15,11 @@ type UserData = {
   fetchStats: boolean;
   upcoming_tasks: TaskType[];
   fetchUpcomingTasks: boolean;
+  app_updates: AppUpdatesType[];
+  fetchAppUpdates: boolean;
   getStats: () => Promise<void>;
-  getUpcomingTasks: () => Promise<void>
+  getUpcomingTasks: () => Promise<void>;
+  getAppUpdates: () => Promise<void>
 };
 
 function handleError(err: unknown) {
@@ -30,6 +34,8 @@ export const useDashboardStore = create<UserData>()((set, get) => ({
   fetchStats: false,
   upcoming_tasks: [],
   fetchUpcomingTasks: false,
+  app_updates: [],
+  fetchAppUpdates: false,
   getStats: async () => {
     if (get().fetchStats) return
     try {
@@ -58,4 +64,19 @@ export const useDashboardStore = create<UserData>()((set, get) => ({
       handleError(err);
     }
   },
+
+  getAppUpdates: async () => {
+    if (get().fetchAppUpdates) return
+    try {
+    const { data, error } = await getAppUpdates();
+    
+    if (error) {
+      throw new Error(error);
+    }
+
+      set(() => ({ app_updates: data, fetchAppUpdates: true}));
+    } catch (err) {
+      handleError(err);
+    }
+  }
 }));
