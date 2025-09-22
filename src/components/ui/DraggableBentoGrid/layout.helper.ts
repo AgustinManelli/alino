@@ -1,9 +1,9 @@
 export const HomeLayouts = {
 	lg: [
 		{ i: "summary", x: 0, y: 0, w: 1, h: 1, isResizable: false, minW: 1, maxW: 1, minH:1, maxH: 1},
-		{ i: "upcoming-tasks", x: 1, y: 0, w: 2, h: 1, isResizable: true, minW: 2, maxW: 2, minH:1, maxH: 2},
+		{ i: "upcoming-tasks", x: 1, y: 0, w: 2, h: 1, minW: 2, maxW: 2, minH:1, maxH: 2},
 		{ i: "new-features", x: 2, y: 1, w: 1, h: 1, isResizable: false },
-		{ i: "weather", x: 0, y: 1, w: 2, h: 1, isResizable: true, minW: 1, maxW: 2, minH:1, maxH: 1},
+		{ i: "weather", x: 0, y: 1, w: 2, h: 1, minW: 1, maxW: 2, minH:1, maxH: 1},
 		{ i: "today-tasks", x: 0, y: 2, w: 2, h: 1, isResizable: false },
 		{ i: "overdue-tasks", x: 2, y: 1, w: 1, h: 1, isResizable: false },
 	],

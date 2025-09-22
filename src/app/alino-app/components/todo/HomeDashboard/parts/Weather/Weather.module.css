@@ -205,7 +205,6 @@
 @media (max-width: 360px) {
   .weatherWidget {
     width: 100%;
-    max-width: 280px;
     padding: 20px;
   }
 

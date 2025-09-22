@@ -8,11 +8,16 @@ import { DashboardData } from "@/lib/schemas/database.types";
 import { Summary } from "./parts/Summary";
 import { UpcomingTask } from "./parts/UpcomingTasks";
 import DraggableBentoGrid from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { NewFeature } from "./parts/NewFeatures";
 import { Weather } from "./parts/Weather";
+import { ConfigMenu } from "@/components/ui/ConfigMenu";
+import { Check, Edit } from "@/components/ui/icons/icons";
+import { useDashboardStore } from "@/store/useDashboardStore";
+import { Layouts } from "react-grid-layout";
+import { HomeLayouts } from "@/components/ui/DraggableBentoGrid/layout.helper";
 
 // Componente de tareas del día
 const TodayTasksWidget = ({ count }: { count: number }) => (
@@ -54,6 +59,10 @@ export interface BentoItem {
 export const HomeDashboard = () => {
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
   const user = useUserDataStore((state) => state.user);
+  const setLayout = useDashboardStore((state) => state.setLayout);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
+  const layout = useDashboardStore((state) => state.layout);
+  const [tempLayout, setTempLayout] = useState<Layouts>(layout);
 
   useEffect(() => {
     setBlurredFx("rgb(106, 195, 255)");
@@ -118,6 +127,35 @@ export const HomeDashboard = () => {
     [user]
   );
 
+  const configOptions = useMemo(() => {
+    const baseOptions = [
+      {
+        name: "Editar dashboard",
+        icon: <Edit style={iconStyle} />,
+        action: () => {
+          setIsEdit(true);
+        },
+        enabled: true,
+      },
+      {
+        name: "Reiniciar dashboard",
+        icon: <Edit style={iconStyle} />,
+        action: () => {
+          setTempLayout(HomeLayouts);
+          setLayout(HomeLayouts);
+        },
+        enabled: true,
+      },
+    ];
+    return baseOptions.filter((option) => option.enabled);
+  }, []);
+
+  const handleFinishEdit = () => {
+    if (layout === tempLayout) return;
+    setIsEdit(false);
+    setLayout(tempLayout);
+  };
+
   return (
     <div className={styles.dashboardContainer}>
       <section className={styles.section1}>
@@ -136,13 +174,41 @@ export const HomeDashboard = () => {
                 </p>
               </div>
             </div>
+            <div className={styles.configSection}>
+              {isEdit && (
+                <button onClick={handleFinishEdit}>
+                  <Check
+                    style={{
+                      width: "20px",
+                      height: "auto",
+                      stroke: "var(--icon-color)",
+                      strokeWidth: 2,
+                    }}
+                  />
+                </button>
+              )}
+              <ConfigMenu iconWidth={"25px"} configOptions={configOptions} />
+            </div>
           </section>
         </div>
       </section>
 
       <main className={styles.dashboardContent}>
-        <DraggableBentoGrid items={bentoItems} />
+        <DraggableBentoGrid
+          items={bentoItems}
+          isEdit={isEdit}
+          setIsEdit={setIsEdit}
+          tempLayout={tempLayout}
+          setTempLayout={setTempLayout}
+        />
       </main>
     </div>
   );
+};
+
+const iconStyle = {
+  width: "14px",
+  height: "auto",
+  stroke: "var(--text)",
+  strokeWidth: 2,
 };

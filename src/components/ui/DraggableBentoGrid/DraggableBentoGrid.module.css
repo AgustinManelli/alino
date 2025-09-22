@@ -103,13 +103,14 @@
 .dragHandle {
   position: absolute;
   background: none;
+  background-color: rgba(156, 163, 175, 0.1);
   border: none;
   color: #9ca3af;
   cursor: grab;
   padding: 5px;
   border-radius: 10px;
   transition: all 0.2s ease;
-  opacity: 0;
+  opacity: 1;
   flex-shrink: 0;
   top: 10px;
   right: 10px;
@@ -119,15 +120,15 @@
   align-items: center;
 }
 
-.bentoItem:hover .dragHandle {
+/* .bentoItem:hover .dragHandle {
   opacity: 1;
   transform: translateX(0);
 }
 
 .dragHandle:hover {
   color: #6b7280;
-  background-color: rgba(156, 163, 175, 0.1);
-}
+  
+} */
 
 .dragHandle:active {
   cursor: grabbing;
