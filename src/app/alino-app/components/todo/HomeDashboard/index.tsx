@@ -48,6 +48,7 @@ export interface BentoItem {
   content: React.ReactNode;
   withoutTopPadding?: boolean;
   withoutHeader?: boolean;
+  scrollable?: boolean;
 }
 
 export const HomeDashboard = () => {
@@ -68,6 +69,7 @@ export const HomeDashboard = () => {
       id: "upcoming-tasks",
       title: "Próximas Tareas",
       content: <UpcomingTask />,
+      scrollable: true,
     },
     {
       id: "weather",

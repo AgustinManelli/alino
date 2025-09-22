@@ -71,6 +71,10 @@
   min-height: 28px;
   padding: 10px 10px 0px 10px;
   z-index: 2;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .bentoHeader::before {
@@ -106,7 +110,6 @@
   border-radius: 10px;
   transition: all 0.2s ease;
   opacity: 0;
-  transform: translateX(4px);
   flex-shrink: 0;
   top: 10px;
   right: 10px;

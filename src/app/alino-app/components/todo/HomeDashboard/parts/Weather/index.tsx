@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/icons/weather-icons";
 import styles from "./Weather.module.css";
 import { LoadingIcon } from "@/components/ui/icons/icons";
+import { useDashboardStore } from "@/store/useDashboardStore";
 
 type WeatherState = {
   temperature: number | null;
@@ -190,20 +191,24 @@ function getHourlyEmoji(code: number, isDay: boolean): React.ReactNode {
 }
 
 export const Weather: React.FC<{ label?: string }> = ({ label }) => {
-  const [state, setState] = useState<WeatherState>({
-    temperature: null,
-    tempMin: null,
-    tempMax: null,
-    description: null,
-    emoji: null,
-    location: null,
-    loading: true,
-    error: null,
-    weatherType: "default",
-    hourlyForecast: [],
-  });
+  // const [state, setState] = useState<WeatherState>({
+  //   temperature: null,
+  //   tempMin: null,
+  //   tempMax: null,
+  //   description: null,
+  //   emoji: null,
+  //   location: null,
+  //   loading: true,
+  //   error: null,
+  //   weatherType: "default",
+  //   hourlyForecast: [],
+  // });
+
+  const weather = useDashboardStore((state) => state.weather);
+  const setWeather = useDashboardStore((state) => state.setWeather);
 
   useEffect(() => {
+    if (!weather.loading) return;
     let mounted = true;
 
     const fetchWeatherAndHourly = async (lat: number, lon: number) => {
@@ -479,7 +484,7 @@ export const Weather: React.FC<{ label?: string }> = ({ label }) => {
 
       if (!mounted) return;
 
-      setState({
+      setWeather({
         temperature: w.temperature,
         tempMin: w.tempMin,
         tempMax: w.tempMax,
@@ -510,8 +515,8 @@ export const Weather: React.FC<{ label?: string }> = ({ label }) => {
   }, [label]);
 
   return (
-    <div className={`${styles.weatherWidget} ${styles[state.weatherType]}`}>
-      {state.loading ? (
+    <div className={`${styles.weatherWidget} ${styles[weather.weatherType]}`}>
+      {weather.loading ? (
         <div className={styles.loadingContainer}>
           <LoadingIcon
             style={{
@@ -523,7 +528,7 @@ export const Weather: React.FC<{ label?: string }> = ({ label }) => {
           />
           <span className={styles.loadingText}>Cargando clima…</span>
         </div>
-      ) : state.error ? (
+      ) : weather.error ? (
         <div className={styles.errorContainer}>
           <span className={styles.errorIcon}>⚠️</span>
           <span className={styles.errorText}>Error al cargar clima</span>
@@ -535,7 +540,7 @@ export const Weather: React.FC<{ label?: string }> = ({ label }) => {
             <div className={styles.loctempContainer}>
               <div className={styles.locationHeader}>
                 <span className={styles.locationText}>
-                  {state.location ?? "Ubicación desconocida"}
+                  {weather.location ?? "Ubicación desconocida"}
                 </span>
                 <span className={styles.locationIcon}>
                   <Navigation
@@ -549,25 +554,25 @@ export const Weather: React.FC<{ label?: string }> = ({ label }) => {
               </div>
               {/* Temperatura principal y descripción */}
               <span className={styles.currentTemp}>
-                {state.temperature !== null ? `${state.temperature}°` : "—"}
+                {weather.temperature !== null ? `${weather.temperature}°` : "—"}
               </span>
             </div>
             <div className={styles.desctempContainer}>
-              {state.emoji}
+              {weather.emoji}
               <div className={styles.weatherDescription}>
-                {state.description ?? "—"}
+                {weather.description ?? "—"}
               </div>
               <p>
-                Máx.: {state.tempMax !== null ? `${state.tempMax}°` : "—"} Mín.:{" "}
-                {state.tempMin !== null ? `${state.tempMin}°` : "—"}
+                Máx.: {weather.tempMax !== null ? `${weather.tempMax}°` : "—"}{" "}
+                Mín.: {weather.tempMin !== null ? `${weather.tempMin}°` : "—"}
               </p>
             </div>
           </div>
 
           {/* Pronóstico horario */}
-          {state.hourlyForecast.length > 0 && (
+          {weather.hourlyForecast.length > 0 && (
             <div className={styles.hourlyForecast}>
-              {state.hourlyForecast.slice(0, 7).map((hour, index) => (
+              {weather.hourlyForecast.slice(0, 7).map((hour, index) => (
                 <div key={index} className={styles.hourlyItem}>
                   <span className={styles.hourlyTime}>
                     {hour.time.split(":")[0]}

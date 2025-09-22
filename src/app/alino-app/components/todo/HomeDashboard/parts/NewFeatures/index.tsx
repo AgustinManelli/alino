@@ -190,7 +190,7 @@ export const NewFeature = () => {
                   {truncateText(currentUpdate.title, 50)}
                 </h3>
                 <p className={styles.description}>
-                  {truncateText(currentUpdate.content, 80)}
+                  {truncateText(currentUpdate.content, 90)}
                 </p>
               </div>
             )}
