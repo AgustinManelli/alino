@@ -142,10 +142,6 @@ export const NewFeature = () => {
     }
   };
 
-  if (!validUpdates.length) {
-    return null;
-  }
-
   const currentUpdate = validUpdates[currentIndex];
 
   // Función para truncar texto
@@ -213,10 +209,21 @@ export const NewFeature = () => {
               ))}
             </div>
           )}
+
+          {currentUpdate.published_at && (
+            <p className={styles.date}>
+              {currentUpdate.published_at &&
+                new Date(currentUpdate.published_at)
+                  .toLocaleDateString("es-AR", {
+                    month: "short",
+                    year: "numeric",
+                  })
+                  .toUpperCase()}
+            </p>
+          )}
         </>
       ) : (
         <div className={styles.loadingContainer}>
-          <p>Cargando lo nuevo de alino</p>
           <LoadingIcon
             style={{
               width: "20px",
@@ -225,6 +232,7 @@ export const NewFeature = () => {
               strokeWidth: "3",
             }}
           />
+          <p>Cargando novedades...</p>
         </div>
       )}
     </div>

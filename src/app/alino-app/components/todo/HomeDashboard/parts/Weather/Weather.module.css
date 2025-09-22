@@ -8,46 +8,59 @@
   position: relative;
   width: 100%;
   height: 100%;
-  /* padding: 24px; */
   overflow: hidden;
   transition: var(--transition-smooth);
   color: white;
   text-shadow: var(--text-shadow);
+  container-type: inline-size;
+  container-name: mi-contenedor;
 }
 
 /* Fondos adaptativos según clima y hora */
 .weatherWidget.sunny {
-  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 50%, #74b9ff 100%);
+  background: linear-gradient(0deg, #74b9ff 0%, #74b9ff 50%, #0984e3 100%);
 }
 
 .weatherWidget.night {
-  background: linear-gradient(135deg, #2d3436 0%, #636e72 50%, #2d3436 100%);
+  background: linear-gradient(0deg, #37405f 0%, #110f26 100%);
 }
 
-.weatherWidget.cloudy {
-  background: linear-gradient(180deg, #636e72 0%, #b2bec3 50%, #74b9ff 100%);
+.weatherWidget.cloudy-day {
+  background: linear-gradient(0deg, #74b9ff 0, #8a9397 100%);
+}
+
+.weatherWidget.cloudy-night {
+  background: linear-gradient(0deg, #37405f 0, #484c4e 100%);
 }
 
 .weatherWidget.rainy {
-  background: linear-gradient(135deg, #2d3436 0%, #636e72 30%, #74b9ff 100%);
+  background: linear-gradient(0deg, #97a8ad 50%, #2d3436 100%);
+}
+
+.weatherWidget.rainy-day {
+  background: linear-gradient(0deg, #74b9ff 0%, #97a8ad 50%, #2d3436 100%);
+}
+
+.weatherWidget.rainy-night {
+  background: linear-gradient(0deg, #37405f 0%, #2d3436 100%);
 }
 
 .weatherWidget.stormy {
-  background: linear-gradient(135deg, #2d3436 0%, #636e72 50%, #ddd 100%);
+  background: linear-gradient(0deg, #97a8ad 50%, #2d3436 100%);
 }
 
 .weatherWidget.snowy {
-  background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 50%, #74b9ff 100%);
+  background: linear-gradient(0deg, #97a8ad 50%, #2d3436 100%);
   color: #2d3436;
   text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
 }
 
 .weatherWidget.foggy {
-  background: linear-gradient(135deg, #b2bec3 0%, #dfe6e9 50%, #636e72 100%);
+  background: linear-gradient(0deg, #b6bcbe 0%, #879094 50%, #576164 100%);
 }
 
 .weatherWidget.default {
-  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  background: none;
 }
 
 /* Estados de carga y error */
@@ -57,33 +70,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   height: 100%;
-  gap: 16px;
-}
-
-.loadingSpinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top: 3px solid white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  width: 100%;
 }
 
 .loadingText,
 .errorText {
-  font-size: 16px;
+  color: var(--text-not-available);
+  font-size: 12px;
   font-weight: 500;
-  opacity: 0.9;
+  text-shadow: none;
 }
 
 .errorIcon {
@@ -95,16 +92,16 @@
 .weatherContainer {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
   height: 100%;
-  padding: 10px;
+  padding: 15px 20px;
 }
 
 .headerWidget {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding: 0 10px;
+  height: fit-content;
 }
 
 .loctempContainer {
@@ -123,7 +120,7 @@
 }
 
 .locationIcon {
-  font-size: 14px;
+  display: flex;
 }
 
 .locationText {
@@ -135,40 +132,10 @@
 }
 
 /* Información principal del clima */
-.mainWeather {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.primaryInfo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.temperatureSection {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
 .currentTemp {
   font-size: 48px;
-  font-weight: 200;
+  font-weight: 300;
   line-height: 1;
-  letter-spacing: -2px;
-}
-
-.weatherEmoji {
-  font-size: 48px;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-}
-
-.weatherDescription {
-  font-size: 16px;
-  font-weight: 400;
 }
 
 .desctempContainer {
@@ -178,29 +145,27 @@
   align-items: flex-end;
 }
 
-.desctempContainer {
+.weatherDescription {
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 300;
+  line-height: 1;
+  margin-top: 5px;
 }
 
 /* Pronóstico horario */
 .hourlyForecast {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.hourlyGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
-  gap: 10px;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 .hourlyItem {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   transition: var(--transition-smooth);
+  gap: 5px;
 }
 
 .hourlyTime {
@@ -209,14 +174,10 @@
   opacity: 0.8;
 }
 
-.hourlyEmoji {
-  font-size: 20px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-}
-
 .hourlyTemp {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 400;
+  line-height: 1;
 }
 
 /* Adaptaciones para tema nieve */
@@ -270,5 +231,19 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@container (max-width: 360px) {
+  .hourlyForecast {
+    display: none;
+  }
+  .headerWidget {
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
+  .desctempContainer {
+    align-items: flex-start;
   }
 }
