@@ -7,6 +7,7 @@ import { HomeLayouts } from "./layout.helper";
 import { ResizeIcon } from "./ResizeIcon";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
+import { useDashboardStore } from "@/store/useDashboardStore";
 
 export interface BentoItem {
   id: string;
@@ -17,9 +18,21 @@ export interface BentoItem {
   scrollable?: boolean;
 }
 
-function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
-  const [currentlayout, setCurrentLayout] = useState(HomeLayouts);
+interface Props {
+  items: BentoItem[];
+  isEdit: boolean;
+  setIsEdit: (value: boolean) => void;
+  tempLayout: Layouts;
+  setTempLayout: (value: Layouts) => void;
+}
 
+function DraggableBentoGrid({
+  items,
+  isEdit,
+  setIsEdit,
+  tempLayout,
+  setTempLayout,
+}: Props) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -33,16 +46,16 @@ function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
 
   const layoutsWithItemIds = useMemo(() => {
     const newLayouts: Layouts = {};
-    for (const breakpoint in currentlayout) {
-      newLayouts[breakpoint] = currentlayout[
-        breakpoint as keyof typeof currentlayout
+    for (const breakpoint in tempLayout) {
+      newLayouts[breakpoint] = tempLayout[
+        breakpoint as keyof typeof tempLayout
       ].map((layoutItem /*, index*/) => ({
         ...layoutItem,
         i: /*items[index]?.id || */ layoutItem.i,
       }));
     }
     return newLayouts;
-  }, [items, currentlayout]);
+  }, [items, tempLayout]);
 
   const handleDragStart = () => {
     document.body.classList.add("dragging-grid");
@@ -63,20 +76,17 @@ function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
         layouts={layoutsWithItemIds}
         draggableHandle=".dragHandle"
         compactType="vertical"
-        // resizeHandles={["se"]}
-        // resizeHandle={(resizeHandleAxis) => (
-        //   <CustomResizeHandle axis={resizeHandleAxis} />
-        // )}
+        isDraggable={isEdit}
+        isResizable={isEdit}
+        isDroppable={isEdit}
+        resizeHandles={["se"]}
+        resizeHandle={<CustomResizeHandle edit={isEdit} />}
         onLayoutChange={(currentLayout: Layout[], allLayouts: Layouts) => {
-          console.log("Nuevo layout para el breakpoint actual:", currentLayout);
-          console.log(
-            "Todos los layouts (para todos los breakpoints):",
-            allLayouts
-          );
-          // Logica para el guardado de layouts
+          setTempLayout(allLayouts);
         }}
         onDragStart={handleDragStart}
         onDragStop={handleDragStop}
+        containerPadding={[10, 10]}
       >
         {items.map((item) => (
           <div key={item.id} data-grid-id={item.id}>
@@ -90,6 +100,7 @@ function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
 
                 <div
                   className={`${styles.dragHandle} dragHandle`}
+                  style={{ visibility: isEdit ? "visible" : "hidden" }}
                   aria-label={`Mover elemento ${item.title}`}
                 >
                   <svg
@@ -140,34 +151,37 @@ function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
 
 export default DraggableBentoGrid;
 
-// interface CustomResizeHandleProps {
-//   axis: string;
-// }
+interface CustomResizeHandleProps {
+  axis?: string;
+  ref?: HTMLElement;
+  edit?: boolean;
+}
 
-// const CustomResizeHandle = React.forwardRef<
-//   HTMLDivElement,
-//   CustomResizeHandleProps
-// >(({ axis, ...props }, ref) => {
-//   const handleClass = `react-resizable-handle react-resizable-handle-${axis}`;
+const CustomResizeHandle = React.forwardRef<
+  HTMLDivElement,
+  CustomResizeHandleProps
+>(({ axis = "se", edit, ...props }, ref) => {
+  const handleClass = `react-resizable-handle react-resizable-handle-${axis}`;
 
-//   return (
-//     <div
-//       ref={ref}
-//       className={handleClass}
-//       {...props} // Importante: forward todas las props
-//     >
-//       <ResizeIcon
-//         style={{
-//           width: "20px",
-//           height: "20px",
-//           stroke: "rgba(255,255,255,0.8)",
-//           strokeWidth: 1,
-//           fill: "rgba(255,255,255,0.3)",
-//           pointerEvents: "none", // Solo el div padre debe capturar eventos
-//         }}
-//       />
-//     </div>
-//   );
-// });
+  return (
+    <div
+      ref={ref}
+      className={handleClass}
+      {...props}
+      style={{ opacity: edit ? 1 : 0 }}
+    >
+      <ResizeIcon
+        style={{
+          width: "40px",
+          height: "40px",
+          stroke: "rgba(255,255,255,0.5)",
+          strokeWidth: 1,
+          fill: "rgba(255,255,255,0.3)",
+          pointerEvents: "none",
+        }}
+      />
+    </div>
+  );
+});
 
-// CustomResizeHandle.displayName = "CustomResizeHandle";
+CustomResizeHandle.displayName = "CustomResizeHandle";

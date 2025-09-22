@@ -2,10 +2,13 @@
 
 import { create } from "zustand";
 import { toast } from "sonner";
+import { Layouts } from "react-grid-layout";
 
 import { getStats, getUpcomingTasks } from "@/lib/api/task/actions";
 import { TaskType, AppUpdatesType} from "@/lib/schemas/database.types";
 import { getAppUpdates } from "@/lib/api/app-updates/actions";
+import { HomeLayouts } from "@/components/ui/DraggableBentoGrid/layout.helper";
+import { persist } from "zustand/middleware";
 
 type HourlyData = {
   time: string;
@@ -50,17 +53,38 @@ type UserData = {
   app_updates: AppUpdatesType[];
   fetchAppUpdates: boolean;
   weather: WeatherState;
+  layout: Layouts;
   getStats: () => Promise<void>;
   getUpcomingTasks: () => Promise<void>;
   getAppUpdates: () => Promise<void>;
   setWeather: (data: WeatherState) => void;
+  setLayout: (layout: Layouts) => void;
+  resetLayout: () => void;
 };
 
 function handleError(err: unknown) {
   toast.error((err as Error).message || "Error desconocido");
 }
 
-export const useDashboardStore = create<UserData>()((set, get) => ({
+const getInitialLayout = (): Layouts => {
+  if (typeof window === 'undefined') return HomeLayouts;
+  
+  try {
+    const stored = localStorage.getItem('dashboard-storage');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return parsed.state?.layout || HomeLayouts;
+    }
+  } catch (error) {
+    console.warn('Error reading layout from localStorage:', error);
+  }
+  
+  return HomeLayouts;
+};
+
+export const useDashboardStore = create<UserData>()(
+  persist(
+    (set, get) => ({
   total_tasks: 0,
   pending_tasks: 0,
   completed_tasks: 0,
@@ -82,6 +106,7 @@ export const useDashboardStore = create<UserData>()((set, get) => ({
     weatherType: "default",
     hourlyForecast: [],
   },
+  layout: getInitialLayout(),
   getStats: async () => {
     if (get().fetchStats) return
     try {
@@ -126,5 +151,17 @@ export const useDashboardStore = create<UserData>()((set, get) => ({
   },
   setWeather : (data) => {
     set(() => ({ weather: data}));
-  }
-}));
+  },
+  setLayout: (layout) => {
+    set(() => ({ layout }));
+  },
+  resetLayout: () => {
+    set(() => ({ layout: HomeLayouts }));
+  },
+}), {
+      name: "dashboard-storage",
+      
+      partialize: (state) => ({ layout: state.layout }),
+    }
+  )
+);

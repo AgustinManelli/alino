@@ -54,6 +54,22 @@
   background-color: var(--background-alino-app-translucent);
 }
 
+.configSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.configSection button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+}
+
 .header {
   position: relative;
   width: 100%;
