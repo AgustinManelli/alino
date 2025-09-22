@@ -14,6 +14,7 @@ export interface BentoItem {
   content: React.ReactNode;
   withoutTopPadding?: boolean;
   withoutHeader?: boolean;
+  scrollable?: boolean;
 }
 
 function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
@@ -107,15 +108,27 @@ function DraggableBentoGrid({ items }: { items: BentoItem[] }) {
                     <circle cx="15" cy="19" r="1" />
                   </svg>
                 </div>
-
-                <SimpleBar
-                  className={styles.bentoBody}
-                  style={{
-                    paddingTop: (item.withoutTopPadding ?? false) ? 0 : "40px",
-                  }}
-                >
-                  {item.content}
-                </SimpleBar>
+                {(item.scrollable ?? false) ? (
+                  <SimpleBar
+                    className={styles.bentoBody}
+                    style={{
+                      paddingTop:
+                        (item.withoutTopPadding ?? false) ? 0 : "40px",
+                    }}
+                  >
+                    {item.content}
+                  </SimpleBar>
+                ) : (
+                  <div
+                    className={styles.bentoBody}
+                    style={{
+                      paddingTop:
+                        (item.withoutTopPadding ?? false) ? 0 : "40px",
+                    }}
+                  >
+                    {item.content}
+                  </div>
+                )}
               </div>
             </div>
           </div>

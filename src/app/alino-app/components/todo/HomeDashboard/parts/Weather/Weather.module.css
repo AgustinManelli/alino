@@ -14,6 +14,10 @@
   text-shadow: var(--text-shadow);
   container-type: inline-size;
   container-name: mi-contenedor;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 /* Fondos adaptativos según clima y hora */
