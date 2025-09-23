@@ -4,6 +4,7 @@ import { ClientOnlyPortal } from "../ClientOnlyPortal";
 import { Cross } from "../icons/icons";
 import styles from "./WindowModal.module.css";
 import { useRef } from "react";
+import SimpleBar from "simplebar-react";
 
 const crossIconStyle = {
   width: "20px",
@@ -45,7 +46,7 @@ export const WindowModal = ({
               </button>
             )}
           </header>
-          <section className={styles.body}>{children}</section>
+          <SimpleBar className={styles.body}>{children}</SimpleBar>
           <footer></footer>
         </main>
       </section>

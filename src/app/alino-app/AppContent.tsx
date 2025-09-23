@@ -15,6 +15,7 @@ import { EditTaskModal } from "@/components/ui/EditTaskModal";
 
 import { UserType } from "@/lib/schemas/database.types";
 import styles from "./AlinoAppLayout.module.css";
+import { PomodoroMiniIndicator } from "@/components/ui/PomodoroMiniIndicator";
 
 interface Props {
   user: UserType;
@@ -47,6 +48,7 @@ export const AppContent = ({ user }: Props) => {
       <RealtimeProvider />
       <EditTaskModal />
       <ConfirmationModal />
+      <PomodoroMiniIndicator />
       <section className={styles.topButtons}>
         <NotificationsSection />
         <ConfigSection />

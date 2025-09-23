@@ -6,6 +6,7 @@ export const HomeLayouts = {
 		{ i: "weather", x: 0, y: 1, w: 2, h: 1, minW: 1, maxW: 2, minH:1, maxH: 1},
 		{ i: "today-tasks", x: 0, y: 2, w: 2, h: 1, isResizable: false },
 		{ i: "overdue-tasks", x: 2, y: 1, w: 1, h: 1, isResizable: false },
+		{ i: "pomodoro", x: 0, y: 2, w: 1, h: 1, minW: 1, maxW: 2, minH:1, maxH: 2 },
 	],
 	md: [
 		{ i: "summary", x: 0, y: 0, w: 2, h: 1, isResizable: false },
@@ -13,6 +14,7 @@ export const HomeLayouts = {
 		{ i: "new-features", x: 0, y: 4, w: 1, h: 1, isResizable: false },
 		{ i: "overdue-tasks", x: 0, y: 2, w: 1, h: 1, isResizable: false },
 		{ i: "today-tasks", x: 1, y: 3, w: 1, h: 1, isResizable: false },
+		{ i: "pomodoro", x: 0, y: 6, w: 1, h: 1, static: false },
 		{ i: "weather", x: 0, y: 5, w: 1, h: 1, isResizable: false },
 	],
 	xs: [
@@ -21,6 +23,7 @@ export const HomeLayouts = {
 		{ i: "new-features", x: 0, y: 4, w: 1, h: 1, static: false },
 		{ i: "overdue-tasks", x: 0, y: 2, w: 1, h: 1, static: false },
 		{ i: "today-tasks", x: 1, y: 3, w: 1, h: 1, static: false },
+		{ i: "pomodoro", x: 0, y: 6, w: 1, h: 1, static: false },
 		{ i: "weather", x: 0, y: 5, w: 1, h: 1, static: false },
 	],
 };

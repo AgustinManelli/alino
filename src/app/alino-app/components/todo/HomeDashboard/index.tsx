@@ -18,6 +18,7 @@ import { Check, Edit } from "@/components/ui/icons/icons";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { Layouts } from "react-grid-layout";
 import { HomeLayouts } from "@/components/ui/DraggableBentoGrid/layout.helper";
+import { Pomodoro } from "./parts/Pomodoro";
 
 // Componente de tareas del día
 const TodayTasksWidget = ({ count }: { count: number }) => (
@@ -91,6 +92,13 @@ export const HomeDashboard = () => {
       id: "new-features",
       title: "Nuevo en Alino",
       content: <NewFeature />,
+      withoutTopPadding: true,
+      withoutHeader: true,
+    },
+    {
+      id: "pomodoro",
+      title: "Pomodoro",
+      content: <Pomodoro />,
       withoutTopPadding: true,
       withoutHeader: true,
     },

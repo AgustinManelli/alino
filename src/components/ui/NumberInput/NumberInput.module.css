@@ -1,0 +1,76 @@
+.configRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.configRow > span {
+  font-size: 13px;
+  color: var(--text-not-available);
+}
+
+.numberInputContainer {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.controlButton {
+  width: 20px;
+  height: 32px;
+  border: none;
+  border-top: 1px solid var(--border-container-color);
+  border-left: 1px solid var(--border-container-color);
+  border-bottom: 1px solid var(--border-container-color);
+  background-color: var(--background-over-container);
+  color: var(--text-not-available);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+  padding: 0;
+}
+
+.controlButton:hover {
+  background-color: var(--background-over-container-hover);
+}
+
+.controlButton:first-of-type {
+  border-radius: 12px 0 0 12px;
+  border-right: none;
+}
+
+.controlButton:last-of-type {
+  border-radius: 0 12px 12px 0;
+  border-left: none;
+}
+
+.timeInput {
+  width: 40px;
+  height: 32px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 0;
+  font-size: 13px;
+  text-align: center;
+  background: var(--background-over-container);
+  color: var(--text);
+  appearance: textfield;
+  border-top: 1px solid var(--border-container-color);
+  border-bottom: 1px solid var(--border-container-color);
+}
+
+.timeInput::-webkit-outer-spin-button,
+.timeInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.timeInput:focus {
+  outline: none;
+  border-color: var(--text-not-available);
+  z-index: 2;
+  position: relative;
+}

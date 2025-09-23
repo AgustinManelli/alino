@@ -46,7 +46,7 @@
 
 .title {
   color: var(--text-not-available);
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 500;
 }
 
@@ -60,6 +60,54 @@
   position: relative;
   height: 100%;
   width: 100%;
+  max-height: 60vh;
+}
+
+.body :global(.simplebar-track.simplebar-vertical) {
+  background-color: rgba(255, 255, 255, 0.05);
+  width: 8px;
+  border-radius: 4px;
+  top: 40px;
+  bottom: 20px;
+}
+
+/* Estilo para la barra arrastrable (thumb) */
+.body :global(.simplebar-scrollbar::before) {
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  left: 2px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  opacity: 1;
+  transition: background-color 0.2s ease;
+}
+
+/* Efecto al pasar el cursor sobre la barra */
+.body :global(.simplebar-scrollbar:hover::before) {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Opcional: Ocultar/mostrar el riel al hacer hover */
+.body :global(.simplebar-track.simplebar-vertical) {
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+}
+
+.body:hover :global(.simplebar-track.simplebar-vertical) {
+  opacity: 1;
+}
+
+.body :global(.simplebar-track.simplebar-horizontal) {
+  display: none;
+}
+
+.body :global(.simplebar-track.simplebar-horizontal) {
+  display: none;
+}
+
+.body :global(.simplebar-content) {
+  height: 100%;
 }
 
 @media (max-width: 500px) {
