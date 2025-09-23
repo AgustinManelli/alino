@@ -1,24 +1,24 @@
 "use client";
 
-// import DraggableBentoGrid, {
-//   BentoItem,
-// } from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";
-import styles from "./HomeDashboard.module.css";
-import { DashboardData } from "@/lib/schemas/database.types";
-import { Summary } from "./parts/Summary";
-import { UpcomingTask } from "./parts/UpcomingTasks";
-import DraggableBentoGrid from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";
 import { useEffect, useMemo, useState } from "react";
-import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
-import { useUserDataStore } from "@/store/useUserDataStore";
-import { NewFeature } from "./parts/NewFeatures";
-import { Weather } from "./parts/Weather";
-import { ConfigMenu } from "@/components/ui/ConfigMenu";
-import { Check, Edit } from "@/components/ui/icons/icons";
-import { useDashboardStore } from "@/store/useDashboardStore";
 import { Layouts } from "react-grid-layout";
-import { HomeLayouts } from "@/components/ui/DraggableBentoGrid/layout.helper";
+
+import { useDashboardStore } from "@/store/useDashboardStore";
+import { useUserDataStore } from "@/store/useUserDataStore";
+import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
+
 import { Pomodoro } from "./parts/Pomodoro";
+import { Summary } from "./parts/Summary";
+import { Weather } from "./parts/Weather";
+import { UpcomingTask } from "./parts/UpcomingTasks";
+import { NewFeature } from "./parts/NewFeatures";
+import { ConfigMenu } from "@/components/ui/ConfigMenu";
+import DraggableBentoGrid from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";
+
+import { HomeLayouts } from "@/components/ui/DraggableBentoGrid/layout.helper";
+
+import { Check, EditGrid, ReloadIcon } from "@/components/ui/icons/icons";
+import styles from "./HomeDashboard.module.css";
 
 // Componente de tareas del día
 const TodayTasksWidget = ({ count }: { count: number }) => (
@@ -139,7 +139,7 @@ export const HomeDashboard = () => {
     const baseOptions = [
       {
         name: "Editar dashboard",
-        icon: <Edit style={iconStyle} />,
+        icon: <EditGrid style={iconStyle} />,
         action: () => {
           setIsEdit(true);
         },
@@ -147,7 +147,7 @@ export const HomeDashboard = () => {
       },
       {
         name: "Reiniciar dashboard",
-        icon: <Edit style={iconStyle} />,
+        icon: <ReloadIcon style={iconStyle} />,
         action: () => {
           setTempLayout(HomeLayouts);
           setLayout(HomeLayouts);

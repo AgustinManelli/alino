@@ -34,6 +34,7 @@ function DraggableBentoGrid({
   setTempLayout,
 }: Props) {
   const [isMounted, setIsMounted] = useState(false);
+  const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -57,12 +58,21 @@ function DraggableBentoGrid({
     return newLayouts;
   }, [items, tempLayout]);
 
-  const handleDragStart = () => {
+  const handleDragStart = (
+    layout: Layout[],
+    oldItem: Layout,
+    newItem: Layout,
+    placeholder: Layout,
+    e: MouseEvent,
+    element: HTMLElement
+  ) => {
     document.body.classList.add("dragging-grid");
+    setDraggingItemId(newItem.i);
   };
 
   const handleDragStop = () => {
     document.body.classList.remove("dragging-grid");
+    setDraggingItemId(null);
   };
 
   return (
@@ -70,8 +80,8 @@ function DraggableBentoGrid({
       <ResponsiveReactGridLayout
         className={!isMounted ? styles.gridInitial : ""}
         style={{ width: "100%", height: "auto" }}
-        breakpoints={{ xl: 1200, lg: 700, md: 600, sm: 480, xs: 200 }}
-        cols={{ xl: 3, lg: 3, md: 1, sm: 1, xs: 1 }}
+        breakpoints={{ lg: 700, md: 600, xs: 200 }}
+        cols={{ lg: 3, md: 1, xs: 1 }}
         rowHeight={200}
         layouts={layoutsWithItemIds}
         draggableHandle=".dragHandle"
@@ -90,7 +100,9 @@ function DraggableBentoGrid({
       >
         {items.map((item) => (
           <div key={item.id} data-grid-id={item.id}>
-            <div className={styles.bentoItem}>
+            <div
+              className={`${styles.bentoItem} ${draggingItemId === item.id ? styles.dragging : ""}`}
+            >
               <div className={styles.bentoContent}>
                 {!(item.withoutHeader ?? false) && (
                   <header className={styles.bentoHeader}>
