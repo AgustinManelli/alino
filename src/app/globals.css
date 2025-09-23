@@ -57,6 +57,7 @@
   --background-container: rgb(255, 255, 255);
   --background-container-translucent: rgba(255, 255, 255, 0.5);
   --background-over-container: rgba(0, 0, 0, 0.025);
+  --background-over-container-solid: rgb(249, 249, 249);
   --background-over-container-hover: rgba(0, 0, 0, 0.05);
   --background-card-dragged: rgb(230, 230, 230);
   --border-container-color: rgb(240, 240, 240);
@@ -77,6 +78,7 @@
   --background-container: rgb(44, 47, 53);
   --background-container-translucent: rgba(44, 47, 53, 0.5);
   --background-over-container: rgba(255, 255, 255, 0.05);
+  --background-over-container-solid: rgb(56, 58, 63);
   --background-over-container-hover: rgba(255, 255, 255, 0.1);
   --background-card-dragged: rgb(60, 63, 69);
   --border-container-color: rgb(60, 63, 69);

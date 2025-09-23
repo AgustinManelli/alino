@@ -1,0 +1,260 @@
+.container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  gap: 10px;
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  gap: 5px;
+}
+
+.modeButtons {
+  display: flex;
+  background-color: var(--background-over-container);
+  border-radius: 8px;
+  padding: 2px;
+  flex-grow: 1;
+}
+
+.modeBtn {
+  padding: 4px 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-not-available);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-indent: -1px;
+  width: 100%;
+}
+
+.modeBtn:hover {
+  color: var(--text);
+}
+
+.modeBtn.active {
+  background: var(--mode-color);
+  color: var(--text);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.configButton {
+  background: none;
+  border: none;
+  background-color: var(--background-over-container);
+  height: 100%;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.configButton svg {
+  transform: scale(1);
+  transition:
+    transform 0.2s ease-in-out,
+    stroke 0.2s ease-in-out;
+  width: 15px;
+  height: 15px;
+  stroke-width: 2;
+  stroke: var(--text-not-available);
+}
+
+.configButton:hover svg {
+  transform: scale(1.1);
+  stroke: var(--text);
+}
+
+.timerSection {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressRing {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressSvg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progressBg {
+  fill: none;
+  stroke: #f0f0f0;
+  stroke-width: 4;
+}
+
+.progressBar {
+  fill: none;
+  stroke: var(--mode-color);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 282.7;
+  transition: stroke-dashoffset 1s ease-in-out;
+}
+
+.timeDisplay {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--mode-color);
+  text-align: center;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+}
+
+.controlBtn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  height: 100%;
+}
+
+.primaryBtn {
+  background: var(--mode-color);
+  color: white;
+}
+
+.primaryBtn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.primaryBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.secondaryBtn {
+  background: #f8f9fa;
+  color: #666;
+  border: 1px solid #e9ecef;
+}
+
+.secondaryBtn:hover {
+  background: #e9ecef;
+  color: #495057;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.secondaryBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cycles {
+  font-size: 10px;
+  color: #666;
+  font-weight: 500;
+  line-height: 1;
+  display: none;
+}
+
+/* Responsive adjustments for very small containers */
+@container (max-height: 250px) {
+  .header {
+    margin-bottom: 4px;
+  }
+
+  .timerSection {
+    margin: 4px 0;
+  }
+
+  .controls {
+    margin-bottom: 4px;
+  }
+
+  .modeBtn {
+    padding: 3px 6px;
+  }
+
+  .progressRing {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+@container (max-width: 300px) {
+  .modeButtons {
+    gap: 2px;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .controlBtn {
+    max-width: none;
+  }
+}
+
+/* Animation for mode transitions */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.modeBtn.active {
+  animation: pulse 0.3s ease-in-out;
+}
+
+.pomoBody {
+  background-color: aqua;
+  min-height: 100px;
+  width: 100%;
+}
