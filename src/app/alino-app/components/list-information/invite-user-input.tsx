@@ -15,7 +15,7 @@ type UserSearchResult = {
   avatar_url: string;
 };
 
-export default function InviteUserInput({ list_id }: props) {
+export function InviteUserInput({ list_id }: props) {
   const [inputValue, setInputValue] = useState("");
   const [debouncedInputValue, setDebouncedInputValue] = useState(inputValue);
   const [isUserSelected, setIsUserSelected] = useState(false);

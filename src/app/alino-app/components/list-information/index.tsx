@@ -1,16 +1,15 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
+
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+
+import { InviteUserInput } from "./invite-user-input";
+import { MemberRow } from "./member-row";
 import { WindowComponent } from "@/components/ui/window-component";
-import styles from "./ListInformation.module.css";
-import React from "react";
 
 import { Database } from "@/lib/schemas/database.types";
-import { use, useEffect, useState } from "react";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { MemberRow } from "./member-row";
-import InviteUserInput from "./invite-user-input";
-import { LoadingIcon } from "@/components/ui/icons/icons";
-import { Skeleton } from "@/components/ui/skeleton";
+import styles from "./ListInformation.module.css";
 
 type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
 type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
