@@ -2,12 +2,12 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { Layout, Layouts, Responsive, WidthProvider } from "react-grid-layout";
-import styles from "./DraggableBentoGrid.module.css";
-import { HomeLayouts } from "./layout.helper";
-import { ResizeIcon } from "./ResizeIcon";
 import SimpleBar from "simplebar-react";
+
+import { ResizeIcon } from "./ResizeIcon";
+
+import styles from "./DraggableBentoGrid.module.css";
 import "simplebar-react/dist/simplebar.min.css";
-import { useDashboardStore } from "@/store/useDashboardStore";
 
 export interface BentoItem {
   id: string;
