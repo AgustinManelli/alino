@@ -6,7 +6,7 @@ type UserSearchResult = {
   user_id: string;
   username: string;
   display_name: string;
-  avatar_url: string;
+  avatar_url: string | null;
 };
 
 type SearchUserStore = {

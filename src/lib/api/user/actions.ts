@@ -75,7 +75,7 @@ export const setUsernameFirstTime = async (username: string) => {
 interface SearchUsersResult {
   user_id: string;
   username: string;
-  display_name: string | null;
+  display_name: string;
   avatar_url: string | null;
 }
 
