@@ -20,34 +20,6 @@ import { HomeLayouts } from "@/components/ui/DraggableBentoGrid/layout.helper";
 import { Check, EditGrid, ReloadIcon } from "@/components/ui/icons/icons";
 import styles from "./HomeDashboard.module.css";
 
-// Componente de tareas del día
-const TodayTasksWidget = ({ count }: { count: number }) => (
-  <div className={styles.todayTasks}>
-    <div className={styles.taskCount}>
-      <span className={styles.taskNumber}>{count}</span>
-      <span className={styles.taskLabel}>tareas para hoy</span>
-    </div>
-    <div className={styles.taskProgress}>
-      <div className={styles.progressBar}>
-        <div className={styles.progressFill} style={{ width: "60%" }}></div>
-      </div>
-      <span className={styles.progressText}>60% completado</span>
-    </div>
-  </div>
-);
-
-// Componente de tareas vencidas
-const OverdueTasksWidget = ({ count }: { count: number }) => (
-  <div className={styles.overdueTasks}>
-    <div className={styles.overdueHeader}>
-      <span className={styles.overdueCount}>{count}</span>
-      <span className={styles.overdueLabel}>
-        tarea{count > 1 ? "s" : ""} vencida{count > 1 ? "s" : ""}
-      </span>
-    </div>
-  </div>
-);
-
 export interface BentoItem {
   id: string;
   title: string;
@@ -61,8 +33,9 @@ export const HomeDashboard = () => {
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
   const user = useUserDataStore((state) => state.user);
   const setLayout = useDashboardStore((state) => state.setLayout);
-  const [isEdit, setIsEdit] = useState<boolean>(false);
   const layout = useDashboardStore((state) => state.layout);
+
+  const [isEdit, setIsEdit] = useState<boolean>(false);
   const [tempLayout, setTempLayout] = useState<Layouts>(layout);
 
   useEffect(() => {
@@ -102,16 +75,6 @@ export const HomeDashboard = () => {
       withoutTopPadding: true,
       withoutHeader: true,
     },
-    // {
-    //   id: "overdue-tasks",
-    //   title: "Tareas Vencidas",
-    //   content: <OverdueTasksWidget count={dashboardData.overdue_tasks} />,
-    // },
-    // {
-    //   id: "today-tasks",
-    //   title: "Tareas de Hoy",
-    //   content: <TodayTasksWidget count={8} />,
-    // },
   ];
 
   const formattedDate = useMemo(() => {
