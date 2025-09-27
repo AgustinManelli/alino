@@ -13,12 +13,12 @@ interface AuthClient {
 const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
   const supabase = createClientServer();
   const { data: sessionData, error: sessionError } =
-    await supabase.auth.getSession();
+    await supabase.auth.getUser();
 
-  if (sessionError || !sessionData.session?.user) {
+  if (sessionError || !sessionData.user) {
     throw new Error(AUTH_ERROR_MESSAGE);
   } else {
-    return { supabase, user: sessionData.session.user };
+    return { supabase, user: sessionData.user };
   }
 };
 

@@ -1,24 +1,30 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { SupabaseClient } from "@supabase/supabase-js";
 
-export const createClient = () => {
-  const supabase = createBrowserClient(
+let supabase: SupabaseClient | null = null;
+
+export const createClient = (): SupabaseClient => {
+  if (supabase) {
+    return supabase;
+  }
+
+  const newSupabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // Adjuntar token de usuario activo
-  supabase.auth.getSession().then(({ data: { session } }) => {
+  newSupabase.auth.getSession().then(({ data: { session } }) => {
     if (session) {
-      supabase.realtime.setAuth(session.access_token);
+      newSupabase.realtime.setAuth(session.access_token);
     }
   });
 
-  // Actualizar token si la sesión cambia
-  supabase.auth.onAuthStateChange((_event, session) => {
+  newSupabase.auth.onAuthStateChange((_event, session) => {
     if (session) {
-      supabase.realtime.setAuth(session.access_token);
+      newSupabase.realtime.setAuth(session.access_token);
     }
   });
 
+  supabase = newSupabase;
   return supabase;
 };

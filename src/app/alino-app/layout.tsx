@@ -22,7 +22,8 @@ export default async function AlinoAppLayout({
       <TopBlurEffect />
       <div className={styles.appContentContainer}>
         <AppContent user={userPrivateResult.data?.user} />
-        {children}
+        {!userPrivateResult.data?.user.user_private
+          ?.initial_username_prompt_shown && children}
       </div>
     </section>
   );
