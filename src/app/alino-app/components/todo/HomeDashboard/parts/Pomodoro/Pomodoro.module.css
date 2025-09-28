@@ -18,8 +18,9 @@
 
 .modeButtons {
   display: flex;
+  width: 100%;
   background-color: var(--background-over-container);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 2px;
   flex-grow: 1;
 }
@@ -27,7 +28,7 @@
 .modeBtn {
   padding: 4px 6px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: var(--text-not-available);
   font-size: 12px;
@@ -109,7 +110,7 @@
 .controlBtn {
   padding: 5px 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -159,7 +160,7 @@
   height: 100%;
   width: auto;
   aspect-ratio: 1 / 1;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
