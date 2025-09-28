@@ -19,7 +19,8 @@ const soundOptions = [
 ];
 
 export const PomodoroConfig = () => {
-  const { settings, updateSettings, resetSettings } = usePomodoroStore();
+  const { settings, cycles, updateSettings, updateCycles, resetSettings } =
+    usePomodoroStore();
   const [showSoundDropdown, setShowSoundDropdown] = useState(false);
   const [tempSettings, setTempSettings] = useState(settings);
   const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
@@ -99,8 +100,28 @@ export const PomodoroConfig = () => {
     }
   };
 
+  const handleCyclesChange = (newCycle: number) => {
+    updateCycles(newCycle);
+  };
+
   return (
     <section className={styles.pomoBody}>
+      <section className={styles.timerConfig}>
+        <div className={styles.timeConfig}>
+          <p className={styles.titleSectionConfig}>Datos</p>
+          <div className={styles.configPomodoroTime}>
+            <div className={styles.timeLabel}>
+              <span>Ciclos realizados</span>
+              <NumberInput
+                value={cycles}
+                onChange={(newValue) => handleCyclesChange(newValue)}
+                min={0}
+                max={120}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
       <section className={styles.timerConfig}>
         <div className={styles.timeConfig}>
           <p className={styles.titleSectionConfig}>Tiempos (minutos)</p>

@@ -16,8 +16,6 @@ interface ModeConfig {
   color: string;
 }
 
-const CIRCLE_CIRCUMFERENCE = 282.7;
-
 export const Pomodoro = memo(() => {
   const [options, setOptions] = useState<boolean>(false);
 
@@ -47,10 +45,6 @@ export const Pomodoro = memo(() => {
   const formattedTime = useMemo(
     () => formatTime(timeLeft),
     [formatTime, timeLeft]
-  );
-  const strokeDashoffset = useMemo(
-    () => CIRCLE_CIRCUMFERENCE - (CIRCLE_CIRCUMFERENCE * progress) / 100,
-    [progress]
   );
 
   return (
