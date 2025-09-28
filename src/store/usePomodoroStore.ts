@@ -302,7 +302,7 @@ export const usePomodoroStore = create<PomodoroState>()(
         const { mode, cycles, isRunning, settings, timeLeft} = get();
         const defaultTimeLeft = settings.workTime * 60;
         
-        if (isRunning || cycles > 0 || mode !== 'work' || timeLeft < defaultTimeLeft) {
+        if (isRunning || mode !== 'work' || timeLeft < defaultTimeLeft) {
           return true;
         } else {
           return false;
