@@ -1,29 +1,35 @@
 import React, { useState } from "react";
-import { usePomodoroStore } from "@/store/usePomodoroStore";
+import {
+  usePomodoroStore,
+  playAlarmSound,
+  stopAlarmSound,
+} from "@/store/usePomodoroStore";
 import { Switch } from "@/components/ui/switch";
 import styles from "./PomodoroConfig.module.css";
 import { NumberInput } from "@/components/ui/NumberInput";
+import { PlayIcon, StopIcon } from "@/components/ui/icons/icons";
 
 const soundOptions = [
-  { value: "bell", label: "Campana" },
-  { value: "chime", label: "Carillón" },
-  { value: "digital", label: "Digital" },
-  { value: "gentle", label: "Suave" },
-  { value: "nature", label: "Naturaleza" },
-  { value: "none", label: "Sin sonido" },
+  { value: "bell-notification-1", label: "Campana 1" },
+  { value: "bell-notification-2", label: "Campana 2" },
+  { value: "timer-terminer", label: "Temporizador" },
+  { value: "relax-notification", label: "Relax" },
+  { value: "marimba-notification", label: "Marimba" },
+  { value: "system-notification", label: "Sistema" },
 ];
 
-export const PomodoroConfig: React.FC = () => {
+export const PomodoroConfig = () => {
   const { settings, updateSettings, resetSettings } = usePomodoroStore();
   const [showSoundDropdown, setShowSoundDropdown] = useState(false);
   const [tempSettings, setTempSettings] = useState(settings);
+  const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
 
   const handleTimeChange = (
     field: "workTime" | "shortBreakTime" | "longBreakTime",
     value: string
   ) => {
     const numValue = parseInt(value) || 1;
-    const clampedValue = Math.max(1, Math.min(120, numValue)); // Entre 1 y 120 minutos
+    const clampedValue = Math.max(1, Math.min(120, numValue));
 
     setTempSettings((prev) => ({
       ...prev,
@@ -35,7 +41,7 @@ export const PomodoroConfig: React.FC = () => {
 
   const handleLongBreakIntervalChange = (value: string) => {
     const numValue = parseInt(value) || 2;
-    const clampedValue = Math.max(2, Math.min(10, numValue)); // Entre 2 y 10 ciclos
+    const clampedValue = Math.max(2, Math.min(10, numValue));
 
     setTempSettings((prev) => ({
       ...prev,
@@ -62,8 +68,9 @@ export const PomodoroConfig: React.FC = () => {
       ...prev,
       alarmSound: soundValue,
     }));
-
     updateSettings({ alarmSound: soundValue });
+    stopAlarmSound();
+    setIsAlarmPlaying(false);
     setShowSoundDropdown(false);
   };
 
@@ -83,8 +90,6 @@ export const PomodoroConfig: React.FC = () => {
     const newValue = !tempSettings.notifications;
     setTempSettings((prev) => ({ ...prev, notifications: newValue }));
     updateSettings({ notifications: newValue });
-
-    // Solicitar permisos si se activan las notificaciones
     if (
       newValue &&
       "Notification" in window &&
@@ -111,6 +116,16 @@ export const PomodoroConfig: React.FC = () => {
     updateSettings({ [field]: value });
   };
 
+  const handleToggleAlarm = () => {
+    if (isAlarmPlaying) {
+      stopAlarmSound();
+      setIsAlarmPlaying(false);
+    } else {
+      playAlarmSound(tempSettings.alarmSound, 0);
+      setIsAlarmPlaying(true);
+    }
+  };
+
   return (
     <section className={styles.pomoBody}>
       <section className={styles.timerConfig}>
@@ -118,7 +133,7 @@ export const PomodoroConfig: React.FC = () => {
           <p className={styles.titleSectionConfig}>Tiempos (minutos)</p>
 
           <div className={styles.configPomodoroTime}>
-            <label className={styles.timeLabel}>
+            <div className={styles.timeLabel}>
               <span>Pomodoro</span>
               <NumberInput
                 value={tempSettings.workTime}
@@ -128,11 +143,11 @@ export const PomodoroConfig: React.FC = () => {
                 min={1}
                 max={120}
               />
-            </label>
+            </div>
           </div>
 
           <div className={styles.configShortBreakTime}>
-            <label className={styles.timeLabel}>
+            <div className={styles.timeLabel}>
               <span>Descanso corto</span>
               <NumberInput
                 value={tempSettings.shortBreakTime}
@@ -142,11 +157,11 @@ export const PomodoroConfig: React.FC = () => {
                 min={1}
                 max={120}
               />
-            </label>
+            </div>
           </div>
 
           <div className={styles.configLongBreakTime}>
-            <label className={styles.timeLabel}>
+            <div className={styles.timeLabel}>
               <span>Descanso largo</span>
               <NumberInput
                 value={tempSettings.longBreakTime}
@@ -156,7 +171,7 @@ export const PomodoroConfig: React.FC = () => {
                 min={1}
                 max={120}
               />
-            </label>
+            </div>
           </div>
         </div>
 
@@ -189,7 +204,7 @@ export const PomodoroConfig: React.FC = () => {
             Intervalo de ciclos para long breaks
           </p>
           <div className={styles.longBreaksIntervalConfig}>
-            <label className={styles.intervalLabel}>
+            <div className={styles.intervalLabel}>
               <span>Cada</span>
               <NumberInput
                 value={tempSettings.longBreakInterval}
@@ -200,7 +215,7 @@ export const PomodoroConfig: React.FC = () => {
                 max={10}
               />
               <span>ciclos</span>
-            </label>
+            </div>
           </div>
         </div>
       </section>
@@ -211,38 +226,49 @@ export const PomodoroConfig: React.FC = () => {
         <p className={styles.titleSectionConfig}>Configuración de sonido</p>
 
         <div className={styles.alarmSoundConfig}>
-          <label className={styles.soundLabel}>
+          <div className={styles.soundLabel}>
             <span className={styles.soundLabelTitle}>Sonido de alarma</span>
-            <div className={styles.soundDropdownContainer}>
-              <button
-                type="button"
-                className={styles.soundDropdownButton}
-                onClick={() => setShowSoundDropdown(!showSoundDropdown)}
-              >
-                <span>{selectedSound?.label}</span>
-                <span className={styles.dropdownArrow}>▼</span>
-              </button>
+            <div className={styles.soundSelectorContainer}>
+              <div className={styles.soundDropdownContainer}>
+                <button
+                  type="button"
+                  className={styles.soundDropdownButton}
+                  onClick={() => setShowSoundDropdown(!showSoundDropdown)}
+                >
+                  <span>{selectedSound?.label}</span>
+                  <span className={styles.dropdownArrow}>▼</span>
+                </button>
 
-              {showSoundDropdown && (
-                <div className={styles.soundDropdownMenu}>
-                  {soundOptions.map((sound) => (
-                    <button
-                      key={sound.value}
-                      type="button"
-                      className={`${styles.soundOption} ${
-                        sound.value === tempSettings.alarmSound
-                          ? styles.selectedOption
-                          : ""
-                      }`}
-                      onClick={() => handleSoundChange(sound.value)}
-                    >
-                      {sound.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+                {showSoundDropdown && (
+                  <div className={styles.soundDropdownMenu}>
+                    {soundOptions.map((sound) => (
+                      <button
+                        key={sound.value}
+                        type="button"
+                        className={`${styles.soundOption} ${
+                          sound.value === tempSettings.alarmSound
+                            ? styles.selectedOption
+                            : ""
+                        }`}
+                        onClick={() => handleSoundChange(sound.value)}
+                      >
+                        {sound.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button
+                className={styles.testSoundButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleAlarm();
+                }}
+              >
+                {!isAlarmPlaying ? <PlayIcon /> : <StopIcon />}
+              </button>
             </div>
-          </label>
+          </div>
         </div>
 
         <div className={styles.volumeConfig}>
