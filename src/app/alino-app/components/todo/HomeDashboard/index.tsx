@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Layouts } from "react-grid-layout";
 
 import { useDashboardStore } from "@/store/useDashboardStore";
@@ -20,7 +20,21 @@ import { HomeLayouts } from "@/components/ui/DraggableBentoGrid/layout.helper";
 import { Check, EditGrid, ReloadIcon } from "@/components/ui/icons/icons";
 import styles from "./HomeDashboard.module.css";
 
-export interface BentoItem {
+const BLUR_COLOR = "rgb(106, 195, 255)";
+const ICON_CONFIG = {
+  width: "14px",
+  height: "auto" as const,
+  stroke: "var(--text)",
+  strokeWidth: 2,
+} as const;
+const EDIT_BUTTON_ICON_CONFIG = {
+  width: "20px",
+  height: "auto" as const,
+  stroke: "var(--icon-color)",
+  strokeWidth: 2,
+} as const;
+
+interface BentoItem {
   id: string;
   title: string;
   content: React.ReactNode;
@@ -28,6 +42,31 @@ export interface BentoItem {
   withoutHeader?: boolean;
   scrollable?: boolean;
 }
+
+interface ConfigOption {
+  name: string;
+  icon: React.ReactNode;
+  action: () => void;
+  enabled: boolean;
+}
+
+const useDateAndGreeting = () => {
+  return useMemo(() => {
+    const now = new Date();
+    const hour = now.getHours();
+
+    const formattedDate = now.toLocaleDateString("es-ES", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+
+    const greeting =
+      hour < 12 ? "Buen día" : hour < 19 ? "Buenas tardes" : "Buenas noches";
+
+    return { formattedDate, greeting };
+  }, []);
+};
 
 export const HomeDashboard = () => {
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
@@ -38,94 +77,100 @@ export const HomeDashboard = () => {
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [tempLayout, setTempLayout] = useState<Layouts>(layout);
 
+  const { formattedDate, greeting } = useDateAndGreeting();
+
   useEffect(() => {
-    setBlurredFx("rgb(106, 195, 255)");
-  }, []);
+    setBlurredFx(BLUR_COLOR);
+  }, [setBlurredFx]);
 
-  const bentoItems: BentoItem[] = [
-    {
-      id: "summary",
-      title: "Resumen de Tareas",
-      content: <Summary />,
-    },
-    {
-      id: "upcoming-tasks",
-      title: "Próximas Tareas",
-      content: <UpcomingTask />,
-      scrollable: true,
-    },
-    {
-      id: "weather",
-      title: "Clima",
-      content: <Weather />,
-      withoutTopPadding: true,
-      withoutHeader: true,
-    },
-    {
-      id: "new-features",
-      title: "Nuevo en Alino",
-      content: <NewFeature />,
-      withoutTopPadding: true,
-      withoutHeader: true,
-    },
-    {
-      id: "pomodoro",
-      title: "Pomodoro",
-      content: <Pomodoro />,
-      withoutTopPadding: true,
-      withoutHeader: true,
-    },
-  ];
-
-  const formattedDate = useMemo(() => {
-    return new Date().toLocaleDateString("es-ES", {
-      weekday: "long",
-      // year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }, []);
-
-  const greeting = useMemo(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Buen día";
-    if (hour < 19) return "Buenas tardes";
-    return "Buenas noches";
-  }, []);
-
-  const displayName = useMemo(
-    () => user?.display_name.split(" ")[0] ?? "Bienvenido",
-    [user]
+  const bentoItems: BentoItem[] = useMemo(
+    () => [
+      {
+        id: "summary",
+        title: "Resumen de Tareas",
+        content: <Summary />,
+      },
+      {
+        id: "upcoming-tasks",
+        title: "Próximas Tareas",
+        content: <UpcomingTask />,
+        scrollable: true,
+      },
+      {
+        id: "weather",
+        title: "Clima",
+        content: <Weather />,
+        withoutTopPadding: true,
+        withoutHeader: true,
+      },
+      {
+        id: "new-features",
+        title: "Nuevo en Alino",
+        content: <NewFeature />,
+        withoutTopPadding: true,
+        withoutHeader: true,
+      },
+      {
+        id: "pomodoro",
+        title: "Pomodoro",
+        content: <Pomodoro />,
+        withoutTopPadding: true,
+        withoutHeader: true,
+      },
+    ],
+    []
   );
 
-  const configOptions = useMemo(() => {
-    const baseOptions = [
+  const displayName = useMemo(
+    () => user?.display_name?.split(" ")[0] ?? "Bienvenido",
+    [user?.display_name]
+  );
+
+  const handleEditDashboard = useCallback(() => {
+    setIsEdit(true);
+  }, []);
+
+  const handleResetDashboard = useCallback(() => {
+    const newLayout = { ...HomeLayouts };
+    setTempLayout(newLayout);
+    setLayout(newLayout);
+  }, [setLayout]);
+
+  const configOptions: ConfigOption[] = useMemo(
+    () => [
       {
         name: "Editar dashboard",
-        icon: <EditGrid style={iconStyle} />,
-        action: () => {
-          setIsEdit(true);
-        },
+        icon: <EditGrid style={ICON_CONFIG} />,
+        action: handleEditDashboard,
         enabled: true,
       },
       {
         name: "Reiniciar dashboard",
-        icon: <ReloadIcon style={iconStyle} />,
-        action: () => {
-          setTempLayout(HomeLayouts);
-          setLayout(HomeLayouts);
-        },
+        icon: <ReloadIcon style={ICON_CONFIG} />,
+        action: handleResetDashboard,
         enabled: true,
       },
-    ];
-    return baseOptions.filter((option) => option.enabled);
-  }, []);
+    ],
+    [handleEditDashboard, handleResetDashboard]
+  );
 
-  const handleFinishEdit = () => {
-    if (layout === tempLayout) return;
+  const handleFinishEdit = useCallback(() => {
+    const layoutsAreEqual = (layout1: Layouts, layout2: Layouts): boolean => {
+      try {
+        return JSON.stringify(layout1) === JSON.stringify(layout2);
+      } catch {
+        return false;
+      }
+    };
+
+    if (layoutsAreEqual(layout, tempLayout)) {
+      setIsEdit(false);
+      return;
+    }
+
     setIsEdit(false);
     setLayout(tempLayout);
-  };
+  }, [layout, tempLayout, setLayout]);
 
   return (
     <div className={styles.dashboardContainer}>
@@ -148,14 +193,7 @@ export const HomeDashboard = () => {
             <div className={styles.configSection}>
               {isEdit && (
                 <button onClick={handleFinishEdit}>
-                  <Check
-                    style={{
-                      width: "20px",
-                      height: "auto",
-                      stroke: "var(--icon-color)",
-                      strokeWidth: 2,
-                    }}
-                  />
+                  <Check style={EDIT_BUTTON_ICON_CONFIG} />
                 </button>
               )}
               <ConfigMenu iconWidth={"25px"} configOptions={configOptions} />
@@ -175,11 +213,4 @@ export const HomeDashboard = () => {
       </main>
     </div>
   );
-};
-
-const iconStyle = {
-  width: "14px",
-  height: "auto",
-  stroke: "var(--text)",
-  strokeWidth: 2,
 };
