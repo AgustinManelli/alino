@@ -56,6 +56,7 @@ interface PomodoroState {
   
   // Configuración
   updateSettings: (newSettings: Partial<PomodoroSettings>) => void;
+  updateCycles: (newCycle: number) => void;
   resetSettings: () => void;
   
   // Utilidades
@@ -268,6 +269,12 @@ export const usePomodoroStore = create<PomodoroState>()(
           timeLeft: newTimeLeft
         });
       },
+
+      updateCycles: (newCycle:number) => {
+        set({
+          cycles: newCycle,
+        })
+      },
       
       resetSettings: () => {
         get().updateSettings(defaultSettings);
@@ -292,9 +299,8 @@ export const usePomodoroStore = create<PomodoroState>()(
       },
 
       isActive: (): boolean => {
-        const { mode, cycles, isRunning, settings } = get();
+        const { mode, cycles, isRunning, settings, timeLeft} = get();
         const defaultTimeLeft = settings.workTime * 60;
-        const { timeLeft } = get();
         
         if (isRunning || cycles > 0 || mode !== 'work' || timeLeft < defaultTimeLeft) {
           return true;
