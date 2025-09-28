@@ -86,18 +86,44 @@ export const Pomodoro = memo(() => {
         </div>
 
         <div className={styles.timerSection}>
-          <div className={styles.progressRing}>
-            <svg className={styles.progressSvg} viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="45" className={styles.progressBg} />
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                className={styles.progressBar}
-                style={{ strokeDashoffset }}
-              />
-            </svg>
-            <div className={styles.timeDisplay}>{formattedTime}</div>
+          <div
+            className={`${styles.timeDisplay} ${isRunning ? styles.timeRunning : ""}`}
+          >
+            <div className={styles.timeContainer}>{formattedTime}</div>
+          </div>
+          <div className={styles.progressContainer}>
+            <div className={styles.progressTrack}>
+              <div
+                className={`${styles.progressBar} ${isRunning ? styles.animatedBar : ""}`}
+                style={{
+                  width: `${progress}%`,
+                  backgroundColor: modes[mode].color,
+                }}
+              ></div>
+
+              {/* Marcadores de progreso */}
+              <div className={styles.progressMarkers}>
+                {[25, 50, 75].map((marker) => (
+                  <div
+                    key={marker}
+                    className={`${styles.progressMarker} ${
+                      progress >= marker ? styles.markerActive : ""
+                    }`}
+                    style={{ left: `${marker}%` }}
+                  >
+                    <div
+                      className={styles.markerDot}
+                      style={{
+                        backgroundColor:
+                          progress >= marker
+                            ? modes[mode].color
+                            : "transparent",
+                      }}
+                    ></div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

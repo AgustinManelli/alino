@@ -54,48 +54,100 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.progressRing {
+  width: 100%;
+  flex-direction: column;
   position: relative;
-  width: 100px;
-  height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: 5px;
 }
 
-.progressSvg {
+.progressContainer {
+  position: relative;
+  width: 70%;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 12px;
+  background: var(--background-over-container);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  border-radius: 20px;
+  position: relative;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progressBar.animatedBar {
+  animation: progressPulse 2s ease-in-out infinite;
+}
+
+@keyframes progressPulse {
+  0%,
+  100% {
+    filter: brightness(1) saturate(1);
+    transform: scaleY(1);
+  }
+  50% {
+    filter: brightness(1.1) saturate(1.2);
+    transform: scaleY(1.05);
+  }
+}
+
+.progressMarkers {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  transform: rotate(-90deg);
+  pointer-events: none;
 }
 
-.progressBg {
-  fill: none;
-  stroke: #f0f0f0;
-  stroke-width: 4;
+.progressMarker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
 }
 
-.progressBar {
-  fill: none;
-  stroke: var(--mode-color);
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-dasharray: 282.7;
-  transition: stroke-dashoffset 1s ease-in-out;
+.markerDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid white;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(1);
+}
+
+.markerActive .markerDot {
+  transform: scale(2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .timeDisplay {
-  font-size: 20px;
+  position: relative;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.timeDisplay.timeRunning {
+  transform: scale(1.02);
+}
+
+.timeContainer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 48px;
   font-weight: 700;
   color: var(--mode-color);
-  text-align: center;
-  line-height: 1;
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  line-height: 1;
 }
 
 .controls {
