@@ -24,33 +24,6 @@ export const PomodoroConfig = () => {
   const [tempSettings, setTempSettings] = useState(settings);
   const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
 
-  const handleTimeChange = (
-    field: "workTime" | "shortBreakTime" | "longBreakTime",
-    value: string
-  ) => {
-    const numValue = parseInt(value) || 1;
-    const clampedValue = Math.max(1, Math.min(120, numValue));
-
-    setTempSettings((prev) => ({
-      ...prev,
-      [field]: clampedValue,
-    }));
-
-    updateSettings({ [field]: clampedValue });
-  };
-
-  const handleLongBreakIntervalChange = (value: string) => {
-    const numValue = parseInt(value) || 2;
-    const clampedValue = Math.max(2, Math.min(10, numValue));
-
-    setTempSettings((prev) => ({
-      ...prev,
-      longBreakInterval: clampedValue,
-    }));
-
-    updateSettings({ longBreakInterval: clampedValue });
-  };
-
   const handleVolumeChange = (value: string) => {
     const numValue = parseInt(value) || 0;
     const clampedValue = Math.max(0, Math.min(100, numValue));

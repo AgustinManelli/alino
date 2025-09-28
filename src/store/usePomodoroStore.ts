@@ -287,7 +287,7 @@ export const usePomodoroStore = create<PomodoroState>()(
       },
       
       getProgress: (): number => {
-        const { mode, modes, timeLeft } = get();
+        const { mode, modes, timeLeft} = get();
         return ((modes[mode].time - timeLeft) / modes[mode].time) * 100;
       },
 
@@ -313,10 +313,19 @@ export const usePomodoroStore = create<PomodoroState>()(
        const mergedState = { ...currentState, ...(persistedState as object) };
 
        if (persistedState) {
+         const userSettings = mergedState.settings;
+
+         mergedState.modes = {
+           work: { time: userSettings.workTime * 60, label: 'Pomodoro', color: '#e74c3c' },
+           shortBreak: { time: userSettings.shortBreakTime * 60, label: 'Short break', color: '#27ae60' },
+           longBreak: { time: userSettings.longBreakTime * 60, label: 'Long break', color: '#3498db' }
+         };
+
          if (!mergedState.isRunning) {
-           mergedState.timeLeft = mergedState.settings.workTime * 60;
+           mergedState.timeLeft = mergedState.modes[mergedState.mode].time;
          }
        }
+       
        return mergedState;
      },
     }
