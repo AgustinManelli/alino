@@ -34,10 +34,10 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
   white-space: nowrap;
   text-indent: -1px;
   width: 100%;
+  transition: all 0.2s ease;
 }
 
 .modeBtn:hover {
@@ -47,7 +47,6 @@
 .modeBtn.active {
   background: var(--mode-color);
   color: var(--text);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .timerSection {
@@ -126,13 +125,6 @@
 
 .primaryBtn:hover {
   filter: brightness(1.1);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.primaryBtn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .secondaryBtn {
@@ -144,13 +136,6 @@
 .secondaryBtn:hover {
   background: #e9ecef;
   color: #495057;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.secondaryBtn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .configButton {
@@ -179,7 +164,6 @@
 }
 
 .configButton:hover svg {
-  transform: scale(1.1);
   stroke: var(--text);
 }
 
@@ -195,45 +179,6 @@
   font-weight: 500;
   line-height: 1;
   display: none;
-}
-
-/* Responsive adjustments for very small containers */
-@container (max-height: 250px) {
-  .header {
-    margin-bottom: 4px;
-  }
-
-  .timerSection {
-    margin: 4px 0;
-  }
-
-  .controls {
-    margin-bottom: 4px;
-  }
-
-  .modeBtn {
-    padding: 3px 6px;
-  }
-
-  .progressRing {
-    width: 100px;
-    height: 100px;
-  }
-}
-
-@container (max-width: 300px) {
-  .modeButtons {
-    gap: 2px;
-  }
-
-  .controls {
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .controlBtn {
-    max-width: none;
-  }
 }
 
 /* Animation for mode transitions */

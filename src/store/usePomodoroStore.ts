@@ -24,6 +24,7 @@ interface PomodoroSettings {
   autoStartPomodoros: boolean;
   longBreakInterval: number; // cada cuántos ciclos
   alarmSound: string;
+  alarmRep: number;
   volume: number; // 0-100
   notifications: boolean;
 }
@@ -71,6 +72,7 @@ const defaultSettings: PomodoroSettings = {
   autoStartPomodoros: false,
   longBreakInterval: 4,
   alarmSound: 'bell-notification-1',
+  alarmRep: 2,
   volume: 80,
   notifications: false
 };
@@ -91,8 +93,8 @@ export const usePomodoroStore = create<PomodoroState>()(
       // Configuraciones calculadas (se actualizan con settings)
       modes: {
         work: { time: defaultSettings.workTime * 60, label: 'Pomodoro', color: '#e74c3c' },
-        shortBreak: { time: defaultSettings.shortBreakTime * 60, label: 'Descanso', color: '#27ae60' },
-        longBreak: { time: defaultSettings.longBreakTime * 60, label: 'Descanso Largo', color: '#3498db' }
+        shortBreak: { time: defaultSettings.shortBreakTime * 60, label: 'Short break', color: '#27ae60' },
+        longBreak: { time: defaultSettings.longBreakTime * 60, label: 'Long break', color: '#3498db' }
       },
       
       // Acciones
@@ -140,8 +142,6 @@ export const usePomodoroStore = create<PomodoroState>()(
         const { mode, cycles, modes, settings, toggleTimer } = get();
         get()._stopInterval();
         
-        playAlarmSound(settings.alarmSound, 1);
-        
         // Notificación del navegador
         if (settings.notifications && 'Notification' in window && Notification.permission === 'granted') {
           new Notification(`¡${modes[mode].label} completado!`, {
@@ -151,6 +151,7 @@ export const usePomodoroStore = create<PomodoroState>()(
         }
         
         if (mode === 'work') {
+          playAlarmSound(settings.alarmSound, settings.autoStartBreaks ? 1 : settings.alarmRep);
           const newCycles = cycles + 1;
           
           if (newCycles % settings.longBreakInterval === 0) {
@@ -191,6 +192,7 @@ export const usePomodoroStore = create<PomodoroState>()(
             }
           }
         } else {
+          playAlarmSound(settings.alarmSound, settings.autoStartPomodoros ? 1 : settings.alarmRep);
           set({
             isRunning: false,
             mode: 'work',
@@ -211,7 +213,16 @@ export const usePomodoroStore = create<PomodoroState>()(
       },
       
       _startInterval: () => {
-        const { _intervalId } = get();
+        const { _intervalId, settings, mode} = get();
+        if(mode === 'work'){
+          if(!settings.autoStartPomodoros){
+            stopAlarmSound()
+          }
+        }else{
+          if(!settings.autoStartBreaks){
+            stopAlarmSound()
+          }
+        }
         if (_intervalId) {
           clearInterval(_intervalId);
         }
@@ -242,9 +253,9 @@ export const usePomodoroStore = create<PomodoroState>()(
         
         // Actualizar modes con los nuevos tiempos
         const newModes = {
-          work: { time: updatedSettings.workTime * 60, label: 'Trabajo', color: '#e74c3c' },
-          shortBreak: { time: updatedSettings.shortBreakTime * 60, label: 'Descanso', color: '#27ae60' },
-          longBreak: { time: updatedSettings.longBreakTime * 60, label: 'Descanso Largo', color: '#3498db' }
+          work: { time: updatedSettings.workTime * 60, label: 'Pomodoro', color: '#e74c3c' },
+          shortBreak: { time: updatedSettings.shortBreakTime * 60, label: 'Short break', color: '#27ae60' },
+          longBreak: { time: updatedSettings.longBreakTime * 60, label: 'Long break', color: '#3498db' }
         };
         
         // Si el timer no está corriendo, actualizar timeLeft del modo actual

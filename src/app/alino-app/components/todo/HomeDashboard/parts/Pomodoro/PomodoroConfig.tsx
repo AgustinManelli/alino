@@ -286,6 +286,20 @@ export const PomodoroConfig = () => {
             </div>
           </label>
         </div>
+
+        <div>
+          <div className={styles.volumeLabel}>
+            <span>Repeticiones</span>
+            <NumberInput
+              value={tempSettings.alarmRep}
+              onChange={(newValue) =>
+                handleSettingsChange("alarmRep", newValue)
+              }
+              min={1}
+              max={10}
+            />
+          </div>
+        </div>
       </section>
 
       <div className={styles.separator}></div>
