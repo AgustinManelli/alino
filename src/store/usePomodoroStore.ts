@@ -307,15 +307,23 @@ export const usePomodoroStore = create<PomodoroState>()(
       name: 'pomodoro-settings',
       partialize: (state) => ({ 
         settings: state.settings,
-        cycles: state.cycles 
-      })
+        cycles: state.cycles,
+      }),
+      merge: (persistedState, currentState) => {
+       const mergedState = { ...currentState, ...(persistedState as object) };
+
+       if (persistedState) {
+         if (!mergedState.isRunning) {
+           mergedState.timeLeft = mergedState.settings.workTime * 60;
+         }
+       }
+       return mergedState;
+     },
     }
   )
 );
 
-// Inicializar el store y solicitar permisos de notificación
 const initializePomodoroStore = () => {
-  // Limpiar intervalos al cerrar la ventana
   const cleanup = () => {
     const store = usePomodoroStore.getState();
     store._stopInterval();
@@ -327,7 +335,6 @@ const initializePomodoroStore = () => {
   }
 };
 
-// Auto-inicializar si estamos en el navegador
 if (typeof window !== 'undefined') {
   initializePomodoroStore();
 }

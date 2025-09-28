@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 import { stopAlarmSound, usePomodoroStore } from "@/store/usePomodoroStore";
 
@@ -16,7 +16,9 @@ interface ModeConfig {
   color: string;
 }
 
-export const Pomodoro = () => {
+const CIRCLE_CIRCUMFERENCE = 282.7;
+
+export const Pomodoro = memo(() => {
   const [options, setOptions] = useState<boolean>(false);
 
   const {
@@ -32,16 +34,24 @@ export const Pomodoro = () => {
     getProgress,
   } = usePomodoroStore();
 
-  const handleOpenOptions = () => {
+  const handleOpenOptions = useCallback(() => {
     setOptions(true);
-  };
+  }, []);
 
-  const handleCloseOptions = () => {
+  const handleCloseOptions = useCallback(() => {
     setOptions(false);
     stopAlarmSound();
-  };
+  }, []);
 
   const progress = getProgress();
+  const formattedTime = useMemo(
+    () => formatTime(timeLeft),
+    [formatTime, timeLeft]
+  );
+  const strokeDashoffset = useMemo(
+    () => CIRCLE_CIRCUMFERENCE - (CIRCLE_CIRCUMFERENCE * progress) / 100,
+    [progress]
+  );
 
   return (
     <>
@@ -84,12 +94,10 @@ export const Pomodoro = () => {
                 cy="50"
                 r="45"
                 className={styles.progressBar}
-                style={{
-                  strokeDashoffset: `${282.7 - (282.7 * progress) / 100}`,
-                }}
+                style={{ strokeDashoffset }}
               />
             </svg>
-            <div className={styles.timeDisplay}>{formatTime(timeLeft)}</div>
+            <div className={styles.timeDisplay}>{formattedTime}</div>
           </div>
         </div>
 
@@ -119,4 +127,4 @@ export const Pomodoro = () => {
       </div>
     </>
   );
-};
+});
