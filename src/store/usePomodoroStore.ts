@@ -70,7 +70,7 @@ const defaultSettings: PomodoroSettings = {
   autoStartBreaks: false,
   autoStartPomodoros: false,
   longBreakInterval: 4,
-  alarmSound: 'bell',
+  alarmSound: 'bell-notification-1',
   volume: 80,
   notifications: false
 };
@@ -90,7 +90,7 @@ export const usePomodoroStore = create<PomodoroState>()(
       
       // Configuraciones calculadas (se actualizan con settings)
       modes: {
-        work: { time: defaultSettings.workTime * 60, label: 'Trabajo', color: '#e74c3c' },
+        work: { time: defaultSettings.workTime * 60, label: 'Pomodoro', color: '#e74c3c' },
         shortBreak: { time: defaultSettings.shortBreakTime * 60, label: 'Descanso', color: '#27ae60' },
         longBreak: { time: defaultSettings.longBreakTime * 60, label: 'Descanso Largo', color: '#3498db' }
       },
@@ -140,8 +140,7 @@ export const usePomodoroStore = create<PomodoroState>()(
         const { mode, cycles, modes, settings, toggleTimer } = get();
         get()._stopInterval();
         
-        // Reproducir sonido de alarma (simulado)
-        console.log(`🔔 Reproduciendo sonido: ${settings.alarmSound} al volumen ${settings.volume}%`);
+        playAlarmSound(settings.alarmSound, 1);
         
         // Notificación del navegador
         if (settings.notifications && 'Notification' in window && Notification.permission === 'granted') {
@@ -236,6 +235,10 @@ export const usePomodoroStore = create<PomodoroState>()(
       updateSettings: (newSettings: Partial<PomodoroSettings>) => {
         const currentSettings = get().settings;
         const updatedSettings = { ...currentSettings, ...newSettings };
+
+        if (currentAlarmAudio) {
+          currentAlarmAudio.volume = updatedSettings.volume / 100;
+        }
         
         // Actualizar modes con los nuevos tiempos
         const newModes = {
@@ -301,17 +304,6 @@ export const usePomodoroStore = create<PomodoroState>()(
 
 // Inicializar el store y solicitar permisos de notificación
 const initializePomodoroStore = () => {
-  // Solicitar permisos de notificación si están habilitadas
-  // const checkNotificationPermission = () => {
-  //   const settings = usePomodoroStore.getState().settings;
-  //   if (settings.notifications && 'Notification' in window && Notification.permission === 'default') {
-  //     Notification.requestPermission();
-  //   }
-  // };
-  
-  // // Verificar permisos cuando se carga la página
-  // setTimeout(checkNotificationPermission, 1000);
-  
   // Limpiar intervalos al cerrar la ventana
   const cleanup = () => {
     const store = usePomodoroStore.getState();
@@ -328,3 +320,57 @@ const initializePomodoroStore = () => {
 if (typeof window !== 'undefined') {
   initializePomodoroStore();
 }
+
+let currentAlarmAudio: HTMLAudioElement | null = null;
+let onEndedListener: (() => void) | null = null;
+
+export const stopAlarmSound = () => {
+  if (currentAlarmAudio) {
+    if (onEndedListener) {
+      currentAlarmAudio.removeEventListener('ended', onEndedListener);
+      onEndedListener = null;
+    }
+    currentAlarmAudio.pause();
+    currentAlarmAudio.currentTime = 0;
+    currentAlarmAudio = null;
+  }
+};
+
+export const playAlarmSound = (soundName: string, repeat: number) => {
+  try {
+    stopAlarmSound();
+
+    const volume = usePomodoroStore.getState().settings.volume;
+    
+    currentAlarmAudio = new Audio(`/sounds/${soundName}.mp3`);
+    currentAlarmAudio.volume = volume / 100;
+
+    if (repeat === 0) {
+      currentAlarmAudio.loop = true;
+    } else if (repeat > 0) {
+      currentAlarmAudio.loop = false;
+      let playCount = 1;
+
+      onEndedListener = () => {
+        if (playCount < repeat) {
+          playCount++;
+          if (currentAlarmAudio) {
+            currentAlarmAudio.currentTime = 0;
+            currentAlarmAudio.play().catch(error => console.error('Error al repetir el sonido:', error));
+          }
+        } else {
+          stopAlarmSound();
+        }
+      };
+
+      currentAlarmAudio.addEventListener('ended', onEndedListener);
+    }
+
+    currentAlarmAudio.play().catch(error => {
+   console.error('Error al iniciar la reproducción del sonido:', error);
+  });
+
+  } catch (error) {
+    console.error('Error al crear el objeto Audio:', error);
+  }
+};

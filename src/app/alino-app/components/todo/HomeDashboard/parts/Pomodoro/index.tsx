@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { usePomodoroStore } from "@/store/usePomodoroStore";
-import styles from "./Pomodoro.module.css";
+
+import { stopAlarmSound, usePomodoroStore } from "@/store/usePomodoroStore";
+
 import { ConfigIcon } from "@/components/ui/icons/icons";
 import { WindowModal } from "@/components/ui/WindowModal";
-import { Switch } from "@/components/ui/switch";
 import { PomodoroConfig } from "./PomodoroConfig";
+
+import styles from "./Pomodoro.module.css";
 
 type PomodoroMode = "work" | "shortBreak" | "longBreak";
 
@@ -14,7 +16,7 @@ interface ModeConfig {
   color: string;
 }
 
-export const Pomodoro: React.FC = () => {
+export const Pomodoro = () => {
   const [options, setOptions] = useState<boolean>(false);
 
   const {
@@ -36,6 +38,7 @@ export const Pomodoro: React.FC = () => {
 
   const handleCloseOptions = () => {
     setOptions(false);
+    stopAlarmSound();
   };
 
   const progress = getProgress();
@@ -70,9 +73,6 @@ export const Pomodoro: React.FC = () => {
               )
             )}
           </div>
-          <button className={styles.configButton} onClick={handleOpenOptions}>
-            <ConfigIcon />
-          </button>
         </div>
 
         <div className={styles.timerSection}>
@@ -107,6 +107,9 @@ export const Pomodoro: React.FC = () => {
             onClick={resetTimer}
           >
             Reiniciar
+          </button>
+          <button className={styles.configButton} onClick={handleOpenOptions}>
+            <ConfigIcon />
           </button>
         </div>
 
