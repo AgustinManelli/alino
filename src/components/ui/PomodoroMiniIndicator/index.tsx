@@ -12,6 +12,7 @@ interface Props {
 }
 
 const GRACE_PERIOD_MS = 10000;
+const ANIMATION_DURATION_MS = 400;
 
 export const PomodoroMiniIndicator = memo(
   ({ onClick, className = "", size = "medium" }: Props) => {
@@ -29,29 +30,40 @@ export const PomodoroMiniIndicator = memo(
 
     const isCurrentlyActive = isActive();
 
-    const [isRendered, setIsRendered] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
+    const [isHovering, setIsHovering] = useState(false);
 
     useEffect(() => {
-      if (isCurrentlyActive) {
-        setIsRendered(true);
-        return;
+      let graceTimer: NodeJS.Timeout;
+      let animationTimer: NodeJS.Timeout;
+
+      if (isCurrentlyActive || isHovering) {
+        setIsMounted(true);
+        animationTimer = setTimeout(() => {
+          setIsVisible(true);
+        }, 20);
+      } else {
+        graceTimer = setTimeout(() => {
+          setIsVisible(false);
+          animationTimer = setTimeout(() => {
+            setIsMounted(false);
+          }, ANIMATION_DURATION_MS);
+        }, GRACE_PERIOD_MS);
       }
 
-      const timerId = setTimeout(() => {
-        setIsRendered(false);
-      }, GRACE_PERIOD_MS);
-
       return () => {
-        clearTimeout(timerId);
+        clearTimeout(graceTimer);
+        clearTimeout(animationTimer);
       };
-    }, [isCurrentlyActive]);
+    }, [isCurrentlyActive, isHovering]);
 
     const formattedTime = useMemo(
       () => formatTime(timeLeft),
       [formatTime, timeLeft]
     );
 
-    if (!isRendered) {
+    if (!isMounted) {
       return null;
     }
 
@@ -77,8 +89,10 @@ export const PomodoroMiniIndicator = memo(
 
     return (
       <div
-        className={`${styles.container} ${styles[size]} ${isRunning ? styles.running : ""} ${className}`}
+        className={`${styles.container} ${styles[size]} ${isVisible ? styles.visible : ""} ${isRunning ? styles.running : ""} ${className}`}
         onClick={handleMainClick}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
         style={{ "--mode-color": currentMode.color } as React.CSSProperties}
       >
         <div className={styles.controlsPanel}>
