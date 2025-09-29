@@ -13,7 +13,7 @@ import { Weather } from "./parts/Weather";
 import { UpcomingTask } from "./parts/UpcomingTasks";
 import { NewFeature } from "./parts/NewFeatures";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
-import DraggableBentoGrid from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";
+import { DraggableBentoGrid } from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";
 
 import { HomeLayouts } from "@/components/ui/DraggableBentoGrid/layout.helper";
 
@@ -171,6 +171,20 @@ export const HomeDashboard = () => {
     setIsEdit(false);
     setLayout(tempLayout);
   }, [layout, tempLayout, setLayout]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsEdit(false);
+        setTempLayout(layout);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <div className={styles.dashboardContainer}>
