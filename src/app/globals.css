@@ -69,6 +69,8 @@
   --icon-color-inside: #fff;
   --placeholder-text-color: rgb(142, 142, 142);
   --skeleton: rgb(255, 255, 255);
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* Variables para tema oscuro */
@@ -90,6 +92,8 @@
   --icon-color-inside: #1c1c1c;
   --placeholder-text-color: rgb(142, 142, 142);
   --skeleton: rgb(44, 47, 53);
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * {
@@ -103,8 +107,8 @@ html,
 body {
   position: relative;
   max-width: 100vw;
-  height: 100%;
-  width: 100%;
+  height: 100vh;
+  width: 100vw;
   font-family: var(--font-inter), sans-serif;
   perspective: 1000px;
   overflow: hidden !important;

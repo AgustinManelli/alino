@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import {
   useSensor,
   useSensors,
@@ -25,13 +25,25 @@ export function useDndSensors() {
     []
   );
 
+  const [padding, setPadding] = useState({ top: 15, left: 15 });
+
+  useEffect(() => {
+    const style = getComputedStyle(document.documentElement);
+    const safeAreaTop = parseInt(style.getPropertyValue('--safe-area-inset-top'), 10) || 0;
+    
+    const totalTopPadding = safeAreaTop + 15;
+    const totalLeftPadding = 15;
+
+    setPadding({ top: totalTopPadding, left: totalLeftPadding });
+  }, []);
+
   const adjustForLayoutPadding: Modifier = useCallback(
     ({ transform }) => ({
       ...transform,
-      x: transform.x - 15,
-      y: transform.y - 15,
+      x: transform.x - padding.left,
+      y: transform.y - padding.top,
     }),
-    []
+    [padding]
   );
 
   return { sensors, measuring, adjustForLayoutPadding };
