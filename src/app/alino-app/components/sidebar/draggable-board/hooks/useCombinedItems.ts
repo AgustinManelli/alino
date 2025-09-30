@@ -13,7 +13,7 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
       index: (f as any).index ?? 0,
     }));
     const listsNorm: NormalizedItem[] = (lists ?? [])
-      .filter((l) => l.pinned !== true)
+      // .filter((l) => l.pinned !== true)
       .map((l) => ({
         id: l.list_id,
         kind: "list",

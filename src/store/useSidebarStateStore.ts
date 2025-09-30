@@ -7,7 +7,7 @@ type SidebarStateStore = {
 };
 
 export const useSidebarStateStore = create<SidebarStateStore>((set) => ({
-  navbarStatus: true,
+  navbarStatus: false,
   setNavbarStatus: (value) => set({ navbarStatus: value }),
   toggleNavbarStatus: () =>
     set((state) => ({ navbarStatus: !state.navbarStatus })),

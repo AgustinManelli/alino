@@ -53,6 +53,24 @@ export function useDragHandlers({
     [lists]
   );
 
+  function getItemsInContext(
+    allItems: NormalizedItem[],
+    targetFolderId: string | null,
+    itemType: "list" | "folder" | "root"
+  ): NormalizedItem[] {
+    if (itemType === "folder") {
+      return allItems.filter((item) => item.kind === "folder");
+    }
+
+    return allItems.filter((item) => {
+      if (item.kind !== "list") return false;
+      const listData = item.data as ListsType;
+      if (listData.pinned === true) return false;
+      return listData.folder === targetFolderId;
+    });
+  }
+  
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
@@ -104,15 +122,23 @@ export function useDragHandlers({
         ) {
           if (activeType === "item") {
             const movedList = { ...(moved.data as ListsType) };
-            const computedIndex = calcNewIndex(newOrder, newIndex);
-            const sameParent =
-              active.data?.current?.parentId === over.data?.current?.parentId ||
-              active.data?.current?.parentId === over.data?.current?.folderId;
 
+            const targetFolderId =
+            over.data.current.parentId ?? over.data.current.folderId;
+
+            const contextItems = getItemsInContext(
+              newOrder,
+              targetFolderId,
+              "list"
+            );
+
+            const contextIndex = contextItems.findIndex(
+              (item) => item.id === moved.id
+            );
+
+            const computedIndex = calcNewIndex(contextItems, contextIndex);
             movedList.index = computedIndex;
-            movedList.folder = sameParent
-              ? movedList.folder
-              : (over.data.current.parentId ?? over.data.current.folderId);
+            movedList.folder = targetFolderId;
 
             newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
             updateIndexList(
@@ -124,7 +150,9 @@ export function useDragHandlers({
         } else {
           if (activeType === "item") {
             const movedList = { ...(moved.data as ListsType) };
+
             const computedIndex = calcNewIndex(newOrder, newIndex);
+
             movedList.index = computedIndex;
             movedList.folder = null;
             newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
@@ -148,35 +176,6 @@ export function useDragHandlers({
           updateIndexList(movedList.list_id, computedIndex, null);
         }
       }
-
-      // Sincronizar con Zustand (optimista)
-      // const updatedFolders = newOrder
-      //   .filter((it) => it.kind === "folder")
-      //   .map((it) => it.data as FolderType);
-      // const updatedLists = newOrder
-      //   .filter((it) => it.kind === "list")
-      //   .map((it) => it.data as ListsType);
-
-      // const movedListsMap = new Map(updatedLists.map((l) => [l.list_id, l]));
-      // const movedFoldersMap = new Map(
-      //   updatedFolders.map((f) => [f.folder_id, f])
-      // );
-
-      // const finalLists = lists.map(
-      //   (orig) => movedListsMap.get(orig.list_id) ?? orig
-      // );
-      // updatedLists.forEach((l) => {
-      //   if (!finalLists.find((x) => x.list_id === l.list_id))
-      //     finalLists.push(l);
-      // });
-
-      // const finalFolders = folders.map(
-      //   (orig) => movedFoldersMap.get(orig.folder_id) ?? orig
-      // );
-      // updatedFolders.forEach((f) => {
-      //   if (!finalFolders.find((x) => x.folder_id === f.folder_id))
-      //     finalFolders.push(f);
-      // });
 
       const finalFolders = newOrder
         .filter((item) => item.kind === "folder")
