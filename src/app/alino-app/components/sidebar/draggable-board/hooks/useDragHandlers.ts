@@ -46,7 +46,6 @@ export function useDragHandlers({
 
       const activeType = active.data?.current?.type;
       if (activeType === "folder") {
-        // contar listas dentro de la carpeta activa
         const count = lists.filter((ls) => ls.folder === active.id).length;
         setTempListLength(count);
       }
@@ -83,7 +82,6 @@ export function useDragHandlers({
       }
 
       if (newIndex === -1) {
-        // fallback: al final
         newIndex = currentItems.length - 1;
       }
 
@@ -99,7 +97,6 @@ export function useDragHandlers({
       const newOrder = arrayMove(currentItems.slice(), oldIndex, newIndex);
       const moved = newOrder[newIndex];
       const activeType = active.data?.current?.type;
-      console.log(over);
       if (over) {
         if (
           over.data?.current?.type === "folder-dropzone" ||
@@ -153,33 +150,41 @@ export function useDragHandlers({
       }
 
       // Sincronizar con Zustand (optimista)
-      const updatedFolders = newOrder
-        .filter((it) => it.kind === "folder")
-        .map((it) => it.data as FolderType);
-      const updatedLists = newOrder
-        .filter((it) => it.kind === "list")
-        .map((it) => it.data as ListsType);
+      // const updatedFolders = newOrder
+      //   .filter((it) => it.kind === "folder")
+      //   .map((it) => it.data as FolderType);
+      // const updatedLists = newOrder
+      //   .filter((it) => it.kind === "list")
+      //   .map((it) => it.data as ListsType);
 
-      const movedListsMap = new Map(updatedLists.map((l) => [l.list_id, l]));
-      const movedFoldersMap = new Map(
-        updatedFolders.map((f) => [f.folder_id, f])
-      );
+      // const movedListsMap = new Map(updatedLists.map((l) => [l.list_id, l]));
+      // const movedFoldersMap = new Map(
+      //   updatedFolders.map((f) => [f.folder_id, f])
+      // );
 
-      const finalLists = lists.map(
-        (orig) => movedListsMap.get(orig.list_id) ?? orig
-      );
-      updatedLists.forEach((l) => {
-        if (!finalLists.find((x) => x.list_id === l.list_id))
-          finalLists.push(l);
-      });
+      // const finalLists = lists.map(
+      //   (orig) => movedListsMap.get(orig.list_id) ?? orig
+      // );
+      // updatedLists.forEach((l) => {
+      //   if (!finalLists.find((x) => x.list_id === l.list_id))
+      //     finalLists.push(l);
+      // });
 
-      const finalFolders = folders.map(
-        (orig) => movedFoldersMap.get(orig.folder_id) ?? orig
-      );
-      updatedFolders.forEach((f) => {
-        if (!finalFolders.find((x) => x.folder_id === f.folder_id))
-          finalFolders.push(f);
-      });
+      // const finalFolders = folders.map(
+      //   (orig) => movedFoldersMap.get(orig.folder_id) ?? orig
+      // );
+      // updatedFolders.forEach((f) => {
+      //   if (!finalFolders.find((x) => x.folder_id === f.folder_id))
+      //     finalFolders.push(f);
+      // });
+
+      const finalFolders = newOrder
+        .filter((item) => item.kind === "folder")
+        .map((item) => item.data as FolderType);
+
+      const finalLists = newOrder
+        .filter((item) => item.kind === "list")
+        .map((item) => item.data as ListsType);
 
       // Commit
       setLists(finalLists);
