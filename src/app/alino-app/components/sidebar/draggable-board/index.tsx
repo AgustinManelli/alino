@@ -18,6 +18,7 @@ import { useDragHandlers } from "./hooks/useDragHandlers";
 import { PinnedLists } from "./parts/PinnedLists";
 import { RootItems } from "./parts/RootItems";
 import { DragOverlayView } from "./parts/DragOverlayView";
+import { ListsType } from "@/lib/schemas/database.types";
 
 export const DraggableBoard = () => {
   // Zustand selectors
@@ -89,7 +90,9 @@ export const DraggableBoard = () => {
         strategy={verticalListSortingStrategy}
       >
         <RootItems
-          items={topLevelItems}
+          items={topLevelItems.filter(
+            (item) => item.kind !== "list" || !(item.data as ListsType).pinned
+          )}
           lists={lists}
           draggedItem={draggedItem}
           animations={animations}
