@@ -42,6 +42,7 @@ import {
   UserProfile,
   UserWithMembershipRole,
 } from "@/lib/schemas/database.types";
+import { calculateNewRank } from "@/lib/lexorank";
 
 const POS_INDEX = 16384;
 
@@ -94,10 +95,10 @@ type TodoStore = {
   updatePinnedList: (list_id: string, pinned: boolean) => Promise<void>;
   updateIndexList: (
     list_id: string,
-    index: number,
-    folder_id: string | null
+    folder_id: string | null,
+    rank: string
   ) => Promise<void>;
-  updateIndexFolders: (folder_id: string, index: number) => Promise<void>;
+  updateIndexFolders: (folder_id: string, rank:string) => Promise<void>;
   updateTaskName: (
     task_id: string,
     task_content: string,
@@ -261,22 +262,22 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     }));
   },
 
-  updateIndexList: async (list_id, index, folder_id) => {
+  updateIndexList: async (list_id, folder_id, rank) => {
     const originalList = get().lists.find((list) => list.list_id === list_id);
     if (!originalList) return;
-    const previousIndex = originalList.index;
     const previousFolder = originalList.folder;
+    const previousRank = originalList.rank;
 
     try {
       set((state) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === list_id
-            ? { ...currentItem, index, folder_id }
+            ? { ...currentItem, folder_id, rank}
             : currentItem
         ),
       }));
 
-      const { error } = await updateIndexList(list_id, index, folder_id);
+      const { error } = await updateIndexList(list_id, folder_id, rank);
 
       if (error) {
         throw new Error(error);
@@ -285,7 +286,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       set((state) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === list_id
-            ? { ...currentItem, index: previousIndex, folder: previousFolder }
+            ? { ...currentItem, folder: previousFolder, rank: previousRank}
             : currentItem
         ),
       }));
@@ -293,23 +294,23 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     }
   },
 
-  updateIndexFolders: async (folder_id, index) => {
+  updateIndexFolders: async (folder_id, rank) => {
     const originalFolders = get().folders.find(
       (folder) => folder.folder_id === folder_id
     );
     if (!originalFolders) return;
-    const previousIndex = originalFolders.index;
+    const previousRank = originalFolders.rank;
 
     try {
       set((state) => ({
         folders: state.folders.map((currentItem) =>
           currentItem.folder_id === folder_id
-            ? { ...currentItem, index }
+            ? { ...currentItem, rank}
             : currentItem
         ),
       }));
 
-      const { error } = await updateIndexFolder(folder_id, index);
+      const { error } = await updateIndexFolder(folder_id, rank);
 
       if (error) {
         throw new Error(error);
@@ -318,7 +319,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       set((state) => ({
         folders: state.folders.map((currentItem) =>
           currentItem.folder_id === folder_id
-            ? { ...currentItem, index: previousIndex }
+            ? { ...currentItem, rank: previousRank }
             : currentItem
         ),
       }));
@@ -383,6 +384,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     const folders = get().folders;
 
     const index = calculateNewIndex(lists, folders);
+    const rank = calculateNewRank(lists, folders);
     const now = new Date().toISOString();
 
     const optimistic: ListsType = {
@@ -390,6 +392,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       index,
       list_id: optimisticId,
       pinned: false,
+      rank: rank,
       role: "owner",
       shared_by: null,
       shared_since: now,
@@ -410,7 +413,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     try {
       set((state) => ({ lists: [...state.lists, optimistic] }));
 
-      const { error } = await insertList(optimisticId, name, color, icon);
+      const { error } = await insertList(optimisticId, name, color, icon, rank, index);
 
       if (error) {
         throw new Error(error || "No se recibieron datos del servidor.");
@@ -431,6 +434,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     const folders = get().folders;
 
     const index = calculateNewIndex(lists, folders);
+    const rank = calculateNewRank(lists, folders);
     const now = new Date().toISOString();
 
     const optimistic: FolderType = {
@@ -438,10 +442,11 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       folder_name,
       folder_color,
       folder_description: null,
+      index,
+      rank,
       user_id: user_id || "",
       updated_at: null,
       created_at: now,
-      index,
     };
     try {
       set((state) => ({ folders: [...state.folders, optimistic] }));
@@ -450,7 +455,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         optimisticId,
         folder_name,
         folder_color,
-        index
+        index,
+        rank
       );
 
       if (error) {

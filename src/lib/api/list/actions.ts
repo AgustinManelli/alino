@@ -130,15 +130,15 @@ export async function getLists() {
 
 export const updateIndexList = async (
   list_id: string,
-  index: number,
-  folder_id: string | null
+  folder_id: string | null,
+  rank: string
 ) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("list_memberships")
-      .update({ index, folder: folder_id })
+      .update({ folder: folder_id, rank: rank })
       .eq("list_id", list_id)
       .eq("user_id", user.id);
 
@@ -158,13 +158,13 @@ export const updateIndexList = async (
   }
 };
 
-export const updateIndexFolder = async (folder_id: string, index: number) => {
+export const updateIndexFolder = async (folder_id: string, rank:string) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("list_folders")
-      .update({ index })
+      .update({ rank })
       .eq("folder_id", folder_id)
       .eq("user_id", user.id);
 
@@ -188,17 +188,29 @@ export const insertList = async (
   list_id: string,
   list_name: string,
   color: string | null,
-  icon: string | null
+  icon: string | null,
+  rank: string,
+  index: number,
 ) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const { data, error } = await supabase.from("lists").insert({
-      list_id,
-      owner_id: user.id,
-      list_name,
-      color,
-      icon,
+    // const { data, error } = await supabase.from("lists").insert({
+    //   list_id,
+    //   owner_id: user.id,
+    //   list_name,
+    //   color,
+    //   icon,
+    // });
+    // //create_list_and_owner_membership
+
+    const { data, error } = await supabase.rpc("create_list_and_owner_membership", {
+      p_list_id: list_id,
+      p_list_name: list_name,
+      p_color: color,
+      p_icon: icon,
+      p_rank: rank,
+      p_index: index
     });
 
     if (error) {
@@ -221,7 +233,8 @@ export const insertFolder = async (
   folder_id: string,
   folder_name: string,
   folder_color: string | null,
-  index: number
+  index: number,
+  rank: string
 ) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
@@ -232,6 +245,7 @@ export const insertFolder = async (
       folder_name,
       folder_color,
       index,
+      rank
     });
 
     if (error) {

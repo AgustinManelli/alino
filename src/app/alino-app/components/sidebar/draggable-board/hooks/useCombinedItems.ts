@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { LexoRank } from "lexorank";
 import type { ListsType, FolderType } from "@/lib/schemas/database.types";
 import type { NormalizedItem } from "../utils/types";
 
@@ -10,17 +11,24 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
       id: f.folder_id,
       kind: "folder",
       data: f,
-      index: (f as any).index ?? 0,
+      rank: (f as any).rank ?? LexoRank.middle().toString(),
     }));
+    
     const listsNorm: NormalizedItem[] = (lists ?? [])
-      // .filter((l) => l.pinned !== true)
       .map((l) => ({
         id: l.list_id,
         kind: "list",
         data: l,
-        index: (l as any).index ?? 0,
+        rank: (l as any).rank ?? LexoRank.middle().toString(),
       }));
-    return [...foldersNorm, ...listsNorm].sort((a, b) => a.index - b.index);
+    
+    // Ordenar por rank lexicográficamente
+    return [...foldersNorm, ...listsNorm].sort((a, b) => {
+      // Comparación lexicográfica simple de strings
+      if (a.rank < b.rank) return -1;
+      if (a.rank > b.rank) return 1;
+      return 0;
+    });
   }, [lists, folders]);
 
   const topLevelItems = useMemo(

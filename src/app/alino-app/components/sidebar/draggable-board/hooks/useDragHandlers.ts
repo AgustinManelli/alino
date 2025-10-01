@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { arrayMove } from "@dnd-kit/sortable";
 import type { DragStartEvent, DragEndEvent } from "@dnd-kit/core";
-import { calcNewIndex } from "../utils/calcNewIndex";
 import type { ListsType, FolderType } from "@/lib/schemas/database.types";
 import type { NormalizedItem } from "../utils/types";
+import { calcNewRank } from "@/lib/lexorank";
 
 type Params = {
   combinedItems: NormalizedItem[];
@@ -13,8 +13,8 @@ type Params = {
   folders: FolderType[];
   setLists: (ls: ListsType[]) => void;
   setFolders: (fs: FolderType[]) => void;
-  updateIndexList: (id: string, index: number, folder: string | null) => void;
-  updateIndexFolders: (id: string, index: number) => void;
+  updateIndexList: (id: string, folder: string | null, rank: string) => void;
+  updateIndexFolders: (id: string, rank:string) => void;
 };
 
 export function useDragHandlers({
@@ -136,44 +136,43 @@ export function useDragHandlers({
               (item) => item.id === moved.id
             );
 
-            const computedIndex = calcNewIndex(contextItems, contextIndex);
-            movedList.index = computedIndex;
+            const computedRank = calcNewRank(contextItems, contextIndex)
             movedList.folder = targetFolderId;
+            movedList.rank = computedRank
 
             newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
             updateIndexList(
               movedList.list_id,
-              computedIndex,
-              movedList.folder ?? null
+              movedList.folder ?? null,
+              computedRank
             );
           }
         } else {
           if (activeType === "item") {
             const movedList = { ...(moved.data as ListsType) };
 
-            const computedIndex = calcNewIndex(newOrder, newIndex);
+            const computedRank = calcNewRank(newOrder, newIndex)
 
-            movedList.index = computedIndex;
             movedList.folder = null;
+            movedList.rank = computedRank
             newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
-            updateIndexList(movedList.list_id, computedIndex, null);
+            updateIndexList(movedList.list_id, null, computedRank);
           }
           if (activeType === "folder") {
             const movedFolder = { ...(moved.data as FolderType) };
-            const computedIndex = calcNewIndex(newOrder, newIndex);
-            movedFolder.index = computedIndex;
+            const computedRank = calcNewRank(newOrder, newIndex)
+            movedFolder.rank = computedRank
             newOrder[newIndex] = { ...newOrder[newIndex], data: movedFolder };
-            updateIndexFolders(movedFolder.folder_id, computedIndex);
+            updateIndexFolders(movedFolder.folder_id, computedRank);
           }
         }
       } else {
         if (activeType === "item" && active.data?.current?.parentId) {
           const movedList = { ...(moved.data as ListsType) };
-          const computedIndex = calcNewIndex(newOrder, newIndex);
-          movedList.index = computedIndex;
+          const computedRank = calcNewRank(newOrder, newIndex)
           movedList.folder = null;
           newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
-          updateIndexList(movedList.list_id, computedIndex, null);
+          updateIndexList(movedList.list_id, null, computedRank);
         }
       }
 

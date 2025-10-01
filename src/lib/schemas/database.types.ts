@@ -35,6 +35,7 @@ export type Database = {
           folder_id: string;
           folder_name: string;
           index: number;
+          rank: string | null;
           updated_at: string | null;
           user_id: string;
         };
@@ -45,6 +46,7 @@ export type Database = {
           folder_id?: string;
           folder_name: string;
           index?: number;
+          rank?: string | null;
           updated_at?: string | null;
           user_id: string;
         };
@@ -55,6 +57,7 @@ export type Database = {
           folder_id?: string;
           folder_name?: string;
           index?: number;
+          rank?: string | null;
           updated_at?: string | null;
           user_id?: string;
         };
@@ -141,6 +144,7 @@ export type Database = {
           index: number;
           list_id: string;
           pinned: boolean;
+          rank: string | null;
           role: Database["public"]["Enums"]["roles_types"];
           shared_by: string | null;
           shared_since: string;
@@ -151,6 +155,7 @@ export type Database = {
           index?: number;
           list_id: string;
           pinned?: boolean;
+          rank?: string | null;
           role?: Database["public"]["Enums"]["roles_types"];
           shared_by?: string | null;
           shared_since?: string;
@@ -161,6 +166,7 @@ export type Database = {
           index?: number;
           list_id?: string;
           pinned?: boolean;
+          rank?: string | null;
           role?: Database["public"]["Enums"]["roles_types"];
           shared_by?: string | null;
           shared_since?: string;

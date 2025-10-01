@@ -8,7 +8,8 @@ export type NormalizedItem = {
   id: string;
   kind: CombinedKind;
   data: ListsType | FolderType;
-  index: number;
+  // index: number;
+  rank: string;
 };
 
 export type DndItemData =
