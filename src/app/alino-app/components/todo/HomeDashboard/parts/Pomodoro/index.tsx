@@ -1,10 +1,12 @@
-import React, { useState } from "react";
-import { usePomodoroStore } from "@/store/usePomodoroStore";
-import styles from "./Pomodoro.module.css";
+import { memo, useCallback, useMemo, useState } from "react";
+
+import { stopAlarmSound, usePomodoroStore } from "@/store/usePomodoroStore";
+
 import { ConfigIcon } from "@/components/ui/icons/icons";
 import { WindowModal } from "@/components/ui/WindowModal";
-import { Switch } from "@/components/ui/switch";
 import { PomodoroConfig } from "./PomodoroConfig";
+
+import styles from "./Pomodoro.module.css";
 
 type PomodoroMode = "work" | "shortBreak" | "longBreak";
 
@@ -14,7 +16,7 @@ interface ModeConfig {
   color: string;
 }
 
-export const Pomodoro: React.FC = () => {
+export const Pomodoro = memo(() => {
   const [options, setOptions] = useState<boolean>(false);
 
   const {
@@ -30,15 +32,20 @@ export const Pomodoro: React.FC = () => {
     getProgress,
   } = usePomodoroStore();
 
-  const handleOpenOptions = () => {
+  const handleOpenOptions = useCallback(() => {
     setOptions(true);
-  };
+  }, []);
 
-  const handleCloseOptions = () => {
+  const handleCloseOptions = useCallback(() => {
     setOptions(false);
-  };
+    stopAlarmSound();
+  }, []);
 
   const progress = getProgress();
+  const formattedTime = useMemo(
+    () => formatTime(timeLeft),
+    [formatTime, timeLeft]
+  );
 
   return (
     <>
@@ -70,26 +77,47 @@ export const Pomodoro: React.FC = () => {
               )
             )}
           </div>
-          <button className={styles.configButton} onClick={handleOpenOptions}>
-            <ConfigIcon />
-          </button>
         </div>
 
         <div className={styles.timerSection}>
-          <div className={styles.progressRing}>
-            <svg className={styles.progressSvg} viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="45" className={styles.progressBg} />
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                className={styles.progressBar}
+          <div
+            className={`${styles.timeDisplay} ${isRunning ? styles.timeRunning : ""}`}
+          >
+            <div className={styles.timeContainer}>{formattedTime}</div>
+          </div>
+          <div className={styles.progressContainer}>
+            <div className={styles.progressTrack}>
+              <div
+                className={`${styles.progressBar} ${isRunning ? styles.animatedBar : ""}`}
                 style={{
-                  strokeDashoffset: `${282.7 - (282.7 * progress) / 100}`,
+                  width: `${progress}%`,
+                  backgroundColor: modes[mode].color,
                 }}
-              />
-            </svg>
-            <div className={styles.timeDisplay}>{formatTime(timeLeft)}</div>
+              ></div>
+
+              {/* Marcadores de progreso */}
+              <div className={styles.progressMarkers}>
+                {[25, 50, 75].map((marker) => (
+                  <div
+                    key={marker}
+                    className={`${styles.progressMarker} ${
+                      progress >= marker ? styles.markerActive : ""
+                    }`}
+                    style={{ left: `${marker}%` }}
+                  >
+                    <div
+                      className={styles.markerDot}
+                      style={{
+                        backgroundColor:
+                          progress >= marker
+                            ? modes[mode].color
+                            : "transparent",
+                      }}
+                    ></div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -108,6 +136,9 @@ export const Pomodoro: React.FC = () => {
           >
             Reiniciar
           </button>
+          <button className={styles.configButton} onClick={handleOpenOptions}>
+            <ConfigIcon />
+          </button>
         </div>
 
         <div className={styles.stats}>
@@ -116,4 +147,4 @@ export const Pomodoro: React.FC = () => {
       </div>
     </>
   );
-};
+});
