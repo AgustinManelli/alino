@@ -29,6 +29,7 @@
     "grapheme-splitter": "^1.0.4",
     "immer": "^10.1.1",
     "js-cookie": "^3.0.5",
+    "lexorank": "^1.0.5",
     "lodash-es": "^4.17.21",
     "motion": "^12.23.12",
     "next": "^14.2.32",
