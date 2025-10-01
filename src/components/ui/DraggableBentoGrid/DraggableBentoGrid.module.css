@@ -20,10 +20,6 @@
   border-radius: 20px;
   padding: 0;
   transition: all 0.2s ease-in-out;
-  /* box-shadow:
-    rgba(12, 20, 66, 0.02) 0px 4px 12px,
-    rgba(12, 20, 66, 0.08) 0px 30px 80px,
-    rgb(230, 233, 237) 0px 0px 0px 0px inset; */
   width: 100%;
   height: 100%;
   position: relative;
@@ -36,17 +32,9 @@
   opacity: 0 !important;
 }
 
-/* .bentoItem:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 4px 12px 0 rgba(0, 0, 0, 0.1),
-    0 2px 4px 0 rgba(0, 0, 0, 0.06);
-  border-color: rgba(59, 130, 246, 0.3);
-} */
-
 .bentoItem.dragging {
   opacity: 1;
-  transform: rotate(-5deg) scale(1.02);
+  transform: rotate(-2deg) scale(1.02);
   box-shadow:
     0 10px 30px 0 rgba(0, 0, 0, 0.2),
     0 4px 8px 0 rgba(0, 0, 0, 0.1);
@@ -139,12 +127,10 @@
   z-index: 1;
 }
 
-/* Chrome, Edge y Safari */
 .bentoBody::-webkit-scrollbar {
   width: none;
 }
 
-/* Tamaños de elementos */
 .size-small {
   grid-column: span 1;
   grid-row: span 1;
@@ -212,7 +198,6 @@
   }
 }
 
-/* Estados adicionales */
 .bentoItem.loading {
   opacity: 0.7;
   pointer-events: none;
@@ -253,7 +238,6 @@
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
 }
 
-/* Animaciones de entrada */
 .bentoItem {
   animation: fadeInUp 0.3s ease-out;
 }
