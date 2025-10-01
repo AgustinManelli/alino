@@ -118,6 +118,38 @@
   gap: 10px;
 }
 
+.soundSelectorContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.testSoundButton {
+  border: none;
+  background: none;
+  border: 1px solid var(--border-container-color);
+  background-color: transparent;
+  padding: 0 10px;
+  color: var(--text);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.testSoundButton:hover {
+  background-color: var(--background-over-container);
+}
+
+.testSoundButton svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+  stroke: var(--text-not-available);
+}
+
 .soundLabel {
   display: flex;
   flex-direction: column;
@@ -133,6 +165,7 @@
 
 .soundDropdownContainer {
   position: relative;
+  width: 100%;
 }
 
 .soundDropdownButton {
