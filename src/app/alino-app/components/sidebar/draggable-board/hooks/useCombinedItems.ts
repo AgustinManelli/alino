@@ -12,6 +12,7 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
       kind: "folder",
       data: f,
       rank: (f as any).rank ?? LexoRank.middle().toString(),
+      childrens: lists.filter((ls) => ls.folder === f.folder_id)
     }));
     
     const listsNorm: NormalizedItem[] = (lists ?? [])
@@ -20,6 +21,7 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
         kind: "list",
         data: l,
         rank: (l as any).rank ?? LexoRank.middle().toString(),
+        childrens: null,
       }));
     
     // Ordenar por rank lexicográficamente

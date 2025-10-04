@@ -10,6 +10,7 @@ export type NormalizedItem = {
   data: ListsType | FolderType;
   // index: number;
   rank: string;
+  childrens: ListsType[] | null;
 };
 
 export type DndItemData =

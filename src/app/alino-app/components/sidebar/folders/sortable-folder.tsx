@@ -49,6 +49,9 @@ export const SortableFolder = ({
   const [colorTemp, setColorTemp] = useState<string | null>(
     folder.folder_color
   );
+  const [overId, setOverId] = useState<string | null>(null);
+  const [isBelowOver, setIsBelowOver] = useState(false);
+  const [isOverEmptyFolder, setIsOverEmptyFolder] = useState(false);
 
   const openModal = useConfirmationModalStore((state) => state.openModal);
   const deleteFolder = useTodoDataStore((state) => state.deleteFolder);
@@ -63,23 +66,67 @@ export const SortableFolder = ({
 
   useDndMonitor({
     onDragOver: (event) => {
-      const overId = event.over?.id as string | undefined;
+      const { active, over } = event;
+      const overId = over?.id as string | undefined;
+      const activeId = active.id;
 
-      if (!overId) {
+      if (
+        !overId ||
+        active.data.current?.type !== "item" ||
+        listIds.includes(activeId as string)
+      ) {
+        setOverId(null);
+        setIsOverEmptyFolder(false);
         setContainsOver(false);
         return;
       }
-      if (
-        listIds.includes(overId) ||
-        overId === `folder-${folder.folder_id}-dropzone`
-      ) {
+
+      const isOverListInThisFolder = listIds.includes(overId);
+      const isOverThisFolderDropzone =
+        overId === `folder-${folder.folder_id}-dropzone`;
+
+      if (isOverListInThisFolder) {
         setContainsOver(true);
+        setIsOverEmptyFolder(false);
+        setOverId(overId);
+
+        const overNodeRect = over?.rect;
+        const dragNodeRect = active.rect.current.translated;
+        if (!dragNodeRect) return;
+
+        if (overNodeRect) {
+          const overCenterY = overNodeRect.top + overNodeRect.height / 2;
+          setIsBelowOver(dragNodeRect.top > overCenterY);
+        }
+      } else if (isOverThisFolderDropzone) {
+        setContainsOver(true);
+        setOverId(null);
+        if (lists.length === 0) {
+          setIsOverEmptyFolder(true);
+        } else {
+          setIsOverEmptyFolder(false);
+          const lastList = lists[lists.length - 1];
+          if (lastList) {
+            setOverId(lastList.list_id);
+            setIsBelowOver(true);
+          }
+        }
       } else {
+        setOverId(null);
+        setIsOverEmptyFolder(false);
         setContainsOver(false);
       }
     },
-    onDragEnd: () => setContainsOver(false),
-    onDragCancel: () => setContainsOver(false),
+    onDragEnd: () => {
+      setOverId(null);
+      setIsOverEmptyFolder(false);
+      setContainsOver(false);
+    },
+    onDragCancel: () => {
+      setOverId(null);
+      setIsOverEmptyFolder(false);
+      setContainsOver(false);
+    },
   });
 
   const {
@@ -284,10 +331,44 @@ export const SortableFolder = ({
           >
             {lists.length > 0 ? (
               lists.map((list) => (
-                <ListCard list={list} key={list.list_id} inFolder />
+                <React.Fragment key={list.list_id}>
+                  {overId === list.list_id && !isBelowOver && (
+                    <div
+                      style={{
+                        height: "45px",
+                        width: "100%",
+                        backgroundColor: "rgba(62, 187, 0, 0.3)",
+                        borderRadius: "15px",
+                      }}
+                    />
+                  )}
+                  <ListCard list={list} inFolder />
+                  {overId === list.list_id && isBelowOver && (
+                    <div
+                      style={{
+                        height: "45px",
+                        width: "100%",
+                        backgroundColor: "rgba(62, 187, 0, 0.3)",
+                        borderRadius: "15px",
+                      }}
+                    />
+                  )}
+                </React.Fragment>
               ))
             ) : (
-              <p>Arrastra una lista aquí</p>
+              <>
+                {isOverEmptyFolder && (
+                  <div
+                    style={{
+                      height: "45px",
+                      width: "100%",
+                      backgroundColor: "rgba(62, 187, 0, 0.3)",
+                      borderRadius: "15px",
+                    }}
+                  />
+                )}
+                <p>Arrastra una lista aquí</p>
+              </>
             )}
           </SortableContext>
         </div>
