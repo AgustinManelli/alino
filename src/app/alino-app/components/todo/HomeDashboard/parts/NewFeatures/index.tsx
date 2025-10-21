@@ -63,7 +63,7 @@ export const NewFeature = () => {
         intervalRef.current = null;
       }
     };
-  }, [validUpdates.length, isTransitioning, modal]); // Added modal to dependencies
+  }, [validUpdates.length, isTransitioning, modal]);
 
   // Cleanup interval on unmount
   useEffect(() => {
@@ -85,7 +85,7 @@ export const NewFeature = () => {
         setCurrentIndex((prev) => (prev + 1) % validUpdates.length);
       }, 20000);
     }
-  }, [validUpdates.length, modal]); // Added modal dependency
+  }, [validUpdates.length, modal]);
 
   const goToSlide = useCallback(
     (index: number) => {
@@ -166,130 +166,27 @@ export const NewFeature = () => {
 
   const handleCloseModal = () => {
     setModal(false);
-    // The useEffect will automatically restart the interval when modal becomes false
   };
 
   const handleOpenModal = () => {
     setModal(true);
-    // The useEffect will automatically stop the interval when modal becomes true
   };
 
-  return (
-    <div className={styles.newFeatures}>
-      {init ? (
-        <>
-          {modal && (
-            <WindowModal closeAction={handleCloseModal} crossButton={false}>
-              <div className={styles.modal}>
-                {currentUpdate.image_url && (
-                  <Image
-                    src={currentUpdate.image_url}
-                    alt={currentUpdate.title || "New feature highlight"}
-                    className={styles.newFeaturesImage}
-                    width={1000}
-                    height={563}
-                    draggable={false}
-                    style={{ zIndex: 0, width: "100%" }}
-                  />
-                )}
-                <div className={styles.modalContent}>
-                  {!currentUpdate.image_url && (
-                    <div
-                      className={styles.textHeader}
-                      style={{ marginBottom: "10px" }}
-                    >
-                      <span className={styles.categoryBadge}>
-                        {currentUpdate.category || "Update"}
-                      </span>
-                      {currentUpdate.version && (
-                        <span className={styles.versionBadge}>
-                          v{currentUpdate.version}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  <h3 className={styles.modalTitle}>{currentUpdate.title}</h3>
-                  <p className={styles.modalText}>{currentUpdate.content}</p>
-                  <footer className={styles.footer}>
-                    <button onClick={handleCloseModal}>cerrar</button>
-                  </footer>
-                </div>
-              </div>
-            </WindowModal>
-          )}
-          <div
-            ref={containerRef}
-            className={`${styles.contentContainer} ${isTransitioning ? styles.transitioning : ""}`}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-          >
-            {currentUpdate.image_url ? (
-              <Image
-                src={currentUpdate.image_url}
-                alt={currentUpdate.title || "New feature highlight"}
-                className={styles.newFeaturesImage}
-                width={1000}
-                height={563}
-                draggable={false}
-              />
-            ) : (
-              <div className={styles.textContent}>
-                <div className={styles.textHeader}>
-                  <span className={styles.categoryBadge}>
-                    {currentUpdate.category || "Update"}
-                  </span>
-                  {currentUpdate.version && (
-                    <span className={styles.versionBadge}>
-                      v{currentUpdate.version}
-                    </span>
-                  )}
-                </div>
-                <h3 className={styles.title}>
-                  {truncateText(currentUpdate.title, 50)}
-                </h3>
-                <p className={styles.description}>
-                  {truncateText(currentUpdate.content, 90)}
-                </p>
-              </div>
-            )}
-          </div>
+  // Early return si no hay updates disponibles después de la inicialización
+  if (init && validUpdates.length === 0) {
+    return (
+      <div className={styles.newFeatures}>
+        <div className={styles.loadingContainer}>
+          <p>No hay novedades disponibles</p>
+        </div>
+      </div>
+    );
+  }
 
-          {validUpdates.length > 1 && (
-            <div className={styles.dotsContainer}>
-              {validUpdates.map((_, index) => (
-                <button
-                  key={index}
-                  className={`${styles.dot} ${
-                    index === currentIndex ? styles.dotActive : ""
-                  }`}
-                  onClick={() => handleDotClick(index)}
-                />
-              ))}
-            </div>
-          )}
-
-          {currentUpdate.published_at && (
-            <p className={styles.date}>
-              {currentUpdate.published_at &&
-                new Date(currentUpdate.published_at)
-                  .toLocaleDateString("es-AR", {
-                    month: "short",
-                    year: "numeric",
-                  })
-                  .toUpperCase()}
-            </p>
-          )}
-
-          <button className={styles.showMore} onClick={handleOpenModal}>
-            ver más
-          </button>
-        </>
-      ) : (
+  // Early return durante la carga
+  if (!init) {
+    return (
+      <div className={styles.newFeatures}>
         <div className={styles.loadingContainer}>
           <LoadingIcon
             style={{
@@ -301,7 +198,133 @@ export const NewFeature = () => {
           />
           <p>Cargando novedades...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Verificación adicional de seguridad
+  if (!currentUpdate) {
+    return (
+      <div className={styles.newFeatures}>
+        <div className={styles.loadingContainer}>
+          <p>No hay novedades disponibles</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.newFeatures}>
+      {modal && (
+        <WindowModal closeAction={handleCloseModal} crossButton={false}>
+          <div className={styles.modal}>
+            {currentUpdate.image_url && (
+              <Image
+                src={currentUpdate.image_url}
+                alt={currentUpdate.title || "New feature highlight"}
+                className={styles.newFeaturesImage}
+                width={1000}
+                height={563}
+                draggable={false}
+                style={{ zIndex: 0, width: "100%" }}
+              />
+            )}
+            <div className={styles.modalContent}>
+              {!currentUpdate.image_url && (
+                <div
+                  className={styles.textHeader}
+                  style={{ marginBottom: "10px" }}
+                >
+                  <span className={styles.categoryBadge}>
+                    {currentUpdate.category || "Update"}
+                  </span>
+                  {currentUpdate.version && (
+                    <span className={styles.versionBadge}>
+                      v{currentUpdate.version}
+                    </span>
+                  )}
+                </div>
+              )}
+              <h3 className={styles.modalTitle}>{currentUpdate.title}</h3>
+              <p className={styles.modalText}>{currentUpdate.content}</p>
+              <footer className={styles.footer}>
+                <button onClick={handleCloseModal}>cerrar</button>
+              </footer>
+            </div>
+          </div>
+        </WindowModal>
       )}
+      <div
+        ref={containerRef}
+        className={`${styles.contentContainer} ${isTransitioning ? styles.transitioning : ""}`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
+        {currentUpdate.image_url ? (
+          <Image
+            src={currentUpdate.image_url}
+            alt={currentUpdate.title || "New feature highlight"}
+            className={styles.newFeaturesImage}
+            width={1000}
+            height={563}
+            draggable={false}
+          />
+        ) : (
+          <div className={styles.textContent}>
+            <div className={styles.textHeader}>
+              <span className={styles.categoryBadge}>
+                {currentUpdate.category || "Update"}
+              </span>
+              {currentUpdate.version && (
+                <span className={styles.versionBadge}>
+                  v{currentUpdate.version}
+                </span>
+              )}
+            </div>
+            <h3 className={styles.title}>
+              {truncateText(currentUpdate.title, 50)}
+            </h3>
+            <p className={styles.description}>
+              {truncateText(currentUpdate.content, 90)}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {validUpdates.length > 1 && (
+        <div className={styles.dotsContainer}>
+          {validUpdates.map((_, index) => (
+            <button
+              key={index}
+              className={`${styles.dot} ${
+                index === currentIndex ? styles.dotActive : ""
+              }`}
+              onClick={() => handleDotClick(index)}
+            />
+          ))}
+        </div>
+      )}
+
+      {currentUpdate.published_at && (
+        <p className={styles.date}>
+          {currentUpdate.published_at &&
+            new Date(currentUpdate.published_at)
+              .toLocaleDateString("es-AR", {
+                month: "short",
+                year: "numeric",
+              })
+              .toUpperCase()}
+        </p>
+      )}
+
+      <button className={styles.showMore} onClick={handleOpenModal}>
+        ver más
+      </button>
     </div>
   );
 };
