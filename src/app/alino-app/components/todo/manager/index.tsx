@@ -56,11 +56,11 @@ export const Manager = memo(function Manager({
 
   const displayName = useMemo(
     () => user?.display_name.split(" ")[0] ?? "Bienvenido",
-    [user]
+    [user],
   );
   const filteredTasks = useMemo(
     () => tasks.filter((task) => task.list_id === setList?.list_id),
-    [tasks, setList?.list_id]
+    [tasks, setList?.list_id],
   );
   const activeTaskCount = useMemo(() => {
     const source = h ? tasks : filteredTasks;
@@ -177,7 +177,7 @@ export const Manager = memo(function Manager({
 
   useOnClickOutside(divRef, () => {
     const colorPickerContainer = document.getElementById(
-      "color-picker-container-navbar-list-card"
+      "color-picker-container-navbar-list-card",
     );
     if (colorPickerContainer) return;
     setIsNameChange(false);
@@ -187,7 +187,7 @@ export const Manager = memo(function Manager({
 
   useEffect(() => {
     const input = document.getElementById(
-      "list-info-edit-container-todo-manager"
+      "list-info-edit-container-todo-manager",
     );
     if (input) {
       input.focus();
