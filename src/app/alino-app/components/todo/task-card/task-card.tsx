@@ -1,190 +1,253 @@
 "use client";
-
-import {
-  useState,
-  useRef,
-  useEffect,
-  memo,
-  useCallback,
-  RefObject,
-} from "react";
+import { useState, useRef, useEffect, memo, useCallback } from "react";
+import { useEditor, EditorContent, Editor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import { TextStyle } from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import FontFamily from "@tiptap/extension-font-family";
+import TextAlign from "@tiptap/extension-text-align";
+import CharacterCount from "@tiptap/extension-character-count";
+import Link from "@tiptap/extension-link";
 import { useShallow } from "zustand/shallow";
-
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
 import type { TaskType } from "@/lib/schemas/database.types";
-
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
-import { linkifyWithIcon } from "@/utils/linkify";
-
-import { Check, MoreVertical, Note } from "@/components/ui/icons/icons";
+import {
+  isHtmlContent,
+  parseRichTextContent,
+} from "@/components/ui/RichTextEditor/richTextUtils";
+import { FontSizeExtension } from "@/components/ui/RichTextEditor/fontSizeExtension";
+import { Check, Note } from "@/components/ui/icons/icons";
 import styles from "./task-card.module.css";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { ItemTypeDropdown } from "./parts/ItemTypeDropdown";
+import { useSmartDate } from "@/hooks/useSmartDate";
+import { useSmartDateInteraction } from "@/hooks/useSmartDateInteraction";
+import { SmartDateBubble } from "@/components/ui/SmartDateBubble/SmartDateBubble";
+import { SmartDateHighlighter } from "@/components/ui/RichTextEditor/SmartDateHighlighter";
+
+const RICH_TEXT_EXTENSIONS = [
+  StarterKit.configure({
+    heading: false,
+    codeBlock: false,
+    blockquote: false,
+    horizontalRule: false,
+  }),
+  Underline,
+  TextStyle,
+  Color,
+  Highlight.configure({ multicolor: true }),
+  FontFamily,
+  FontSizeExtension,
+  TextAlign.configure({ types: ["paragraph"] }),
+  CharacterCount.configure({ limit: 1000 }),
+  Link.configure({
+    openOnClick: false,
+    autolink: true,
+  }),
+  SmartDateHighlighter,
+];
 
 export const TaskCard = memo(
   ({
     task,
-    inputRef,
+    onEditorReady,
     maxHeight,
     selected,
     hour,
   }: {
     task: TaskType;
-    inputRef: RefObject<HTMLTextAreaElement>;
+    onEditorReady?: (editor: Editor) => void;
     maxHeight: number | null;
     selected: Date | undefined;
     hour: string | undefined;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
-    const [inputName, setInputName] = useState<string>(task.task_content);
-    const [editing, setEditing] = useState<boolean>(true);
-
     const closeModal = useEditTaskModalStore((state) => state.closeModal);
     const modalEditOpen = useEditTaskModalStore((state) => state.isOpen);
+    const textRef = useRef<HTMLElement>(null);
 
-    const textRef = useRef<HTMLParagraphElement>(null);
-    const cardRef = useRef<HTMLDivElement>(null);
-    const checkButtonRef = useRef<HTMLButtonElement>(null);
+    const [editorText, setEditorText] = useState("");
+    const [cursorPos, setCursorPos] = useState(-1);
+    const [dismissedText, setDismissedText] = useState<string | null>(null);
 
-    const { updateTaskName } = useTodoDataStore(
-      useShallow((state) => ({
-        updateTaskName: state.updateTaskName,
-      }))
+    const detectedDate = useSmartDate(editorText);
+    const activeDetected =
+      detectedDate && detectedDate.text !== dismissedText ? detectedDate : null;
+
+    const [bubbleCoords, setBubbleCoords] = useState<{
+      top: number;
+      left: number;
+    } | null>(null);
+    const textContainerRef = useRef<HTMLDivElement>(null);
+
+    const { showBubble, setIsHoveringBubble } = useSmartDateInteraction(
+      activeDetected,
+      cursorPos,
+      textContainerRef,
     );
 
+    const { updateTaskName } = useTodoDataStore(
+      useShallow((state) => ({ updateTaskName: state.updateTaskName })),
+    );
     const user = useUserDataStore((state) => state.user);
+
+    const handleSaveRef = useRef<() => Promise<void>>(async () => {});
+
+    const editor = useEditor({
+      extensions: RICH_TEXT_EXTENSIONS,
+      content: parseRichTextContent(task.task_content),
+      immediatelyRender: false,
+      editorProps: {
+        attributes: { class: styles.proseMirrorCard },
+        handleKeyDown: (_view, event) => {
+          if (event.key === "Enter") {
+            if (event.shiftKey) {
+              event.preventDefault();
+              editorRef.current?.commands.splitBlock();
+              return true;
+            } else {
+              event.preventDefault();
+              handleSaveRef.current();
+              return true;
+            }
+          }
+          if (event.key === "Escape") {
+            event.preventDefault();
+            editorRef.current?.commands.setContent(
+              parseRichTextContent(task.task_content),
+            );
+            closeModal();
+            return true;
+          }
+          return false;
+        },
+      },
+      onCreate: ({ editor }) => {
+        onEditorReady?.(editor);
+        setEditorText(editor.getText());
+        // Focus at end
+        setTimeout(() => {
+          editor.commands.focus("end");
+        }, 50);
+      },
+      onUpdate: ({ editor }) => {
+        setEditorText(editor.getText());
+        setCursorPos(editor.state.selection.from);
+      },
+      onSelectionUpdate: ({ editor }) => {
+        setCursorPos(editor.state.selection.from);
+      },
+    });
+
+    useEffect(() => {
+      if (!editor) return;
+
+      editor.view.dispatch(
+        editor.state.tr.setMeta(
+          "smartDateHighlight",
+          activeDetected?.text || null,
+        ),
+      );
+
+      if (activeDetected) {
+        const timer = setTimeout(() => {
+          const el = editor.view.dom.querySelector(".smart-date-highlight");
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            const containerRect =
+              textContainerRef.current?.getBoundingClientRect();
+            if (containerRect) {
+              const calculatedTop = rect.top - containerRect.top - 40;
+              const calculatedLeft =
+                rect.left - containerRect.left + rect.width / 2;
+              setBubbleCoords({
+                top: calculatedTop,
+                left: calculatedLeft,
+              });
+            }
+          } else {
+            setBubbleCoords(null);
+          }
+        }, 20);
+        return () => clearTimeout(timer);
+      } else {
+        setBubbleCoords(null);
+      }
+    }, [activeDetected, editorText, editor]);
+
+    const editorRef = useRef(editor);
+    useEffect(() => {
+      editorRef.current = editor;
+    }, [editor]);
+
+    useEffect(() => {
+      if (editor) onEditorReady?.(editor);
+    }, [editor]);
 
     useEffect(() => {
       setCompleted(task.completed);
-      setInputName(task.task_content);
-    }, [task.completed, task.task_content]);
-
-    function combineDateAndTime(
-      selected: Date | undefined,
-      hour: string | undefined
-    ) {
-      if (!selected) {
-        return null;
+      if (editor) {
+        const current = editor.getHTML();
+        const next = parseRichTextContent(task.task_content);
+        if (current !== next) {
+          editor.commands.setContent(next, {
+            emitUpdate: false,
+          });
+        }
       }
+    }, [task.task_content, task.completed]);
 
-      // Crear una nueva instancia de Date basada en 'selected'
-      const combined = new Date(selected);
-
-      // Dividir la cadena 'hour' en horas y minutos
-      const [hours, minutes] = (hour ? hour : "23:59").split(":").map(Number);
-
-      // Establecer las horas y minutos en la nueva fecha
-      combined.setHours(hours);
-      combined.setMinutes(minutes);
-      combined.setSeconds(0); // Opcional: establecer segundos a 0
-      combined.setMilliseconds(0); // Opcional: establecer milisegundos a 0
-
-      // Devolver la cadena en formato ISO 8601
+    function combineDateAndTime(d?: Date, h?: string) {
+      if (!d) return null;
+      const combined = new Date(d);
+      const [hours, minutes] = (h ?? "23:59").split(":").map(Number);
+      combined.setHours(hours, minutes, 0, 0);
       return combined.toISOString();
     }
 
     const handleSaveName = useCallback(async () => {
-      setEditing(false);
-      closeModal();
+      const ed = editorRef.current;
+      if (!ed) return;
 
-      const formatText = inputName
-        .replace(/\r\n/g, "\n")
-        .replace(/ {2,}/g, " ")
-        .replace(/\n{3,}/g, "\n\n")
-        .replace(/^[ ]+|[ ]+$/g, "");
-
+      const htmlContent = ed.getHTML();
+      const isEmpty = ed.isEmpty;
       const combinedDate = combineDateAndTime(selected, hour);
 
+      closeModal();
+
       if (
-        (task.task_content === formatText &&
+        isEmpty ||
+        (task.task_content === htmlContent &&
           task.completed === completed &&
-          task.target_date === combinedDate) ||
-        formatText.length < 1
+          task.target_date === combinedDate)
       ) {
-        setInputName(task.task_content);
+        if (isEmpty)
+          ed.commands.setContent(parseRichTextContent(task.task_content));
         return;
       }
-      setInputName(formatText);
 
       const { error } = await updateTaskName(
         task.task_id,
-        formatText,
+        htmlContent,
         completed,
-        combinedDate
+        combinedDate,
       );
-      if (error) setInputName(task.task_content);
-    }, [
-      inputName,
-      completed,
-      task.task_content,
-      task.task_id,
-      updateTaskName,
-      selected,
-      hour,
-    ]);
+      if (error)
+        ed.commands.setContent(parseRichTextContent(task.task_content));
+    }, [completed, task, updateTaskName, selected, hour, closeModal]);
 
     useEffect(() => {
-      if (inputRef.current) {
-        const length = inputRef.current.value.length;
-        inputRef.current.setSelectionRange(length, length);
-      }
-    }, [editing]);
-
-    function autoResize(textarea: any) {
-      textarea.style.height = "auto";
-      textarea.style.height = textarea.scrollHeight + "px";
-    }
-
-    useEffect(() => {
-      if (!inputRef.current) return;
-      inputRef.current.style.height = "auto";
-      inputRef.current.style.height = inputRef.current.scrollHeight + "px";
-    }, [editing]);
-
-    const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (!inputRef.current) return;
-        if (e.key === "Tab") {
-          e.preventDefault();
-          const el = e.currentTarget as HTMLTextAreaElement;
-          const start = el.selectionStart;
-          const end = el.selectionEnd;
-          const value = el.value;
-          const newValue =
-            value.substring(0, start) + "\t" + value.substring(end);
-          setInputName(newValue);
-          requestAnimationFrame(() => {
-            el.selectionStart = el.selectionEnd = start + 1;
-          });
-          return;
-        }
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          handleSaveName();
-        } else if (e.key === "Escape") {
-          e.preventDefault();
-          setEditing(false);
-          setInputName(task.task_content);
-        }
-      },
-      [handleSaveName, setInputName]
-    );
-
-    useEffect(() => {
-      if (!editing || !inputRef.current) return;
-      const textarea = inputRef.current;
-      const length = textarea.value.length;
-
-      textarea.setSelectionRange(length, length);
-      textarea.scrollTop = textarea.scrollHeight;
-    }, [editing]);
+      handleSaveRef.current = handleSaveName;
+    }, [handleSaveName]);
 
     return (
       <div
         className={styles.cardContainer}
-        ref={cardRef}
         style={{
           maxHeight: maxHeight ? `${maxHeight}px` : "initial",
           paddingLeft: modalEditOpen ? "10px" : "15px",
@@ -205,7 +268,6 @@ export const TaskCard = memo(
                   overflow: "visible",
                   fill: task.completed ? "var(--icon-colorv2)" : "transparent",
                   transition: "fill 0.1s ease-in-out",
-                  transform: "scale(1)",
                 }}
               >
                 <path d="M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z" />
@@ -233,43 +295,83 @@ export const TaskCard = memo(
             <ItemTypeDropdown
               completed={completed}
               setCompleted={setCompleted}
-              inputRef={inputRef}
+              inputRef={{ current: null } as any}
             />
           )}
         </div>
-        <div className={styles.textContainer}>
+
+        <div
+          className={styles.textContainer}
+          style={{ position: "relative" }}
+          ref={textContainerRef}
+        >
+          {activeDetected && showBubble && modalEditOpen && bubbleCoords && (
+            <div
+              onMouseEnter={() => setIsHoveringBubble(true)}
+              onMouseLeave={() => setIsHoveringBubble(false)}
+              style={{
+                position: "absolute",
+                top: `${bubbleCoords.top}px`,
+                left: `${bubbleCoords.left}px`,
+                transform: "translateX(-50%)",
+                zIndex: 60,
+              }}
+            >
+              <SmartDateBubble
+                detected={activeDetected}
+                onAssign={async (d, h, txt) => {
+                  if (editor) {
+                    editor.commands.focus();
+                  }
+                  setDismissedText(txt ?? null);
+
+                  const combinedDate = combineDateAndTime(d, h);
+                  await updateTaskName(
+                    task.task_id,
+                    editor?.getHTML() || task.task_content,
+                    completed,
+                    combinedDate,
+                  );
+                }}
+                onDismiss={() => {
+                  if (activeDetected) setDismissedText(activeDetected.text);
+                }}
+              />
+            </div>
+          )}
+
           {modalEditOpen ? (
-            <textarea
-              ref={inputRef}
-              maxLength={1000}
-              rows={1}
-              className={styles.nameChangerInput}
+            <div
+              className={styles.editorCardWrapper}
               style={{
                 maxHeight: maxHeight ? `${maxHeight - 20}px` : "initial",
               }}
-              value={inputName}
-              onChange={(e) => {
-                setInputName(e.target.value);
-              }}
-              onInput={(e) => autoResize(e.target)}
-              onKeyDown={handleKeyDown}
-              id="task-card-edit-textarea"
-            />
+            >
+              <EditorContent
+                editor={editor}
+                className={styles.editorCardContent}
+              />
+            </div>
           ) : (
             <>
-              <p
-                ref={textRef}
+              <div
+                ref={textRef as React.RefObject<HTMLDivElement>}
                 className={styles.text}
-                style={{
-                  opacity: completed ? 0.3 : 1,
+                style={{ opacity: completed ? 0.3 : 1 }}
+                dangerouslySetInnerHTML={{
+                  __html: isHtmlContent(task.task_content)
+                    ? task.task_content
+                    : `<p>${task.task_content}</p>`,
                 }}
-              >
-                {linkifyWithIcon(inputName)}
-              </p>
-              <WavyStrikethrough textRef={textRef} completed={completed} />
+              />
+              <WavyStrikethrough
+                textRef={textRef as any}
+                completed={completed}
+              />
             </>
           )}
         </div>
+
         {user?.user_id !== task.created_by?.user_id && (
           <div
             style={{
@@ -288,26 +390,25 @@ export const TaskCard = memo(
                 backgroundImage: `url(${task.created_by?.avatar_url})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
                 borderRadius: "50%",
               }}
-            ></div>
+            />
           </div>
         )}
+
         <div className={styles.editingButtons}>
           <TimeLimitBox
             target_date={task.target_date}
-            idScrollArea={"task-section-scroll-area"}
+            idScrollArea="task-section-scroll-area"
             completed={completed}
           />
-          {modalEditOpen ? (
+          {modalEditOpen && (
             <button
               onClick={(e) => {
                 e.preventDefault();
                 handleSaveName();
               }}
               className={styles.checkButton}
-              ref={checkButtonRef}
             >
               <Check
                 style={{
@@ -318,27 +419,9 @@ export const TaskCard = memo(
                 }}
               />
             </button>
-          ) : (
-            <button
-              className={styles.mainButton}
-              style={{
-                width: "25px",
-                height: "25px",
-                backgroundColor: "var(--background-over-container)",
-              }}
-            >
-              <MoreVertical
-                style={{
-                  stroke: "var(--text)",
-                  width: "20px",
-                  strokeWidth: "3",
-                  display: "flex",
-                }}
-              />
-            </button>
           )}
         </div>
       </div>
     );
-  }
+  },
 );

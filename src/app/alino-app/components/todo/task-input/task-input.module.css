@@ -9,11 +9,14 @@
 }
 
 .formContainer {
+  position: relative;
   width: 100%;
   height: fit-content;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 0;
 }
 
 .form {
@@ -26,7 +29,6 @@
   align-items: flex-start;
   border-radius: 15px;
   background-color: var(--background-container);
-  /* overflow: hidden; */
   padding: 0px 15px 0px 10px;
   box-shadow:
     0 4px 12px #0c144205,
@@ -40,51 +42,77 @@
   position: relative;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
   height: 40px;
-  overflow: hidden;
   min-height: 0px;
-  margin-top: 10px;
-  /* margin-bottom: 11px; */
+  margin-top: 17px;
 }
 
-.input {
-  border: none;
-  outline: none;
-
-  font-size: 14px;
-  font-family: inherit;
-  color: var(--text);
-  resize: none;
-  overflow: hidden;
-  white-space: pre-wrap;
-  word-break: break-word;
-  box-sizing: border-box;
-  padding: 5px 5px 5px 0px;
+.editorWrapper {
   width: 100%;
   height: 100%;
-
   position: absolute;
   left: 0;
   top: 0;
-
-  appearance: none;
-  -webkit-tap-highlight-color: transparent;
-  background-color: transparent;
+  display: flex;
+  align-items: flex-start;
 }
 
-.input::placeholder {
-  color: var(--placeholder-text-color);
+.editorContent {
+  width: 100%;
+  height: 100%;
 }
 
-.input::-webkit-scrollbar {
+.proseMirror {
+  width: 100%;
+  min-height: 20px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  padding: 0px 5px 0 0;
+  outline: none;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  background: transparent;
+  cursor: text;
+}
+
+.editorContent :global(.ProseMirror) p {
+  margin: 0;
+  line-height: 1;
+}
+
+.editorContent :global(.ProseMirror) p + p {
+  margin-top: 2px;
+}
+
+.editorContent :global(.ProseMirror) ul,
+.editorContent :global(.ProseMirror) ol {
+  padding-left: 20px;
+  margin: 2px 0;
+}
+
+.editorContent :global(.ProseMirror) li {
+  line-height: 1.55;
+}
+
+.editorContent :global(.ProseMirror):focus {
+  outline: none;
+}
+
+.editorContent::-webkit-scrollbar {
   width: 4px;
-  height: 4px;
 }
-.input::-webkit-scrollbar-thumb {
+
+.editorContent::-webkit-scrollbar-thumb {
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.12);
+}
+
+.editorContent :global(.ProseMirror) a {
+  cursor: pointer;
+  color: blue;
 }
 
 .placeholder {
@@ -96,29 +124,33 @@
   padding: 5px 15px;
   min-height: 0px;
   margin-top: 10px;
+  pointer-events: none;
+}
+
+.toolbarWrapper {
+  width: 100%;
+  padding-top: 6px;
+  overflow: visible;
 }
 
 .limitIndicator {
   position: absolute;
   right: 10px;
-  bottom: -15px;
+  bottom: -20px;
   font-size: 9px;
   color: var(--text-not-available);
+  pointer-events: none;
 }
 
-.dropdownItemContainer {
+.inputManagerContainer {
+  position: relative;
+  width: fit-content;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 5px;
-}
-
-.dropdownItemContainer p {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  width: 100%;
-  overflow: hidden;
-  color: var(--text);
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .taskSendButton {
@@ -134,34 +166,4 @@
   border-radius: 5px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-}
-
-.inputManagerContainer {
-  position: relative;
-  width: fit-content;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.note {
-  width: 30px;
-  height: 30px;
-}
-.noteButton {
-  background-color: var(--background-over-container);
-  border: none;
-  padding: 5px;
-  cursor: pointer;
-  border-radius: 5px;
-  width: 30px;
-  height: 30px;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.noteButton:hover {
-  background-color: var(--background-over-container-hover);
 }

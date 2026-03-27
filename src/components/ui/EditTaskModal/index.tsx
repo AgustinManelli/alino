@@ -1,17 +1,15 @@
 "use client";
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { Editor } from "@tiptap/react";
 import { useShallow } from "zustand/shallow";
-
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
-
 import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
-
-import styles from "./EditTaskModal.module.css";
 import { Calendar } from "../Calendar";
+import { RichTextToolbar } from "../RichTextEditor/RichTextToolbar";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import styles from "./EditTaskModal.module.css";
 
 const computeTargetY = (rectHeight: number, viewportWidth: number) => {
   if (typeof window === "undefined") return 0;
@@ -21,20 +19,21 @@ const computeTargetY = (rectHeight: number, viewportWidth: number) => {
   const clamp = (n: number, min: number, max: number) =>
     Math.max(min, Math.min(n, max));
   const isMobile = viewportWidth < 850;
-
   if (isMobile) {
     const upperHalfHeight = vh / 2;
     const centerOfUpperHalf = offsetTop + upperHalfHeight / 2;
     const idealTop = centerOfUpperHalf - rectHeight / 2;
-    const minTop = offsetTop;
-    const maxTop = offsetTop + upperHalfHeight - rectHeight;
-    return Math.round(clamp(idealTop, minTop, maxTop)) + 50;
+    return (
+      Math.round(
+        clamp(idealTop, offsetTop, offsetTop + upperHalfHeight - rectHeight),
+      ) + 50
+    );
   } else {
     const centerFull = offsetTop + vh / 2;
     const idealTop = centerFull - rectHeight / 2;
-    const minTop = offsetTop;
-    const maxTop = offsetTop + vh - rectHeight;
-    return Math.round(clamp(idealTop, minTop, maxTop)) - 15;
+    return (
+      Math.round(clamp(idealTop, offsetTop, offsetTop + vh - rectHeight)) - 15
+    );
   }
 };
 
@@ -50,48 +49,38 @@ export const EditTaskModal = () => {
       task: state.task,
       initialRect: state.initialRect,
       closeModal: state.closeModal,
-    }))
+    })),
   );
 
   const [selected, setSelected] = useState<Date | undefined>(undefined);
   const [hour, setHour] = useState<string | undefined>(undefined);
+  const [taskEditor, setTaskEditor] = useState<Editor | null>(null);
 
   useEffect(() => {
     setSelected(undefined);
     setHour(undefined);
+    setTaskEditor(null);
     if (modalTask?.target_date) {
-      const dateObject = new Date(modalTask.target_date);
-
-      setSelected(dateObject);
-
-      const hours = String(dateObject.getHours()).padStart(2, "0");
-      const minutes = String(dateObject.getMinutes()).padStart(2, "0");
-      setHour(`${hours}:${minutes}`);
+      const d = new Date(modalTask.target_date);
+      setSelected(d);
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      setHour(`${hh}:${mm}`);
     }
   }, [modalTask]);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
-  const [windowSize, setWindowSize] = useState({
-    width: 0,
-    height: 0,
-  });
-
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
-
-    handleResize();
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const handle = () =>
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    handle();
+    window.addEventListener("resize", handle);
+    return () => window.removeEventListener("resize", handle);
   }, []);
 
   useEffect(() => {
@@ -110,7 +99,6 @@ export const EditTaskModal = () => {
         height: 0,
       };
     }
-
     return {
       x: initialRect.left - 15,
       y: initialRect.top - 15,
@@ -119,43 +107,22 @@ export const EditTaskModal = () => {
   }, [initialRect, windowSize]);
 
   const targetAnimation = useMemo(() => {
-    const viewportWidth = windowSize.width;
+    const vw = windowSize.width;
     const preferredWidth = initialRect?.width ?? 500;
-    const maxAvailable = Math.max(240, viewportWidth);
-    const targetWidth = Math.min(preferredWidth, maxAvailable);
-
-    const targetX = Math.round(viewportWidth / 2 - targetWidth / 2) - 15;
-
-    const rectHeight = initialRect?.height ?? 0;
-    const targetY = computeTargetY(rectHeight + 70, viewportWidth);
-
-    return {
-      x: targetX,
-      y: targetY,
-      transition: {
-        delay: 0.1,
-      },
-    };
+    const targetWidth = Math.min(preferredWidth, Math.max(240, vw));
+    const targetX = Math.round(vw / 2 - targetWidth / 2) - 15;
+    const targetY = computeTargetY((initialRect?.height ?? 0) + 70, vw);
+    return { x: targetX, y: targetY, transition: { delay: 0.1 } };
   }, [initialRect, windowSize]);
 
   const maxHeightStyle = useMemo(() => {
     const isMobile = windowSize.width < 850;
-    const viewportHeight = windowSize.height;
-
-    if (isMobile) {
-      const maxHeight = viewportHeight / 2 - 120;
-      return maxHeight;
-    } else {
-      const maxHeight = viewportHeight / 2;
-      return maxHeight;
-    }
+    return isMobile ? windowSize.height / 2 - 120 : windowSize.height / 2;
   }, [windowSize]);
 
   const handleAnimationComplete = useCallback(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
+    taskEditor?.commands.focus("end");
+  }, [taskEditor]);
 
   useOnClickOutside(
     contentRef,
@@ -164,13 +131,9 @@ export const EditTaskModal = () => {
       setSelected(undefined);
       setHour(undefined);
     },
-    [toolsRef],
-    "no-close-edit"
+    [toolsRef, toolbarRef],
+    "no-close-edit",
   );
-
-  const handleFocusOnParentInput = () => {
-    if (inputRef) inputRef.current?.focus();
-  };
 
   return (
     <AnimatePresence>
@@ -183,15 +146,13 @@ export const EditTaskModal = () => {
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.3 }}
           />
+
           <div className={styles.modalContainerLimit}>
             <motion.div
               className={styles.modalContainer}
               initial={initialAnimation}
               animate={targetAnimation}
-              exit={{
-                x: initialAnimation.x,
-                y: initialAnimation.y,
-              }}
+              exit={{ x: initialAnimation.x, y: initialAnimation.y }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
               onAnimationComplete={handleAnimationComplete}
             >
@@ -199,7 +160,6 @@ export const EditTaskModal = () => {
                 style={{
                   position: "relative",
                   width: "100%",
-                  height: "100%",
                   overflow: "hidden",
                   maxHeight: `${maxHeightStyle}px`,
                 }}
@@ -208,31 +168,38 @@ export const EditTaskModal = () => {
                 {modalTask && (
                   <TaskCard
                     task={modalTask}
-                    inputRef={inputRef}
+                    onEditorReady={setTaskEditor}
                     maxHeight={maxHeightStyle}
                     selected={selected}
                     hour={hour}
                   />
                 )}
               </div>
+
               <motion.div
-                className={styles.moreOptions}
-                initial={{
-                  scale: 0,
-                  opacity: 0,
-                }}
+                ref={toolbarRef}
+                className={styles.toolbarContainer}
+                initial={{ scale: 0, opacity: 0 }}
                 animate={{
                   scale: 1,
                   opacity: 1,
-                  transition: {
-                    duration: 0.2,
-                    delay: 0.2,
-                  },
+                  transition: { duration: 0.2, delay: 0.15 },
                 }}
-                exit={{
-                  scale: 0,
-                  opacity: 0,
+                exit={{ scale: 0, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <RichTextToolbar editor={taskEditor} visible={!!taskEditor} />
+              </motion.div>
+
+              <motion.div
+                className={styles.moreOptions}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{
+                  scale: 1,
+                  opacity: 1,
+                  transition: { duration: 0.2, delay: 0.2 },
                 }}
+                exit={{ scale: 0, opacity: 0 }}
                 ref={toolsRef}
               >
                 <Calendar
@@ -240,7 +207,7 @@ export const EditTaskModal = () => {
                   setSelected={setSelected}
                   hour={hour}
                   setHour={setHour}
-                  focusToParentInput={handleFocusOnParentInput}
+                  focusToParentInput={() => taskEditor?.commands.focus()}
                 />
               </motion.div>
             </motion.div>

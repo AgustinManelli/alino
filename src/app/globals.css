@@ -138,3 +138,8 @@ a {
     height: 100vh;
   }
 }
+
+.smart-date-highlight {
+  text-decoration: underline dotted #87189d;
+  text-underline-offset: 4px;
+}

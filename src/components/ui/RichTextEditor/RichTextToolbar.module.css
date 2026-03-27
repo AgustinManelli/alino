@@ -1,0 +1,179 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 8px;
+  background-color: var(--background-container);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 12px rgba(12, 20, 66, 0.06),
+    0 8px 32px rgba(12, 20, 66, 0.1);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
+  opacity: 0.6;
+  padding: 0;
+}
+
+.btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn:hover {
+  background-color: var(--background-over-container);
+  opacity: 1;
+}
+
+.btn.active {
+  background-color: var(--background-over-container);
+  opacity: 1;
+}
+
+.sep {
+  width: 1px;
+  height: 20px;
+  background-color: var(--icon-color);
+  opacity: 0.15;
+  margin: 0 3px;
+  flex-shrink: 0;
+  border-radius: 1px;
+}
+
+.select {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 11.5px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 3px 4px;
+  border-radius: 6px;
+  height: 28px;
+  outline: none;
+  opacity: 0.7;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+.select:hover {
+  background-color: var(--background-over-container);
+  opacity: 1;
+}
+
+.popoverWrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.colorTriggerBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text);
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
+  opacity: 0.7;
+  padding: 4px 5px 3px;
+}
+
+.colorTriggerBtn:hover,
+.colorTriggerBtn.active {
+  background-color: var(--background-over-container);
+  opacity: 1;
+}
+
+.colorLabel {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.iconWrapper {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconWrapper svg {
+  width: 14px;
+  height: 14px;
+}
+
+.colorBar {
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--background-container);
+  border-radius: 10px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 22px);
+  gap: 5px;
+  z-index: 9999;
+  box-shadow:
+    0 4px 12px rgba(12, 20, 66, 0.08),
+    0 12px 40px rgba(12, 20, 66, 0.14);
+}
+
+.swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+  flex-shrink: 0;
+}
+
+.swatch:hover {
+  transform: scale(1.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}

@@ -1,21 +1,18 @@
 "use client";
-
 import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { animate } from "motion";
-
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
 import type { TaskType } from "@/lib/schemas/database.types";
-
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { linkifyWithIcon } from "@/utils/linkify";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
-
 import { DeleteIcon, Edit, Note } from "@/components/ui/icons/icons";
+import { isHtmlContent } from "@/components/ui/RichTextEditor/richTextUtils";
 import styles from "./task-card.module.css";
 
 export const TaskCardStatic = memo(
@@ -29,39 +26,32 @@ export const TaskCardStatic = memo(
     home?: boolean;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
-
     const { openModal, taskEditing } = useEditTaskModalStore(
       useShallow((state) => ({
         openModal: state.openModal,
         taskEditing: state.task,
-      }))
+      })),
     );
     const { list, deleteTask, updateTaskCompleted } = useTodoDataStore(
       useShallow((state) => ({
         list: state.getListById(task.list_id),
         deleteTask: state.deleteTask,
         updateTaskCompleted: state.updateTaskCompleted,
-      }))
+      })),
     );
-
     const user = useUserDataStore((state) => state.user);
-
     const cardRef = useRef<HTMLDivElement>(null);
-    const textRef = useRef<HTMLParagraphElement>(null);
+    const textRef = useRef<HTMLElement>(null);
 
     const isVisible =
       taskEditing?.task_id === task.task_id && !editionMode ? 0 : 1;
 
     useEffect(() => {
       if (!cardRef.current) return;
-
       animate(
         cardRef.current,
         { opacity: isVisible },
-        {
-          duration: 0,
-          delay: isVisible === 1 ? 0.3 : 0.05,
-        }
+        { duration: 0, delay: isVisible === 1 ? 0.3 : 0.05 },
       );
     }, [isVisible]);
 
@@ -70,27 +60,27 @@ export const TaskCardStatic = memo(
     }, [task.completed]);
 
     const handleUpdateStatus = useCallback(() => {
-      const newCompleted = !completed;
-      setCompleted(newCompleted);
-      updateTaskCompleted(task.task_id, newCompleted);
+      const next = !completed;
+      setCompleted(next);
+      updateTaskCompleted(task.task_id, next);
     }, [completed, task.task_id, updateTaskCompleted]);
 
     const handleEdit = useCallback(() => {
       const rect = cardRef.current?.getBoundingClientRect();
       if (!rect) return;
-
       const tempTextarea = document.createElement("textarea");
-      tempTextarea.style.position = "absolute";
-      tempTextarea.style.opacity = "0";
-      tempTextarea.style.pointerEvents = "none";
-      tempTextarea.style.top = "-9999px";
-      tempTextarea.style.left = "-9999px";
+      Object.assign(tempTextarea.style, {
+        position: "absolute",
+        opacity: "0",
+        pointerEvents: "none",
+        top: "-9999px",
+        left: "-9999px",
+      });
       document.body.appendChild(tempTextarea);
       tempTextarea.focus();
       setTimeout(() => window.scrollTo(0, 0), 300);
-
       openModal({
-        task: task,
+        task,
         onConfirm: () => {},
         initialRect: rect,
         tempFocusElement: tempTextarea,
@@ -99,46 +89,53 @@ export const TaskCardStatic = memo(
 
     const handleDelete = useCallback(
       () => deleteTask(task.task_id),
-      [task.task_id, deleteTask]
+      [task.task_id, deleteTask],
     );
 
     const canEditOrDelete = list?.role !== "reader";
+    const configOptions = useMemo(
+      () =>
+        [
+          {
+            name: "Editar",
+            icon: (
+              <Edit
+                style={{
+                  width: "14px",
+                  height: "auto",
+                  stroke: "var(--text)",
+                  strokeWidth: 2,
+                }}
+              />
+            ),
+            action: handleEdit,
+            enabled: canEditOrDelete,
+          },
+          {
+            name: "Eliminar",
+            icon: (
+              <DeleteIcon
+                style={{
+                  stroke: "var(--text)",
+                  width: "14px",
+                  height: "auto",
+                  strokeWidth: 2,
+                }}
+              />
+            ),
+            action: handleDelete,
+            enabled: canEditOrDelete,
+          },
+        ].filter((o) => o.enabled),
+      [handleEdit, handleDelete],
+    );
 
-    const configOptions = useMemo(() => {
-      const baseOptions = [
-        {
-          name: "Editar",
-          icon: (
-            <Edit
-              style={{
-                width: "14px",
-                height: "auto",
-                stroke: "var(--text)",
-                strokeWidth: 2,
-              }}
-            />
-          ),
-          action: handleEdit,
-          enabled: canEditOrDelete,
-        },
-        {
-          name: "Eliminar",
-          icon: (
-            <DeleteIcon
-              style={{
-                stroke: "var(--text)",
-                width: "14px",
-                height: "auto",
-                strokeWidth: 2,
-              }}
-            />
-          ),
-          action: handleDelete,
-          enabled: canEditOrDelete,
-        },
-      ];
-      return baseOptions.filter((option) => option.enabled);
-    }, [handleEdit, handleDelete]);
+    const isHtml = isHtmlContent(task.task_content);
+    const displayContent = home
+      ? isHtml
+        ? task.task_content
+        : task.task_content.slice(0, 200)
+      : task.task_content;
 
     return (
       <div className={styles.cardContainer} ref={cardRef}>
@@ -160,21 +157,27 @@ export const TaskCardStatic = memo(
             />
           )}
         </div>
+
         <div className={styles.textContainer}>
-          {/* <MarkdownText content={task.task_content} /> */}
-          <p
-            ref={textRef}
-            className={styles.text}
-            style={{
-              opacity: completed ? 0.3 : 1,
-            }}
-          >
-            {linkifyWithIcon(
-              home ? task.task_content.slice(0, 200) : task.task_content
-            )}
-          </p>
-          <WavyStrikethrough textRef={textRef} completed={completed} />
+          {isHtml ? (
+            <div
+              ref={textRef as React.RefObject<HTMLDivElement>}
+              className={styles.text}
+              style={{ opacity: completed ? 0.3 : 1 }}
+              dangerouslySetInnerHTML={{ __html: displayContent }}
+            />
+          ) : (
+            <p
+              ref={textRef as React.RefObject<HTMLParagraphElement>}
+              className={styles.text}
+              style={{ opacity: completed ? 0.3 : 1 }}
+            >
+              {linkifyWithIcon(displayContent)}
+            </p>
+          )}
+          <WavyStrikethrough textRef={textRef as any} completed={completed} />
         </div>
+
         {user?.user_id !== task.created_by?.user_id && (
           <div
             style={{
@@ -194,25 +197,25 @@ export const TaskCardStatic = memo(
                 backgroundImage: `url(${task.created_by?.avatar_url})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
                 borderRadius: "50%",
               }}
-            ></div>
+            />
           </div>
         )}
+
         <div className={styles.editingButtons}>
           <TimeLimitBox
             target_date={task.target_date}
-            idScrollArea={"task-section-scroll-area"}
+            idScrollArea="task-section-scroll-area"
             completed={completed}
           />
           <ConfigMenu
-            iconWidth={"25px"}
+            iconWidth="25px"
             configOptions={configOptions}
-            idScrollArea={"task-section-scroll-area"}
+            idScrollArea="task-section-scroll-area"
           />
         </div>
       </div>
     );
-  }
+  },
 );

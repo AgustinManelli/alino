@@ -7,7 +7,7 @@ import { MobileSizeListener } from "@/hooks/useMobileSizeListener";
 import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
 import { Loader } from "@/components/ui/loader";
 
-import { inter } from "../lib/fonts";
+import { inter, roboto, poppins, jetbrainsMono } from "../lib/fonts";
 import "./globals.css";
 
 const APP_NAME = "Alino";
@@ -89,6 +89,12 @@ export default function RootLayout({
       dir="ltr"
       data-theme={initialTheme}
       suppressHydrationWarning
+      className={`
+        ${inter.variable}
+        ${roboto.variable}
+        ${poppins.variable}
+        ${jetbrainsMono.variable}
+      `}
     >
       <head>
         <meta
