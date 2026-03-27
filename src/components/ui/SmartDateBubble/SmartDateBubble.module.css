@@ -1,0 +1,61 @@
+.bubbleContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 20px;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  gap: 2px;
+  max-width: fit-content;
+  z-index: 27;
+}
+
+.bubbleButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 16px;
+  transition: background-color 0.2s;
+}
+
+.bubbleButton:hover {
+  background-color: var(--background-over-container-hover);
+}
+
+.bubbleText {
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1;
+  text-wrap: nowrap;
+}
+
+.highlight {
+  color: #87189d;
+  font-weight: 600;
+}
+
+.dismissButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #8a8a8a);
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s;
+  height: 28px;
+  width: 28px;
+}
+
+.dismissButton:hover {
+  color: var(--text);
+  background-color: var(--background-over-container-hover);
+}

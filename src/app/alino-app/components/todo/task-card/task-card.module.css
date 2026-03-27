@@ -15,6 +15,7 @@
   height: 30px;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .textContainer {
@@ -27,47 +28,53 @@
   align-items: center;
 }
 
-/* @keyframes blink_input_opacity_to_prevent_scrolling_when_focus {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-} */
-
-.nameChangerInput {
-  border-radius: 10px;
-  border: none;
-  outline: none;
-  background-color: var(--background-over-container);
-  padding: 5px 15px 5px 5px;
-  font-size: 14px;
+.editorCardWrapper {
   width: 100%;
-  resize: none;
-  overflow-y: hidden;
-  white-space: pre-wrap;
-  word-break: break-word;
-  height: auto;
   height: 100%;
-  box-sizing: border-box;
-  color: var(--text);
   overflow-y: auto;
-  /* animation: blink_input_opacity_to_prevent_scrolling_when_focus 0s; */
+  border-radius: 10px;
+  background-color: var(--background-over-container);
+  padding: 5px 10px 5px 5px;
+  box-sizing: border-box;
 }
 
-.nameChangerInput::-webkit-scrollbar {
+.editorCardWrapper::-webkit-scrollbar {
   width: 8px;
 }
-
-.nameChangerInput::-webkit-scrollbar-thumb {
+.editorCardWrapper::-webkit-scrollbar-thumb {
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.3);
 }
-
-.nameChangerInput::-webkit-scrollbar-track {
+.editorCardWrapper::-webkit-scrollbar-track {
   background: transparent;
-  margin-right: 10px;
+}
+
+.editorCardContent {
+  width: 100%;
+}
+
+.proseMirrorCard {
+  width: 100%;
+  min-height: 24px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  outline: none;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  background: transparent;
+  cursor: text;
+}
+
+.proseMirrorCard p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.proseMirrorCard ul,
+.proseMirrorCard ol {
+  padding-left: 20px;
+  margin: 2px 0;
 }
 
 .text {
@@ -84,6 +91,31 @@
   word-break: break-word;
 }
 
+.text p {
+  margin: 0;
+  line-height: 1.55;
+}
+.text p + p {
+  margin-top: 2px;
+}
+.text ul,
+.text ol {
+  padding-left: 20px;
+  margin: 2px 0;
+}
+.text strong {
+  font-weight: 700;
+}
+.text em {
+  font-style: italic;
+}
+.text u {
+  text-decoration: underline;
+}
+.text s {
+  text-decoration: line-through;
+}
+
 .editingButtons {
   position: relative;
   width: fit-content;
@@ -92,6 +124,7 @@
   justify-content: center;
   align-items: center;
   gap: 5px;
+  flex-shrink: 0;
 }
 
 .checkButton {
@@ -107,16 +140,21 @@
   padding: 2px;
 }
 
-.deleteButton {
-  position: relative;
-  width: 70%;
-  height: auto;
-  display: flex;
-  height: fit-content;
-  background-color: transparent;
+.mainButton {
+  width: 25px;
+  height: 25px;
   border: none;
+  border-radius: 5px;
   cursor: pointer;
-  transition: opacity 0.2s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--background-over-container);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.mainButton:hover {
+  background-color: var(--background-over-container-hover) !important;
 }
 
 .linkBox {
@@ -134,11 +172,6 @@
   transition: background-color 0.2s ease-in-out;
 }
 
-.text .linkBox:last-of-type {
-  margin-right: 0;
-  margin-bottom: 0;
-}
-
 .linkText {
   display: inline-block;
   white-space: normal;
@@ -146,7 +179,6 @@
   overflow-wrap: anywhere;
   line-height: 1.2;
   max-width: 100%;
-  text-overflow: ellipsis;
 }
 
 .linkBox:hover,
@@ -158,46 +190,4 @@
 .linkBox svg {
   flex: 0 0 auto;
   display: block;
-}
-
-.note {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  color: var(--text);
-  opacity: 0.05;
-  font-size: 12px;
-}
-
-.dropdownItemContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-}
-
-.dropdownItemContainer p {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  width: 100%;
-  overflow: hidden;
-  color: var(--text);
-}
-
-.mainButton {
-  width: 25px;
-  height: 25px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: transparent;
-  transition: scale 0.2s ease-in-out;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--background-over-container);
-  transition: background-color 0.3s ease-in-out;
-}
-
-.mainButton:hover {
-  background-color: var(--background-over-container-hover) !important;
 }

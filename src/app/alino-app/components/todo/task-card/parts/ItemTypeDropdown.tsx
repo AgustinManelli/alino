@@ -123,7 +123,7 @@ export const ItemTypeDropdown = ({
       >
         {renderTriggerContent()}
       </Dropdown.Trigger>
-      <Dropdown.Content>
+      <Dropdown.Content className="no-close-edit">
         {items.map((item) => (
           <Dropdown.Item
             key={`item-type-${item.id}`}
