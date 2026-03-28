@@ -12,8 +12,11 @@ import type { TaskType } from "@/lib/schemas/database.types";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { linkifyWithIcon } from "@/utils/linkify";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
+import {
+  isHtmlContent,
+  parseRichTextContent,
+} from "@/components/ui/RichTextEditor/richTextUtils";
 
 import { DeleteIcon, Edit, Note } from "@/components/ui/icons/icons";
 import styles from "./TaskCard.module.css";
@@ -38,7 +41,7 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
   const user = useUserDataStore((state) => state.user);
 
   const cardRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLParagraphElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
 
   const isVisible = taskEditing?.task_id === task.task_id ? 0 : 1;
 
@@ -140,16 +143,17 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
         />
       </div>
       <div className={styles.textContainer}>
-        <p
+        <div
           ref={textRef}
           className={styles.text}
-          style={{
-            opacity: completed ? 0.3 : 1,
+          style={{ opacity: completed ? 0.3 : 1 }}
+          dangerouslySetInnerHTML={{
+            __html: isHtmlContent(task.task_content)
+              ? task.task_content
+              : `<p>${task.task_content}</p>`,
           }}
-        >
-          {linkifyWithIcon(task.task_content.slice(0, 200))}
-        </p>
-        <WavyStrikethrough textRef={textRef} completed={completed} />
+        />
+        <WavyStrikethrough textRef={textRef as any} completed={completed} />
       </div>
       {user?.user_id !== task.created_by?.user_id && (
         <div

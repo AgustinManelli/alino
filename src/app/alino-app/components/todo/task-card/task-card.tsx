@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, memo, useCallback } from "react";
+import ReactDOM from "react-dom";
 import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -58,17 +59,22 @@ export const TaskCard = memo(
     onEditorReady,
     maxHeight,
     selected,
+    setSelected,
     hour,
+    setHour,
   }: {
     task: TaskType;
     onEditorReady?: (editor: Editor) => void;
     maxHeight: number | null;
     selected: Date | undefined;
+    setSelected: (d: Date | undefined) => void;
     hour: string | undefined;
+    setHour: (h: string | undefined) => void;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
     const closeModal = useEditTaskModalStore((state) => state.closeModal);
     const modalEditOpen = useEditTaskModalStore((state) => state.isOpen);
+    const isModalAnimating = useEditTaskModalStore((state) => state.isAnimating);
     const textRef = useRef<HTMLElement>(null);
 
     const [editorText, setEditorText] = useState("");
@@ -82,6 +88,7 @@ export const TaskCard = memo(
     const [bubbleCoords, setBubbleCoords] = useState<{
       top: number;
       left: number;
+      fixed: boolean;
     } | null>(null);
     const textContainerRef = useRef<HTMLDivElement>(null);
 
@@ -155,19 +162,17 @@ export const TaskCard = memo(
       );
 
       if (activeDetected) {
+        // Recalculate after a short delay — this also runs when isModalAnimating
+        // becomes false, so we always read the final settled position of the word.
         const timer = setTimeout(() => {
           const el = editor.view.dom.querySelector(".smart-date-highlight");
           if (el) {
             const rect = el.getBoundingClientRect();
-            const containerRect =
-              textContainerRef.current?.getBoundingClientRect();
-            if (containerRect) {
-              const calculatedTop = rect.top - containerRect.top - 40;
-              const calculatedLeft =
-                rect.left - containerRect.left + rect.width / 2;
+            if (rect) {
               setBubbleCoords({
-                top: calculatedTop,
-                left: calculatedLeft,
+                top: rect.top - 44,
+                left: rect.left + rect.width / 2,
+                fixed: true,
               });
             }
           } else {
@@ -178,7 +183,7 @@ export const TaskCard = memo(
       } else {
         setBubbleCoords(null);
       }
-    }, [activeDetected, editorText, editor]);
+    }, [activeDetected, editorText, editor, isModalAnimating]);
 
     const editorRef = useRef(editor);
     useEffect(() => {
@@ -305,40 +310,36 @@ export const TaskCard = memo(
           style={{ position: "relative" }}
           ref={textContainerRef}
         >
-          {activeDetected && showBubble && modalEditOpen && bubbleCoords && (
-            <div
-              onMouseEnter={() => setIsHoveringBubble(true)}
-              onMouseLeave={() => setIsHoveringBubble(false)}
-              style={{
-                position: "absolute",
-                top: `${bubbleCoords.top}px`,
-                left: `${bubbleCoords.left}px`,
-                transform: "translateX(-50%)",
-                zIndex: 60,
-              }}
-            >
-              <SmartDateBubble
-                detected={activeDetected}
-                onAssign={async (d, h, txt) => {
-                  if (editor) {
-                    editor.commands.focus();
-                  }
-                  setDismissedText(txt ?? null);
-
-                  const combinedDate = combineDateAndTime(d, h);
-                  await updateTaskName(
-                    task.task_id,
-                    editor?.getHTML() || task.task_content,
-                    completed,
-                    combinedDate,
-                  );
+          {activeDetected && showBubble && modalEditOpen && bubbleCoords && !isModalAnimating &&
+            ReactDOM.createPortal(
+              <div
+                className="no-close-edit"
+                onMouseEnter={() => setIsHoveringBubble(true)}
+                onMouseLeave={() => setIsHoveringBubble(false)}
+                style={{
+                  position: "fixed",
+                  top: `${bubbleCoords.top}px`,
+                  left: `${bubbleCoords.left}px`,
+                  transform: "translateX(-50%)",
+                  zIndex: 9999,
                 }}
-                onDismiss={() => {
-                  if (activeDetected) setDismissedText(activeDetected.text);
-                }}
-              />
-            </div>
-          )}
+              >
+                <SmartDateBubble
+                  detected={activeDetected}
+                  onAssign={(d, h, txt) => {
+                    setSelected(d);
+                    if (h) setHour(h);
+                    if (editor) editor.commands.focus();
+                    setDismissedText(txt ?? null);
+                  }}
+                  onDismiss={() => {
+                    if (activeDetected) setDismissedText(activeDetected.text);
+                  }}
+                />
+              </div>,
+              document.body,
+            )
+          }
 
           {modalEditOpen ? (
             <div

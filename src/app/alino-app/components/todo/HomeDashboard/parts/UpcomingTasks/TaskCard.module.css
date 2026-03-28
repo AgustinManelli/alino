@@ -84,6 +84,38 @@
   word-break: break-word;
 }
 
+.text p {
+  margin: 0;
+  line-height: 1.55;
+  white-space: normal;
+}
+
+.text p + p {
+  margin-top: 2px;
+}
+
+.text ul,
+.text ol {
+  padding-left: 20px;
+  margin: 2px 0;
+}
+
+.text strong {
+  font-weight: 700;
+}
+
+.text em {
+  font-style: italic;
+}
+
+.text u {
+  text-decoration: underline;
+}
+
+.text s {
+  text-decoration: line-through;
+}
+
 .editingButtons {
   position: relative;
   width: fit-content;
