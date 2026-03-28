@@ -27,6 +27,7 @@ import { useSmartDate } from "@/hooks/useSmartDate";
 import { useSmartDateInteraction } from "@/hooks/useSmartDateInteraction";
 import { SmartDateBubble } from "@/components/ui/SmartDateBubble/SmartDateBubble";
 import { SmartDateHighlighter } from "@/components/ui/RichTextEditor/SmartDateHighlighter";
+import { AIEnhanceButton } from "@/components/ui/AIEnhanceButton/AIEnhanceButton";
 
 const MAX_HEIGHT = 200;
 
@@ -54,6 +55,7 @@ const RICH_TEXT_EXTENSIONS = [
 export default function TaskInput({ setList }: { setList?: ListsType }) {
   const lists = useTodoDataStore((state) => state.lists);
   const addTask = useTodoDataStore((state) => state.addTask);
+  const addTasks = useTodoDataStore((state) => state.addTasks);
 
   const [focus, setFocus] = useState(false);
   const [selected, setSelected] = useState<Date | undefined>(undefined);
@@ -452,6 +454,39 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   opacity: 0.2,
                 }}
               />
+
+              <AnimatePresence mode="popLayout">
+                {focus && (
+                  <motion.div
+                    key="ai-btn"
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.7 }}
+                    transition={{ duration: 0.15 }}
+                    layout
+                  >
+                    <AIEnhanceButton
+                      editor={editor}
+                      visible
+                      onCreateTasks={(tasks) => {
+                        const listId = setList
+                          ? setList.list_id
+                          : selectedListHome?.list_id;
+                        if (!listId) return;
+
+                        addTasks(
+                          tasks.map((t) => ({
+                            list_id: listId,
+                            task_content: `<p>${t.text}</p>`,
+                            target_date: t.target_date,
+                            note: t.type === "note",
+                          }))
+                        );
+                      }}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <motion.button
                 key="send"

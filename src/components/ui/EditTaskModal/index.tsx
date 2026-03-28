@@ -8,6 +8,7 @@ import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
 import { Calendar } from "../Calendar";
 import { RichTextToolbar } from "../RichTextEditor/RichTextToolbar";
+import { AIEnhanceButton } from "../AIEnhanceButton/AIEnhanceButton";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import styles from "./EditTaskModal.module.css";
 
@@ -215,6 +216,11 @@ export const EditTaskModal = () => {
                   hour={hour}
                   setHour={setHour}
                   focusToParentInput={() => taskEditor?.commands.focus()}
+                />
+                <AIEnhanceButton
+                  editor={taskEditor}
+                  visible={!!taskEditor}
+                  showGenerateTasks={false}
                 />
               </motion.div>
             </motion.div>

@@ -61,6 +61,44 @@ export const insertTask = async (
   }
 };
 
+export const insertTasks = async (
+  tasks: {
+    list_id: string;
+    task_content: string;
+    task_id: string;
+    target_date: string | null;
+    completed: boolean | null;
+  }[]
+) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const insertData = tasks.map((t) => ({
+      ...t,
+      created_by: user.id,
+    }));
+
+    const { data: insertedData, error } = await supabase
+      .from("tasks")
+      .insert(insertData)
+      .select();
+
+    if (error) {
+      throw new Error(
+        "Failed to add tasks to the database. Please try again later."
+      );
+    }
+
+    return { data: insertedData };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
 export const deleteTask = async (task_id: string) => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
