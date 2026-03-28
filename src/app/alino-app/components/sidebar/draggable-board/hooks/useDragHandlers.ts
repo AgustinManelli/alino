@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { arrayMove } from "@dnd-kit/sortable";
-import type { DragStartEvent, DragEndEvent } from "@dnd-kit/core";
+import type {
+  DragStartEvent,
+  DragEndEvent,
+  DragOverEvent,
+} from "@dnd-kit/core";
 import type { ListsType, FolderType } from "@/lib/schemas/database.types";
 import type { NormalizedItem } from "../utils/types";
 import { calcNewRank } from "@/lib/lexorank";
@@ -14,7 +18,7 @@ type Params = {
   setLists: (ls: ListsType[]) => void;
   setFolders: (fs: FolderType[]) => void;
   updateIndexList: (id: string, folder: string | null, rank: string) => void;
-  updateIndexFolders: (id: string, rank:string) => void;
+  updateIndexFolders: (id: string, rank: string) => void;
 };
 
 export function useDragHandlers({
@@ -33,6 +37,47 @@ export function useDragHandlers({
 
   const [draggedItem, setDraggedItem] = useState<NormalizedItem | null>(null);
   const [tempListLength, setTempListLength] = useState<number>(0);
+
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!over) return;
+
+      const activeId = active.id as string;
+      const overId = over.id as string;
+
+      if (active.data?.current?.type !== "item") return;
+
+      const activeItem = lists.find((l) => l.list_id === activeId);
+
+      if (!activeItem) return;
+
+      const activeContainer = activeItem.folder;
+
+      let overContainer: string | null = null;
+
+      if (over.data?.current?.type === "item") {
+        overContainer = over.data.current.parentId;
+      }else{
+        overContainer = null
+      }
+
+      if (activeContainer !== overContainer) {
+        const activeListIndex = lists.findIndex((l) => l.list_id === activeId);
+
+        if (activeListIndex !== -1) {
+          const updatedLists = [...lists];
+          updatedLists[activeListIndex] = {
+            ...updatedLists[activeListIndex],
+            folder: overContainer,
+          };
+
+          setLists(updatedLists);
+        }
+      }
+    },
+    [lists, setLists]
+  );
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
@@ -69,7 +114,6 @@ export function useDragHandlers({
       return listData.folder === targetFolderId;
     });
   }
-  
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -124,7 +168,7 @@ export function useDragHandlers({
             const movedList = { ...(moved.data as ListsType) };
 
             const targetFolderId =
-            over.data.current.parentId ?? over.data.current.folderId;
+              over.data.current.parentId ?? over.data.current.folderId;
 
             const contextItems = getItemsInContext(
               newOrder,
@@ -136,9 +180,9 @@ export function useDragHandlers({
               (item) => item.id === moved.id
             );
 
-            const computedRank = calcNewRank(contextItems, contextIndex)
+            const computedRank = calcNewRank(contextItems, contextIndex);
             movedList.folder = targetFolderId;
-            movedList.rank = computedRank
+            movedList.rank = computedRank;
 
             newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
             updateIndexList(
@@ -151,17 +195,17 @@ export function useDragHandlers({
           if (activeType === "item") {
             const movedList = { ...(moved.data as ListsType) };
 
-            const computedRank = calcNewRank(newOrder, newIndex)
+            const computedRank = calcNewRank(newOrder, newIndex);
 
             movedList.folder = null;
-            movedList.rank = computedRank
+            movedList.rank = computedRank;
             newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
             updateIndexList(movedList.list_id, null, computedRank);
           }
           if (activeType === "folder") {
             const movedFolder = { ...(moved.data as FolderType) };
-            const computedRank = calcNewRank(newOrder, newIndex)
-            movedFolder.rank = computedRank
+            const computedRank = calcNewRank(newOrder, newIndex);
+            movedFolder.rank = computedRank;
             newOrder[newIndex] = { ...newOrder[newIndex], data: movedFolder };
             updateIndexFolders(movedFolder.folder_id, computedRank);
           }
@@ -169,8 +213,9 @@ export function useDragHandlers({
       } else {
         if (activeType === "item" && active.data?.current?.parentId) {
           const movedList = { ...(moved.data as ListsType) };
-          const computedRank = calcNewRank(newOrder, newIndex)
+          const computedRank = calcNewRank(newOrder, newIndex);
           movedList.folder = null;
+          movedList.rank = computedRank;
           newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
           updateIndexList(movedList.list_id, null, computedRank);
         }
@@ -206,5 +251,6 @@ export function useDragHandlers({
     handleDragStart,
     handleDragEnd,
     onDragCancel,
+    handleDragOver,
   };
 }

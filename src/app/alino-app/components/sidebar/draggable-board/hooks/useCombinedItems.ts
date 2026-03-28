@@ -11,6 +11,7 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
       id: f.folder_id,
       kind: "folder",
       data: f,
+      childrens: lists.filter((ls) => ls.folder === f.folder_id),
       rank: (f as any).rank ?? LexoRank.middle().toString(),
     }));
     
@@ -19,6 +20,7 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
         id: l.list_id,
         kind: "list",
         data: l,
+        childrens: null,
         rank: (l as any).rank ?? LexoRank.middle().toString(),
       }));
     
@@ -42,7 +44,7 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
   );
 
   const combinedIds = useMemo(
-    () => topLevelItems.map((i) => i.id),
+    () => topLevelItems.filter((i) => !(i.kind === 'list' && (i.data as ListsType).pinned === true)).map((i) => i.id),
     [topLevelItems]
   );
 

@@ -16,7 +16,7 @@ import { ListCard } from "../list-card";
 import styles from "./SortableFolder.module.css";
 interface SortableFolderProps {
   folder: FolderType;
-  lists: ListsType[];
+  lists: ListsType[] | null;
   isDragging: boolean;
   dropAllowed?: boolean;
 }
@@ -55,9 +55,9 @@ export const SortableFolder = ({
 
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
 
-  const listIds = useMemo(() => lists.map((list) => list.list_id), [lists]);
+  const listIds = useMemo(() => lists?.map((list) => list.list_id), [lists]);
 
-  const listsCount = useMemo(() => lists.length, [lists]);
+  const listsCount = useMemo(() => lists?.length, [lists]);
 
   const divRef = useRef<HTMLDivElement | null>(null);
 
@@ -70,7 +70,7 @@ export const SortableFolder = ({
         return;
       }
       if (
-        listIds.includes(overId) ||
+        listIds?.includes(overId) ||
         overId === `folder-${folder.folder_id}-dropzone`
       ) {
         setContainsOver(true);
@@ -279,10 +279,10 @@ export const SortableFolder = ({
           }
         >
           <SortableContext
-            items={listIds}
+            items={listIds || []}
             strategy={verticalListSortingStrategy}
           >
-            {lists.length > 0 ? (
+            {lists && lists.length > 0 ? (
               lists.map((list) => (
                 <ListCard list={list} key={list.list_id} inFolder />
               ))
