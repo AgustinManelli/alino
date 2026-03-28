@@ -510,33 +510,30 @@ export const createListInvitation = async (
     );
 
     if (error) {
-      switch (error.code) {
-        case "UNATH":
-          return {
-            error:
-              "Acceso no autorizado. Inténtalo nuevamente o contacta con soporte.",
-          };
-        case "USRNF":
-          return { error: "El usuario ingresado no fue encontrado." };
-        case "FRBDN":
-          return {
-            error: "No tienes permisos para invitar usuarios a esta lista.",
-          };
-        case "SLFIV":
-          return { error: "No puedes invitarte a ti mismo." };
-        case "ALRDM":
-          return { error: "El usuario ya es miembro de la lista." };
-        case "INVPD":
-          return {
-            error: "Ya existe una invitación pendiente para este usuario.",
-          };
-        case "LSTNF":
-          return { error: "La lista no existe o hubo un error inesperado." };
-        default:
-          return {
-            error: "Ocurrió un error inesperado. Por favor, intenta de nuevo.",
-          };
+      const errorMsg = error.message || "";
+      // Mapeo de errores según el mensaje devuelto por la función RPC
+      if (errorMsg.includes("Acceso no autorizado") || error.code === "UNATH") {
+        return { error: "Acceso no autorizado. Inténtalo nuevamente o contacta con soporte." };
       }
+      if (errorMsg.includes("usuario no fue encontrado") || error.code === "USRNF") {
+        return { error: "El usuario ingresado no fue encontrado." };
+      }
+      if (errorMsg.includes("No tenés permiso") || error.code === "FRBDN") {
+        return { error: "No tienes permisos para invitar usuarios a esta lista." };
+      }
+      if (errorMsg.includes("No puedes invitarte a ti mismo") || error.code === "SLFIV") {
+        return { error: "No puedes invitarte a ti mismo." };
+      }
+      if (errorMsg.includes("ya es miembro") || error.code === "ALRDM") {
+        return { error: "El usuario ya es miembro de la lista." };
+      }
+      if (errorMsg.includes("invitación pendiente") || error.code === "INVPD") {
+        return { error: "Ya existe una invitación pendiente para este usuario." };
+      }
+      if (errorMsg.includes("lista no existe") || error.code === "LSTNF") {
+        return { error: "La lista no existe o hubo un error inesperado." };
+      }
+      return { error: "Ocurrió un error inesperado. Por favor, intenta de nuevo." };
     }
 
     return { data };
@@ -544,7 +541,6 @@ export const createListInvitation = async (
     if (error instanceof Error) {
       return { error: error.message };
     }
-
-    return { error: UNKNOWN_ERROR_MESSAGE };
+    return { error: "Ocurrió un error inesperado. Por favor, intenta de nuevo." };
   }
 };

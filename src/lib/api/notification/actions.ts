@@ -2,6 +2,7 @@
 
 import { createClient as createClientServer } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { SupabaseClient, User } from "@supabase/supabase-js";
 
 // Tipos para notificaciones
 export type Notification = {
@@ -16,6 +17,25 @@ export type Notification = {
   deleted: boolean;
   read_at: string | null;
   deleted_at: string | null;
+};
+
+// Helper para obtener cliente autenticado
+const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
+
+interface AuthClient {
+  supabase: SupabaseClient;
+  user: User;
+}
+
+const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
+  const supabase = createClientServer();
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getUser();
+
+  if (sessionError || !sessionData.user) {
+    throw new Error(AUTH_ERROR_MESSAGE);
+  }
+  return { supabase, user: sessionData.user };
 };
 
 // Obtener notificaciones del usuario actual
@@ -65,3 +85,22 @@ export async function deleteNotification(notificationId: string) {
   revalidatePath("/");
   return { error: null };
 }
+
+export const updateInvitationList = async (invitationId: string, status: string) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { error } = await supabase
+      .from("list_invitations")
+      .update({ status })
+      .eq("invitation_id", invitationId)
+      .eq("invited_user_id", user.id);
+
+    if (error) throw error;
+
+    return { error: null };
+  } catch (error) {
+    console.error("Error updating invitation:", error);
+    return { error: (error as Error).message };
+  }
+};

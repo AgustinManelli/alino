@@ -3,6 +3,7 @@ import {
   getMyNotifications,
   markNotificationRead,
   deleteNotification,
+  updateInvitationList,
   Notification,
 } from "@/lib/api/notification/actions";
 import { toast } from "sonner";
@@ -13,7 +14,8 @@ type NotificationsStore = {
   getNotifications: () => Promise<void>;
   markAsRead: (notificationId: string) => Promise<void>;
   deleteNotification: (notificationId: string) => Promise<void>;
-  addNotification: (notification: Notification) => void; // para suscripciones en tiempo real
+  updateInvitation: (notificationId: string, invitationId: string, status: string) => Promise<void>;
+  addNotification: (notification: Notification) => void;
 };
 
 function handleError(err: unknown) {
@@ -36,7 +38,6 @@ export const useNotificationsStore = create<NotificationsStore>()((set, get) => 
   },
 
   markAsRead: async (notificationId: string) => {
-    // Optimistic update
     const original = get().notifications;
     set((state) => ({
       notifications: state.notifications.map((n) =>
@@ -53,7 +54,6 @@ export const useNotificationsStore = create<NotificationsStore>()((set, get) => 
   },
 
   deleteNotification: async (notificationId: string) => {
-    // Optimistic delete
     const original = get().notifications;
     set((state) => ({
       notifications: state.notifications.filter(
@@ -67,6 +67,25 @@ export const useNotificationsStore = create<NotificationsStore>()((set, get) => 
       handleError(error);
       set({ notifications: original });
     }
+  },
+
+  updateInvitation: async (notificationId: string, invitationId: string, status: string) => {
+    const original = get().notifications;
+    set((state) => ({
+      notifications: state.notifications.filter(
+        (n) => n.notification_id !== notificationId
+      ),
+    }));
+
+    const { error } = await updateInvitationList(invitationId, status);
+
+    if (error) {
+      handleError(error);
+      set({ notifications: original });
+      return;
+    }
+
+    await deleteNotification(notificationId);
   },
 
   addNotification: (notification: Notification) => {
