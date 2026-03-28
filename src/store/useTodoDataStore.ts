@@ -27,6 +27,7 @@ import {
 import {
   deleteTask,
   insertTask,
+  insertTasks,
   updateCompletedTask,
   updateNameTask,
 } from "@/lib/api/task/actions";
@@ -89,6 +90,14 @@ type TodoStore = {
     task_content: string,
     target_date: string | null,
     note: boolean
+  ) => Promise<{ error: string | null }>;
+  addTasks: (
+    tasks: {
+      list_id: string;
+      task_content: string;
+      target_date: string | null;
+      note: boolean;
+    }[]
   ) => Promise<{ error: string | null }>;
   deleteTask: (task_id: string) => Promise<void>;
   updateTaskCompleted: (task_id: string, completed: boolean) => Promise<void>;
@@ -648,6 +657,70 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       tasks: state.tasks.map((t) => {
         if (t.task_id === optimisticId) {
           const { created_by, ...restData } = data;
+          return { ...t, ...restData, created_by: t.created_by };
+        }
+        return t;
+      }),
+    }));
+
+    return { error: null };
+  },
+
+  addTasks: async (tasksData) => {
+    const { user } = useUserDataStore.getState();
+
+    if (!user) {
+      const errorMsg =
+        "No se puede crear las tareas: el usuario no está autenticado.";
+      return { error: errorMsg };
+    }
+
+    const now = new Date().toISOString();
+    const optimisticTasks = tasksData.map((t) => ({
+      task_id: uuidv4(),
+      task_content: t.task_content,
+      list_id: t.list_id,
+      target_date: t.target_date,
+      completed: t.note ? null : false,
+      index: 0,
+      created_at: now,
+      updated_at: now,
+      created_by: {
+        user_id: user.user_id,
+        display_name: user.display_name,
+        username: user.username,
+        avatar_url: user.avatar_url,
+      },
+      description: "",
+    }));
+
+    const prevTasks = get().tasks.slice();
+
+    set((state) => ({
+      tasks: [...optimisticTasks, ...state.tasks],
+    }));
+
+    const { data, error } = await insertTasks(
+      optimisticTasks.map((t) => ({
+        task_id: t.task_id,
+        list_id: t.list_id,
+        task_content: t.task_content,
+        target_date: t.target_date,
+        completed: t.completed,
+      }))
+    );
+
+    if (error) {
+      handleError(error);
+      set({ tasks: prevTasks });
+      return { error };
+    }
+
+    set((state) => ({
+      tasks: state.tasks.map((t) => {
+        const found = data?.find((d) => d.task_id === t.task_id);
+        if (found) {
+          const { created_by, ...restData } = found;
           return { ...t, ...restData, created_by: t.created_by };
         }
         return t;
