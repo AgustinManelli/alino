@@ -25,6 +25,7 @@ export const NotificationsSection = () => {
     markAsRead,
     deleteNotification,
     addNotification,
+    updateInvitation,
   } = useNotificationsStore();
 
   useEffect(() => {
@@ -66,28 +67,22 @@ export const NotificationsSection = () => {
   const handleToggle = () => setIsOpen((prev) => !prev);
   const handleClose = () => setIsOpen(false);
 
-  const handleAcceptInvitation = async (
-    notification: any,
-    invitationId: string,
-  ) => {
-    try {
-      await deleteNotification(notification.notification_id);
-      toast.success("Invitación aceptada");
-    } catch (error) {
-      toast.error("Error al aceptar");
-    }
+  const handleAcceptInvitation = async (notification: any) => {
+    await updateInvitation(
+      notification.notification_id,
+      notification.metadata.invitation_id,
+      "accepted",
+    );
+    toast.success("Invitación aceptada");
   };
 
-  const handleDeclineInvitation = async (
-    notification: any,
-    invitationId: string,
-  ) => {
-    try {
-      await deleteNotification(notification.notification_id);
-      toast.success("Invitación rechazada");
-    } catch (error) {
-      toast.error("Error al rechazar");
-    }
+  const handleDeclineInvitation = async (notification: any) => {
+    await updateInvitation(
+      notification.notification_id,
+      notification.metadata.invitation_id,
+      "rejected",
+    );
+    toast.success("Invitación rechazada");
   };
 
   const handleMarkRead = async (notification: any) => {
@@ -181,10 +176,7 @@ export const NotificationsSection = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleAcceptInvitation(
-                        notification,
-                        notification.metadata.invitation_id,
-                      );
+                      handleAcceptInvitation(notification);
                     }}
                     className={`${styles.actionButton} ${styles.accept}`}
                   >
@@ -193,10 +185,7 @@ export const NotificationsSection = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeclineInvitation(
-                        notification,
-                        notification.metadata.invitation_id,
-                      );
+                      handleDeclineInvitation(notification);
                     }}
                     className={`${styles.actionButton} ${styles.decline}`}
                   >
