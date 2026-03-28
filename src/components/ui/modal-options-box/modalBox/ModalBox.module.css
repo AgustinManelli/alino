@@ -39,16 +39,51 @@
   padding-right: 10px;
 }
 
+.subtitleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-top: 2px;
+}
+
 .subtitle {
   color: var(--text-not-available);
   font-size: 10px;
   font-weight: 500;
-  padding-left: 10px;
-  padding-right: 10px;
+}
+
+/* Badge de Suscripción */
+.tierBadge {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.pro {
+  background-color: rgba(180, 140, 255, 0.2);
+  color: #b48cff;
+  border: 1px solid rgba(180, 140, 255, 0.4);
+}
+
+.student {
+  background-color: rgba(140, 200, 255, 0.2);
+  color: #8cc8ff;
+  border: 1px solid rgba(140, 200, 255, 0.4);
+}
+
+.free {
+  background-color: var(--background-over-container);
+  color: var(--text-not-available);
+  border: 1px solid var(--border-container-color);
 }
 
 .separator {
   width: 100%;
   height: 1px;
   background-color: var(--border-container-color);
+  margin-top: 8px; /* Damos un poco de respiro antes del separator */
 }

@@ -9,6 +9,7 @@ import { useAITaskGeneration } from "@/hooks/useAITaskGeneration";
 import { useModalUbication } from "@/hooks/useModalUbication";
 import { ClientOnlyPortal } from "@/components/ui/ClientOnlyPortal";
 import { IAStars } from "@/components/ui/icons/icons";
+import { useUserDataStore } from "@/store/useUserDataStore"; // Importamos el store
 import styles from "./AIEnhanceButton.module.css";
 
 const CheckIcon = () => (
@@ -116,6 +117,11 @@ export function AIEnhanceButton({
   const [taskPrompt, setTaskPrompt] = useState("");
   const [maxTasks, setMaxTasks] = useState(DEFAULT_MAX_TASKS);
 
+  // Obtener usuario actual y tier
+  const user = useUserDataStore((state) => state.user);
+  const userTier = (user as any)?.tier || "free";
+  const canGenerateTasks = userTier === "pro" || userTier === "student";
+
   const { enhance } = useAIEnhance();
   const { generate, loading: genLoading } = useAITaskGeneration();
 
@@ -161,7 +167,7 @@ export function AIEnhanceButton({
   };
 
   const handleGenerate = async () => {
-    if (!taskPrompt.trim()) return;
+    if (!taskPrompt.trim() || !canGenerateTasks) return;
     setGenerateFlow({ phase: "loading" });
     const tasks = await generate(taskPrompt.trim(), maxTasks);
     if (!tasks.length) {
@@ -285,6 +291,7 @@ export function AIEnhanceButton({
 
                   {activeTab === "enhance" && (
                     <div className={styles.tabContent}>
+                      {/* ... Tu código actual de Enhance (idéntico) ... */}
                       {enhanceFlow.phase === "idle" && (
                         <div className={styles.actionList}>
                           {ENHANCE_ACTIONS.map((a) => (
@@ -346,110 +353,131 @@ export function AIEnhanceButton({
 
                   {activeTab === "generate" && (
                     <div className={styles.tabContent}>
-                      {(generateFlow.phase === "idle" ||
-                        generateFlow.phase === "error") && (
-                        <>
-                          <textarea
-                            className={styles.promptTextarea}
-                            placeholder="Ej: Tengo un examen de álgebra el viernes, ayudame a organizar el estudio de esta semana..."
-                            value={taskPrompt}
-                            onChange={(e) => setTaskPrompt(e.target.value)}
-                            rows={4}
-                          />
-                          <div className={styles.generateOptions}>
-                            <span className={styles.maxLabel}>
-                              Máx. tareas:
-                            </span>
-                            <div className={styles.maxOptions}>
-                              {MAX_TASKS_OPTIONS.map((n) => (
-                                <button
-                                  key={n}
-                                  className={`${styles.maxBtn} ${maxTasks === n ? styles.maxBtnActive : ""}`}
-                                  onClick={() => setMaxTasks(n)}
-                                >
-                                  {n}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                          {generateFlow.phase === "error" && (
-                            <p className={styles.errorText}>
-                              {generateFlow.message}
-                            </p>
-                          )}
-                          <button
-                            className={styles.generateBtn}
-                            onClick={handleGenerate}
-                            disabled={!taskPrompt.trim()}
-                          >
-                            <IAStars
-                              style={{
-                                width: "12px",
-                                height: "12px",
-                                stroke: "currentColor",
-                              }}
-                            />
-                            Generar tareas
+                      {/* VALIDACIÓN DE TIER AQUÍ */}
+                      {!canGenerateTasks ? (
+                        <div className={styles.upgradeContainer}>
+                          <p className={styles.upgradeTitle}>
+                            Función Exclusiva
+                          </p>
+                          <p className={styles.upgradeDesc}>
+                            Desbloqueá la generación automática de tareas y
+                            mucho más pasando a Pro o Estudiante.
+                          </p>
+                          <button className={styles.upgradeBtn}>
+                            Mejorar mi plan
                           </button>
-                        </>
-                      )}
-
-                      {generateFlow.phase === "loading" && (
-                        <div className={styles.loadingState}>
-                          <motion.div
-                            className={styles.loadingDots}
-                            animate={{ opacity: [0.4, 1, 0.4] }}
-                            transition={{ duration: 1.2, repeat: Infinity }}
-                          >
-                            Generando tareas...
-                          </motion.div>
                         </div>
-                      )}
-
-                      {generateFlow.phase === "result" && (
-                        <div className={styles.tasksResult}>
-                          <div className={styles.tasksList}>
-                            {generateFlow.tasks.map((task, i) => (
-                              <div key={i} className={styles.taskPreviewItem}>
-                                <span className={styles.taskTypeIcon}>
-                                  {task.type === "check" ? (
-                                    <CheckTaskIcon />
-                                  ) : (
-                                    <NoteTaskIcon />
-                                  )}
+                      ) : (
+                        <>
+                          {(generateFlow.phase === "idle" ||
+                            generateFlow.phase === "error") && (
+                            <>
+                              <textarea
+                                className={styles.promptTextarea}
+                                placeholder="Ej: Tengo un examen de álgebra el viernes, ayudame a organizar el estudio..."
+                                value={taskPrompt}
+                                onChange={(e) => setTaskPrompt(e.target.value)}
+                                rows={4}
+                              />
+                              <div className={styles.generateOptions}>
+                                <span className={styles.maxLabel}>
+                                  Máx. tareas:
                                 </span>
-                                <div className={styles.taskPreviewContent}>
-                                  <span className={styles.taskPreviewText}>
-                                    {task.text}
-                                  </span>
-                                  {task.target_date && (
-                                    <span className={styles.taskPreviewDate}>
-                                      {formatDate(task.target_date)}
-                                    </span>
-                                  )}
+                                <div className={styles.maxOptions}>
+                                  {MAX_TASKS_OPTIONS.map((n) => (
+                                    <button
+                                      key={n}
+                                      className={`${styles.maxBtn} ${maxTasks === n ? styles.maxBtnActive : ""}`}
+                                      onClick={() => setMaxTasks(n)}
+                                    >
+                                      {n}
+                                    </button>
+                                  ))}
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                          <div className={styles.resultActions}>
-                            <button
-                              className={styles.acceptBtn}
-                              onClick={handleCreateTasks}
-                            >
-                              <CheckIcon /> Crear {generateFlow.tasks.length}{" "}
-                              tareas
-                            </button>
-                            <button
-                              className={styles.cancelBtn}
-                              onClick={() => {
-                                setGenerateFlow({ phase: "idle" });
-                                setTaskPrompt("");
-                              }}
-                            >
-                              <CloseIcon /> Descartar
-                            </button>
-                          </div>
-                        </div>
+                              {generateFlow.phase === "error" && (
+                                <p className={styles.errorText}>
+                                  {generateFlow.message}
+                                </p>
+                              )}
+                              <button
+                                className={styles.generateBtn}
+                                onClick={handleGenerate}
+                                disabled={!taskPrompt.trim()}
+                              >
+                                <IAStars
+                                  style={{
+                                    width: "12px",
+                                    height: "12px",
+                                    stroke: "currentColor",
+                                  }}
+                                />
+                                Generar tareas
+                              </button>
+                            </>
+                          )}
+                          {generateFlow.phase === "loading" && (
+                            <div className={styles.loadingState}>
+                              <motion.div
+                                className={styles.loadingDots}
+                                animate={{ opacity: [0.4, 1, 0.4] }}
+                                transition={{ duration: 1.2, repeat: Infinity }}
+                              >
+                                Generando tareas...
+                              </motion.div>
+                            </div>
+                          )}
+                          {generateFlow.phase === "result" && (
+                            <div className={styles.tasksResult}>
+                              <div className={styles.tasksList}>
+                                {generateFlow.tasks.map((task, i) => (
+                                  <div
+                                    key={i}
+                                    className={styles.taskPreviewItem}
+                                  >
+                                    <span className={styles.taskTypeIcon}>
+                                      {task.type === "check" ? (
+                                        <CheckTaskIcon />
+                                      ) : (
+                                        <NoteTaskIcon />
+                                      )}
+                                    </span>
+                                    <div className={styles.taskPreviewContent}>
+                                      <span className={styles.taskPreviewText}>
+                                        {task.text}
+                                      </span>
+                                      {task.target_date && (
+                                        <span
+                                          className={styles.taskPreviewDate}
+                                        >
+                                          {formatDate(task.target_date)}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className={styles.resultActions}>
+                                <button
+                                  className={styles.acceptBtn}
+                                  onClick={handleCreateTasks}
+                                >
+                                  <CheckIcon /> Crear{" "}
+                                  {generateFlow.tasks.length} tareas
+                                </button>
+                                <button
+                                  className={styles.cancelBtn}
+                                  onClick={() => {
+                                    setGenerateFlow({ phase: "idle" });
+                                    setTaskPrompt("");
+                                  }}
+                                >
+                                  <CloseIcon /> Descartar
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
