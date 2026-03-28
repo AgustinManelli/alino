@@ -167,3 +167,26 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+
+.note {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: var(--text);
+  opacity: 0.05;
+  font-size: 12px;
+}
+
+.dropdownItemContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.dropdownItemContainer p {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 100%;
+  overflow: hidden;
+  color: var(--text);
+}

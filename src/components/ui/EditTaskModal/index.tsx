@@ -43,12 +43,14 @@ export const EditTaskModal = () => {
     task: modalTask,
     initialRect,
     closeModal,
+    setAnimating,
   } = useEditTaskModalStore(
     useShallow((state) => ({
       isOpen: state.isOpen,
       task: state.task,
       initialRect: state.initialRect,
       closeModal: state.closeModal,
+      setAnimating: state.setAnimating,
     })),
   );
 
@@ -121,8 +123,11 @@ export const EditTaskModal = () => {
   }, [windowSize]);
 
   const handleAnimationComplete = useCallback(() => {
-    taskEditor?.commands.focus("end");
-  }, [taskEditor]);
+    if (isOpen) {
+      setAnimating(false);
+      taskEditor?.commands.focus("end");
+    }
+  }, [isOpen, taskEditor, setAnimating]);
 
   useOnClickOutside(
     contentRef,
@@ -171,7 +176,9 @@ export const EditTaskModal = () => {
                     onEditorReady={setTaskEditor}
                     maxHeight={maxHeightStyle}
                     selected={selected}
+                    setSelected={setSelected}
                     hour={hour}
+                    setHour={setHour}
                   />
                 )}
               </div>

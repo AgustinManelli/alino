@@ -80,6 +80,20 @@ const AlignRightIcon = () => (
   </svg>
 );
 
+const AlignJustifyIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+  >
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
+
 const HighlightIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -505,7 +519,7 @@ export function RichTextToolbar({
 
           <div className={styles.sep} />
 
-          {(["left", "center", "right"] as const).map((align) => (
+          {(["left", "center", "right", "justify"] as const).map((align) => (
             <button
               key={align}
               className={`${styles.btn} ${editor.isActive({ textAlign: align }) ? styles.active : ""}`}
@@ -518,15 +532,19 @@ export function RichTextToolbar({
                   ? "Izquierda"
                   : align === "center"
                     ? "Centro"
-                    : "Derecha"
+                    : align === "right"
+                      ? "Derecha"
+                      : "Justificado"
               }
             >
               {align === "left" ? (
                 <AlignLeftIcon />
               ) : align === "center" ? (
                 <AlignCenterIcon />
-              ) : (
+              ) : align === "right" ? (
                 <AlignRightIcon />
+              ) : (
+                <AlignJustifyIcon />
               )}
             </button>
           ))}

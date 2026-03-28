@@ -3,6 +3,7 @@ import { TaskType } from "@/lib/schemas/database.types";
 
 interface EditTaskModalState {
   isOpen: boolean;
+  isAnimating: boolean;
   task: TaskType | null;
   onConfirm: () => void;
   initialRect: DOMRect | null;
@@ -14,17 +15,21 @@ interface EditTaskModalState {
     tempFocusElement?: HTMLTextAreaElement;
   }) => void;
   closeModal: () => void;
+  setAnimating: (v: boolean) => void;
 }
 
 export const useEditTaskModalStore = create<EditTaskModalState>((set) => ({
   isOpen: false,
+  isAnimating: false,
   task: null,
   initialRect: null,
   tempFocusElement: null,
   onConfirm: () => {},
+  setAnimating: (v) => set({ isAnimating: v }),
   openModal: ({ task, onConfirm, initialRect, tempFocusElement }) =>
     set({
       isOpen: true,
+      isAnimating: true,
       task,
       onConfirm,
       initialRect,
@@ -38,6 +43,7 @@ export const useEditTaskModalStore = create<EditTaskModalState>((set) => ({
 
       return {
         isOpen: false,
+        isAnimating: true,
         task: null,
         onConfirm: () => {},
         initialRect: null,
