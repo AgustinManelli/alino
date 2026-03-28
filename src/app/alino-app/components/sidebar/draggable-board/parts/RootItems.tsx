@@ -35,7 +35,7 @@ export function RootItems({
             >
               <SortableFolder
                 folder={folder}
-                lists={lists.filter((ls) => ls.folder === folder.folder_id)}
+                lists={item.childrens}
                 isDragging={!!draggedItem}
                 dropAllowed={draggedItem?.kind === "list"}
               />

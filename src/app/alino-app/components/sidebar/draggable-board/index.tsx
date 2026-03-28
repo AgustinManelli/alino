@@ -55,6 +55,7 @@ export const DraggableBoard = () => {
     handleDragStart,
     handleDragEnd,
     onDragCancel,
+    handleDragOver,
   } = useDragHandlers({
     combinedItems,
     lists,
@@ -76,33 +77,35 @@ export const DraggableBoard = () => {
   }, []);
 
   return (
-    <DndContext
-      sensors={sensors}
-      measuring={measuring}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={onDragCancel}
-    >
+    <>
       <PinnedLists pinned={pinnedLists} animations={animations} />
-
-      <SortableContext
-        items={combinedIds}
-        strategy={verticalListSortingStrategy}
+      <DndContext
+        sensors={sensors}
+        measuring={measuring}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={onDragCancel}
+        // onDragOver={handleDragOver}
       >
-        <RootItems
-          items={topLevelItems.filter(
-            (item) => item.kind !== "list" || !(item.data as ListsType).pinned
-          )}
-          lists={lists}
-          draggedItem={draggedItem}
-          animations={animations}
-        />
-        <DragOverlayView
-          draggedItem={draggedItem}
-          tempListLength={tempListLength}
-          modifiers={[adjustForLayoutPadding]}
-        />
-      </SortableContext>
-    </DndContext>
+        <SortableContext
+          items={combinedIds}
+          strategy={verticalListSortingStrategy}
+        >
+          <RootItems
+            items={topLevelItems.filter(
+              (item) => item.kind !== "list" || !(item.data as ListsType).pinned
+            )}
+            lists={lists}
+            draggedItem={draggedItem}
+            animations={animations}
+          />
+          <DragOverlayView
+            draggedItem={draggedItem}
+            tempListLength={tempListLength}
+            modifiers={[adjustForLayoutPadding]}
+          />
+        </SortableContext>
+      </DndContext>
+    </>
   );
 };

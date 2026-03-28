@@ -9,6 +9,7 @@ export type NormalizedItem = {
   kind: CombinedKind;
   data: ListsType | FolderType;
   // index: number;
+  childrens: ListsType[] | null;
   rank: string;
 };
 
