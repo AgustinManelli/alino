@@ -291,7 +291,8 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   useOnClickOutside(containerRef, () => {
     const calendarEl = document.getElementById("calendar-component");
     const dropdownEl = document.getElementById("dropdown-component");
-    if (calendarEl || dropdownEl) return;
+    const aiPanelEl = document.getElementById("ai-enhance-panel");
+    if (calendarEl || dropdownEl || aiPanelEl) return;
     if (editor && !editor.isEmpty) return;
     setFocus(false);
     editor?.commands.clearContent();

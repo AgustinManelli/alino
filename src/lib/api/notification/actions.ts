@@ -1,87 +1,67 @@
 "use server";
+
 import { createClient as createClientServer } from "@/utils/supabase/server";
-import { SupabaseClient, User } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 
-const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
-const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
+// Tipos para notificaciones
+export type Notification = {
+  notification_id: string;
+  type: string;
+  title: string;
+  content: string;
+  metadata: any;
+  is_global: boolean;
+  created_at: string;
+  read: boolean;
+  deleted: boolean;
+  read_at: string | null;
+  deleted_at: string | null;
+};
 
-interface AuthClient {
-  supabase: SupabaseClient;
-  user: User;
+// Obtener notificaciones del usuario actual
+export async function getMyNotifications() {
+  const supabase = createClientServer();
+
+  const { data, error } = await supabase.rpc("get_my_notifications");
+
+  if (error) {
+    console.error("Error fetching notifications:", error);
+    return { notifications: [] as Notification[], error };
+  }
+
+  return { notifications: data as Notification[], error: null };
 }
 
-const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
+// Marcar notificación como leída
+export async function markNotificationRead(notificationId: string) {
   const supabase = createClientServer();
-  const { data: sessionData, error: sessionError } =
-    await supabase.auth.getUser();
 
-  if (sessionError || !sessionData.user) {
-    throw new Error(AUTH_ERROR_MESSAGE);
-  } else {
-    return { supabase, user: sessionData.user };
+  const { error } = await supabase.rpc("mark_notification_read", {
+    p_notification_id: notificationId,
+  });
+
+  if (error) {
+    console.error("Error marking notification read:", error);
+    return { error };
   }
-};
 
-export const getNotifications = async () => {
-  try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
+  revalidatePath("/");
+  return { error: null };
+}
 
-    if (!user) {
-      return { data: { notifications: [] } };
-    }
+// Eliminar notificación (soft delete)
+export async function deleteNotification(notificationId: string) {
+  const supabase = createClientServer();
 
-    const { data, error } = await supabase
-      .from("list_invitations")
-      .select("*")
-      .eq("invited_user_id", user.id)
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
+  const { error } = await supabase.rpc("delete_notification", {
+    p_notification_id: notificationId,
+  });
 
-    if (error) {
-      throw new Error(
-        `No se pudieron obtener las notificaciones: ${error.message}`
-      );
-    }
-
-    if (!data) {
-      return { data: { notifications: [] } };
-    }
-
-    return { data: { notifications: data } };
-  } catch (error: unknown) {
-    if (error instanceof Error) return { error: error.message };
-    return { error: "UNKNOWN_ERROR" };
+  if (error) {
+    console.error("Error deleting notification:", error);
+    return { error };
   }
-};
 
-export const updateInvitationList = async (
-  notification_id: string,
-  status: string
-) => {
-  try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
-
-    if (!user) {
-      return { data: { notifications: [] } };
-    }
-
-    const { data, error } = await supabase
-      .from("list_invitations")
-      .update({ status: status })
-      .eq("invited_user_id", user.id)
-      .eq("invitation_id", notification_id);
-
-    if (error) {
-      throw new Error(`No se pudo aceptar la invitación: ${error.message}`);
-    }
-
-    if (!data) {
-      return { data: { notifications: [] } };
-    }
-
-    return { data: { notifications: data } };
-  } catch (error: unknown) {
-    if (error instanceof Error) return { error: error.message };
-    return { error: "UNKNOWN_ERROR" };
-  }
-};
+  revalidatePath("/");
+  return { error: null };
+}

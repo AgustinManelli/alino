@@ -6,79 +6,109 @@ import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 
 import { useNotificationsStore } from "@/store/useNotificationsStore";
-import { InvitationRow } from "@/lib/schemas/database.types";
-
 import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
-
+import { WindowModal } from "@/components/ui/WindowModal";
 import { Alert, LoadingIcon, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./NotificationsSection.module.css";
 
 export const NotificationsSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
   const iconRef = useRef<HTMLDivElement>(null);
-
   const supabase = createClient();
+
+  const [selectedAppUpdate, setSelectedAppUpdate] = useState<any>(null);
 
   const {
     notifications,
     getNotifications,
-    updateInvitationList,
-    subscriptionAddNotification,
+    markAsRead,
+    deleteNotification,
+    addNotification,
   } = useNotificationsStore();
 
   useEffect(() => {
-    const fetchInitialNotifications = async () => {
+    const fetch = async () => {
       setIsLoading(true);
       await getNotifications();
       setIsLoading(false);
     };
-    fetchInitialNotifications();
+    fetch();
   }, [getNotifications]);
 
   useEffect(() => {
-    const TABLE_NAME = "list_invitations";
     const channel = supabase
-      .channel("list-invitations", { config: { broadcast: { self: false } } })
+      .channel("notifications-channel")
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
-          table: TABLE_NAME,
+          table: "notifications",
         },
         async (payload) => {
-          if (payload.eventType === "INSERT") {
-            const invitation = payload.new as InvitationRow;
-            toast(
-              `${invitation.inviter_display_name} te ha invitado a la lista "${invitation.list_name}"`
-            );
-            subscriptionAddNotification(invitation);
-          }
-        }
+          const newNotification = payload.new as any;
+          addNotification({
+            ...newNotification,
+            read: false,
+            deleted: false,
+          });
+          toast.info(newNotification.title);
+        },
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, subscriptionAddNotification]);
+  }, [supabase, addNotification]);
 
-  const handleToggle = () => {
-    setIsOpen((prev) => !prev);
+  const handleToggle = () => setIsOpen((prev) => !prev);
+  const handleClose = () => setIsOpen(false);
+
+  const handleAcceptInvitation = async (
+    notification: any,
+    invitationId: string,
+  ) => {
+    try {
+      await deleteNotification(notification.notification_id);
+      toast.success("Invitación aceptada");
+    } catch (error) {
+      toast.error("Error al aceptar");
+    }
   };
 
-  const handleClose = () => {
-    setIsOpen(false);
+  const handleDeclineInvitation = async (
+    notification: any,
+    invitationId: string,
+  ) => {
+    try {
+      await deleteNotification(notification.notification_id);
+      toast.success("Invitación rechazada");
+    } catch (error) {
+      toast.error("Error al rechazar");
+    }
   };
 
-  const handleAccept = async (invitationId: string) => {
-    await updateInvitationList(invitationId, "accepted");
+  const handleMarkRead = async (notification: any) => {
+    await markAsRead(notification.notification_id);
   };
 
-  const handleDecline = async (invitationId: string) => {
-    await updateInvitationList(invitationId, "rejected");
+  const handleDelete = async (notification: any) => {
+    await deleteNotification(notification.notification_id);
+  };
+
+  const handleOpenAppUpdateModal = (notification: any) => {
+    setSelectedAppUpdate(notification);
+  };
+
+  const handleCloseAppUpdateModal = () => {
+    setSelectedAppUpdate(null);
+  };
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + "...";
   };
 
   const renderContent = () => {
@@ -101,54 +131,101 @@ export const NotificationsSection = () => {
 
     return (
       <ul className={styles.notificationList}>
-        {notifications.map((inv, index) => (
-          <React.Fragment key={inv.invitation_id}>
-            <li className={styles.notificationItem}>
-              <div className={styles.notificationInfo}>
-                <div
-                  className={styles.configUserIcon}
-                  style={{
-                    backgroundImage: inv.inviter_avatar_url
-                      ? `url('${inv.inviter_avatar_url}')`
-                      : "",
-                    opacity: inv.inviter_avatar_url ? 1 : 0.3,
-                  }}
-                >
-                  {!inv.inviter_avatar_url && (
-                    <UserIcon
+        {notifications.map((notification) => (
+          <li
+            key={notification.notification_id}
+            className={`${styles.notificationItem} ${
+              notification.type === "app_update"
+                ? styles.appUpdateNotification
+                : ""
+            }`}
+            onClick={() => {
+              if (notification.type === "app_update") {
+                handleOpenAppUpdateModal(notification);
+              }
+            }}
+            style={{
+              cursor:
+                notification.type === "app_update" ? "pointer" : "default",
+            }}
+          >
+            <div className={styles.notificationInfo}>
+              {notification.type === "list_invitation" && (
+                <div className={styles.configUserIcon}>
+                  {notification.metadata?.inviter_avatar_url ? (
+                    <img
+                      src={notification.metadata.inviter_avatar_url}
+                      alt="avatar"
                       style={{
-                        stroke: "var(--icon-colorv2)",
-                        strokeWidth: "1.5",
-                        width: "60%",
-                        height: "60%",
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: "50%",
                       }}
                     />
+                  ) : (
+                    <UserIcon style={{ width: "60%", height: "60%" }} />
                   )}
                 </div>
-                <span>
-                  {inv.inviter_display_name || "Un usuario"} te ha invitado a la
-                  lista "{inv.list_name || "una lista"}"
-                </span>
-              </div>
-              <div className={styles.notificationActions}>
+              )}
+
+              <span>
+                <strong>{notification.title}</strong>
+                <br />
+                {truncateText(notification.content, 90)}
+              </span>
+            </div>
+
+            <div className={styles.notificationActions}>
+              {notification.type === "list_invitation" && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAcceptInvitation(
+                        notification,
+                        notification.metadata.invitation_id,
+                      );
+                    }}
+                    className={`${styles.actionButton} ${styles.accept}`}
+                  >
+                    Aceptar
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeclineInvitation(
+                        notification,
+                        notification.metadata.invitation_id,
+                      );
+                    }}
+                    className={`${styles.actionButton} ${styles.decline}`}
+                  >
+                    Rechazar
+                  </button>
+                </>
+              )}
+              {notification.type === "app_update" && !notification.read && (
                 <button
-                  onClick={() => handleAccept(inv.invitation_id)}
-                  className={`${styles.actionButton} ${styles.accept}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleMarkRead(notification);
+                  }}
+                  className={`${styles.actionButton} ${styles.markRead}`}
                 >
-                  Aceptar
+                  Marcar como leído
                 </button>
-                <button
-                  onClick={() => handleDecline(inv.invitation_id)}
-                  className={`${styles.actionButton} ${styles.decline}`}
-                >
-                  Rechazar
-                </button>
-              </div>
-            </li>
-            {notifications.length > index + 1 && (
-              <div className={styles.separator}></div>
-            )}
-          </React.Fragment>
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(notification);
+                }}
+                className={`${styles.actionButton} ${styles.delete}`}
+              >
+                Eliminar
+              </button>
+            </div>
+          </li>
         ))}
       </ul>
     );
@@ -174,8 +251,10 @@ export const NotificationsSection = () => {
             strokeWidth: 1.5,
           }}
         />
-        {notifications && notifications.length > 0 && (
-          <span className={styles.badge}>{notifications.length}</span>
+        {notifications.filter((n) => !n.read).length > 0 && (
+          <span className={styles.badge}>
+            {notifications.filter((n) => !n.read).length}
+          </span>
         )}
       </div>
 
@@ -187,6 +266,43 @@ export const NotificationsSection = () => {
         >
           <div className={styles.contentWrapper}>{renderContent()}</div>
         </ModalBox>
+      )}
+
+      {selectedAppUpdate && (
+        <WindowModal
+          closeAction={handleCloseAppUpdateModal}
+          crossButton={false}
+        >
+          <div className={styles.modal}>
+            {selectedAppUpdate.metadata?.image_url && (
+              <img
+                src={selectedAppUpdate.metadata.image_url}
+                alt={selectedAppUpdate.title || "Imagen de actualización"}
+                className={styles.modalImage}
+                style={{ width: "100%" }}
+              />
+            )}
+            <div className={styles.modalContent}>
+              {!selectedAppUpdate.metadata?.image_url && (
+                <div className={styles.modalHeader}>
+                  <span className={styles.categoryBadge}>
+                    {selectedAppUpdate.metadata?.category || "Actualización"}
+                  </span>
+                  {selectedAppUpdate.metadata?.version && (
+                    <span className={styles.versionBadge}>
+                      v{selectedAppUpdate.metadata.version}
+                    </span>
+                  )}
+                </div>
+              )}
+              <h3 className={styles.modalTitle}>{selectedAppUpdate.title}</h3>
+              <p className={styles.modalText}>{selectedAppUpdate.content}</p>
+              <footer className={styles.modalFooter}>
+                <button onClick={handleCloseAppUpdateModal}>Cerrar</button>
+              </footer>
+            </div>
+          </div>
+        </WindowModal>
       )}
     </div>
   );
