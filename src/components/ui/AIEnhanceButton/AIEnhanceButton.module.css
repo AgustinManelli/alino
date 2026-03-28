@@ -452,3 +452,46 @@
   padding: 4px 6px;
   text-align: center;
 }
+
+.upgradeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 10px;
+  text-align: center;
+  gap: 10px;
+}
+
+.upgradeTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.upgradeDesc {
+  font-size: 11px;
+  color: var(--text);
+  opacity: 0.6;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0 10px;
+}
+
+.upgradeBtn {
+  margin-top: 5px;
+  background: var(--button-primary, #b48cff); /* ajusta a tu variable */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.upgradeBtn:hover {
+  opacity: 0.9;
+}

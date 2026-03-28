@@ -1,3 +1,4 @@
+"use client";
 import { create } from "zustand";
 import { toast } from "sonner";
 
@@ -25,6 +26,8 @@ export const useUserDataStore = create<UserData>()((set) => ({
       if (error) {
         throw new Error(error);
       }
+
+      console.log("Datos del usuario recibidos desde el server:", data?.user);
 
       set(() => ({ user: data?.user }));
     } catch (err) {

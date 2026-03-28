@@ -3,7 +3,7 @@
 import { cache } from "react";
 import { createClient as createClientServer } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
-import { z } from 'zod';
+import { z } from "zod";
 import { SearchTermSchema, SearchUserSchema } from "@/lib/schemas/user/validation";
 
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
@@ -26,14 +26,14 @@ const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
   }
 };
 
-
 export const getUser = cache(async () => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
+    // Sumamos subscriptions a la consulta
     const { data: userData, error: userError } = await supabase
       .from("users")
-      .select(`*, user_private (*)`)
+      .select(`*, user_private (*), subscriptions (*)`)
       .eq("user_id", user.id)
       .single();
 
@@ -43,12 +43,19 @@ export const getUser = cache(async () => {
       );
     }
 
-    return { data: { user: userData } };
+    // Normalizamos el tier por si el usuario no tiene fila en subscriptions
+    const subs = userData.subscriptions;
+    const subscriptionTier = (Array.isArray(subs) ? subs[0]?.tier : subs?.tier) || "free";
+    const normalizedUser = {
+      ...userData,
+      tier: subscriptionTier
+    };
+
+    return { data: { user: normalizedUser } };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };
     }
-
     return { error: UNKNOWN_ERROR_MESSAGE };
   }
 });
@@ -86,17 +93,14 @@ interface SearchUsersResponse {
 
 export const searchUsers = async (searchTerm: string): Promise<SearchUsersResponse> => {
   try {
-    // Sanitizar y validar el término de búsqueda
     const validationResult = SearchTermSchema.safeParse(searchTerm);
     if (!validationResult.success) {
         return { error: validationResult.error.errors[0].message };
     }
     const validatedSearchTerm = validationResult.data;
 
-
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    // Validar que el usuario esté autenticado
     if (!user || !user.id) {
       return { error: 'Usuario no autenticado.' };
     }
@@ -114,14 +118,12 @@ export const searchUsers = async (searchTerm: string): Promise<SearchUsersRespon
       return { error: "No se pudo obtener los usuarios. Inténtalo nuevamente." };
     }
 
-    // Validar la respuesta del RPC con Zod
     const responseValidation = z.array(SearchUserSchema).safeParse(data);
     if (!responseValidation.success) {
       console.error('RPC returned invalid data format:', responseValidation.error);
       return { error: 'Se recibió una respuesta con formato inválido desde el servidor.' };
     }
 
-    // Devolver los datos validados por Zod
     return { data: responseValidation.data };
 
   } catch (error: unknown) {

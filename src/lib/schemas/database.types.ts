@@ -261,6 +261,56 @@ export type Database = {
         };
         Relationships: [];
       };
+      subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          tier: Database["public"]["Enums"]["subscription_tier"];
+          status: Database["public"]["Enums"]["subscription_status"];
+          customer_id: string | null;
+          subscription_id: string | null;
+          current_period_start: string | null;
+          current_period_end: string | null;
+          cancel_at_period_end: boolean | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          tier?: Database["public"]["Enums"]["subscription_tier"];
+          status?: Database["public"]["Enums"]["subscription_status"];
+          customer_id?: string | null;
+          subscription_id?: string | null;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+          cancel_at_period_end?: boolean | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          tier?: Database["public"]["Enums"]["subscription_tier"];
+          status?: Database["public"]["Enums"]["subscription_status"];
+          customer_id?: string | null;
+          subscription_id?: string | null;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+          cancel_at_period_end?: boolean | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
       tasks: {
         Row: {
           completed: boolean | null;
@@ -485,6 +535,8 @@ export type Database = {
       roles_types: "admin" | "editor" | "reader" | "owner";
       status_shared_types: "pending" | "accepted" | "rejected";
       app_update_category: "new_feature" | "improvement" | "bug_fix" | "announcement";
+      subscription_tier: "free" | "student" | "pro";
+      subscription_status: "active" | "canceled" | "past_due" | "trialing" | "incomplete";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -511,6 +563,10 @@ export type UserWithMembershipRole = UserProfile & MembershipInfo;
 
 export type UserType = Database["public"]["Tables"]["users"]["Row"] & {
   user_private: Database["public"]["Tables"]["user_private"]["Row"] | null;
+  // Agregamos la tabla tal como viene de supabase
+  subscriptions?: Database["public"]["Tables"]["subscriptions"]["Row"][]; 
+  // Agregamos el tier normalizado que hicimos en el action
+  tier?: Database["public"]["Enums"]["subscription_tier"]; 
 };
 
 export type InvitationRow =

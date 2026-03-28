@@ -30,6 +30,7 @@ export const ConfigSection = () => {
   const avatar_url = user?.avatar_url;
   const display_name = user?.display_name;
   const username = user?.username;
+  const tier = (user as any)?.tier || "free";
 
   const logout = () => {
     signOutLocal();
@@ -103,6 +104,7 @@ export const ConfigSection = () => {
             title={display_name ? display_name : "User"}
             user
             subtitle={`@${username ? username : "user"}`}
+            tier={tier}
             onClose={handleClose}
             iconRef={iconRef}
           >
