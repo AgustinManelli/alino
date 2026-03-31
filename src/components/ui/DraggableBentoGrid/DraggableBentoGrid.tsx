@@ -1,5 +1,5 @@
 "use client";
-import React, { memo, useCallback, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import {
   Responsive,
   useContainerWidth,
@@ -40,6 +40,14 @@ export const DraggableBentoGrid = memo(
   ({ items, isEdit, setIsEdit, tempLayout, setTempLayout }: Props) => {
     const { width, containerRef, mounted } = useContainerWidth();
     const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
+    const [isInitializing, setIsInitializing] = useState(true);
+
+    useEffect(() => {
+      if (mounted && width > 0) {
+        const timer = setTimeout(() => setIsInitializing(false), 200);
+        return () => clearTimeout(timer);
+      }
+    }, [mounted, width]);
 
     const handleDragStart: EventCallback = useCallback(
       (_layout: Layout, _oldItem, newItem: LayoutItem | null) => {
@@ -62,7 +70,11 @@ export const DraggableBentoGrid = memo(
         <div
           ref={ref as React.Ref<HTMLDivElement>}
           className={`react-resizable-handle react-resizable-handle-${axis}`}
-          style={{ opacity: isEdit ? 1 : 0 }}
+          style={{
+            opacity: isEdit ? 1 : 0,
+            pointerEvents: isEdit ? "auto" : "none",
+            display: isEdit ? "block" : "none",
+          }}
         >
           <ResizeIcon
             style={{
@@ -82,9 +94,10 @@ export const DraggableBentoGrid = memo(
     return (
       <div
         ref={containerRef as React.RefObject<HTMLDivElement>}
-        style={{ maxWidth: "100%", height: "100%", margin: "auto" }}
+        className={isInitializing ? styles.noTransitions : ""}
+        style={{ maxWidth: "1024px", height: "100%", margin: "auto" }}
       >
-        {mounted && (
+        {mounted && width > 0 && (
           <Responsive
             width={width}
             style={{ width: "100%", height: "auto" }}

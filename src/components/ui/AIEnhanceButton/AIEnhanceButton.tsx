@@ -259,15 +259,16 @@ export function AIEnhanceButton({
               }}
             >
               <IAStarsLoader
-                size={15}
+                size={20}
                 color={
                   isEnhanceLoading || isGenerating || isOpen
-                    ? "#ffffff"
+                    ? "var(--text)"
                     : "var(--icon-color)"
                 }
                 duration={2}
                 title="Cargando IA"
                 animated={isEnhanceLoading || isGenerating || isOpen}
+                strokeWidth={1.2}
               />
             </button>
           </div>
