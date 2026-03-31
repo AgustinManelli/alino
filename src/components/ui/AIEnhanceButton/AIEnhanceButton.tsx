@@ -11,6 +11,7 @@ import { ClientOnlyPortal } from "@/components/ui/ClientOnlyPortal";
 import { IAStars } from "@/components/ui/icons/icons";
 import { useUserDataStore } from "@/store/useUserDataStore"; // Importamos el store
 import styles from "./AIEnhanceButton.module.css";
+import { IAStarsLoader } from "../icons/ia-loader";
 
 const CheckIcon = () => (
   <svg
@@ -90,7 +91,7 @@ type EnhanceFlow =
 type GenerateFlow =
   | { phase: "idle" }
   | { phase: "loading" }
-  | { phase: "result"; tasks: AIGeneratedTask[] }
+  | { phase: "result"; tasks: AIGeneratedTask[]; listSubject: string }
   | { phase: "error"; message: string };
 
 interface AIEnhanceButtonProps {
@@ -169,8 +170,8 @@ export function AIEnhanceButton({
   const handleGenerate = async () => {
     if (!taskPrompt.trim() || !canGenerateTasks) return;
     setGenerateFlow({ phase: "loading" });
-    const tasks = await generate(taskPrompt.trim(), maxTasks);
-    if (!tasks.length) {
+    const data = await generate(taskPrompt.trim(), maxTasks);
+    if (!data || !data.tasks.length) {
       setGenerateFlow({
         phase: "error",
         message: "No se pudieron generar tareas.",
@@ -178,7 +179,11 @@ export function AIEnhanceButton({
       setTimeout(() => setGenerateFlow({ phase: "idle" }), 3000);
       return;
     }
-    setGenerateFlow({ phase: "result", tasks });
+    setGenerateFlow({
+      phase: "result",
+      tasks: data.tasks,
+      listSubject: data.listSubject,
+    });
   };
 
   const handleCreateTasks = () => {
@@ -218,8 +223,23 @@ export function AIEnhanceButton({
           <div className={styles.btnWrapper}>
             <motion.div
               className={styles.glow}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+              animate={{
+                rotate: 360,
+                scale: isEnhanceLoading || isGenerating ? 1 : 0,
+              }}
+              transition={{
+                rotate: {
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "linear",
+                },
+                scale: {
+                  delay: 0.1,
+                  duration: 0.35,
+                  ease: [0.22, 1, 0.36, 1],
+                },
+              }}
+              initial={{ scale: 0, rotate: 0 }}
             />
             <button
               ref={triggerRef}
@@ -231,18 +251,24 @@ export function AIEnhanceButton({
               title="Asistente IA"
               aria-label="Abrir asistente IA"
               disabled={isEnhanceLoading || isGenerating}
+              style={{
+                backgroundColor:
+                  isEnhanceLoading || isGenerating
+                    ? "var(--background-container)"
+                    : "var(--background-over-container)",
+              }}
             >
-              <IAStars
-                style={{
-                  width: "14px",
-                  height: "14px",
-                  stroke: "var(--icon-colorv2)",
-                  strokeWidth: "1.5",
-                }}
+              <IAStarsLoader
+                size={15}
+                color={
+                  isEnhanceLoading || isGenerating || isOpen
+                    ? "#ffffff"
+                    : "var(--icon-color)"
+                }
+                duration={2}
+                title="Cargando IA"
+                animated={isEnhanceLoading || isGenerating || isOpen}
               />
-              {(isEnhanceLoading || isGenerating) && (
-                <span className={styles.loadingRing} />
-              )}
             </button>
           </div>
 

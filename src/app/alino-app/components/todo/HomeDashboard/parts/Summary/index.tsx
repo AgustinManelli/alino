@@ -1,36 +1,36 @@
 "use client";
+import { useEffect } from "react";
 import { SummaryCircle } from "@/components/ui/SummaryCircle";
 
 import styles from "./Summary.module.css";
-import { useEffect, useRef, useState } from "react";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useShallow } from "zustand/shallow";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Summary = () => {
-  const { total_tasks, pending_tasks, completed_tasks } = useDashboardStore(
+  const {
+    total_tasks,
+    pending_tasks,
+    completed_tasks,
+    hasFetchedData,
+    fetchDashboardData,
+  } = useDashboardStore(
     useShallow((state) => ({
       total_tasks: state.total_tasks,
       pending_tasks: state.pending_tasks,
       completed_tasks: state.completed_tasks,
-    }))
+      hasFetchedData: state.hasFetchedData,
+      fetchDashboardData: state.fetchDashboardData,
+    })),
   );
 
-  const [init, setInit] = useState<boolean>(false);
-
-  const initialized = useRef(false);
-
   useEffect(() => {
-    const init = async () => {
-      if (!initialized.current) {
-        await useDashboardStore.getState().getStats();
-        initialized.current = true;
-        setInit(true);
-      }
-    };
+    if (!hasFetchedData) {
+      fetchDashboardData();
+    }
+  }, [hasFetchedData, fetchDashboardData]);
 
-    init();
-  }, []);
+  const init = hasFetchedData;
 
   return (
     <div className={styles.summaryContent}>

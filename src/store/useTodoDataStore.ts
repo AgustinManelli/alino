@@ -65,7 +65,7 @@ type TodoStore = {
     name: string,
     color: string,
     icon: string | null
-  ) => Promise<void>;
+  ) => Promise<{ error: string | null, list_id?: string }>;
   insertFolder: (
     folder_name: string,
     folder_color: string | null
@@ -427,12 +427,14 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       if (error) {
         throw new Error(error || "No se recibieron datos del servidor.");
       }
+      return { error: null, list_id: optimisticId };
     } catch (err) {
       set((state) => ({
         lists: state.lists.filter((l) => l.list_id !== optimisticId),
       }));
 
       handleError(err);
+      return { error: (err as Error).message };
     }
   },
 

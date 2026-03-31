@@ -3,7 +3,7 @@ import { useState } from "react";
 import { AIGeneratedTask } from "@/lib/ai/aiProvider";
 
 interface UseAITaskGenerationReturn {
-  generate: (prompt: string, maxTasks: number) => Promise<AIGeneratedTask[]>;
+  generate: (prompt: string, maxTasks: number) => Promise<{ listSubject: string; tasks: AIGeneratedTask[] } | null>;
   loading: boolean;
   error: string | null;
 }
@@ -15,7 +15,7 @@ export function useAITaskGeneration(): UseAITaskGenerationReturn {
   const generate = async (
     prompt: string,
     maxTasks: number,
-  ): Promise<AIGeneratedTask[]> => {
+  ): Promise<{ listSubject: string; tasks: AIGeneratedTask[] } | null> => {
     setLoading(true);
     setError(null);
     try {
@@ -28,13 +28,16 @@ export function useAITaskGeneration(): UseAITaskGenerationReturn {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Error desconocido.");
-        return [];
+        return null;
       }
 
-      return data.tasks as AIGeneratedTask[];
+      return {
+        listSubject: data.listSubject as string,
+        tasks: data.tasks as AIGeneratedTask[],
+      };
     } catch {
       setError("No se pudo conectar con el servidor.");
-      return [];
+      return null;
     } finally {
       setLoading(false);
     }

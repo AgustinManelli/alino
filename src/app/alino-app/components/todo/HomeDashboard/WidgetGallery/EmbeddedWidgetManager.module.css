@@ -1,0 +1,239 @@
+.manager {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.managerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.sectionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-not-available);
+  letter-spacing: 0.08em;
+  padding: 0 10px;
+}
+
+.sectionContent {
+  background-color: var(--background-over-container, rgba(255, 255, 255, 0.03));
+  border-radius: 12px;
+  border: 1px solid var(--border-container-color, rgba(255, 255, 255, 0.06));
+  overflow: hidden;
+}
+
+.widgetWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionElement {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  gap: 12px;
+}
+
+.configElementSeparator {
+  width: 100%;
+  height: 1px;
+  background-color: var(--border-container-color, rgba(255, 255, 255, 0.06));
+}
+
+.widgetInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.widgetTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dotActive {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgb(106, 195, 255);
+  box-shadow: 0 0 8px rgba(106, 195, 255, 0.6);
+}
+
+.widgetUrl {
+  font-size: 11px;
+  color: var(--text-not-available);
+  opacity: 0.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.widgetActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.installBtn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(106, 195, 255, 0.1);
+  border: 1px solid rgba(106, 195, 255, 0.3);
+  color: rgb(106, 195, 255);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.isInstalled {
+  background: rgba(255, 80, 80, 0.05);
+  border-color: rgba(255, 80, 80, 0.2);
+  color: rgb(255, 100, 100);
+}
+
+.iconBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-not-available);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
+.btnDanger:hover {
+  background: rgba(255, 80, 80, 0.1);
+  border-color: rgba(255, 80, 80, 0.3);
+  color: rgb(255, 100, 100);
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.inputGroup {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-not-available);
+  opacity: 0.5;
+  letter-spacing: 0.08em;
+}
+
+.input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 500;
+  outline: none;
+  padding: 2px 0;
+}
+
+.input::placeholder {
+  color: var(--text-not-available);
+  opacity: 0.3;
+}
+
+.sectionDescription {
+  font-size: 11px;
+  color: var(--text-not-available);
+  opacity: 0.6;
+  padding: 0 10px;
+  line-height: 1.4;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.btnPrimary {
+  padding: 10px 24px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgb(106, 195, 255), rgb(80, 160, 220));
+  border: none;
+  color: #0a0a1e;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btnSecondary {
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-not-available);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btnCreate {
+  padding: 6px 14px;
+  border-radius: 10px;
+  background: rgba(106, 195, 255, 0.1);
+  border: 1px solid rgba(106, 195, 255, 0.2);
+  color: rgb(106, 195, 255);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 40px 10px;
+  text-align: center;
+  color: var(--text-not-available);
+  opacity: 0.7;
+}
+
+.emptySubtext {
+  font-size: 12px;
+  opacity: 0.6;
+}

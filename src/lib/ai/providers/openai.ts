@@ -7,6 +7,7 @@ Tu tarea es generar tareas concretas, accionables y bien distribuidas en el tiem
 
 Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin texto extra, sin markdown):
 {
+  "listSubject": "Nombre corto y genérico para la lista de tareas (máx 30 caracteres)",
   "tasks": [
     {
       "text": "Texto conciso de la tarea (máx 120 caracteres, en español)",
@@ -53,7 +54,7 @@ export class OpenAIProvider implements AIProvider {
   async generateTasks(
     prompt: string,
     maxTasks: number,
-  ): Promise<AIGeneratedTask[]> {
+  ): Promise<import("../aiProvider").AITaskGenerationResponse> {
     const today = new Date().toISOString();
 
     const completion = await this.client.chat.completions.create({
@@ -73,7 +74,8 @@ export class OpenAIProvider implements AIProvider {
     const raw = completion.choices[0]?.message?.content?.trim();
     if (!raw) throw new Error("No se recibió respuesta del modelo.");
 
-    const parsed = JSON.parse(raw) as { tasks: AIGeneratedTask[] };
-    return parsed.tasks.slice(0, maxTasks);
+    const parsed = JSON.parse(raw) as import("../aiProvider").AITaskGenerationResponse;
+    parsed.tasks = parsed.tasks.slice(0, maxTasks);
+    return parsed;
   }
 }

@@ -36,6 +36,7 @@ yarn-error.log*
 next-env.d.ts
 
 estructura.sql
+schema.sql
 
 # Serwist
 public/sw*

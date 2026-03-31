@@ -58,7 +58,6 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  background-color: var(--background-container);
   transition:
     background-color 0.2s ease,
     transform 0.12s ease;
@@ -68,57 +67,42 @@
 .mainBtn:hover {
   background-color: var(--background-over-container-solid);
 }
-.mainBtn:active {
-  transform: scale(0.94);
-}
 .mainBtn:disabled {
   cursor: not-allowed;
   transform: none;
 }
 
-.loadingRing {
-  position: absolute;
-  inset: -2px;
-  border-radius: 9px;
-  border: 1.5px solid transparent;
-  border-top-color: rgba(180, 140, 255, 0.8);
-  border-right-color: rgba(140, 200, 255, 0.4);
-  animation: loadingSpin 0.75s linear infinite;
-  pointer-events: none;
-  z-index: 2;
-}
-
 .panel {
   position: absolute;
-  background-color: var(--background-container);
+  background-color: var(--background-over-container);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-container-color);
-  width: 240px;
-  border-radius: 14px;
+  width: 260px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 6px;
-  z-index: 502;
-  box-shadow:
-    rgba(12, 20, 66, 0.02) 0px 4px 12px,
-    rgba(12, 20, 66, 0.08) 0px 30px 80px;
+  padding: 8px;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   overflow: hidden;
 }
 
 .panelHeader {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 6px 5px;
+  gap: 6px;
+  padding: 6px 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .panelTitle {
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text);
-  opacity: 0.4;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  margin-top: 1px;
+  opacity: 0.9;
 }
 
 .tabs {
@@ -211,21 +195,23 @@
 
 .promptTextarea {
   width: 100%;
-  padding: 8px 10px;
-  border-radius: 9px;
+  background-color: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-container-color);
-  background: var(--background-over-container);
+  border-radius: 10px;
+  padding: 10px;
   color: var(--text);
-  font-size: 12px;
-  line-height: 1.5;
-  resize: none;
+  font-size: 13px;
+  line-height: 1.4;
+  resize: vertical;
+  min-height: 70px;
   outline: none;
   font-family: inherit;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.2s;
 }
 
 .promptTextarea:focus {
   border-color: rgba(180, 140, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 .promptTextarea::placeholder {
   color: var(--text);
@@ -279,24 +265,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
-  padding: 7px 10px;
-  border: none;
-  border-radius: 9px;
-  background: var(--background-over-container);
-  color: var(--text);
-  font-size: 12px;
+  background: rgba(180, 140, 255, 0.15);
+  border: 1px solid rgba(180, 140, 255, 0.3);
+  color: #b48cff;
+  font-size: 13px;
   font-weight: 600;
+  padding: 10px;
+  border-radius: 10px;
   cursor: pointer;
-  transition:
-    background 0.12s ease,
-    opacity 0.12s ease;
-  margin-top: 2px;
+  margin-top: 6px;
+  transition: all 0.2s ease;
 }
 
-.generateBtn:hover {
-  background: var(--background-over-container-hover);
+.generateBtn:hover:not(:disabled) {
+  background: rgba(180, 140, 255, 0.25);
+  border-color: rgba(180, 140, 255, 0.5);
 }
 .generateBtn:disabled {
   opacity: 0.4;
@@ -411,7 +396,28 @@
   margin-top: 2px;
 }
 
-.acceptBtn,
+.acceptBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(180, 140, 255, 0.15);
+  border: 1px solid rgba(180, 140, 255, 0.3);
+  color: #b48cff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+.acceptBtn:hover {
+  background: rgba(180, 140, 255, 0.25);
+  border-color: rgba(180, 140, 255, 0.5);
+}
+
 .cancelBtn {
   display: flex;
   align-items: center;
@@ -425,16 +431,6 @@
   flex: 1;
   justify-content: center;
   transition: background 0.1s ease;
-}
-
-.acceptBtn {
-  background: var(--background-over-container);
-  color: var(--text);
-}
-.acceptBtn:hover {
-  background: var(--background-over-container-hover);
-}
-.cancelBtn {
   background: transparent;
   color: var(--text);
   opacity: 0.45;
@@ -481,7 +477,7 @@
 
 .upgradeBtn {
   margin-top: 5px;
-  background: var(--button-primary, #b48cff); /* ajusta a tu variable */
+  background: var(--button-primary, #b48cff);
   color: #fff;
   border: none;
   border-radius: 8px;

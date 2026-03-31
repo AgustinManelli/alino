@@ -1,0 +1,50 @@
+.placeholder {
+  width: 100%;
+  height: 100%;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.iconWrapper {
+  border-radius: 15px;
+  background: rgba(255, 180, 0, 0.1);
+  border: 1px solid rgba(255, 180, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffb400;
+  padding: 5px 10px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  line-height: 1;
+}
+
+.text {
+  font-size: 14px;
+  color: var(--text-not-available);
+  line-height: 1.5;
+}
+
+.text strong {
+  color: var(--text);
+}
+
+.upgradeBtn {
+  padding: 10px 20px;
+  border-radius: 15px;
+  background: "blue";
+  border: none;
+  color: #000;
+  font-size: 14px;
+  cursor: pointer;
+}
