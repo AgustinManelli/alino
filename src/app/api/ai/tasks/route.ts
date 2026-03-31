@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     const { prompt, maxTasks } = (await req.json()) as {
       prompt: string;
-      maxTasks: number;
+      maxTasks: number | null;
     };
 
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
@@ -49,10 +49,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const clampedMax = Math.min(Math.max(Number(maxTasks) || 5, 1), 10);
+    let tasksLimit: number | null = null;
+    if (maxTasks !== null && typeof maxTasks === 'number') {
+      tasksLimit = Math.min(Math.max(maxTasks, 1), 20);
+    }
 
     const provider = getAIProvider();
-    const response = await provider.generateTasks(prompt.trim(), clampedMax);
+    const response = await provider.generateTasks(prompt.trim(), tasksLimit );
 
     return NextResponse.json(response);
   } catch (err: unknown) {

@@ -23,7 +23,7 @@ export default function AIAssistantWidget() {
     if (!prompt.trim() || !canGenerateTasks) return;
     setLoadingLocal(true);
     try {
-      const data = await generate(prompt.trim(), 5);
+      const data = await generate(prompt.trim(), null);
       if (!data || !data.tasks.length) {
         throw new Error(aiError || "No se pudieron generar tareas.");
       }
@@ -59,7 +59,7 @@ export default function AIAssistantWidget() {
   };
 
   const currentLength = prompt.length;
-  const maxLength = 200;
+  const maxLength = 2000;
 
   return (
     <div className={styles.container}>

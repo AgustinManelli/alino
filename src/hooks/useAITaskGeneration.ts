@@ -3,7 +3,7 @@ import { useState } from "react";
 import { AIGeneratedTask } from "@/lib/ai/aiProvider";
 
 interface UseAITaskGenerationReturn {
-  generate: (prompt: string, maxTasks: number) => Promise<{ listSubject: string; tasks: AIGeneratedTask[] } | null>;
+  generate: (prompt: string, maxTasks: number | null) => Promise<{ listSubject: string; tasks: AIGeneratedTask[] } | null>;
   loading: boolean;
   error: string | null;
 }
@@ -14,7 +14,7 @@ export function useAITaskGeneration(): UseAITaskGenerationReturn {
 
   const generate = async (
     prompt: string,
-    maxTasks: number,
+    maxTasks: number | null,
   ): Promise<{ listSubject: string; tasks: AIGeneratedTask[] } | null> => {
     setLoading(true);
     setError(null);

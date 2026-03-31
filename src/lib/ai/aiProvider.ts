@@ -22,7 +22,7 @@ export interface AIProvider {
    * @param prompt   - Objetivo o situación descrita por el usuario
    * @param maxTasks - Máximo de tareas a generar
    */
-  generateTasks(prompt: string, maxTasks: number): Promise<AITaskGenerationResponse>;
+  generateTasks(prompt: string, maxTasks: number | null): Promise<AITaskGenerationResponse>;
 }
 
 // Prompts por acción (compartidos entre providers)
