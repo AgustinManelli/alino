@@ -245,16 +245,13 @@
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-/* Estilo para el riel (track) de la barra de scroll vertical */
-.bentoBody :global(.simplebar-track.simplebar-vertical) {
+.bentoBody > :global(.simplebar-track.simplebar-vertical) {
   background-color: rgba(255, 255, 255, 0.05);
   width: 8px;
   border-radius: 4px;
@@ -262,8 +259,7 @@
   bottom: 20px;
 }
 
-/* Estilo para la barra arrastrable (thumb) */
-.bentoBody :global(.simplebar-scrollbar::before) {
+.bentoBody > :global(.simplebar-scrollbar::before) {
   top: 2px;
   right: 2px;
   bottom: 2px;
@@ -274,29 +270,27 @@
   transition: background-color 0.2s ease;
 }
 
-/* Efecto al pasar el cursor sobre la barra */
-.bentoBody :global(.simplebar-scrollbar:hover::before) {
+.bentoBody > :global(.simplebar-scrollbar:hover::before) {
   background-color: rgba(255, 255, 255, 0.5);
 }
 
-/* Opcional: Ocultar/mostrar el riel al hacer hover */
-.bentoBody :global(.simplebar-track.simplebar-vertical) {
+.bentoBody > :global(.simplebar-track.simplebar-vertical) {
   opacity: 0;
   transition: opacity 0.2s ease-out;
 }
 
-.bentoBody:hover :global(.simplebar-track.simplebar-vertical) {
+.bentoBody:hover > :global(.simplebar-track.simplebar-vertical) {
   opacity: 1;
 }
 
-.bentoBody :global(.simplebar-track.simplebar-horizontal) {
+.bentoBody > :global(.simplebar-track.simplebar-horizontal) {
   display: none;
 }
 
-.bentoBody :global(.simplebar-track.simplebar-horizontal) {
+.bentoBody > :global(.simplebar-track.simplebar-horizontal) {
   display: none;
 }
 
-.bentoBody :global(.simplebar-content) {
+.bentoBody > :global(.simplebar-content) {
   height: 100%;
 }

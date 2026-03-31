@@ -1,0 +1,45 @@
+.root {
+  position: relative;
+  --ia-size: 48px;
+  --ia-color: currentColor;
+  --ia-duration: 1.9s;
+  --ia-stroke-width: 1.5;
+
+  display: inline-grid;
+  place-items: center;
+  width: var(--ia-size);
+  height: var(--ia-size);
+  color: var(--ia-color);
+  line-height: 0;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.root::before {
+  content: "";
+  background-color: var(--ia-color);
+  width: 50%;
+  height: 50%;
+  position: absolute;
+  filter: blur(20px);
+  border-radius: 999px;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  display: block;
+  filter: drop-shadow(
+    0 0 10px color-mix(in srgb, currentColor 28%, transparent)
+  );
+}
+
+.star {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--ia-stroke-width);
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+}

@@ -191,328 +191,137 @@ function getHourlyEmoji(code: number, isDay: boolean): React.ReactNode {
 }
 
 export const Weather: React.FC<{ label?: string }> = ({ label }) => {
-  // const [state, setState] = useState<WeatherState>({
-  //   temperature: null,
-  //   tempMin: null,
-  //   tempMax: null,
-  //   description: null,
-  //   emoji: null,
-  //   location: null,
-  //   loading: true,
-  //   error: null,
-  //   weatherType: "default",
-  //   hourlyForecast: [],
-  // });
-
   const weather = useDashboardStore((state) => state.weather);
   const setWeather = useDashboardStore((state) => state.setWeather);
 
   useEffect(() => {
-    if (!weather.loading) return;
+    if (!weather.loading && weather.temperature !== null) return;
+
     let mounted = true;
 
-    const fetchWeatherAndHourly = async (lat: number, lon: number) => {
+    const fetchAllData = async () => {
+      let coords = { lat: DEFAULT_LAT, lon: DEFAULT_LON };
+      let geoName: string | null = null;
+
       try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto&forecast_days=2`;
+        const ipRes = await fetch("https://ipapi.co/json/");
+        if (ipRes.ok) {
+          const ipData = await ipRes.json();
+          coords = {
+            lat: Number(ipData.latitude ?? ipData.lat),
+            lon: Number(ipData.longitude ?? ipData.lon),
+          };
+          geoName = [ipData.city, ipData.region].filter(Boolean).join(", ");
+        }
+      } catch (e) {
+        console.warn("Weather: IP Geolocation failed", e);
+      }
+
+      if (!mounted) return;
+
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto&forecast_days=2`;
         const res = await fetch(url);
-        // const res = {
-        //   latitude: -31.42,
-        //   longitude: -64.18,
-        //   generationtime_ms: 0.5,
-        //   utc_offset_seconds: -10800,
-        //   timezone: "America/Argentina/Cordoba",
-        //   timezone_abbreviation: "-03",
-        //   elevation: 427.0,
-
-        //   current_weather: {
-        //     temperature: 23.5,
-        //     windspeed: 11.2,
-        //     winddirection: 240,
-        //     weathercode: 61,
-        //     is_day: 1,
-        //     time: "2025-09-21T23:00",
-        //   },
-
-        //   daily: {
-        //     time: ["2025-09-21", "2025-09-22"],
-        //     temperature_2m_max: [28.1, 29.5],
-        //     temperature_2m_min: [18.3, 19.0],
-        //     sunrise: ["2025-09-21T06:45", "2025-09-22T06:44"],
-        //     sunset: ["2025-09-21T19:08", "2025-09-22T19:09"],
-        //   },
-
-        //   hourly: {
-        //     time: [
-        //       "2025-09-21T20:00",
-        //       "2025-09-21T21:00",
-        //       "2025-09-21T22:00",
-        //       "2025-09-21T23:00",
-        //       "2025-09-22T00:00",
-        //       "2025-09-22T01:00",
-        //       "2025-09-22T02:00",
-        //       "2025-09-22T03:00",
-        //       "2025-09-22T04:00",
-        //     ],
-        //     temperature_2m: [
-        //       26.0, 24.5, 22.1, 21.5, 20.8, 20.0, 19.5, 19.0, 18.5,
-        //     ],
-        //     weathercode: [
-        //       3,
-        //       3,
-        //       0,
-        //       0,
-        //       0,
-        //       3,
-        //       61,
-        //       61,
-        //       95,
-        //     ],
-        //   },
-        // };
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`Weather API Error: ${res.status}`);
         const data = await res.json();
-        // const data = res;
-        const cw = data?.current_weather;
-        if (!cw) throw new Error("No hay datos de clima actual");
 
-        const temp =
-          typeof cw.temperature === "number"
-            ? Math.round(cw.temperature)
-            : null;
-        const code = typeof cw.weathercode === "number" ? cw.weathercode : -1;
+        const cw = data.current_weather;
         const currentTimeStr = cw.time;
+        const code = cw.weathercode;
+        const temp = Math.round(cw.temperature);
+
+        const daily = data.daily;
+        const currentDate = currentTimeStr.split("T")[0];
+        const dayIndex = (daily.time as string[]).findIndex(
+          (t) => t === currentDate,
+        );
+
         let isDay = true;
+        let tempMax = null;
+        let tempMin = null;
 
-        // Obtener temp min/max del día actual
-        let tempMin: number | null = null;
-        let tempMax: number | null = null;
-        let hourlyForecast: HourlyData[] = [];
-
-        try {
-          const daily = data?.daily;
-          const hourly = data?.hourly;
-          const dailyTimes: string[] | undefined = daily?.time;
-          const sunrises: string[] | undefined = daily?.sunrise;
-          const sunsets: string[] | undefined = daily?.sunset;
-          const tempMaxArray: number[] | undefined = daily?.temperature_2m_max;
-          const tempMinArray: number[] | undefined = daily?.temperature_2m_min;
-
-          if (dailyTimes && Array.isArray(dailyTimes)) {
-            const currentDate = currentTimeStr.split("T")[0];
-            const dayIndex = dailyTimes.findIndex(
-              (t: string) => t === currentDate
-            );
-
-            if (dayIndex >= 0) {
-              // Obtener temp min/max
-              if (tempMaxArray && tempMaxArray[dayIndex] !== undefined) {
-                tempMax = Math.round(tempMaxArray[dayIndex]);
-              }
-              if (tempMinArray && tempMinArray[dayIndex] !== undefined) {
-                tempMin = Math.round(tempMinArray[dayIndex]);
-              }
-
-              // Calcular si es día o noche
-              if (sunrises && sunsets) {
-                const sunriseStr = sunrises[dayIndex];
-                const sunsetStr = sunsets[dayIndex];
-
-                if (sunriseStr && sunsetStr) {
-                  const currentDateTime = new Date(currentTimeStr);
-                  const sunriseDate = new Date(sunriseStr);
-                  const sunsetDate = new Date(sunsetStr);
-
-                  isDay =
-                    currentDateTime >= sunriseDate &&
-                    currentDateTime < sunsetDate;
-                  // isDay = true;
-                }
-              }
-            }
-          }
-
-          // Procesar datos horarios para las próximas 6 horas
-          if (
-            hourly &&
-            hourly.time &&
-            hourly.temperature_2m &&
-            hourly.weathercode
-          ) {
-            const currentTime = new Date(currentTimeStr);
-            const hourlyTimes = hourly.time;
-            const hourlyTemps = hourly.temperature_2m;
-            const hourlyCodes = hourly.weathercode;
-
-            let count = 0;
-            for (let i = 0; i < hourlyTimes.length; i++) {
-              const hourTime = new Date(hourlyTimes[i]);
-              if (hourTime > currentTime && count < 7) {
-                const hour = hourTime.getHours();
-                const hourIsDay = hour >= 6 && hour < 20;
-
-                hourlyForecast.push({
-                  time: hourTime.toLocaleTimeString("es-ES", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                  temperature: Math.round(hourlyTemps[i]),
-                  weatherCode: hourlyCodes[i],
-                  emoji: getHourlyEmoji(hourlyCodes[i], hourIsDay),
-                  isDay: hourIsDay,
-                });
-                count++;
-              }
-            }
-          }
-
-          // Fallback para día/noche si no hay datos de sunrise/sunset
-          if (
-            tempMin === null ||
-            tempMax === null ||
-            (dailyTimes && !dailyTimes.length)
-          ) {
-            const now = new Date(currentTimeStr);
-            const hour = now.getHours();
-            isDay = hour >= 6 && hour < 20;
-          }
-        } catch {
-          const now = new Date();
-          const hour = now.getHours();
-          isDay = hour >= 6 && hour < 20;
+        if (dayIndex >= 0) {
+          tempMax = Math.round(daily.temperature_2m_max[dayIndex]);
+          tempMin = Math.round(daily.temperature_2m_min[dayIndex]);
+          const sunrise = new Date(daily.sunrise[dayIndex]);
+          const sunset = new Date(daily.sunset[dayIndex]);
+          const now = new Date(currentTimeStr);
+          isDay = now >= sunrise && now < sunset;
         }
 
         const mapped = mapWeatherCodeToSimple(code, isDay);
 
-        return {
-          temperature: temp,
-          tempMin,
-          tempMax,
-          description: mapped.desc,
-          emoji: mapped.emoji,
-          weatherType: mapped.weatherType,
-          hourlyForecast,
-          error: null as string | null,
-        };
-      } catch (err: any) {
-        return {
-          temperature: null,
-          tempMin: null,
-          tempMax: null,
-          description: null,
-          emoji: null,
-          weatherType: "default" as const,
-          hourlyForecast: [],
-          error: err?.message ?? "Error al obtener clima",
-        };
-      }
-    };
+        const hourly = data.hourly;
+        const hourlyForecast: HourlyData[] = [];
+        const now = new Date(currentTimeStr);
 
-    const reverseGeocode = async (lat: number, lon: number) => {
-      try {
-        const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=es`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`Geo HTTP ${res.status}`);
-        const data = await res.json();
-        const first = data?.results?.[0];
-        if (!first) throw new Error("Sin resultados de geocoding");
-        const parts = [first.name, first.admin1, first.country].filter(Boolean);
-        return parts.join(", ");
-      } catch {
-        return null;
-      }
-    };
-
-    const fetchCoordsByIP = async (): Promise<{
-      lat: number;
-      lon: number;
-      city?: string | null;
-      region?: string | null;
-      country?: string | null;
-    } | null> => {
-      try {
-        const res = await fetch("https://ipapi.co/json/");
-        if (!res.ok) return null;
-        const data = await res.json();
-        const lat = Number(data.latitude ?? data.lat);
-        const lon = Number(data.longitude ?? data.lon);
-        const city = data.city ?? null;
-        const region = data.region ?? data.region_name ?? null;
-        const country = data.country_name ?? null;
-        if (Number.isFinite(lat) && Number.isFinite(lon))
-          return { lat, lon, city, region, country };
-        return null;
-      } catch {
-        return null;
-      }
-    };
-
-    const tryGeolocationThenFetch = async () => {
-      let coords: { lat: number; lon: number } | null = null;
-      let ipInfo: {
-        city?: string | null;
-        region?: string | null;
-        country?: string | null;
-      } | null = null;
-
-      const ipCoords = await fetchCoordsByIP();
-      if (ipCoords) {
-        coords = { lat: ipCoords.lat, lon: ipCoords.lon };
-        ipInfo = {
-          city: ipCoords.city,
-          region: ipCoords.region,
-          country: ipCoords.country,
-        };
-      } else {
-        coords = { lat: DEFAULT_LAT, lon: DEFAULT_LON };
-      }
-
-      if (!coords) {
-        coords = { lat: DEFAULT_LAT, lon: DEFAULT_LON };
-      }
-
-      const [w, geoName] = await Promise.all([
-        fetchWeatherAndHourly(coords.lat, coords.lon),
-        (async () => {
-          if (ipInfo?.city) {
-            const parts = [ipInfo.city, ipInfo.region].filter(Boolean);
-            return parts.join(", ");
+        for (
+          let i = 0;
+          i < hourly.time.length && hourlyForecast.length < 7;
+          i++
+        ) {
+          const hTime = new Date(hourly.time[i]);
+          if (hTime > now) {
+            const hHour = hTime.getHours();
+            const hIsDay = hHour >= 6 && hHour < 20;
+            hourlyForecast.push({
+              time: hTime.toLocaleTimeString("es-ES", {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              temperature: Math.round(hourly.temperature_2m[i]),
+              weatherCode: hourly.weathercode[i],
+              emoji: getHourlyEmoji(hourly.weathercode[i], hIsDay),
+              isDay: hIsDay,
+            });
           }
-          const g = await reverseGeocode(coords.lat, coords.lon);
-          return g;
-        })(),
-      ]);
+        }
 
-      if (!mounted) return;
-
-      setWeather({
-        temperature: w.temperature,
-        tempMin: w.tempMin,
-        tempMax: w.tempMax,
-        description: w.description,
-        emoji: w.emoji,
-        weatherType: validTypes.includes(
-          w.weatherType as WeatherState["weatherType"]
-        )
-          ? (w.weatherType as WeatherState["weatherType"])
-          : "default",
-        location:
-          label ??
-          geoName ??
-          (coords.lat === DEFAULT_LAT && coords.lon === DEFAULT_LON
-            ? "Córdoba, Argentina"
-            : null),
-        loading: false,
-        error: w.error,
-        hourlyForecast: w.hourlyForecast,
-      });
+        if (mounted) {
+          setWeather({
+            ...weather,
+            temperature: temp,
+            tempMin,
+            tempMax,
+            description: mapped.desc,
+            emoji: mapped.emoji,
+            weatherType: mapped.weatherType as
+              | "sunny"
+              | "cloudy-day"
+              | "cloudy-night"
+              | "rainy"
+              | "rainy-day"
+              | "rainy-night"
+              | "stormy"
+              | "snowy"
+              | "foggy"
+              | "night"
+              | "default",
+            location:
+              label ??
+              geoName ??
+              (coords.lat === DEFAULT_LAT ? "Córdoba, AR" : "Tu ubicación"),
+            hourlyForecast,
+            loading: false,
+            error: null,
+          });
+        }
+      } catch (err) {
+        if (mounted) {
+          setWeather({
+            ...weather,
+            loading: false,
+            error: (err as Error).message,
+          });
+        }
+      }
     };
 
-    tryGeolocationThenFetch();
-
+    fetchAllData();
     return () => {
       mounted = false;
     };
-  }, [label]);
+  }, [label, setWeather]);
 
   return (
     <div className={`${styles.weatherWidget} ${styles[weather.weatherType]}`}>
@@ -535,7 +344,6 @@ export const Weather: React.FC<{ label?: string }> = ({ label }) => {
         </div>
       ) : (
         <div className={styles.weatherContainer}>
-          {/* Header con ubicación */}
           <div className={styles.headerWidget}>
             <div className={styles.loctempContainer}>
               <div className={styles.locationHeader}>
@@ -552,7 +360,6 @@ export const Weather: React.FC<{ label?: string }> = ({ label }) => {
                   />
                 </span>
               </div>
-              {/* Temperatura principal y descripción */}
               <span className={styles.currentTemp}>
                 {weather.temperature !== null ? `${weather.temperature}°` : "—"}
               </span>
@@ -569,7 +376,6 @@ export const Weather: React.FC<{ label?: string }> = ({ label }) => {
             </div>
           </div>
 
-          {/* Pronóstico horario */}
           {weather.hourlyForecast.length > 0 && (
             <div className={styles.hourlyForecast}>
               {weather.hourlyForecast.slice(0, 7).map((hour, index) => (

@@ -7,6 +7,7 @@ Tu tarea es generar tareas concretas, accionables y bien distribuidas en el tiem
 
 Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin texto extra, sin markdown, sin bloques de código):
 {
+  "listSubject": "Nombre corto y genérico para la lista de tareas (máx 30 caracteres)",
   "tasks": [
     {
       "text": "Texto conciso de la tarea (máx 120 caracteres, en español)",
@@ -47,7 +48,7 @@ export class GeminiProvider implements AIProvider {
   async generateTasks(
     prompt: string,
     maxTasks: number,
-  ): Promise<AIGeneratedTask[]> {
+  ): Promise<import("../aiProvider").AITaskGenerationResponse> {
     const today = new Date().toISOString();
 
     const fullPrompt = `${GENERATE_TASKS_SYSTEM_PROMPT}\n\nFecha de hoy: ${today}\nMáximo de tareas: ${maxTasks}\n\nObjetivo del usuario:\n${prompt}`;
@@ -60,11 +61,11 @@ export class GeminiProvider implements AIProvider {
     const raw = response.text?.trim();
     if (!raw) throw new Error("No se recibió respuesta del modelo.");
 
-    // Gemini puede devolver markdown — extraer solo el JSON
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("La IA no devolvió JSON válido.");
 
-    const parsed = JSON.parse(jsonMatch[0]) as { tasks: AIGeneratedTask[] };
-    return parsed.tasks.slice(0, maxTasks);
+    const parsed = JSON.parse(jsonMatch[0]) as import("../aiProvider").AITaskGenerationResponse;
+    parsed.tasks = parsed.tasks.slice(0, maxTasks);
+    return parsed;
   }
 }

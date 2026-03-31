@@ -5,7 +5,6 @@ export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Autenticar al usuario que hace la petición
     const supabase = createClientServer();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -16,7 +15,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Verificar el nivel de suscripción usando la función SQL
     const { data: tier, error: tierError } = await supabase.rpc("get_user_tier", {
       p_user_id: user.id,
     });
@@ -29,7 +27,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // La función SQL ya nos asegura que si nos devuelve 'pro' o 'student', es porque están activos
     const currentTier = tier || "free";
     const hasAccess = currentTier === "pro" || currentTier === "student";
 
@@ -40,7 +37,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Si pasó las validaciones, procedemos con la lógica de IA
     const { prompt, maxTasks } = (await req.json()) as {
       prompt: string;
       maxTasks: number;
@@ -56,9 +52,9 @@ export async function POST(req: NextRequest) {
     const clampedMax = Math.min(Math.max(Number(maxTasks) || 5, 1), 10);
 
     const provider = getAIProvider();
-    const tasks = await provider.generateTasks(prompt.trim(), clampedMax);
+    const response = await provider.generateTasks(prompt.trim(), clampedMax);
 
-    return NextResponse.json({ tasks });
+    return NextResponse.json(response);
   } catch (err: unknown) {
     console.error("[AI Tasks] Error:", err);
     const message =

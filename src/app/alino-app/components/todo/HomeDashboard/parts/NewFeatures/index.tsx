@@ -7,50 +7,41 @@ import { useDashboardStore } from "@/store/useDashboardStore";
 
 import styles from "./NewFeatures.module.css";
 import { LoadingIcon } from "@/components/ui/icons/icons";
-import { ClientOnlyPortal } from "@/components/ui/ClientOnlyPortal";
-import { WindowComponent } from "@/components/ui/window-component";
 import { WindowModal } from "@/components/ui/WindowModal";
 
 export const NewFeature = () => {
   const app_updates = useDashboardStore((state) => state.app_updates);
+  const hasFetchedAppUpdates = useDashboardStore(
+    (state) => state.hasFetchedAppUpdates,
+  );
+  const fetchAppUpdates = useDashboardStore((state) => state.fetchAppUpdates);
 
-  const [init, setInit] = useState<boolean>(false);
+  useEffect(() => {
+    if (!hasFetchedAppUpdates) {
+      fetchAppUpdates();
+    }
+  }, [hasFetchedAppUpdates, fetchAppUpdates]);
+
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [modal, setModal] = useState<boolean>(false);
 
-  const initialized = useRef(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Swipe functionality refs
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
   const isDragging = useRef<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const init = async () => {
-      if (!initialized.current) {
-        await useDashboardStore.getState().getAppUpdates();
-        initialized.current = true;
-        setInit(true);
-      }
-    };
-
-    init();
-  }, []);
-
+  const init = hasFetchedAppUpdates;
   const validUpdates = app_updates || [];
 
-  // Auto-advance carousel - Updated to depend on modal state
   useEffect(() => {
-    // Clear any existing interval first
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
 
-    // Only start interval if modal is closed, we have multiple updates, and not transitioning
     if (validUpdates.length > 1 && !isTransitioning && !modal) {
       intervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % validUpdates.length);
@@ -65,7 +56,6 @@ export const NewFeature = () => {
     };
   }, [validUpdates.length, isTransitioning, modal]);
 
-  // Cleanup interval on unmount
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
@@ -79,7 +69,6 @@ export const NewFeature = () => {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    // Only restart if modal is closed
     if (validUpdates.length > 1 && !modal) {
       intervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % validUpdates.length);
@@ -99,7 +88,7 @@ export const NewFeature = () => {
         setIsTransitioning(false);
       }, 300);
     },
-    [currentIndex, isTransitioning, resetInterval]
+    [currentIndex, isTransitioning, resetInterval],
   );
 
   const handleDotClick = (index: number) => {
@@ -158,7 +147,6 @@ export const NewFeature = () => {
 
   const currentUpdate = validUpdates[currentIndex];
 
-  // Función para truncar texto
   const truncateText = (text: string, maxLength: number) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength).trim() + "...";
@@ -172,19 +160,7 @@ export const NewFeature = () => {
     setModal(true);
   };
 
-  // Early return si no hay updates disponibles después de la inicialización
-  if (init && validUpdates.length === 0) {
-    return (
-      <div className={styles.newFeatures}>
-        <div className={styles.loadingContainer}>
-          <p>No hay novedades disponibles</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Early return durante la carga
-  if (!init) {
+  if (!init && validUpdates.length === 0) {
     return (
       <div className={styles.newFeatures}>
         <div className={styles.loadingContainer}>
@@ -202,7 +178,16 @@ export const NewFeature = () => {
     );
   }
 
-  // Verificación adicional de seguridad
+  if (init && validUpdates.length === 0) {
+    return (
+      <div className={styles.newFeatures}>
+        <div className={styles.loadingContainer}>
+          <p>No hay novedades disponibles</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!currentUpdate) {
     return (
       <div className={styles.newFeatures}>

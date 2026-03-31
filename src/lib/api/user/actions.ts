@@ -30,33 +30,34 @@ export const getUser = cache(async () => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    // Sumamos subscriptions a la consulta
     const { data: userData, error: userError } = await supabase
       .from("users")
-      .select(`*, user_private (*), subscriptions (*)`)
+      .select(`*, user_private (*)`)
       .eq("user_id", user.id)
       .single();
 
     if (userError) {
-      throw new Error(
-        "No se pudo obtener el usuario. Intentalo nuevamente o contacta con soporte."
-      );
+      throw new Error("No se pudo obtener el usuario.");
     }
 
-    // Normalizamos el tier por si el usuario no tiene fila en subscriptions
-    const subs = userData.subscriptions;
-    const subscriptionTier = (Array.isArray(subs) ? subs[0]?.tier : subs?.tier) || "free";
-    const normalizedUser = {
-      ...userData,
-      tier: subscriptionTier
+    const { data: tier, error: tierError } = await supabase.rpc("get_user_tier", {
+      p_user_id: user.id,
+    });
+
+    if (tierError) {
+      console.error("Error obteniendo tier:", tierError);
+    }
+
+    return {
+      data: {
+        user: {
+          ...userData,
+          tier: tier ?? "free",
+        },
+      },
     };
-
-    return { data: { user: normalizedUser } };
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
-    return { error: UNKNOWN_ERROR_MESSAGE };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE };
   }
 });
 

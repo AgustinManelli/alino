@@ -1,10 +1,14 @@
 export type EnhanceAction = "improve" | "summarize" | "expand" | "fix";
 
-/** Tarea estructurada generada por la IA */
 export interface AIGeneratedTask {
-  text: string;          // Texto plano de la tarea
+  text: string;
   type: "note" | "check";
-  target_date: string | null; // ISO 8601 o null
+  target_date: string | null;
+}
+
+export interface AITaskGenerationResponse {
+  listSubject: string;
+  tasks: AIGeneratedTask[];
 }
 
 export interface AIProvider {
@@ -18,7 +22,7 @@ export interface AIProvider {
    * @param prompt   - Objetivo o situación descrita por el usuario
    * @param maxTasks - Máximo de tareas a generar
    */
-  generateTasks(prompt: string, maxTasks: number): Promise<AIGeneratedTask[]>;
+  generateTasks(prompt: string, maxTasks: number): Promise<AITaskGenerationResponse>;
 }
 
 // Prompts por acción (compartidos entre providers)

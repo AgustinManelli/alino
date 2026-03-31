@@ -2,13 +2,28 @@
 
 import { create } from "zustand";
 import { toast } from "sonner";
-import { Layouts } from "react-grid-layout";
-
-import { getStats, getUpcomingTasks } from "@/lib/api/task/actions";
-import { TaskType, AppUpdatesType} from "@/lib/schemas/database.types";
-import { getAppUpdates } from "@/lib/api/app-updates/actions";
-import { HomeLayouts } from "@/components/ui/DraggableBentoGrid/layout.helper";
-import { persist } from "zustand/middleware";
+import { Layout, LayoutItem, ResponsiveLayouts } from "react-grid-layout";
+import {
+  loadDashboardFull,
+  installWidgetAction,
+  uninstallWidgetAction,
+  saveWidgetLayouts,
+  getWidgetLimits,
+  getAppUpdates,
+  getDashboardBatch,
+} from "@/lib/api/dashboard/actions";
+import {
+  AppUpdatesType,
+  DashboardData,
+  UserWidgetRow,
+} from "@/lib/schemas/database.types";
+import {
+  PredefinedWidget,
+  WidgetInstance,
+  WidgetLayoutItem,
+  WidgetInstanceUpsertPayload,
+} from "@/lib/schemas/dashboard.types";
+import { WidgetLimits } from "@/lib/schemas/dashboard.types";
 
 type HourlyData = {
   time: string;
@@ -17,7 +32,6 @@ type HourlyData = {
   emoji: React.ReactNode;
   isDay: boolean;
 };
-
 type WeatherState = {
   temperature: number | null;
   tempMin: number | null;
@@ -42,58 +56,131 @@ type WeatherState = {
   hourlyForecast: HourlyData[];
 };
 
-type UserData = {
+const TIER_ORDER: Record<string, number> = { free: 0, student: 1, pro: 2 };
+
+export const tierSatisfies = (userTier: string, required: string): boolean =>
+  (TIER_ORDER[userTier] ?? 0) >= (TIER_ORDER[required] ?? 0);
+
+export const buildLayoutsFromInstances = (
+  instances: WidgetInstance[],
+): ResponsiveLayouts => {
+  const installed = instances.filter((i) => i.isInstalled);
+  return {
+    lg: installed.map((i) => i.layoutLg).filter(Boolean) as LayoutItem[],
+    md: installed.map((i) => i.layoutMd).filter(Boolean) as LayoutItem[],
+    xs: installed.map((i) => i.layoutXs).filter(Boolean) as LayoutItem[],
+  };
+};
+
+const getDefaultLayoutItem = (
+  widgetKey: string,
+  breakpoint: "lg" | "md" | "xs",
+  predefinedWidgets: PredefinedWidget[],
+  existingInstances: WidgetInstance[],
+): WidgetLayoutItem => {
+  const maxY = Math.max(
+    0,
+    ...existingInstances
+      .filter((i) => i.isInstalled)
+      .map((i) => {
+        const l =
+          breakpoint === "lg"
+            ? i.layoutLg
+            : breakpoint === "md"
+              ? i.layoutMd
+              : i.layoutXs;
+        return l ? l.y + l.h : 0;
+      }),
+  );
+
+  const def = predefinedWidgets.find((w) => w.id === widgetKey);
+  if (def) {
+    const field =
+      breakpoint === "lg"
+        ? def.defaultLayoutLg
+        : breakpoint === "md"
+          ? def.defaultLayoutMd
+          : def.defaultLayoutXs;
+
+    if (field) {
+      return {
+        ...field,
+        i: widgetKey,
+        x: 0,
+        y: maxY,
+      };
+    }
+  }
+
+  return {
+    i: widgetKey,
+    x: 0,
+    y: maxY,
+    w: 1,
+    h: 1,
+    minW: 1,
+    maxW: breakpoint === "lg" ? 3 : 1,
+    minH: 1,
+    isResizable: true,
+  };
+};
+
+const APP_UPDATES_TTL_MS = 60 * 60 * 1000;
+let appUpdatesFetchedAt = 0;
+
+type DashboardStore = {
+  widgetInstances: WidgetInstance[];
+  predefinedWidgets: PredefinedWidget[];
+  activeWidgets: string[];
+  layout: ResponsiveLayouts;
   total_tasks: number;
   pending_tasks: number;
   completed_tasks: number;
   overdue_tasks: number;
-  fetchStats: boolean;
-  upcoming_tasks: TaskType[];
-  fetchUpcomingTasks: boolean;
+  upcoming_tasks: DashboardData["upcoming_tasks"];
+  due_today_tasks: DashboardData["due_today_tasks"];
   app_updates: AppUpdatesType[];
-  fetchAppUpdates: boolean;
   weather: WeatherState;
-  layout: Layouts;
-  getStats: () => Promise<void>;
-  getUpcomingTasks: () => Promise<void>;
-  getAppUpdates: () => Promise<void>;
+  isConfigLoaded: boolean;
+  isFetchingData: boolean;
+  isFetchingAppUpdates: boolean;
+  hasFetchedData: boolean;
+  hasFetchedAppUpdates: boolean;
+  _saveTimeout: ReturnType<typeof setTimeout> | null;
+  widgetLimits: WidgetLimits;
+  loadDashboard: () => Promise<void>;
+  installWidget: (
+    widgetKey: string,
+    userWidgetId?: string,
+  ) => Promise<{ error?: string }>;
+  uninstallWidget: (widgetKey: string) => Promise<{ error?: string }>;
+  setLayout: (layout: ResponsiveLayouts) => void;
+  fetchDashboardData: () => Promise<void>;
+  fetchAppUpdates: () => Promise<void>;
+  autoSortLayout: () => void;
+  addEmbeddedWidgetToStore: (widget: UserWidgetRow) => void;
+  updateEmbeddedWidgetInStore: (
+    id: string,
+    partial: Partial<UserWidgetRow>,
+  ) => void;
+  removeEmbeddedWidgetFromStore: (id: string) => void;
   setWeather: (data: WeatherState) => void;
-  setLayout: (layout: Layouts) => void;
-  resetLayout: () => void;
+  invalidateDashboardData: () => void;
+  _scheduleSave: () => void;
 };
 
-function handleError(err: unknown) {
-  toast.error((err as Error).message || "Error desconocido");
-}
-
-const getInitialLayout = (): Layouts => {
-  if (typeof window === 'undefined') return HomeLayouts;
-  
-  try {
-    const stored = localStorage.getItem('dashboard-storage');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      return parsed.state?.layout || HomeLayouts;
-    }
-  } catch (error) {
-    console.warn('Error reading layout from localStorage:', error);
-  }
-  
-  return HomeLayouts;
-};
-
-export const useDashboardStore = create<UserData>()(
-  persist(
-    (set, get) => ({
+export const useDashboardStore = create<DashboardStore>()((set, get) => ({
+  widgetInstances: [],
+  predefinedWidgets: [],
+  activeWidgets: [],
+  layout: { lg: [], md: [], xs: [] },
   total_tasks: 0,
   pending_tasks: 0,
   completed_tasks: 0,
   overdue_tasks: 0,
-  fetchStats: false,
   upcoming_tasks: [],
-  fetchUpcomingTasks: false,
+  due_today_tasks: [],
   app_updates: [],
-  fetchAppUpdates: false,
   weather: {
     temperature: null,
     tempMin: null,
@@ -106,62 +193,388 @@ export const useDashboardStore = create<UserData>()(
     weatherType: "default",
     hourlyForecast: [],
   },
-  layout: getInitialLayout(),
-  getStats: async () => {
-    if (get().fetchStats) return
+  isConfigLoaded: false,
+  isFetchingData: false,
+  isFetchingAppUpdates: false,
+  hasFetchedData: false,
+  hasFetchedAppUpdates: false,
+  _saveTimeout: null,
+  widgetLimits: { free: 1, student: 3, pro: 99 },
+
+  loadDashboard: async () => {
+    if (get().isConfigLoaded) return;
     try {
-    const { data, error } = await getStats();
-    
-    if (error) {
-      throw new Error(error);
+      const [dashResult, limitsResult] = await Promise.all([
+        loadDashboardFull(),
+        getWidgetLimits(),
+      ]);
+
+      const { catalog = [], instances = [] } = dashResult.data ?? {};
+      const layout = buildLayoutsFromInstances(instances);
+      const activeWidgets = instances
+        .filter((i) => i.isInstalled)
+        .map((i) => i.widgetKey);
+
+      set({
+        predefinedWidgets: catalog,
+        widgetInstances: instances,
+        widgetLimits: limitsResult.data ?? { free: 1, student: 3, pro: 99 },
+        layout,
+        activeWidgets,
+        isConfigLoaded: true,
+      });
+    } catch (err) {
+      console.warn("[DashboardStore] loadDashboard failed:", err);
+      set({ isConfigLoaded: true });
+    }
+  },
+
+  _scheduleSave: () => {
+    const existing = get()._saveTimeout;
+    if (existing) clearTimeout(existing);
+    const timeout = setTimeout(async () => {
+      const { widgetInstances } = get();
+      const installed = widgetInstances.filter(
+        (i) => i.isInstalled && i.instanceId,
+      );
+      if (installed.length === 0) return;
+
+      const payload = installed.map((inst) => ({
+        instanceId: inst.instanceId,
+        layoutLg: inst.layoutLg,
+        layoutMd: inst.layoutMd,
+        layoutXs: inst.layoutXs,
+      }));
+
+      const { error } = await saveWidgetLayouts(payload);
+      if (error)
+        console.warn("[DashboardStore] saveWidgetLayouts failed:", error);
+      set({ _saveTimeout: null });
+    }, 1500);
+    set({ _saveTimeout: timeout });
+  },
+
+  installWidget: async (widgetKey, userWidgetId) => {
+    const { widgetInstances, predefinedWidgets } = get();
+    const isEmbedded = !!userWidgetId;
+
+    const existing = widgetInstances.find((i) => i.widgetKey === widgetKey);
+    if (existing) {
+      const updated = widgetInstances.map((i) =>
+        i.widgetKey === widgetKey
+          ? {
+              ...i,
+              isInstalled: true,
+              layoutLg: getDefaultLayoutItem(
+                widgetKey,
+                "lg",
+                predefinedWidgets,
+                widgetInstances,
+              ),
+              layoutMd: getDefaultLayoutItem(
+                widgetKey,
+                "md",
+                predefinedWidgets,
+                widgetInstances,
+              ),
+              layoutXs: getDefaultLayoutItem(
+                widgetKey,
+                "xs",
+                predefinedWidgets,
+                widgetInstances,
+              ),
+            }
+          : i,
+      );
+      set({
+        widgetInstances: updated,
+        layout: buildLayoutsFromInstances(updated),
+        activeWidgets: updated
+          .filter((i) => i.isInstalled)
+          .map((i) => i.widgetKey),
+      });
+    } else {
+      const pw = predefinedWidgets.find((w) => w.id === widgetKey);
+      const newInstance: WidgetInstance = {
+        instanceId: "",
+        widgetKey,
+        widgetSource: isEmbedded ? "embedded" : "predefined",
+        pwName: pw?.name ?? null,
+        pwDescription: pw?.description ?? null,
+        pwCategory: pw?.category ?? null,
+        pwTierRequired: pw?.tierRequired ?? null,
+        pwIsResizable: pw?.isResizable ?? null,
+        uwTitle: null,
+        uwUrl: null,
+        uwConfig: null,
+        uwIsPublic: null,
+        uwModerationStatus: null,
+        layoutLg: getDefaultLayoutItem(
+          widgetKey,
+          "lg",
+          predefinedWidgets,
+          widgetInstances,
+        ),
+        layoutMd: getDefaultLayoutItem(
+          widgetKey,
+          "md",
+          predefinedWidgets,
+          widgetInstances,
+        ),
+        layoutXs: getDefaultLayoutItem(
+          widgetKey,
+          "xs",
+          predefinedWidgets,
+          widgetInstances,
+        ),
+        isInstalled: true,
+      };
+      const updated = [...widgetInstances, newInstance];
+      set({
+        widgetInstances: updated,
+        layout: buildLayoutsFromInstances(updated),
+        activeWidgets: updated
+          .filter((i) => i.isInstalled)
+          .map((i) => i.widgetKey),
+      });
     }
 
-      set(() => ({ total_tasks: data?.total_tasks, pending_tasks: data?.pending_tasks, completed_tasks: data?.completed_tasks, overdue_tasks: data?.overdue_tasks, fetchStats: true}));
-    } catch (err) {
-      handleError(err);
-    }
-  },
-  getUpcomingTasks: async () => {
-    if (get().fetchUpcomingTasks) return
-    try {
-    const { data, error } = await getUpcomingTasks();
-    
-    if (error) {
-      throw new Error(error);
-    }
+    const instanceForDb = get().widgetInstances.find(
+      (i) => i.widgetKey === widgetKey,
+    );
 
-      set(() => ({ upcoming_tasks: data, fetchUpcomingTasks: true}));
-    } catch (err) {
-      handleError(err);
-    }
-  },
-  getAppUpdates: async () => {
-    if (get().fetchAppUpdates) return
-    try {
-    const { data, error } = await getAppUpdates();
-    
-    if (error) {
-      throw new Error(error);
-    }
+    const { error } = await installWidgetAction({
+      predefinedId: isEmbedded ? undefined : widgetKey,
+      userWidgetId: isEmbedded
+        ? (userWidgetId as unknown as string)
+        : undefined,
+      layoutLg: instanceForDb?.layoutLg,
+      layoutMd: instanceForDb?.layoutMd,
+      layoutXs: instanceForDb?.layoutXs,
+    });
 
-      set(() => ({ app_updates: data, fetchAppUpdates: true}));
+    if (error) {
+      const reverted = get().widgetInstances.map((i) =>
+        i.widgetKey === widgetKey ? { ...i, isInstalled: false } : i,
+      );
+      set({
+        widgetInstances: reverted,
+        layout: buildLayoutsFromInstances(reverted),
+        activeWidgets: reverted
+          .filter((i) => i.isInstalled)
+          .map((i) => i.widgetKey),
+      });
+      return { error };
+    }
+    return {};
+  },
+
+  uninstallWidget: async (widgetKey) => {
+    const { widgetInstances } = get();
+    const inst = widgetInstances.find((i) => i.widgetKey === widgetKey);
+
+    const updated = widgetInstances.map((i) =>
+      i.widgetKey === widgetKey ? { ...i, isInstalled: false } : i,
+    );
+    set({
+      widgetInstances: updated,
+      layout: buildLayoutsFromInstances(updated),
+      activeWidgets: updated
+        .filter((i) => i.isInstalled)
+        .map((i) => i.widgetKey),
+    });
+
+    const { error } = await uninstallWidgetAction({
+      predefinedId:
+        inst?.widgetSource === "predefined" ? widgetKey : undefined,
+      userWidgetId:
+        inst?.widgetSource === "embedded"
+          ? (widgetKey as unknown as string)
+          : undefined,
+    });
+
+    if (error) console.warn("[DashboardStore] uninstallWidget failed:", error);
+    return {};
+  },
+
+  setLayout: (newLayouts: ResponsiveLayouts) => {
+    const updated = get().widgetInstances.map((inst) => {
+      if (!inst.isInstalled) return inst;
+      const key = inst.widgetKey;
+      return {
+        ...inst,
+        layoutLg:
+          (newLayouts.lg?.find((l: LayoutItem) => l.i === key) as WidgetLayoutItem) ??
+          inst.layoutLg,
+        layoutMd:
+          (newLayouts.md?.find((l: LayoutItem) => l.i === key) as WidgetLayoutItem) ??
+          inst.layoutMd,
+        layoutXs:
+          (newLayouts.xs?.find((l: LayoutItem) => l.i === key) as WidgetLayoutItem) ??
+          inst.layoutXs,
+      };
+    });
+    set({ widgetInstances: updated, layout: newLayouts });
+    get()._scheduleSave();
+  },
+
+  autoSortLayout: () => {
+    const { widgetInstances, layout } = get();
+    const newLayouts: ResponsiveLayouts = { lg: [], md: [], xs: [] };
+
+    (["lg", "md", "xs"] as const).forEach((bp) => {
+      const current: Layout = layout[bp] ?? [];
+      const sorted = [...current].sort((a, b) => {
+        if (a.y === b.y) return a.x - b.x;
+        return a.y - b.y;
+      });
+
+      const packed: LayoutItem[] = sorted.map((item, index) => ({
+        ...item,
+        y: index * 100,
+      }));
+      newLayouts[bp] = packed;
+    });
+
+    const updated = widgetInstances.map((inst) => {
+      if (!inst.isInstalled) return inst;
+      const key = inst.widgetKey;
+      return {
+        ...inst,
+        layoutLg:
+          (newLayouts.lg?.find((l: LayoutItem) => l.i === key) as WidgetLayoutItem) ??
+          inst.layoutLg,
+        layoutMd:
+          (newLayouts.md?.find((l: LayoutItem) => l.i === key) as WidgetLayoutItem) ??
+          inst.layoutMd,
+        layoutXs:
+          (newLayouts.xs?.find((l: LayoutItem) => l.i === key) as WidgetLayoutItem) ??
+          inst.layoutXs,
+      };
+    });
+
+    set({
+      widgetInstances: updated,
+      layout: buildLayoutsFromInstances(updated),
+    });
+    get()._scheduleSave();
+  },
+
+  addEmbeddedWidgetToStore: (widget: UserWidgetRow) => {
+    const { widgetInstances } = get();
+    const exists = widgetInstances.find((i) => i.widgetKey === widget.id);
+    if (exists) {
+      const updated = widgetInstances.map((i) =>
+        i.widgetKey === widget.id
+          ? {
+              ...i,
+              uwTitle: widget.title,
+              uwUrl: widget.url ?? null,
+              isInstalled: true,
+            }
+          : i,
+      );
+      set({
+        widgetInstances: updated,
+        layout: buildLayoutsFromInstances(updated),
+        activeWidgets: updated
+          .filter((i) => i.isInstalled)
+          .map((i) => i.widgetKey),
+      });
+    } else {
+      get().installWidget(widget.id, widget.id);
+      const patched = get().widgetInstances.map((i) =>
+        i.widgetKey === widget.id
+          ? {
+              ...i,
+              uwTitle: widget.title,
+              uwUrl: widget.url ?? null,
+              uwIsPublic: widget.is_public,
+            }
+          : i,
+      );
+      set({ widgetInstances: patched });
+    }
+  },
+
+  updateEmbeddedWidgetInStore: (id, partial) => {
+    const updated = get().widgetInstances.map((i) =>
+      i.widgetKey === id
+        ? {
+            ...i,
+            uwTitle: partial.title !== undefined ? partial.title : i.uwTitle,
+            uwUrl:
+              partial.url !== undefined ? (partial.url ?? null) : i.uwUrl,
+            uwIsPublic:
+              partial.is_public !== undefined
+                ? partial.is_public
+                : i.uwIsPublic,
+          }
+        : i,
+    );
+    set({ widgetInstances: updated });
+  },
+
+  removeEmbeddedWidgetFromStore: (id) => {
+    get().uninstallWidget(id);
+  },
+
+  fetchDashboardData: async () => {
+    if (get().isFetchingData) return;
+    set({ isFetchingData: true });
+    try {
+      const { data, error } = await getDashboardBatch();
+      if (error) throw new Error(error);
+      if (!data) return;
+      set({
+        total_tasks: data.total_tasks ?? 0,
+        pending_tasks: data.pending_tasks ?? 0,
+        completed_tasks: data.completed_tasks ?? 0,
+        overdue_tasks: data.overdue_tasks ?? 0,
+        upcoming_tasks:
+          (data.upcoming_tasks as DashboardData["upcoming_tasks"]) ?? [],
+        due_today_tasks:
+          (data.due_today_tasks as DashboardData["due_today_tasks"]) ?? [],
+        hasFetchedData: true,
+      });
     } catch (err) {
-      handleError(err);
+      toast.error(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      set({ isFetchingData: false });
     }
   },
-  setWeather : (data) => {
-    set(() => ({ weather: data}));
-  },
-  setLayout: (layout) => {
-    set(() => ({ layout }));
-  },
-  resetLayout: () => {
-    set(() => ({ layout: HomeLayouts }));
-  },
-}), {
-      name: "dashboard-storage",
-      
-      partialize: (state) => ({ layout: state.layout }),
+
+  fetchAppUpdates: async () => {
+    const now = Date.now();
+    if (get().isFetchingAppUpdates) return;
+    if (
+      now - appUpdatesFetchedAt < APP_UPDATES_TTL_MS &&
+      get().app_updates.length > 0
+    )
+      return;
+    set({ isFetchingAppUpdates: true });
+    try {
+      const { data, error } = await getAppUpdates();
+      if (error) throw new Error(error);
+      set({ app_updates: data ?? [], hasFetchedAppUpdates: true });
+      appUpdatesFetchedAt = Date.now();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      set({ isFetchingAppUpdates: false });
     }
-  )
-);
+  },
+
+  setWeather: (data) => set({ weather: data }),
+
+  invalidateDashboardData: () =>
+    set({
+      total_tasks: 0,
+      pending_tasks: 0,
+      completed_tasks: 0,
+      overdue_tasks: 0,
+      upcoming_tasks: [],
+      due_today_tasks: [],
+      isFetchingData: false,
+    }),
+}));
