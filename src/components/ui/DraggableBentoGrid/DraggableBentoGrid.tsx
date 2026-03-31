@@ -91,11 +91,7 @@ export const DraggableBentoGrid = memo(
             breakpoints={{ lg: 700, md: 600, xs: 200 }}
             cols={{ lg: 3, md: 1, xs: 1 }}
             rowHeight={200}
-<<<<<<< HEAD
             // containerPadding={[10, 10]}
-=======
-            containerPadding={[10, 10]}
->>>>>>> 2fc90636391a3148e0903cac145c70c270b0b8f4
             layouts={tempLayout}
             compactor={verticalCompactor}
             dragConfig={{
