@@ -119,6 +119,9 @@ type TodoStore = {
     list_id: string,
     invited_user_id: string
   ) => Promise<void>;
+  subscriptionAddTask: (task: TaskType) => void;
+  subscriptionUpdateTask: (task: TaskType) => void;
+  subscriptionDeleteTask: (task: { task_id: string }) => void;
   getTaskCountByListId: (listId: string) => number;
 };
 
@@ -268,6 +271,27 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
           ? { ...currentItem, ...updatedMembership }
           : currentItem
       ),
+    }));
+  },
+
+  subscriptionAddTask: (task) => {
+    set((state) => ({
+      tasks: [task, ...state.tasks].filter(
+        (t, index, self) =>
+          index === self.findIndex((tt) => tt.task_id === t.task_id)
+      ),
+    }));
+  },
+
+  subscriptionUpdateTask: (task) => {
+    set((state) => ({
+      tasks: state.tasks.map((t) => (t.task_id === task.task_id ? task : t)),
+    }));
+  },
+
+  subscriptionDeleteTask: (task) => {
+    set((state) => ({
+      tasks: state.tasks.filter((t) => t.task_id !== task.task_id),
     }));
   },
 

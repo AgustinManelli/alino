@@ -37,33 +37,6 @@ export const NotificationsSection = () => {
     fetch();
   }, [getNotifications]);
 
-  useEffect(() => {
-    const channel = supabase
-      .channel("notifications-channel")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-        },
-        async (payload) => {
-          const newNotification = payload.new as any;
-          addNotification({
-            ...newNotification,
-            read: false,
-            deleted: false,
-          });
-          toast.info(newNotification.title);
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, addNotification]);
-
   const handleToggle = () => setIsOpen((prev) => !prev);
   const handleClose = () => setIsOpen(false);
 

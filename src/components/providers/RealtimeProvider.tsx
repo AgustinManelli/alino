@@ -2,32 +2,41 @@
 
 import { useEffect } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useNotificationsStore } from "@/store/useNotificationsStore";
 import { createClient } from "@/utils/supabase/client";
-import { ListsRow, MembershipRow } from "@/lib/schemas/database.types";
+import {
+  ListsRow,
+  MembershipRow,
+  TaskType,
+} from "@/lib/schemas/database.types";
+import { toast } from "sonner";
 
 export const RealtimeProvider = () => {
   const supabase = createClient();
 
   const {
-    getLists,
     subscriptionAddList,
     subscriptionDeleteList,
     subscriptionUpdateList,
     subscriptionUpdateMembership,
+    subscriptionAddTask,
+    subscriptionUpdateTask,
+    subscriptionDeleteTask,
   } = useTodoDataStore();
 
+  const { addNotification } = useNotificationsStore();
+
   useEffect(() => {
-    const TABLE_NAME = "list_memberships";
     const store = useTodoDataStore.getState();
 
     const channel = supabase
-      .channel("list-memberships")
+      .channel("app-realtime")
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
-          table: TABLE_NAME,
+          table: "list_memberships",
         },
         (payload) => {
           const newMembership = payload.new as MembershipRow;
@@ -42,7 +51,7 @@ export const RealtimeProvider = () => {
         {
           event: "DELETE",
           schema: "public",
-          table: TABLE_NAME,
+          table: "list_memberships",
         },
         (payload) => {
           const oldMembership = payload.old as MembershipRow;
@@ -56,7 +65,7 @@ export const RealtimeProvider = () => {
         {
           event: "UPDATE",
           schema: "public",
-          table: TABLE_NAME,
+          table: "list_memberships",
         },
         (payload) => {
           const updatedMembership = payload.new as MembershipRow;
@@ -75,6 +84,56 @@ export const RealtimeProvider = () => {
           subscriptionUpdateList(updatedList);
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+        },
+        (payload) => {
+          const newNotification = payload.new as any;
+          addNotification({
+            ...newNotification,
+            read: false,
+            deleted: false,
+          });
+          toast.info(newNotification.title);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "tasks",
+        },
+        (payload) => {
+          subscriptionAddTask(payload.new as TaskType);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "tasks",
+        },
+        (payload) => {
+          subscriptionUpdateTask(payload.new as TaskType);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "tasks",
+        },
+        (payload) => {
+          subscriptionDeleteTask(payload.old as { task_id: string });
+        }
+      )
       .subscribe();
 
     return () => {
@@ -85,6 +144,11 @@ export const RealtimeProvider = () => {
     subscriptionAddList,
     subscriptionUpdateMembership,
     subscriptionDeleteList,
+    subscriptionUpdateList,
+    subscriptionAddTask,
+    subscriptionUpdateTask,
+    subscriptionDeleteTask,
+    addNotification,
   ]);
 
   return null;
