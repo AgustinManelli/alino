@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     process.env.NEXT_PUBLIC_BASE_URL ??
     (process.env.NODE_ENV === "development"
       ? "http://localhost:3000/alino-app"
-      : "https://app.alino.online/alino-app");
+      : "https://alinoapp.vercel.app/alino-app");
 
   if (code) {
     const supabase = await createClient();
