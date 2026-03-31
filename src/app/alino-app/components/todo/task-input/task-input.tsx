@@ -425,21 +425,50 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                 </motion.div>
               )}
 
-              {!isNote && (
+              <motion.div
+                key="calendar"
+                initial={{ scale: 0 }}
+                animate={{ scale: focus ? 1 : 0 }}
+                exit={{ scale: 0 }}
+                transition={{ delay: 0.05 }}
+                layout
+              >
+                <Calendar
+                  selected={selected}
+                  setSelected={setSelected}
+                  hour={hour}
+                  setHour={setHour}
+                  focusToParentInput={() => editor?.commands.focus()}
+                />
+              </motion.div>
+
+              {focus && (
                 <motion.div
-                  key="calendar"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: focus ? 1 : 0 }}
-                  exit={{ scale: 0 }}
-                  transition={{ delay: 0.05 }}
+                  key="ai-btn"
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ duration: 0.15 }}
                   layout
                 >
-                  <Calendar
-                    selected={selected}
-                    setSelected={setSelected}
-                    hour={hour}
-                    setHour={setHour}
-                    focusToParentInput={() => editor?.commands.focus()}
+                  <AIEnhanceButton
+                    editor={editor}
+                    visible
+                    onCreateTasks={(tasks) => {
+                      const listId = setList
+                        ? setList.list_id
+                        : selectedListHome?.list_id;
+                      if (!listId) return;
+
+                      addTasks(
+                        tasks.map((t) => ({
+                          list_id: listId,
+                          task_content: `<p>${t.text}</p>`,
+                          target_date: t.target_date,
+                          note: t.type === "note",
+                        })),
+                      );
+                    }}
                   />
                 </motion.div>
               )}
@@ -455,39 +484,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   opacity: 0.2,
                 }}
               />
-
-              <AnimatePresence mode="popLayout">
-                {focus && (
-                  <motion.div
-                    key="ai-btn"
-                    initial={{ opacity: 0, scale: 0.7 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.7 }}
-                    transition={{ duration: 0.15 }}
-                    layout
-                  >
-                    <AIEnhanceButton
-                      editor={editor}
-                      visible
-                      onCreateTasks={(tasks) => {
-                        const listId = setList
-                          ? setList.list_id
-                          : selectedListHome?.list_id;
-                        if (!listId) return;
-
-                        addTasks(
-                          tasks.map((t) => ({
-                            list_id: listId,
-                            task_content: `<p>${t.text}</p>`,
-                            target_date: t.target_date,
-                            note: t.type === "note",
-                          }))
-                        );
-                      }}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
               <motion.button
                 key="send"
