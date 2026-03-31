@@ -97,9 +97,6 @@ export class DeepseekProvider implements AIProvider {
             text: (task.text ?? "").slice(0, 1000),
         }));
 
-        console.log(JSON.stringify(parsed, null, 2));
-        console.log(maxTasks);
-
         return parsed;
     } catch (e) {
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
