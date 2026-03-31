@@ -38,6 +38,8 @@ next-env.d.ts
 estructura.sql
 schema.sql
 
+supabase/.temp/
+
 # Serwist
 public/sw*
 public/swe-worker*
