@@ -64,7 +64,14 @@ export default function AIAssistantWidget() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <IAStars style={{ width: 14, height: 14, stroke: "#b48cff" }} />
+        <IAStarsLoader
+          size={15}
+          color="#e2a5ff"
+          duration={2}
+          title="Cargando IA"
+          strokeWidth={1}
+        />
+        {/* <IAStars style={{ width: 14, height: 14, stroke: "#b48cff" }} /> */}
         <h3 className={styles.title}>Planificador IA</h3>
       </div>
       <div className={styles.content}>
@@ -135,13 +142,10 @@ export default function AIAssistantWidget() {
                   disabled={!prompt.trim() || !canGenerateTasks}
                   onClick={handleGenerateList}
                 >
-                  Generar
-                  <IAStarsLoader
-                    size={15}
-                    color="#b48cff"
-                    duration={2}
-                    title="Cargando IA"
+                  <IAStars
+                    style={{ width: 15, height: 15, stroke: "#b48cff" }}
                   />
+                  Generar
                 </button>
               </div>
             </motion.div>

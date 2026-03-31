@@ -1,9 +1,13 @@
-export type AIProviderName = "openai" | "gemini";
+// types/ai.ts o en tu config.ts
+export type AIProviderName = "openai" | "gemini" | "deepseek";
 
-export const AI_CONFIG = {
-  /** Proveedor de IA a usar */
-  provider: "gemini" as AIProviderName,
+interface ProviderConfig {
+  provider: AIProviderName;
+  model: string;
+}
 
-  /** Modelo específico del proveedor */
-  model: "gemini-2.5-flash",
-} as const;
+// Configuración por defecto basada en variables de entorno
+export const AI_CONFIG: ProviderConfig = {
+  provider: (process.env.NEXT_PUBLIC_AI_PROVIDER as AIProviderName) ?? "gemini",
+  model: process.env.NEXT_PUBLIC_AI_MODEL ?? "gemini-2.5-flash",
+};
