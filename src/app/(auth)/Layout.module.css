@@ -22,9 +22,9 @@
   mask-image: url("/pattern.svg");
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
-  -webkit-mask-size: 200px;
-  mask-size: 200px;
-  opacity: 0.2;
+  -webkit-mask-size: 100px;
+  mask-size: 100px;
+  opacity: 0.3;
 }
 
 .contentContainer {
@@ -48,13 +48,21 @@
   left: 0;
 }
 
+.themeSelectorContainer {
+  position: absolute;
+  width: fit-content;
+  height: fit-content;
+  top: 0;
+  right: 0;
+}
+
 .authForm {
   position: relative;
   min-width: 400px;
   max-width: 400px;
   background-color: var(--background-container);
   padding: 40px 30px;
-  border-radius: 15px;
+  border-radius: 30px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -96,7 +104,8 @@
 }
 
 @media only screen and (display-mode: standalone) {
-  .backLinkContainer {
+  .backLinkContainer,
+  .themeSelectorContainer {
     display: none;
   }
 }

@@ -1,0 +1,21 @@
+.iaBadgeContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: rgba(226, 165, 255, 0.1);
+  border-radius: 20px;
+  border: 1px solid rgba(226, 165, 255, 0.2);
+}
+
+.title {
+  font-size: 12px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #e2a5ff, #8cc8ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  letter-spacing: 0.2px;
+}

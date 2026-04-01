@@ -1,17 +1,11 @@
-import { AuthForm } from "../components/auth-form";
+import { SignInContent } from "./SignInContent";
 
 export function generateMetadata() {
   return {
-    title: `sign in`,
+    title: `Iniciar sesion`,
   };
 }
 
 export default function LoginPage() {
-  return (
-    <AuthForm
-      title="Iniciar sesión en Alino"
-      description="Tu organización en un solo lugar. Fácil, rápido y sin complicaciones."
-      showOAuth={true}
-    />
-  );
+  return <SignInContent />;
 }

@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { ThemeDropdown } from "@/components/ui/theme-dropdown";
 
 import { AlinoLogo, HomeIcon } from "@/components/ui/icons/icons";
 import styles from "./Layout.module.css";
@@ -14,17 +15,25 @@ export default function AuthLayout({
     <main className={styles.layout}>
       <section className={styles.contentContainer}>
         <div className={styles.backLinkContainer}>
-          <ButtonLink to="alino.online">
+          <ButtonLink
+            href={process.env.NEXT_PUBLIC_LANDING_URL || "https://usealino.com"}
+            ariaLabel="Volver a la página principal"
+            background="var(--background-container)"
+            hoverColor="var(--background-over-container-solid)"
+          >
             <HomeIcon
               style={{
-                strokeWidth: "2",
-                stroke: "var(--text)",
+                strokeWidth: "1.5",
+                stroke: "var(--icon-color)",
                 width: "100%",
                 height: "auto",
                 fill: "none",
               }}
             />
           </ButtonLink>
+        </div>
+        <div className={styles.themeSelectorContainer}>
+          <ThemeDropdown />
         </div>
         <AlinoLogo style={{ height: "50px", minHeight: "50px" }} />
         <div className={styles.authForm}>

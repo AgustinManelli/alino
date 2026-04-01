@@ -79,26 +79,34 @@ interface DropdownTriggerProps {
   children: ReactNode;
   style?: React.CSSProperties;
   className?: string;
+  bgColor?: string;
+  hoverColor?: string;
 }
 
 export const DropdownTrigger = ({
   children,
   style,
   className,
+  bgColor,
+  hoverColor,
+  ...props
 }: DropdownTriggerProps): JSX.Element => {
   const { isOpen, triggerRef, toggleDropdown } = useDropdownContext();
+
+  const dynamicStyles = {
+    ...style,
+    ...(bgColor ? { "--custom-bg": bgColor } : {}),
+    ...(hoverColor ? { "--custom-hover": hoverColor } : {}),
+  } as React.CSSProperties;
 
   return (
     <button
       ref={triggerRef}
       className={`${styles.triggerButton} ${className || ""}`}
-      style={{
-        backgroundColor: isOpen
-          ? "var(--background-over-container-hover)"
-          : "var(--background-over-container)",
-        ...style,
-      }}
+      style={dynamicStyles}
       onClick={toggleDropdown}
+      data-state={isOpen ? "open" : "closed"}
+      {...props}
     >
       {children}
     </button>

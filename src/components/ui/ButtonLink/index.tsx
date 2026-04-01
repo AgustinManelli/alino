@@ -1,47 +1,72 @@
 "use client";
+
+import Link from "next/link";
+
 import { useNavigationLoader } from "@/hooks/useNavigationLoader";
 
 import styles from "./ButtonLink.module.css";
 
 interface Props {
+  href: string;
+  text?: string;
+  children?: React.ReactNode;
+  withLoader?: boolean;
+  isExternal?: boolean;
   background?: string;
   hoverColor?: string;
-  text?: string;
-  to: string;
-  children?: string | JSX.Element | JSX.Element[] | null;
-  withLoader?: boolean;
+  ariaLabel?: string;
 }
 
 export function ButtonLink({
-  background = "var(--background-container)",
-  hoverColor = "var(--background-over-container-hover)",
-  text = "",
-  to,
+  href,
+  text,
   children,
   withLoader,
+  isExternal = false,
+  background = "var(--background-container)",
+  hoverColor = "var(--background-over-container-hover)",
+  ariaLabel,
 }: Props) {
   const { setLoading } = useNavigationLoader();
 
-  const loaderFunctions = () => {
-    setLoading(true);
+  const handleClick = () => {
+    if (withLoader) setLoading(true);
   };
 
+  const cssVariables = {
+    "--button-bg-color": background,
+    "--button-hover-color": hoverColor,
+  } as React.CSSProperties;
+
+  const content = (
+    <div className={styles.container}>
+      {children && <div className={styles.iconContainer}>{children}</div>}
+      {text && <p>{text}</p>}
+    </div>
+  );
+
+  if (isExternal) {
+    return (
+      <a
+        href={href}
+        className={styles.buttonContainer}
+        onClick={handleClick}
+        style={cssVariables}
+      >
+        {content}
+      </a>
+    );
+  }
+
   return (
-    <a
-      href={`https://www.${to}`}
+    <Link
+      href={href}
       className={styles.buttonContainer}
-      onClick={withLoader ? loaderFunctions : () => {}}
-      style={
-        {
-          "--button-bg-color": background,
-          "--button-hover-color": hoverColor,
-        } as React.CSSProperties
-      }
+      onClick={handleClick}
+      style={cssVariables}
+      aria-label={ariaLabel}
     >
-      <div className={styles.container}>
-        {children && <div className={styles.iconContainer}>{children}</div>}
-        {text && <p>{text}</p>}
-      </div>
-    </a>
+      {content}
+    </Link>
   );
 }

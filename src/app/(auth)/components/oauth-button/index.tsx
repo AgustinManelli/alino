@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-import { createClient } from "@/utils/supabase/client";
+import { loginWithOAuth } from "@/lib/api/auth/client-actions";
+
 import { LoadingIcon } from "@/components/ui/icons/icons";
 
 import styles from "./OauthButton.module.css";
@@ -31,18 +32,19 @@ export const OauthButton = ({
   oauthPending,
   setOauthPending,
 }: Props) => {
-  const [isPending, setIsPending] = useState<boolean>(false);
+  const [isLocalPending, setIsLocalPending] = useState<boolean>(false);
 
-  const login = async () => {
-    setIsPending(true);
+  const handleLogin = async () => {
+    setIsLocalPending(true);
     setOauthPending(true);
-    const href = window.location.origin;
-    const { error } = await loginWithOauth(href, providerType);
+
+    const origin = window.location.origin;
+    const { error } = await loginWithOAuth(providerType, origin);
+
     if (error) {
-      setIsPending(false);
+      setIsLocalPending(false);
       setOauthPending(false);
       toast.error(error);
-      return;
     }
   };
 
@@ -50,20 +52,18 @@ export const OauthButton = ({
     <button
       className={styles.LoginOauth}
       type="button"
-      onClick={(e) => {
-        e.preventDefault();
-        login();
-      }}
+      onClick={handleLogin}
       style={style}
       disabled={oauthPending || disabled}
     >
-      {isPending ? (
+      {isLocalPending ? (
         <LoadingIcon
           style={{
             width: "25px",
             height: "auto",
             stroke: `${loadColor}`,
             strokeWidth: "3",
+            transform: "scale(0.7)",
           }}
         />
       ) : (
@@ -72,33 +72,4 @@ export const OauthButton = ({
       {text && <p>Continuar con {providerName}</p>}
     </button>
   );
-};
-
-const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
-
-const loginWithOauth = async (
-  href: string,
-  providerType: "google" | "github"
-) => {
-  try {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: providerType,
-      options: {
-        redirectTo: `${href}/auth/callback`,
-      },
-    });
-    if (error) {
-      throw new Error(
-        "Error al iniciar sesión. Inténtalo nuevamente o contacta con soporte."
-      );
-    }
-    return { error: null };
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
-
-    return { error: UNKNOWN_ERROR_MESSAGE };
-  }
 };

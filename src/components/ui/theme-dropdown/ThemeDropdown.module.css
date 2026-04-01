@@ -1,0 +1,26 @@
+.itemContent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  color: var(--text);
+}
+
+.iconContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 18px;
+  height: 18px;
+}
+
+.active {
+  background-color: var(--background-over-container);
+  font-weight: 500;
+}
+
+.triggerIcon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}

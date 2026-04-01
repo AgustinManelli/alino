@@ -10,10 +10,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
+  background-color: var(--custom-bg, var(--background-over-container));
 }
 
-.triggerButton:hover {
-  background-color: var(--background-over-container-hover) !important;
+.triggerButton:hover,
+.triggerButton[data-state="open"] {
+  background-color: var(
+    --custom-hover,
+    var(--background-over-container-hover)
+  ) !important;
 }
 
 .dropdownMenu {
@@ -42,6 +48,7 @@
   overflow: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  gap: 3px;
 }
 
 .items::-webkit-scrollbar {

@@ -7,17 +7,26 @@ import { GithubIcon, GoogleIcon } from "@/components/ui/icons/icons";
 import styles from "./AuthForm.module.css";
 
 interface Props {
-  title: string;
-  description: string;
+  title: React.ReactNode;
+  description: React.ReactNode;
+  topContent?: React.ReactNode;
   showOAuth?: boolean;
 }
 
-export const AuthForm = ({ title, description, showOAuth = false }: Props) => {
+export const AuthForm = ({
+  title,
+  description,
+  topContent,
+  showOAuth = false,
+}: Props) => {
   const [oauthPending, setOauthPending] = useState<boolean>(false);
 
   return (
     <article className={styles.authFormContainer}>
       <header className={styles.authFormHeader}>
+        {topContent && (
+          <div className={styles.authFormTopContent}>{topContent}</div>
+        )}
         <h1 className={styles.authFormTitle}>{title}</h1>
         <p className={styles.authFormDescription}>{description}</p>
       </header>
@@ -32,7 +41,7 @@ export const AuthForm = ({ title, description, showOAuth = false }: Props) => {
                 color: "#1c1c1c",
                 border: "1px solid rgb(245, 245, 245)",
                 "--outauthBackground": "rgb(255,255,255)",
-                "--outauthHover": "rgb(220,220,220)",
+                "--outauthHover": "rgb(230,230,230)",
               } as React.CSSProperties
             }
             loadColor="#1c1c1c"
@@ -49,7 +58,7 @@ export const AuthForm = ({ title, description, showOAuth = false }: Props) => {
                 color: "#fff",
                 border: "1px solid #1c1c1c",
                 "--outauthBackground": "#1c1c1c",
-                "--outauthHover": "#1c1c1c",
+                "--outauthHover": "#444444",
               } as React.CSSProperties
             }
             loadColor="#ffffff"
