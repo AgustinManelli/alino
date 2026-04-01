@@ -41,7 +41,7 @@ export const AuthForm = ({
                 color: "#1c1c1c",
                 border: "1px solid rgb(245, 245, 245)",
                 "--outauthBackground": "rgb(255,255,255)",
-                "--outauthHover": "rgb(230,230,230)",
+                "--outauthHover": "rgb(225,225,225)",
               } as React.CSSProperties
             }
             loadColor="#1c1c1c"
@@ -58,7 +58,7 @@ export const AuthForm = ({
                 color: "#fff",
                 border: "1px solid #1c1c1c",
                 "--outauthBackground": "#1c1c1c",
-                "--outauthHover": "#444444",
+                "--outauthHover": "#2b2b2b",
               } as React.CSSProperties
             }
             loadColor="#ffffff"
