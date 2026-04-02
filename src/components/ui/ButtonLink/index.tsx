@@ -1,9 +1,6 @@
 "use client";
-
 import Link from "next/link";
-
-import { useNavigationLoader } from "@/hooks/useNavigationLoader";
-
+import { useLoaderStore } from "@/store/useLoaderStore";
 import styles from "./ButtonLink.module.css";
 
 interface Props {
@@ -27,7 +24,7 @@ export function ButtonLink({
   hoverColor = "var(--background-over-container-hover)",
   ariaLabel,
 }: Props) {
-  const { setLoading } = useNavigationLoader();
+  const setLoading = useLoaderStore((state) => state.setLoading);
 
   const handleClick = () => {
     if (withLoader) setLoading(true);

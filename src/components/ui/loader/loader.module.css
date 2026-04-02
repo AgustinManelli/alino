@@ -9,6 +9,7 @@
   align-items: center;
   background-color: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   user-select: none;
   z-index: 1000;
   padding: 15px;
@@ -19,12 +20,14 @@
   width: calc(100% - 30px);
   max-width: 400px;
   height: fit-content;
-  height: fit-content;
   bottom: 10%;
   background-color: var(--background-container);
   border: 1px solid var(--border-container-color);
-  padding: 20px 30px 20px 30px;
+  padding: 20px 30px;
   border-radius: 25px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
 }
 
 .tooltipHeader {
@@ -43,4 +46,6 @@
 .text {
   color: var(--text);
   font-size: 16px;
+  margin: 0;
+  width: 100%;
 }
