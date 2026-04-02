@@ -1,4 +1,3 @@
-// lib/userStoreSingleton.ts
 import { UserStore } from "@/store/useUserDataStore";
 
 let userStoreInstance: UserStore | null = null;

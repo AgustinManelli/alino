@@ -22,7 +22,6 @@ export const UserStoreProvider = ({
 
   if (!storeRef.current) {
     storeRef.current = createUserStore({ user });
-    // 👇 Guardamos la instancia para acceso global
     setUserStore(storeRef.current);
   }
 
