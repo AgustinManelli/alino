@@ -11,6 +11,7 @@
   background-size: 200px;
   background-color: var(--background-alino-app);
   padding: 20px 120px;
+  user-select: none;
 }
 
 .layout::before {
