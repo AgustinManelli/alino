@@ -1,7 +1,5 @@
 "use client";
 
-//store para almacenar info de la plataforma que está utilizando el usuario
-
 import { create } from "zustand";
 
 interface platform_interface {
@@ -11,7 +9,7 @@ interface platform_interface {
 }
 
 export const usePlatformInfoStore = create<platform_interface>((set) => ({
-  isMobile: false,
+  isMobile: null,
   isStandalone:
     typeof window !== "undefined" &&
     window.matchMedia("(display-mode: standalone)").matches,

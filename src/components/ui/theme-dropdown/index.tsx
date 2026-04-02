@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import { Dropdown } from "../Dropdown";
-import useThemeStore from "@/store/useThemeStore";
+
 import { SunIcon, MoonIcon, ComputerIcon } from "./ThemeIcons";
-import styles from "./ThemeDropdown.module.css";
 import { LoadingIcon } from "../icons/icons";
+import styles from "./ThemeDropdown.module.css";
 
 export const ThemeDropdown = () => {
-  const { theme, setLightTheme, setDarkTheme, setSystemTheme } =
-    useThemeStore();
+  const { theme, setTheme } = useTheme();
 
   const [mounted, setMounted] = useState(false);
 
@@ -75,7 +75,7 @@ export const ThemeDropdown = () => {
       </Dropdown.Trigger>
       <Dropdown.Content>
         <Dropdown.Item
-          onClick={setLightTheme}
+          onClick={() => setTheme("light")}
           className={theme === "light" ? styles.active : ""}
         >
           <div className={styles.itemContent}>
@@ -86,7 +86,7 @@ export const ThemeDropdown = () => {
           </div>
         </Dropdown.Item>
         <Dropdown.Item
-          onClick={setDarkTheme}
+          onClick={() => setTheme("dark")}
           className={theme === "dark" ? styles.active : ""}
         >
           <div className={styles.itemContent}>
@@ -97,7 +97,7 @@ export const ThemeDropdown = () => {
           </div>
         </Dropdown.Item>
         <Dropdown.Item
-          onClick={setSystemTheme}
+          onClick={() => setTheme("system")}
           className={theme === "system" ? styles.active : ""}
         >
           <div className={styles.itemContent}>

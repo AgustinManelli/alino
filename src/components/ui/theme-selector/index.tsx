@@ -1,14 +1,13 @@
 "use client";
 
-import useThemeStore from "@/store/useThemeStore";
 import { motion } from "motion/react";
+import { useTheme } from "next-themes";
 
-import styles from "./ThemeSelector.module.css";
 import { SunIcon, MoonIcon, ComputerIcon } from "../theme-dropdown/ThemeIcons";
+import styles from "./ThemeSelector.module.css";
 
 export function ThemeSelector() {
-  const { theme, setDarkTheme, setLightTheme, setSystemTheme } =
-    useThemeStore();
+  const { theme, setTheme } = useTheme();
 
   const isDark = theme === "dark";
   const isLight = theme === "light";
@@ -27,7 +26,7 @@ export function ThemeSelector() {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setLightTheme();
+          setTheme("light");
         }}
       >
         <SunIcon isLight={isLight} className={styles.ThemeIcon} />
@@ -37,7 +36,7 @@ export function ThemeSelector() {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setDarkTheme();
+          setTheme("dark");
         }}
       >
         <MoonIcon isDark={isDark} className={styles.ThemeIcon} />
@@ -47,7 +46,7 @@ export function ThemeSelector() {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setSystemTheme();
+          setTheme("system");
         }}
       >
         <ComputerIcon className={styles.ThemeIcon} />

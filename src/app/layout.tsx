@@ -2,10 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
 
-import { ThemeInitializer } from "@/hooks/useThemeInicializer";
 import { MobileSizeListener } from "@/hooks/useMobileSizeListener";
 import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
 import { Loader } from "@/components/ui/loader";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 import { inter, roboto, poppins, jetbrainsMono } from "../lib/fonts";
 import "./globals.css";
@@ -81,8 +81,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookie = cookies().get("theme-storage");
-  const initialTheme = cookie?.value ?? undefined;
+  const resolvedCookie = cookies().get("theme-resolved");
+  const initialTheme = resolvedCookie?.value === "dark" ? "dark" : "light";
   return (
     <html
       lang="es"
@@ -107,41 +107,21 @@ export default function RootLayout({
           content="#242629"
           media="(prefers-color-scheme: dark)"
         />
-        <script
-          id="theme-init"
-          dangerouslySetInnerHTML={{
-            __html: `
-          (function() {
-            try {
-              var storedTheme = document.cookie.match(/theme-storage=([^;]+)/)?.[1];
-              var initialTheme = storedTheme === "system" 
-                ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-                : (storedTheme || "system");
-              
-              if (initialTheme === "system") {
-                initialTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-              }
-              
-              document.documentElement.setAttribute("data-theme", initialTheme);
-            } catch (e) {}
-          })();
-        `,
-          }}
-        />
       </head>
       <body className={`${inter.className}`}>
-        <ThemeInitializer />
-        <MobileSizeListener />
-        <Toaster />
-        <Loader />
+        <ThemeProvider>
+          <MobileSizeListener />
+          <Toaster />
+          <Loader />
 
-        <div id="modal-root">
-          <WpaDownloadModal />
-        </div>
+          <div id="modal-root">
+            <WpaDownloadModal />
+          </div>
 
-        {children}
+          {children}
 
-        <div id="portal-root" />
+          <div id="portal-root" />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,8 +1,11 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
+
 import { useLoaderStore } from "@/store/useLoaderStore";
+
 import { LoadingIcon } from "@/components/ui/icons/icons";
 import styles from "./loader.module.css";
 

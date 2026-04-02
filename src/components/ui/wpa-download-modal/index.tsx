@@ -1,39 +1,34 @@
 "use client";
-import { AnimatePresence } from "motion/react";
+
 import { useEffect, useState } from "react";
 
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
-import { Modal } from "./modal";
+import { PwaDrawer } from "./modal";
 
 export function WpaDownloadModal() {
-  const [open, setOpen] = useState<boolean>(false);
-
+  const [open, setOpen] = useState(false);
   const { isMobile, isStandalone } = usePlatformInfoStore();
   const { uxPwaPrompt, toggleUxPwaPrompt } = useUserPreferencesStore();
 
-  const handleCloseModal = () => {
-    setOpen(false);
-    toggleUxPwaPrompt();
-  };
+  const shouldShow = isMobile === true && !isStandalone && uxPwaPrompt;
 
   useEffect(() => {
-    if (uxPwaPrompt) {
-      const timer = setTimeout(() => {
-        setOpen(true);
-      }, 60000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+    if (!shouldShow) return;
+    const timer = setTimeout(() => setOpen(true), 60_000);
+    return () => clearTimeout(timer);
+  }, [shouldShow]);
+
+  if (!shouldShow) return null;
 
   return (
-    <>
-      <AnimatePresence>
-        {open && isMobile && !isStandalone && (
-          <Modal handleCloseModal={handleCloseModal} />
-        )}
-      </AnimatePresence>
-    </>
+    <PwaDrawer
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) toggleUxPwaPrompt();
+      }}
+    />
   );
 }
