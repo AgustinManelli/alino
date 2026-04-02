@@ -1,10 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const PUBLIC_PATHS = ["/sign-in", "/auth/callback", "/api/push/trigger"];
+
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,9 +18,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
+          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -29,41 +27,21 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { pathname } = request.nextUrl;
-  
-  try {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
-    if (error) {
-      console.error('Session error:', error);
-    }
-    
-    const user = session?.user;
+  const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
-    const publicPaths = [
-      '/sign-in',
-      '/auth/callback', 
-      '/api/push/trigger'
-    ];
-    
-    const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+  if (!user && !isPublicPath) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/sign-in";
+    return NextResponse.redirect(url);
+  }
 
-    // Redirigir a login si no hay usuario y no está en ruta pública
-    if (!user && !isPublicPath) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/sign-in";
-      return NextResponse.redirect(url);
-    }
-
-    // Redirigir a la app si está logueado y en página de login
-    if (user && pathname.startsWith("/sign-in")) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/alino-app";
-      return NextResponse.redirect(url);
-    }
-    
-  } catch (error) {
-    console.error('Middleware error:', error);
+  if (user && pathname.startsWith("/sign-in")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/alino-app";
+    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;
