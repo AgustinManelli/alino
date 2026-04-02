@@ -2,28 +2,42 @@ import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
+  let next = searchParams.get("next") ?? "/";
 
-  const next = searchParams.get("next") ?? "/";
+  //Prevención de ataques "Open Redirect"
+  if (!next.startsWith("/") || next.startsWith("//")) {
+    next = "/"; 
+  }
 
-  const baseURL =
+  //Normalización de la URL base
+  const rawBaseURL =
     process.env.NEXT_PUBLIC_BASE_URL ??
     (process.env.NODE_ENV === "development"
       ? "http://localhost:3000/alino-app"
       : "https://alinoapp.vercel.app/alino-app");
 
+  //Removemos un posible slash final
+  const baseURL = rawBaseURL.replace(/\/$/, "");
+
   if (code) {
     const supabase = await createClient();
-
     const { error } = await supabase.auth.exchangeCodeForSession(code);
+
     if (!error) {
-      return NextResponse.redirect(`${baseURL}${next}`);
+      const finalPath = next === "/" ? "" : next;
+      return NextResponse.redirect(`${baseURL}${finalPath}`);
     }
-    const errorMessage = encodeURIComponent(error.message || "auth_failed");
-    return NextResponse.redirect(`${baseURL}/sign-in?error=${errorMessage}`);
+
+    //Uso de la API URL para construir los parámetros de consulta de forma segura
+    const errorUrl = new URL(`${baseURL}/sign-in`);
+    errorUrl.searchParams.set("error", error.message || "auth_failed");
+    return NextResponse.redirect(errorUrl);
   }
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${baseURL}`);
+  //Manejo explícito de la ausencia del parámetro 'code'
+  const noCodeUrl = new URL(`${baseURL}/sign-in`);
+  noCodeUrl.searchParams.set("error", "missing_code");
+  return NextResponse.redirect(noCodeUrl);
 }
