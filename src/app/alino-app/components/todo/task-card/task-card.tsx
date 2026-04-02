@@ -24,7 +24,7 @@ import {
 import { FontSizeExtension } from "@/components/ui/RichTextEditor/fontSizeExtension";
 import { Check, Note } from "@/components/ui/icons/icons";
 import styles from "./task-card.module.css";
-import { useUserDataStore } from "@/store/useUserDataStore";
+import { useUserStore } from "@/components/providers/UserStoreProvider";
 import { ItemTypeDropdown } from "./parts/ItemTypeDropdown";
 import { useSmartDate } from "@/hooks/useSmartDate";
 import { useSmartDateInteraction } from "@/hooks/useSmartDateInteraction";
@@ -74,7 +74,9 @@ export const TaskCard = memo(
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
     const closeModal = useEditTaskModalStore((state) => state.closeModal);
     const modalEditOpen = useEditTaskModalStore((state) => state.isOpen);
-    const isModalAnimating = useEditTaskModalStore((state) => state.isAnimating);
+    const isModalAnimating = useEditTaskModalStore(
+      (state) => state.isAnimating,
+    );
     const textRef = useRef<HTMLElement>(null);
 
     const [editorText, setEditorText] = useState("");
@@ -101,7 +103,7 @@ export const TaskCard = memo(
     const { updateTaskName } = useTodoDataStore(
       useShallow((state) => ({ updateTaskName: state.updateTaskName })),
     );
-    const user = useUserDataStore((state) => state.user);
+    const user = useUserStore((state) => state.user);
 
     const handleSaveRef = useRef<() => Promise<void>>(async () => {});
 
@@ -162,8 +164,6 @@ export const TaskCard = memo(
       );
 
       if (activeDetected) {
-        // Recalculate after a short delay — this also runs when isModalAnimating
-        // becomes false, so we always read the final settled position of the word.
         const timer = setTimeout(() => {
           const el = editor.view.dom.querySelector(".smart-date-highlight");
           if (el) {
@@ -310,7 +310,11 @@ export const TaskCard = memo(
           style={{ position: "relative" }}
           ref={textContainerRef}
         >
-          {activeDetected && showBubble && modalEditOpen && bubbleCoords && !isModalAnimating &&
+          {activeDetected &&
+            showBubble &&
+            modalEditOpen &&
+            bubbleCoords &&
+            !isModalAnimating &&
             ReactDOM.createPortal(
               <div
                 className="no-close-edit"
@@ -338,8 +342,7 @@ export const TaskCard = memo(
                 />
               </div>,
               document.body,
-            )
-          }
+            )}
 
           {modalEditOpen ? (
             <div

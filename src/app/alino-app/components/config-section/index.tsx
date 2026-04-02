@@ -5,7 +5,6 @@ import { AnimatePresence } from "motion/react";
 
 import { signOutLocal } from "@/lib/auth/actions";
 import { useNavigationLoader } from "@/hooks/useNavigationLoader";
-import { useUserDataStore } from "@/store/useUserDataStore";
 
 import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
 import { OptionBox } from "@/components/ui/modal-options-box/optionBox";
@@ -16,6 +15,7 @@ import ConfigUser from "../config-user";
 
 import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
+import { useUserStore } from "@/components/providers/UserStoreProvider";
 
 export const ConfigSection = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -23,7 +23,7 @@ export const ConfigSection = () => {
   const [configUserActive, setConfigUserActive] = useState<boolean>(false);
   const { setLoading } = useNavigationLoader();
 
-  const user = useUserDataStore((state) => state.user);
+  const user = useUserStore((state) => state.user);
 
   const iconRef = useRef<HTMLDivElement>(null);
 

@@ -26,6 +26,12 @@
   width: 100%;
   height: 100%;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+  border: transparent 1px solid;
+  transition: border 0.2s ease-in-out;
+}
+
+.alinoUsernameInput:focus-within {
+  border: #87189d 1px solid;
 }
 
 .alinoAt {
@@ -84,7 +90,7 @@
 
 .alinoError {
   margin-top: 6px;
-  color: #d9534f; /* red */
+  color: #d9534f;
   font-size: 13px;
 }
 

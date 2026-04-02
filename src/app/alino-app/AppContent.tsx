@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { AnimatePresence } from "motion/react";
-
-import { useUserDataStore } from "@/store/useUserDataStore";
 
 import { ConfigSection } from "./components/config-section";
 import { Sidebar } from "./components/sidebar";
@@ -12,38 +10,35 @@ import { InitialUserConfiguration } from "./components/initial-user-configuratio
 import { RealtimeProvider } from "@/components/providers/RealtimeProvider";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { EditTaskModal } from "@/components/ui/EditTaskModal";
+import { PomodoroMiniIndicator } from "@/components/ui/PomodoroMiniIndicator";
 
 import { UserType } from "@/lib/schemas/database.types";
+
 import styles from "./AlinoAppLayout.module.css";
-import { PomodoroMiniIndicator } from "@/components/ui/PomodoroMiniIndicator";
 
 interface Props {
   user: UserType;
+  children: React.ReactNode;
 }
 
-export const AppContent = ({ user }: Props) => {
+export const AppContent = ({ user, children }: Props) => {
   const [showConfiguration, setShowConfiguration] = useState(
-    user.user_private?.initial_username_prompt_shown ?? false
+    user.user_private?.initial_username_prompt_shown ?? false,
   );
-
-  const initialized = useRef(false);
 
   const handleConfigurationComplete = () => {
     setShowConfiguration(false);
   };
 
-  useEffect(() => {
-    if (!initialized.current) {
-      useUserDataStore.setState({ user });
-      initialized.current = true;
-    }
-  }, [user]);
+  if (showConfiguration) {
+    return (
+      <AnimatePresence>
+        <InitialUserConfiguration onComplete={handleConfigurationComplete} />
+      </AnimatePresence>
+    );
+  }
 
-  return showConfiguration ? (
-    <AnimatePresence>
-      <InitialUserConfiguration onComplete={handleConfigurationComplete} />
-    </AnimatePresence>
-  ) : (
+  return (
     <>
       <RealtimeProvider />
       <EditTaskModal />
@@ -54,6 +49,7 @@ export const AppContent = ({ user }: Props) => {
         <ConfigSection />
       </section>
       <Sidebar />
+      {children}
     </>
   );
 };

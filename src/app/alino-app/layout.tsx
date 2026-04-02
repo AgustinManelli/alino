@@ -1,10 +1,11 @@
-import { getUser } from "@/lib/api/user/actions";
+import { redirect } from "next/navigation";
 
+import { getUser } from "@/lib/api/user/actions";
 import { AppContent } from "./AppContent";
 import { TopBlurEffect } from "@/components/ui/top-blur-effect";
+import { UserStoreProvider } from "@/components/providers/UserStoreProvider"; // Importar Provider
 
 import styles from "./AlinoAppLayout.module.css";
-import { redirect } from "next/navigation";
 
 export default async function AlinoAppLayout({
   children,
@@ -13,18 +14,20 @@ export default async function AlinoAppLayout({
 }) {
   const userPrivateResult = await getUser();
 
-  if (userPrivateResult.error) {
+  if (userPrivateResult.error || !userPrivateResult.data?.user) {
     redirect("/sign-in");
   }
+
+  const user = userPrivateResult.data.user;
 
   return (
     <section className={styles.alinoAppLayoutContainer}>
       <TopBlurEffect />
-      <div className={styles.appContentContainer}>
-        <AppContent user={userPrivateResult.data?.user} />
-        {!userPrivateResult.data?.user.user_private
-          ?.initial_username_prompt_shown && children}
-      </div>
+      <UserStoreProvider user={user}>
+        <div className={styles.appContentContainer}>
+          <AppContent user={user}>{children}</AppContent>
+        </div>
+      </UserStoreProvider>
     </section>
   );
 }

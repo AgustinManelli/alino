@@ -30,7 +30,7 @@ import {
   LogOut,
 } from "@/components/ui/icons/icons";
 import { TaskCardStatic } from "../task-card/task-card-static";
-import { useUserDataStore } from "@/store/useUserDataStore";
+import { useUserStore } from "@/components/providers/UserStoreProvider";
 
 export const Manager = memo(function Manager({
   setList,
@@ -45,7 +45,7 @@ export const Manager = memo(function Manager({
   const [infoActive, setInfoActive] = useState<boolean>(false);
 
   const { tasks, deleteList, leaveList } = useTodoDataStore();
-  const user = useUserDataStore((state) => state.user);
+  const user = useUserStore((state) => state.user);
   const openModal = useConfirmationModalStore((state) => state.openModal);
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
 

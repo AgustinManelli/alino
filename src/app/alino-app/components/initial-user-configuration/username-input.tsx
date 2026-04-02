@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
 
 import { LoadingIcon } from "@/components/ui/icons/icons";
@@ -23,26 +23,28 @@ export const UsernameInput = ({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setUsername(initialValue);
-  }, [initialValue]);
-
   const validate = (value: string) => {
     const v = value.trim().toLowerCase();
     return /^[a-z0-9_]{3,30}$/.test(v);
   };
 
   const handleSubmit = async () => {
+    if (disabled || loading) return;
+
     setError(null);
     const cleaned = username.trim().toLowerCase();
+
     if (!validate(cleaned)) {
       setError("El nombre de usuario debe tener 3-30 caracteres: a-z, 0-9 y _");
       return;
     }
+
     setLoading(true);
     if (onSubmit) {
-      const error = await onSubmit(cleaned);
-      setError(error);
+      const resultError = await onSubmit(cleaned);
+      if (resultError) {
+        setError(resultError);
+      }
     }
     setLoading(false);
   };
@@ -50,7 +52,7 @@ export const UsernameInput = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      if (!disabled && !loading) handleSubmit();
+      handleSubmit();
     }
   };
 
@@ -74,7 +76,10 @@ export const UsernameInput = ({
           <input
             className={styles.alinoInputField}
             value={username}
-            onChange={(ev) => setUsername(ev.target.value)}
+            onChange={(ev) => {
+              setUsername(ev.target.value);
+              if (error) setError(null);
+            }}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             aria-invalid={!!error}
@@ -82,16 +87,13 @@ export const UsernameInput = ({
             disabled={disabled || loading}
             inputMode="text"
             autoComplete="username"
+            maxLength={30}
           />
         </div>
 
         <button
           type="submit"
           className={styles.alinoSubmitBtn}
-          onClick={(e) => {
-            e.preventDefault();
-            handleSubmit();
-          }}
           disabled={disabled || loading}
           aria-disabled={disabled || loading}
         >

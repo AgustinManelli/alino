@@ -1,55 +1,61 @@
-"use client";
-import { create } from "zustand";
+import { createStore } from "zustand";
 import { toast } from "sonner";
-
-import { getUser, setUsernameFirstTime } from "@/lib/api/user/actions";
-
+import { setUsernameFirstTime as setUsernameFirstTimeAction } from "@/lib/api/user/actions";
 import { UserType } from "@/lib/schemas/database.types";
 
-type UserData = {
+interface UserProps {
   user: UserType | null;
-  getUser: () => Promise<void>;
-  setUsernameFirstTime: (username: string) => Promise<{ error: string | null }>;
-};
-
-function handleError(err: unknown) {
-  toast.error((err as Error).message || "Error desconocido");
 }
 
-export const useUserDataStore = create<UserData>()((set) => ({
-  user: null,
+interface UserState extends UserProps {
+  updateUser: (partial: Partial<UserType>) => void;
+  setUsernameFirstTime: (username: string) => Promise<{ error: string | null }>;
+}
 
-  getUser: async () => {
-    try {
-      const { data, error } = await getUser();
+export type UserStore = ReturnType<typeof createUserStore>;
 
-      if (error) {
-        throw new Error(error);
-      }
+export const createUserStore = (initProps?: Partial<UserProps>) => {
+  const DEFAULT_PROPS: UserProps = { user: null };
 
-      console.log("Datos del usuario recibidos desde el server:", data?.user);
+  return createStore<UserState>()((set) => ({
+    ...DEFAULT_PROPS,
+    ...initProps,
 
-      set(() => ({ user: data?.user }));
-    } catch (err) {
-      handleError(err);
-    }
-  },
+    updateUser: (partial: Partial<UserType>) => {
+      set((state) => ({
+        user: state.user ? { ...state.user, ...partial } : null,
+      }));
+    },
 
-  setUsernameFirstTime: async (username: string) => {
-    try {
-      const res = await setUsernameFirstTime(username);
+    setUsernameFirstTime: async (username: string) => {
+      try {
+        const res = await setUsernameFirstTimeAction(username);
 
-      if (res.error) {
-        if (res.error === "USERNAME_TAKEN") {
-          return {
-            error: "Ese nombre de usuario ya está en uso. Elige uno diferente.",
-          };
+        if (res.error) {
+          if (res.error === "USERNAME_TAKEN") {
+            return { error: "Ese nombre de usuario ya está en uso." };
+          }
+          return { error: res.error };
         }
-      }
-    } catch (err) {
-      handleError(err);
-    }
 
-    return { error: null };
-  },
-}));
+        set((state) => {
+          if (!state.user) return state;
+          return {
+            user: {
+              ...state.user,
+              username,
+              user_private: state.user.user_private
+                ? { ...state.user.user_private, initial_username_prompt_shown: false }
+                : null,
+            },
+          };
+        });
+
+        return { error: null };
+      } catch (err) {
+        toast.error((err as Error).message || "Error desconocido");
+        return { error: "Error desconocido." };
+      }
+    },
+  }));
+};

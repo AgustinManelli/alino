@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 
 import { createClient } from "@/utils/supabase/client";
-import { useUserDataStore } from "./useUserDataStore";
 
 import {
   createListInvitation,
@@ -44,6 +43,7 @@ import {
   UserWithMembershipRole,
 } from "@/lib/schemas/database.types";
 import { calculateNewRank } from "@/lib/lexorank";
+import { useUserStore } from "@/components/providers/UserStoreProvider";
 
 const POS_INDEX = 16384;
 
@@ -242,7 +242,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   subscriptionDeleteList: async (list) => {
-    const { user } = useUserDataStore.getState();
+    const user = useUserStore((state) => state.user);
 
     if (user && user.user_id && list.user_id !== user.user_id) {
       return;
@@ -633,7 +633,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   addTask: async (list_id, task_content, target_date, note) => {
     const optimisticId = uuidv4();
 
-    const { user } = useUserDataStore.getState();
+    const user = useUserStore((state) => state.user);
 
     if (!user) {
       const errorMsg =
@@ -693,7 +693,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   addTasks: async (tasksData) => {
-    const { user } = useUserDataStore.getState();
+    const user = useUserStore((state) => state.user);
 
     if (!user) {
       const errorMsg =

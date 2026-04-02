@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { animate } from "motion";
 
-import { useUserDataStore } from "@/store/useUserDataStore";
+import { useUserStore } from "@/components/providers/UserStoreProvider";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
 import type { TaskType } from "@/lib/schemas/database.types";
@@ -28,17 +28,17 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
     useShallow((state) => ({
       openModal: state.openModal,
       taskEditing: state.task,
-    }))
+    })),
   );
   const { list, deleteTask, updateTaskCompleted } = useTodoDataStore(
     useShallow((state) => ({
       list: state.getListById(task.list_id),
       deleteTask: state.deleteTask,
       updateTaskCompleted: state.updateTaskCompleted,
-    }))
+    })),
   );
 
-  const user = useUserDataStore((state) => state.user);
+  const user = useUserStore((state) => state.user);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
@@ -54,7 +54,7 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
       {
         duration: 0,
         delay: isVisible === 1 ? 0.3 : 0.05,
-      }
+      },
     );
   }, [isVisible]);
 
@@ -92,7 +92,7 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
 
   const handleDelete = useCallback(
     () => deleteTask(task.task_id),
-    [task.task_id, deleteTask]
+    [task.task_id, deleteTask],
   );
 
   const canEditOrDelete = list?.role !== "reader";
