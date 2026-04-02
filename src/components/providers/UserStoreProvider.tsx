@@ -12,6 +12,8 @@ export interface UserStoreProviderProps {
   user: UserType;
 }
 
+import { setUserStore } from "@/lib/userStoreSingleton";
+
 export const UserStoreProvider = ({
   children,
   user,
@@ -20,6 +22,8 @@ export const UserStoreProvider = ({
 
   if (!storeRef.current) {
     storeRef.current = createUserStore({ user });
+    // 👇 Guardamos la instancia para acceso global
+    setUserStore(storeRef.current);
   }
 
   return (
