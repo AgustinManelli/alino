@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ResponsiveLayouts } from "react-grid-layout";
 import dynamic from "next/dynamic";
 
-import { useUserStore } from "@/components/providers/UserStoreProvider";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
+import { useUserDataStore } from "@/store/useUserDataStore";
 
 import { tierSatisfies } from "@/config/widgets.registry";
 import { UpgradePlaceholder } from "./parts/UpgradePlaceholder";
@@ -111,7 +111,7 @@ const useDateAndGreeting = () => {
 
 export const HomeDashboard = () => {
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
-  const user = useUserStore((state) => state.user);
+  const user = useUserDataStore((state) => state.user);
 
   const {
     layout,

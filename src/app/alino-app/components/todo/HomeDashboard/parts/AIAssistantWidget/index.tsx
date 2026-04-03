@@ -6,7 +6,7 @@ import { IAStars } from "@/components/ui/icons/icons";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import styles from "./AIAssistantWidget.module.css";
-import { useUserStore } from "@/components/providers/UserStoreProvider";
+import { useUserDataStore } from "@/store/useUserDataStore";
 import { IAStarsLoader } from "@/components/ui/icons/ia-loader";
 
 export default function AIAssistantWidget() {
@@ -16,7 +16,7 @@ export default function AIAssistantWidget() {
   const { generate, error: aiError } = useAITaskGeneration();
   const insertList = useTodoDataStore((state) => state.insertList);
   const addTasks = useTodoDataStore((state) => state.addTasks);
-  const user = useUserStore((state) => state.user);
+  const user = useUserDataStore((state) => state.user);
   const canGenerateTasks = user?.tier === "pro" || user?.tier === "student";
 
   const handleGenerateList = async () => {

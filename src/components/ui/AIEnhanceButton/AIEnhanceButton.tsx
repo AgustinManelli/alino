@@ -9,7 +9,7 @@ import { useAITaskGeneration } from "@/hooks/useAITaskGeneration";
 import { useModalUbication } from "@/hooks/useModalUbication";
 import { ClientOnlyPortal } from "@/components/ui/ClientOnlyPortal";
 import { IAStars } from "@/components/ui/icons/icons";
-import { useUserStore } from "@/components/providers/UserStoreProvider";
+import { useUserDataStore } from "@/store/useUserDataStore";
 import styles from "./AIEnhanceButton.module.css";
 import { IAStarsLoader } from "../icons/ia-loader";
 
@@ -119,7 +119,7 @@ export function AIEnhanceButton({
   const [maxTasks, setMaxTasks] = useState(DEFAULT_MAX_TASKS);
 
   // Obtener usuario actual y tier
-  const user = useUserStore((state) => state.user);
+  const user = useUserDataStore((state) => state.user);
   const userTier = (user as any)?.tier || "free";
   const canGenerateTasks = userTier === "pro" || userTier === "student";
 

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { animate } from "motion";
 
-import { useUserStore } from "@/components/providers/UserStoreProvider";
+import { useUserDataStore } from "@/store/useUserDataStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
 import type { TaskType } from "@/lib/schemas/database.types";
@@ -38,7 +38,7 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
     })),
   );
 
-  const user = useUserStore((state) => state.user);
+  const user = useUserDataStore((state) => state.user);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);

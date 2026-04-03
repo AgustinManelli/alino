@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 
 import { getUser } from "@/lib/api/user/actions";
+import { UserStoreProvider } from "@/components/providers/UserStoreProvider";
+
 import { AppContent } from "./AppContent";
 import { TopBlurEffect } from "@/components/ui/top-blur-effect";
-import { UserStoreProvider } from "@/components/providers/UserStoreProvider"; // Importar Provider
 
 import styles from "./AlinoAppLayout.module.css";
 
@@ -25,7 +26,7 @@ export default async function AlinoAppLayout({
       <TopBlurEffect />
       <UserStoreProvider user={user}>
         <div className={styles.appContentContainer}>
-          <AppContent user={user}>{children}</AppContent>
+          <AppContent>{children}</AppContent>
         </div>
       </UserStoreProvider>
     </section>

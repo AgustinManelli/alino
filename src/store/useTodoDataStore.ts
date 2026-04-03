@@ -43,7 +43,7 @@ import {
   UserWithMembershipRole,
 } from "@/lib/schemas/database.types";
 import { calculateNewRank } from "@/lib/lexorank";
-import { getUserStore } from "@/lib/userStoreSingleton";
+import { globalUserStore } from "@/store/useUserDataStore";
 
 const POS_INDEX = 16384;
 
@@ -242,7 +242,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   subscriptionDeleteList: async (list) => {
-    const user = getUserStore()?.getState().user;
+    const user = globalUserStore?.getState().user;
 
     if (user && user.user_id && list.user_id !== user.user_id) {
       return;
@@ -633,7 +633,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   addTask: async (list_id, task_content, target_date, note) => {
     const optimisticId = uuidv4();
 
-    const user = getUserStore()?.getState().user;
+    const user = globalUserStore?.getState().user;
 
     if (!user) {
       const errorMsg =
@@ -693,7 +693,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   addTasks: async (tasksData) => {
-    const user = getUserStore()?.getState().user;
+    const user = globalUserStore?.getState().user;
 
     if (!user) {
       const errorMsg =

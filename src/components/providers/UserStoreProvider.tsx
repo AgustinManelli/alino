@@ -1,28 +1,25 @@
 "use client";
 
-import { createContext, useRef, useContext } from "react";
-import { useStore } from "zustand";
-import { createUserStore, UserStore } from "@/store/useUserDataStore";
+import { type ReactNode, useRef } from "react";
+import { type StoreApi } from "zustand";
 import { UserType } from "@/lib/schemas/database.types";
+import { createUserDataStore, UserStoreContext, type UserState } from "@/store/useUserDataStore";
 
-export const UserStoreContext = createContext<UserStore | null>(null);
-
-export interface UserStoreProviderProps {
-  children: React.ReactNode;
-  user: UserType;
+interface Props {
+  children: ReactNode;
+  user: UserType | null;
 }
 
-import { setUserStore } from "@/lib/userStoreSingleton";
-
-export const UserStoreProvider = ({
-  children,
-  user,
-}: UserStoreProviderProps) => {
-  const storeRef = useRef<UserStore>();
+/**
+ * Provee el store de usuario a través de un Contexto.
+ * Esto evita problemas de hidratación ("saltos") porque el store
+ * ya nace instanciado con los datos del servidor para esta petición específica.
+ */
+export const UserStoreProvider = ({ children, user }: Props) => {
+  const storeRef = useRef<StoreApi<UserState> | null>(null);
 
   if (!storeRef.current) {
-    storeRef.current = createUserStore({ user });
-    setUserStore(storeRef.current);
+    storeRef.current = createUserDataStore({ user });
   }
 
   return (
@@ -31,15 +28,3 @@ export const UserStoreProvider = ({
     </UserStoreContext.Provider>
   );
 };
-
-export function useUserStore<T>(
-  selector: (state: ExtractState<UserStore>) => T,
-): T {
-  const store = useContext(UserStoreContext);
-  if (!store) {
-    throw new Error("useUserStore debe usarse dentro de UserStoreProvider");
-  }
-  return useStore(store, selector);
-}
-
-type ExtractState<S> = S extends { getState: () => infer T } ? T : never;

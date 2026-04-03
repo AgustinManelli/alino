@@ -4,7 +4,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { useShallow } from "zustand/shallow";
 
-import { useUserStore } from "@/components/providers/UserStoreProvider";
+import { useUserDataStore } from "@/store/useUserDataStore";
 
 import { UsernameInput } from "./username-input";
 import { WindowComponent } from "@/components/ui/window-component";
@@ -19,7 +19,7 @@ interface Props {
 export const InitialUserConfiguration = ({ onComplete }: Props) => {
   const [finish, setFinish] = useState<boolean>(false);
 
-  const { user, setUsernameFirstTime } = useUserStore(
+  const { user, setUsernameFirstTime } = useUserDataStore(
     useShallow((state) => ({
       user: state.user,
       setUsernameFirstTime: state.setUsernameFirstTime,

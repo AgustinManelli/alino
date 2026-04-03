@@ -1,43 +1,41 @@
-import { createStore } from "zustand";
+"use client";
+
+import { createStore, StoreApi, useStore } from "zustand";
 import { toast } from "sonner";
 import { setUsernameFirstTime as setUsernameFirstTimeAction } from "@/lib/api/user/actions";
 import { UserType } from "@/lib/schemas/database.types";
+import { createContext, useContext } from "react";
 
-interface UserProps {
+export interface UserState {
   user: UserType | null;
-}
-
-interface UserState extends UserProps {
   updateUser: (partial: Partial<UserType>) => void;
   setUsernameFirstTime: (username: string) => Promise<{ error: string | null }>;
 }
 
-export type UserStore = ReturnType<typeof createUserStore>;
+export const UserStoreContext = createContext<StoreApi<UserState> | undefined>(
+  undefined,
+);
 
-export const createUserStore = (initProps?: Partial<UserProps>) => {
-  const DEFAULT_PROPS: UserProps = { user: null };
+export let globalUserStore: StoreApi<UserState> | undefined = undefined;
 
-  return createStore<UserState>()((set) => ({
-    ...DEFAULT_PROPS,
-    ...initProps,
+export const createUserDataStore = (initialState: Partial<UserState> = {}) => {
+  const store = createStore<UserState>()((set) => ({
+    user: initialState.user || null,
 
-    updateUser: (partial: Partial<UserType>) => {
+    updateUser: (partial) =>
       set((state) => ({
         user: state.user ? { ...state.user, ...partial } : null,
-      }));
-    },
+      })),
 
-    setUsernameFirstTime: async (username: string) => {
+    setUsernameFirstTime: async (username) => {
       try {
         const res = await setUsernameFirstTimeAction(username);
-
         if (res.error) {
           if (res.error === "USERNAME_TAKEN") {
             return { error: "Ese nombre de usuario ya está en uso." };
           }
           return { error: res.error };
         }
-
         set((state) => {
           if (!state.user) return state;
           return {
@@ -45,12 +43,14 @@ export const createUserStore = (initProps?: Partial<UserProps>) => {
               ...state.user,
               username,
               user_private: state.user.user_private
-                ? { ...state.user.user_private, initial_username_prompt_shown: false }
+                ? {
+                    ...state.user.user_private,
+                    initial_username_prompt_shown: false,
+                  }
                 : null,
             },
           };
         });
-
         return { error: null };
       } catch (err) {
         toast.error((err as Error).message || "Error desconocido");
@@ -58,4 +58,18 @@ export const createUserStore = (initProps?: Partial<UserProps>) => {
       }
     },
   }));
+
+  if (typeof window !== "undefined") {
+    globalUserStore = store;
+  }
+
+  return store;
+};
+
+export const useUserDataStore = <T,>(selector: (state: UserState) => T): T => {
+  const store = useContext(UserStoreContext);
+  if (!store) {
+    throw new Error("Missing UserStoreProvider in the tree");
+  }
+  return useStore(store, selector);
 };

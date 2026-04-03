@@ -24,7 +24,7 @@ import {
 import { FontSizeExtension } from "@/components/ui/RichTextEditor/fontSizeExtension";
 import { Check, Note } from "@/components/ui/icons/icons";
 import styles from "./task-card.module.css";
-import { useUserStore } from "@/components/providers/UserStoreProvider";
+import { useUserDataStore } from "@/store/useUserDataStore";
 import { ItemTypeDropdown } from "./parts/ItemTypeDropdown";
 import { useSmartDate } from "@/hooks/useSmartDate";
 import { useSmartDateInteraction } from "@/hooks/useSmartDateInteraction";
@@ -103,7 +103,7 @@ export const TaskCard = memo(
     const { updateTaskName } = useTodoDataStore(
       useShallow((state) => ({ updateTaskName: state.updateTaskName })),
     );
-    const user = useUserStore((state) => state.user);
+    const user = useUserDataStore((state) => state.user);
 
     const handleSaveRef = useRef<() => Promise<void>>(async () => {});
 

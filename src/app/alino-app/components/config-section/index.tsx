@@ -15,7 +15,7 @@ import ConfigUser from "../config-user";
 
 import { Config, LogOut, UserIcon } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
-import { useUserStore } from "@/components/providers/UserStoreProvider";
+import { useUserDataStore } from "@/store/useUserDataStore";
 
 export const ConfigSection = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -23,7 +23,7 @@ export const ConfigSection = () => {
   const [configUserActive, setConfigUserActive] = useState<boolean>(false);
   const { setLoading } = useNavigationLoader();
 
-  const user = useUserStore((state) => state.user);
+  const user = useUserDataStore((state) => state.user);
 
   const iconRef = useRef<HTMLDivElement>(null);
 

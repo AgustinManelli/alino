@@ -3,27 +3,28 @@
 import { useState } from "react";
 import { AnimatePresence } from "motion/react";
 
+import { useUserDataStore } from "@/store/useUserDataStore";
+import { RealtimeProvider } from "@/components/providers/RealtimeProvider";
+
 import { ConfigSection } from "./components/config-section";
 import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import { InitialUserConfiguration } from "./components/initial-user-configuration";
-import { RealtimeProvider } from "@/components/providers/RealtimeProvider";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { EditTaskModal } from "@/components/ui/EditTaskModal";
 import { PomodoroMiniIndicator } from "@/components/ui/PomodoroMiniIndicator";
 
-import { UserType } from "@/lib/schemas/database.types";
-
 import styles from "./AlinoAppLayout.module.css";
 
 interface Props {
-  user: UserType;
   children: React.ReactNode;
 }
 
-export const AppContent = ({ user, children }: Props) => {
+export const AppContent = ({ children }: Props) => {
+  const user = useUserDataStore((state) => state.user);
+
   const [showConfiguration, setShowConfiguration] = useState(
-    user.user_private?.initial_username_prompt_shown ?? false,
+    user?.user_private?.initial_username_prompt_shown ?? false,
   );
 
   const handleConfigurationComplete = () => {
