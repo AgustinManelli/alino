@@ -67,6 +67,9 @@ export const SortableFolder = ({
 
   const openModal = useConfirmationModalStore((state) => state.openModal);
   const deleteFolder = useTodoDataStore((state) => state.deleteFolder);
+  const deleteFolderWithContents = useTodoDataStore(
+    (state) => state.deleteFolderWithContents,
+  );
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const animations = useUserPreferencesStore((state) => state.animations);
 
@@ -186,14 +189,23 @@ export const SortableFolder = ({
     deleteFolder(folder.folder_id);
   }, [deleteFolder, folder.folder_id]);
 
+  const handleDeleteWithContents = useCallback(() => {
+    deleteFolderWithContents(folder.folder_id);
+  }, [deleteFolderWithContents, folder.folder_id]);
+
   const handleConfirm = useCallback(() => {
     openModal({
-      text: `¿Desea eliminar la carpeta "${folder.folder_name}"?`,
-      onConfirm: handleDelete,
+      text: `¿Eliminar la carpeta "${folder.folder_name}"?`,
       additionalText:
-        "Esta acción es irreversible, pero tranquilo, tus listas no se eliminan.",
+        "Podés eliminar solo la carpeta (las listas quedan sueltas) o eliminarla junto con todas sus listas y tareas.",
+      actionButton: "Solo la carpeta",
+      onConfirm: handleDelete,
+      secondaryAction: {
+        label: "Carpeta y todo su contenido",
+        onConfirm: handleDeleteWithContents,
+      },
     });
-  }, [openModal, folder.folder_name, handleDelete]);
+  }, [openModal, folder.folder_name, handleDelete, handleDeleteWithContents]);
 
   const handleInfoEdit = useCallback(() => {
     setIsNameChange(true);

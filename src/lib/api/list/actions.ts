@@ -429,6 +429,39 @@ export const deleteFolder = async (folder_id: string) => {
   }
 };
 
+export const deleteFolderWithContents = async (
+  folder_id: string,
+  list_ids_in_folder: string[]
+): Promise<{ list_ids?: string[]; error?: string }> => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+
+    const { error } = await supabase.rpc("delete_folder_with_lists", {
+      p_folder_id: folder_id,
+    });
+
+    if (error) {
+      const errorMsg = error.message || "";
+      if (error.code === "UNATH" || errorMsg.includes("no autorizado")) {
+        return { error: "Acceso no autorizado." };
+      }
+      if (error.code === "FRBDN" || errorMsg.includes("permiso")) {
+        return { error: "No tienes permiso para eliminar esta carpeta." };
+      }
+      throw new Error(
+        "No se pudo eliminar la carpeta y su contenido. Intentalo nuevamente o contacta con soporte."
+      );
+    }
+
+    return { list_ids: list_ids_in_folder };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+
+
 export const leaveList = async (list_id: string) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();

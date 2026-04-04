@@ -14,7 +14,7 @@
 .confirmationModalContainer {
   position: relative;
   width: 350px;
-  height: 200px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -27,6 +27,7 @@
     rgba(12, 20, 66, 0.08) 0px 30px 80px,
     rgb(230, 233, 237) 0px 0px 0px 0px inset;
   padding: 30px;
+  gap: 20px;
 }
 
 .confirmationModalText {
@@ -51,9 +52,10 @@
 .confirmationModalButtons {
   width: 100%;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 15px;
+  gap: 8px;
 }
 
 .confirmationModalButton {
@@ -74,6 +76,15 @@
 
 .delete {
   color: rgb(255, 43, 43);
+}
+
+.secondary {
+  opacity: 0.8;
+  font-size: 13px;
+}
+
+.secondary:hover {
+  opacity: 1;
 }
 
 @media only screen and (max-width: 850px) and (display-mode: standalone) {

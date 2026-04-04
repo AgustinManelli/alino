@@ -14,22 +14,35 @@ import styles from "./ConfirmationModal.module.css";
 export const ConfirmationModal = () => {
   const ref = useRef<HTMLDivElement>(null);
 
-  const { isOpen, text, additionalText, actionButton, onConfirm, closeModal } =
-    useConfirmationModalStore(
-      useShallow((state) => ({
-        isOpen: state.isOpen,
-        text: state.text,
-        additionalText: state.additionalText,
-        actionButton: state.actionButton,
-        onConfirm: state.onConfirm,
-        closeModal: state.closeModal,
-      }))
-    );
+  const {
+    isOpen,
+    text,
+    additionalText,
+    actionButton,
+    onConfirm,
+    secondaryAction,
+    closeModal,
+  } = useConfirmationModalStore(
+    useShallow((state) => ({
+      isOpen: state.isOpen,
+      text: state.text,
+      additionalText: state.additionalText,
+      actionButton: state.actionButton,
+      onConfirm: state.onConfirm,
+      secondaryAction: state.secondaryAction,
+      closeModal: state.closeModal,
+    })),
+  );
 
   const handleAccept = useCallback(() => {
     onConfirm();
     closeModal();
-  }, [isOpen, closeModal]);
+  }, [onConfirm, closeModal]);
+
+  const handleSecondaryAccept = useCallback(() => {
+    secondaryAction?.onConfirm();
+    closeModal();
+  }, [secondaryAction, closeModal]);
 
   const handleCloseModal = () => {
     closeModal();
@@ -79,6 +92,7 @@ export const ConfirmationModal = () => {
                   </p>
                 )}
               </section>
+
               <section className={styles.confirmationModalButtons}>
                 <button
                   className={styles.confirmationModalButton}
@@ -86,12 +100,22 @@ export const ConfirmationModal = () => {
                 >
                   Cancelar
                 </button>
+
                 <button
                   className={`${styles.confirmationModalButton} ${styles.delete}`}
                   onClick={handleAccept}
                 >
                   {actionButton}
                 </button>
+
+                {secondaryAction && (
+                  <button
+                    className={`${styles.confirmationModalButton} ${styles.delete} ${styles.secondary}`}
+                    onClick={handleSecondaryAccept}
+                  >
+                    {secondaryAction.label}
+                  </button>
+                )}
               </section>
             </div>
           </motion.div>

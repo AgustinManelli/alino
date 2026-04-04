@@ -8,6 +8,7 @@ import {
   createListInvitation,
   deleteAllLists,
   deleteFolder,
+  deleteFolderWithContents,
   deleteList,
   getLists,
   getSingleLists,
@@ -158,6 +159,7 @@ type TodoStore = {
     folder_color: string | null
   ) => Promise<{ error: string | null }>;
   deleteAllLists: () => Promise<void>;
+  deleteFolderWithContents: (folder_id: string) => Promise<void>;
   addTask: (
     list_id: string,
     task_content: string,
@@ -860,6 +862,31 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     if (result?.error) {
       handleError(result.error);
       set({ folders: prevFolders, lists: prevLists });
+      return;
+    }
+  },
+
+  deleteFolderWithContents: async (folder_id) => {
+    const state = get();
+    const listIdsInFolder = state.lists
+      .filter((l) => l.folder === folder_id)
+      .map((l) => l.list_id);
+
+    const prevFolders = state.folders.slice();
+    const prevLists = state.lists.slice();
+    const prevTasks = state.tasks.slice();
+
+    set((s) => ({
+      folders: s.folders.filter((f) => f.folder_id !== folder_id),
+      lists: s.lists.filter((l) => l.folder !== folder_id),
+      tasks: s.tasks.filter((t) => !listIdsInFolder.includes(t.list_id)),
+    }));
+
+    const result = await deleteFolderWithContents(folder_id, listIdsInFolder);
+
+    if (result?.error) {
+      handleError(result.error);
+      set({ folders: prevFolders, lists: prevLists, tasks: prevTasks });
       return;
     }
   },

@@ -29,27 +29,30 @@ export function getInitialRank(): string {
 export function calcNewRank(arr: LexorankItem[], newIndex: number): string {
   const prev = arr[newIndex - 1]?.rank ?? null;
   const next = arr[newIndex + 1]?.rank ?? null;
-  
+
   // Primera inserción
   if (prev === null && next === null) {
     return LexoRank.middle().toString();
   }
-  
+
   // Insertar al inicio
   if (prev === null && next !== null) {
-    const nextRank = LexoRank.parse(next);
+    const nextRank = tryParse(next);
+    if (!nextRank) return LexoRank.middle().toString();
     return nextRank.genPrev().toString();
   }
-  
+
   // Insertar al final
   if (next === null && prev !== null) {
-    const prevRank = LexoRank.parse(prev);
+    const prevRank = tryParse(prev);
+    if (!prevRank) return LexoRank.middle().toString();
     return prevRank.genNext().toString();
   }
-  
+
   // Insertar en el medio
-  const prevRank = LexoRank.parse(prev!);
-  const nextRank = LexoRank.parse(next!);
+  const prevRank = tryParse(prev!);
+  const nextRank = tryParse(next!);
+  if (!prevRank || !nextRank) return LexoRank.middle().toString();
   return prevRank.between(nextRank).toString();
 }
 
@@ -60,9 +63,10 @@ export function calcNewItemRank(items: LexorankItem[]): string {
   if (items.length === 0) {
     return LexoRank.middle().toString();
   }
-  
-  // Obtener el último item y generar el siguiente rank
-  const lastRank = LexoRank.parse(items[items.length - 1].rank);
+
+  const lastItem = items[items.length - 1];
+  const lastRank = tryParse(lastItem.rank);
+  if (!lastRank) return LexoRank.middle().toString();
   return lastRank.genNext().toString();
 }
 
@@ -72,58 +76,75 @@ export function calcNewItemRank(items: LexorankItem[]): string {
 export function calcNewItemRankFromMultipleLists(
   ...lists: LexorankItem[][]
 ): string {
-  // Combinar todas las listas
   const allItems = lists.flat();
-  
+
   if (allItems.length === 0) {
     return LexoRank.middle().toString();
   }
-  
-  // Encontrar el rank máximo (último lexicográficamente)
-  const maxRank = allItems.reduce((max, item) => {
-    const currentRank = LexoRank.parse(item.rank);
-    const maxRankParsed = LexoRank.parse(max);
-    return currentRank.compareTo(maxRankParsed) > 0 ? item.rank : max;
-  }, allItems[0].rank);
-  
-  const lastRank = LexoRank.parse(maxRank);
-  return lastRank.genNext().toString();
+
+  // Solo considerar items con ranks válidos
+  const validItems = allItems.filter((item) => tryParse(item.rank) !== null);
+
+  if (validItems.length === 0) {
+    return LexoRank.middle().toString();
+  }
+
+  const maxRank = validItems.reduce((max, item) => {
+    const currentParsed = tryParse(item.rank)!;
+    const maxParsed = tryParse(max)!;
+    return currentParsed.compareTo(maxParsed) > 0 ? item.rank : max;
+  }, validItems[0].rank);
+
+  return tryParse(maxRank)!.genNext().toString();
 }
 
 /**
- * Calcula nuevo rank considerando items con rank string o null
+ * Intenta parsear un rank. Retorna null si el valor no es un LexoRank válido.
+ * Esto protege contra ranks legacy, UUIDs, o valores corruptos en la DB.
+ */
+function tryParse(rank: string): ReturnType<typeof LexoRank.parse> | null {
+  try {
+    return LexoRank.parse(rank);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Calcula nuevo rank considerando items con rank string o null.
+ * Ignora silenciosamente cualquier rank que no sea un LexoRank válido.
  */
 export function calculateNewRank(
   a: { rank: string | null }[] | null | undefined,
   b: { rank: string | null }[] | null | undefined
 ): string {
-  // Extraer todos los ranks válidos (no-null)
-  const ranksA = (a || [])
-    .map(item => item.rank)
+  const ranksA = (a ?? [])
+    .map((item) => item.rank)
     .filter((rank): rank is string => rank !== null);
-  
-  const ranksB = (b || [])
-    .map(item => item.rank)
+
+  const ranksB = (b ?? [])
+    .map((item) => item.rank)
     .filter((rank): rank is string => rank !== null);
-  
-  const allRanks = [...ranksA, ...ranksB];
-  
-  // Si no hay items con rank, retornar inicial
-  if (allRanks.length === 0) {
+
+  // Solo mantenemos los ranks que LexoRank puede parsear correctamente
+  const validRanks = [...ranksA, ...ranksB].filter(
+    (rank) => tryParse(rank) !== null
+  );
+
+  if (validRanks.length === 0) {
     return LexoRank.middle().toString();
   }
-  
-  // Encontrar el rank máximo
-  const maxRank = allRanks.reduce((max, current) => {
-    const currentRank = LexoRank.parse(current);
-    const maxRankParsed = LexoRank.parse(max);
-    return currentRank.compareTo(maxRankParsed) > 0 ? current : max;
+
+  // Encontrar el rank máximo entre los válidos
+  const maxRank = validRanks.reduce((max, current) => {
+    const currentParsed = tryParse(current)!;
+    const maxParsed = tryParse(max)!;
+    return currentParsed.compareTo(maxParsed) > 0 ? current : max;
   });
-  
-  // Incrementar el rank máximo encontrado
-  const lastRank = LexoRank.parse(maxRank);
-  return lastRank.genNext().toString();
+
+  return tryParse(maxRank)!.genNext().toString();
 }
+
 
 /**
  * Rebalancea todos los ranks cuando sea necesario
