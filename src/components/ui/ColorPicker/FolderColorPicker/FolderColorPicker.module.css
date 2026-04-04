@@ -255,3 +255,32 @@
   overflow: hidden;
   padding: 0px 15px;
 }
+
+.folderIcon {
+  stroke: var(--color);
+  width: 15px;
+  height: 15px;
+  stroke-width: 2;
+  transition: stroke 0.3s ease-in-out;
+}
+
+.arrowIcon {
+  stroke: var(--icon-color);
+  stroke-width: 1.5;
+  width: 18px;
+  height: auto;
+}
+
+.squircleIcon {
+  fill: var(--color);
+  width: 18px;
+  transition: fill 0.3s ease-in-out;
+}
+
+.squircleIconBorder {
+  fill: transparent;
+  position: absolute;
+  width: 30px;
+  stroke-width: 1.5;
+  stroke: var(--color);
+}

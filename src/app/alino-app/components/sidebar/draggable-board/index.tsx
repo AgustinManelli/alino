@@ -37,7 +37,7 @@ export const DraggableBoard = () => {
       setFolders: state.setFolders,
       updateIndexList: state.updateIndexList,
       updateIndexFolders: state.updateIndexFolders,
-    }))
+    })),
   );
   const animations = useUserPreferencesStore(useShallow((s) => s.animations));
 
@@ -51,7 +51,6 @@ export const DraggableBoard = () => {
   // Handlers
   const {
     draggedItem,
-    tempListLength,
     handleDragStart,
     handleDragEnd,
     onDragCancel,
@@ -93,7 +92,8 @@ export const DraggableBoard = () => {
         >
           <RootItems
             items={topLevelItems.filter(
-              (item) => item.kind !== "list" || !(item.data as ListsType).pinned
+              (item) =>
+                item.kind !== "list" || !(item.data as ListsType).pinned,
             )}
             lists={lists}
             draggedItem={draggedItem}
@@ -101,7 +101,6 @@ export const DraggableBoard = () => {
           />
           <DragOverlayView
             draggedItem={draggedItem}
-            tempListLength={tempListLength}
             modifiers={[adjustForLayoutPadding]}
           />
         </SortableContext>

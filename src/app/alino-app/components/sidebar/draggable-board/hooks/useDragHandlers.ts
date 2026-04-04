@@ -38,7 +38,6 @@ export function useDragHandlers({
   }, [combinedItems]);
 
   const [draggedItem, setDraggedItem] = useState<NormalizedItem | null>(null);
-  const [tempListLength, setTempListLength] = useState<number>(0);
 
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
@@ -46,7 +45,7 @@ export function useDragHandlers({
       if (!over) return;
 
       const activeId = active.id as string;
-      const overId = over.id as string;
+      // const overId = over.id as string;
 
       if (active.data?.current?.type !== "item") return;
 
@@ -90,12 +89,6 @@ export function useDragHandlers({
       if (!current) return;
 
       setDraggedItem(current);
-
-      const activeType = active.data?.current?.type;
-      if (activeType === "folder") {
-        const count = lists.filter((ls) => ls.folder === active.id).length;
-        setTempListLength(count);
-      }
     },
     [lists]
   );
@@ -124,7 +117,6 @@ export function useDragHandlers({
 
       if (active.id === over?.id) {
         setDraggedItem(null);
-        setTempListLength(0);
         return;
       }
 
@@ -154,7 +146,6 @@ export function useDragHandlers({
       );
       if (oldIndex === -1 || newIndex === -1) {
         setDraggedItem(null);
-        setTempListLength(0);
         return;
       }
 
@@ -246,32 +237,29 @@ export function useDragHandlers({
         }
       }
 
-      const finalFolders = newOrder
-        .filter((item) => item.kind === "folder")
-        .map((item) => item.data as FolderType);
+      // const finalFolders = newOrder
+      //   .filter((item) => item.kind === "folder")
+      //   .map((item) => item.data as FolderType);
 
-      const finalLists = newOrder
-        .filter((item) => item.kind === "list")
-        .map((item) => item.data as ListsType);
+      // const finalLists = newOrder
+      //   .filter((item) => item.kind === "list")
+      //   .map((item) => item.data as ListsType);
 
       // setLists(finalLists);
       // setFolders(finalFolders);
 
       // estado UI
       setDraggedItem(null);
-      setTempListLength(0);
     },
     [lists, folders, setLists, setFolders, updateIndexList, updateIndexFolders]
   );
 
   const onDragCancel = useCallback(() => {
     setDraggedItem(null);
-    setTempListLength(0);
   }, []);
 
   return {
     draggedItem,
-    tempListLength,
     handleDragStart,
     handleDragEnd,
     onDragCancel,

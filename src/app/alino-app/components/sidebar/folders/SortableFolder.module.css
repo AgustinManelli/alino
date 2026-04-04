@@ -1,6 +1,5 @@
 .folderContainer {
   position: relative;
-  border: 1px solid var(--border-container-color);
   border-radius: 15px;
   padding: 5px;
   transition: background-color 0.2s ease-in-out;
@@ -69,12 +68,10 @@
   -ms-user-select: none;
   user-select: none;
   z-index: 2;
-
   display: flex;
   flex-direction: column;
   gap: 5px;
   justify-content: flex-start;
-
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
   transition: scrollbar-color 0.3s ease;
@@ -83,6 +80,7 @@
 .listWrapper:hover {
   scrollbar-color: rgba(128, 128, 128, 0.3) transparent;
 }
+
 .listWrapper::-webkit-scrollbar {
   width: 6px;
 }
@@ -100,10 +98,15 @@
   background-color: rgba(128, 128, 128, 0.3);
 }
 
-.listWrapper p {
+.emptyIndicator {
   color: var(--text-not-available);
   font-size: 12px;
   margin: 0;
+  text-align: center;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .listWrapper p {
@@ -188,4 +191,86 @@
   padding-top: 5px;
   padding-bottom: 5px;
   min-height: 45px;
+}
+
+.iconAction {
+  width: 14px;
+  height: auto;
+  stroke: var(--text);
+  stroke-width: 2;
+}
+
+.arrowIconOpen {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2;
+  transform: rotate(0deg);
+  transition: transform 0.1s ease-in-out;
+}
+
+.arrowIconClosed {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2;
+  transform: rotate(-90deg);
+  transition: transform 0.1s ease-in-out;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px 0;
+  width: 100%;
+}
+
+.loadingIcon {
+  width: 15px;
+  height: auto;
+  stroke: var(--text);
+  stroke-width: 2.5;
+}
+
+.motionListWrapper {
+  width: 100%;
+}
+
+.sentinel {
+  height: 1px;
+  width: 100%;
+}
+
+.dragInfoWrapper {
+  width: 100%;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.dragFolderIcon {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2;
+  stroke: var(--color);
+}
+
+.dragFolderName {
+  color: var(--text);
+}
+
+.dragMenuWrapper {
+  background-color: var(--background-over-container);
+  width: 23px;
+  height: 23px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dragMenuIcon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 3;
+  stroke: var(--text);
 }

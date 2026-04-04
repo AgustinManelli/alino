@@ -1,32 +1,42 @@
 "use client";
-
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useShallow } from "zustand/shallow";
-
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useInputActions } from "./hooks/useInputActions";
-
 import { ColorPicker } from "@/components/ui/ColorPicker";
 import { FolderColorPicker } from "@/components/ui/ColorPicker/FolderColorPicker";
 import { DropdownListInput } from "./parts/DropdownListInput";
-
 import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
 
 const DEFAULT_COLOR = "#87189d";
 const DEFAULT_FOLDER_COLOR = null;
 
+const SPRING_TRANSITION = {
+  type: "spring",
+  stiffness: 700,
+  damping: 40,
+} as const;
+
 export const ListInput = () => {
-  const [activeInput, setActiveInput] = useState<boolean>(false);
+  const [activeInput, setActiveInput] = useState(false);
 
   const animations = useUserPreferencesStore(
-    useShallow((state) => state.animations)
+    useShallow((state) => state.animations),
   );
 
+  const motionProps = animations
+    ? {
+        initial: { scale: 0, opacity: 0 },
+        animate: { scale: 1, opacity: 1 },
+        exit: { scale: 0, opacity: 0 },
+      }
+    : {};
+
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const formRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const {
     color,
@@ -46,98 +56,113 @@ export const ListInput = () => {
     DEFAULT_FOLDER_COLOR,
   });
 
-  useOnClickOutside(formRef, resetForm, [], "ignore-sidebar-close");
+  useOnClickOutside(
+    containerRef,
+    () => {
+      if (activeInput) resetForm();
+    },
+    [],
+    "ignore-sidebar-close",
+  );
 
-  useEffect(() => {
-    if (activeInput) {
-      inputRef.current?.focus();
-    }
-  }, [activeInput]);
+  const resetListColor = useCallback(() => {
+    handleSetColor(DEFAULT_COLOR);
+    handleSetEmoji(null);
+  }, [handleSetColor, handleSetEmoji]);
+
+  const resetFolderColor = useCallback(() => {
+    handleSetColor(DEFAULT_FOLDER_COLOR);
+  }, [handleSetColor]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") handleSubmit();
+      if (e.key === "Escape") resetForm();
+    },
+    [handleSubmit, resetForm],
+  );
+
+  const handleSend = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      handleSubmit();
+    },
+    [handleSubmit],
+  );
 
   return (
-    <div className={styles.formContainer}>
-      {activeInput ? (
-        <motion.div
-          className={styles.form}
-          ref={formRef}
-          transition={{ type: "spring", stiffness: 700, damping: 40 }}
-          initial={animations ? { scale: 0, opacity: 0 } : undefined}
-          animate={animations ? { scale: 1, opacity: 1 } : undefined}
-          exit={animations ? { scale: 0, opacity: 0 } : undefined}
-        >
-          <div className={styles.colorPickerContainer}>
-            {isList ? (
-              <ColorPicker
-                color={color}
-                setColor={handleSetColor}
-                emoji={emoji}
-                setEmoji={handleSetEmoji}
-                setOriginalColor={() => {
-                  handleSetColor(DEFAULT_COLOR);
-                  handleSetEmoji(null);
-                }}
-                uniqueId="navbar-list-card"
-              />
-            ) : (
-              <FolderColorPicker
-                color={color}
-                setColor={handleSetColor}
-                setOriginalColor={() => {
-                  handleSetColor(DEFAULT_FOLDER_COLOR);
-                }}
-              />
-            )}
-          </div>
-          <motion.input
-            maxLength={30}
-            type="text"
-            placeholder={`Cree una ${isList ? "lista" : "carpeta"} nueva`}
-            value={inputValue}
-            ref={inputRef}
-            onChange={(e) => setInputValue(e.target.value)}
-            className={styles.inputText}
-            onKeyDown={(e: React.KeyboardEvent) => {
-              if (e.key === "Enter") handleSubmit();
-              if (e.key === "Escape") resetForm();
-            }}
-          />
-          <DropdownListInput
-            isList={isList}
-            color={color}
-            setIsList={setIsList}
-            setColor={handleSetColor}
-            DEFAULT_COLOR={DEFAULT_COLOR}
-          />
-          <button
-            className={styles.sendButton}
-            onClick={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
+    <div className={styles.formContainer} ref={containerRef}>
+      <AnimatePresence mode="popLayout">
+        {activeInput ? (
+          <motion.div
+            key="form"
+            className={styles.form}
+            transition={SPRING_TRANSITION}
+            {...motionProps}
           >
-            <SendIcon
-              style={{
-                width: 18,
-                stroke: "var(--icon-color)",
-                strokeWidth: 2,
-              }}
+            <div className={styles.colorPickerContainer}>
+              {isList ? (
+                <ColorPicker
+                  color={color}
+                  setColor={handleSetColor}
+                  emoji={emoji}
+                  setEmoji={handleSetEmoji}
+                  setOriginalColor={resetListColor}
+                  uniqueId="navbar-list-card"
+                />
+              ) : (
+                <FolderColorPicker
+                  color={color}
+                  setColor={handleSetColor}
+                  setOriginalColor={resetFolderColor}
+                />
+              )}
+            </div>
+
+            <input
+              autoFocus
+              maxLength={30}
+              type="text"
+              placeholder={`Cree una ${isList ? "lista" : "carpeta"} nueva`}
+              value={inputValue}
+              ref={inputRef}
+              onChange={(e) => setInputValue(e.target.value)}
+              className={styles.inputText}
+              onKeyDown={handleKeyDown}
             />
-          </button>
-        </motion.div>
-      ) : (
-        <motion.button
-          onClick={() => setActiveInput(true)}
-          className={styles.button}
-          transition={{ type: "spring", stiffness: 700, damping: 40 }}
-          initial={animations ? { scale: 0, opacity: 0 } : undefined}
-          animate={animations ? { scale: 1, opacity: 1 } : undefined}
-          exit={animations ? { scale: 0, opacity: 0 } : undefined}
-        >
-          <PlusBoxIcon
-            style={{ width: 18, stroke: "var(--icon-color)", strokeWidth: 2 }}
-          />
-        </motion.button>
-      )}
+
+            <DropdownListInput
+              isList={isList}
+              color={color}
+              setIsList={setIsList}
+              setColor={handleSetColor}
+              DEFAULT_COLOR={DEFAULT_COLOR}
+            />
+
+            <button className={styles.sendButton} onClick={handleSend}>
+              <SendIcon
+                style={{
+                  width: 18,
+                  stroke: "var(--icon-color)",
+                  strokeWidth: 2,
+                }}
+              />
+            </button>
+          </motion.div>
+        ) : (
+          <motion.button
+            key="trigger"
+            onClick={() => setActiveInput(true)}
+            className={styles.button}
+            transition={SPRING_TRANSITION}
+            {...motionProps}
+          >
+            <PlusBoxIcon
+              style={{ width: 18, stroke: "var(--icon-color)", strokeWidth: 2 }}
+            />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

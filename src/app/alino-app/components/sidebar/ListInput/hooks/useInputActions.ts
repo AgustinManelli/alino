@@ -1,13 +1,8 @@
+// useInputActions.ts
 import { RefObject, useCallback, useState } from "react";
-import { useShallow } from "zustand/shallow";
 import { toast } from "sonner";
-
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-
-import {
-  hexColorSchema,
-  shortcodeEmojiSchema,
-} from "@/lib/schemas/list/validation";
+import { hexColorSchema, shortcodeEmojiSchema } from "@/lib/schemas/list/validation";
 
 interface Props {
   inputRef: RefObject<HTMLInputElement | null>;
@@ -27,12 +22,8 @@ export const useInputActions = ({
   const [isList, setIsList] = useState<boolean>(true);
   const [inputValue, setInputValue] = useState<string>("");
 
-  const { insertList, insertFolder } = useTodoDataStore(
-    useShallow((state) => ({
-      insertList: state.insertList,
-      insertFolder: state.insertFolder,
-    }))
-  );
+  const insertList = useTodoDataStore((state) => state.insertList);
+  const insertFolder = useTodoDataStore((state) => state.insertFolder);
 
   const resetForm = useCallback(() => {
     setActiveInput(false);
@@ -40,41 +31,41 @@ export const useInputActions = ({
     setColor(DEFAULT_COLOR);
     setEmoji(null);
     setIsList(true);
-  }, []);
+  }, [setActiveInput, DEFAULT_COLOR]);
 
   const handleSetColor = useCallback(
     (newColor: string | null, isTyping?: boolean) => {
       setColor(newColor);
 
-      if (emoji && isTyping) {
-        setEmoji(null);
-      }
-
       if (isTyping) {
+        setEmoji((prev) => (prev ? null : prev));
         return;
       }
 
       const validation = hexColorSchema.safeParse(newColor);
       if (!validation.success) {
         setColor(isList ? DEFAULT_COLOR : DEFAULT_FOLDER_COLOR);
-        if (emoji) setEmoji(null);
+        setEmoji((prev) => (prev ? null : prev));
         toast.error(validation.error.issues[0].message);
       }
       inputRef.current?.focus();
     },
-    [emoji, isList]
+    [isList, DEFAULT_COLOR, DEFAULT_FOLDER_COLOR, inputRef]
   );
 
-  const handleSetEmoji = useCallback((newEmoji: string | null) => {
-    const validation = shortcodeEmojiSchema.safeParse(newEmoji);
-    if (!validation.success) {
-      setEmoji(null);
-      toast.error(validation.error.issues[0].message);
-    } else {
-      setEmoji(newEmoji);
-    }
-    inputRef.current?.focus();
-  }, []);
+  const handleSetEmoji = useCallback(
+    (newEmoji: string | null) => {
+      const validation = shortcodeEmojiSchema.safeParse(newEmoji);
+      if (!validation.success) {
+        setEmoji(null);
+        toast.error(validation.error.issues[0].message);
+      } else {
+        setEmoji(newEmoji);
+      }
+      inputRef.current?.focus();
+    },
+    [inputRef]
+  );
 
   const handleSubmit = useCallback(() => {
     const formatText = inputValue.replace(/\s+/g, " ").trim();

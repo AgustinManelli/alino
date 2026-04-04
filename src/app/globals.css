@@ -79,6 +79,11 @@
   --skeleton: rgb(255, 255, 255);
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --alino-primary-color: #87189d;
+  --alino-secondary-color: #6ac3ff;
+  --alino-tertiary-color: #ffc107;
+  --alino-quaternary-color: #ff6b6b;
+  --alino-quinary-color: #4caf50;
 }
 
 /* Variables para tema oscuro */

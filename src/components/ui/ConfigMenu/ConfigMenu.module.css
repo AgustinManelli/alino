@@ -6,8 +6,8 @@
 }
 
 .mainButton {
-  width: 23px;
-  height: 23px;
+  width: var(--icon-width);
+  height: var(--icon-width);
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -16,8 +16,15 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--background-over-container);
+  background-color: var(--bg-color);
   transition: background-color 0.3s ease-in-out;
+}
+
+.moreVerticalIcon {
+  stroke: var(--text);
+  width: 20px;
+  stroke-width: 3;
+  display: flex;
 }
 
 .mainButton:hover {

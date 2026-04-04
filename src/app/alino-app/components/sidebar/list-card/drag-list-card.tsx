@@ -1,6 +1,15 @@
 "use client";
 
+import { motion } from "motion/react";
+
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+
+import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
+
 import { ListsType } from "@/lib/schemas/database.types";
+
+import type { Variants } from "motion/react";
 import {
   Colaborate,
   MoreVertical,
@@ -8,14 +17,6 @@ import {
   SquircleIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
-import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
-import type { Variants } from "motion/react";
-import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
-import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { useMemo } from "react";
 
 const variants: Variants = {
   hidden: { opacity: 1 },
@@ -33,64 +34,32 @@ const variants: Variants = {
 };
 
 export function DragListCard({ list }: { list: ListsType }) {
-  const pathname = usePathname();
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
+  const animations = useUserPreferencesStore((state) => state.animations);
 
-  const { isMobile } = usePlatformInfoStore();
-  const { animations } = useUserPreferencesStore();
-
-  const tasks = useTodoDataStore((state) => state.tasks);
-
-  const filteredTasks = useMemo(
-    () => tasks.filter((task) => task.list_id === list.list_id),
-    [tasks, list.list_id]
-  );
-
-  const style = {
-    backgroundColor: "var(--background-card-dragged)",
-    pointerEvents: "auto",
-    boxShadow: "0px 0px 30px 0px rgba(0,0,0,0.1)",
-    zIndex: 99,
-    padding: "7px 10px 7px 15px",
-    left: "0",
-  } as React.CSSProperties;
+  const taskCount =
+    Array.isArray(list.list?.tasks) && list.list.tasks.length > 0
+      ? list.list.tasks[0].count
+      : 0;
 
   return (
     <motion.section
       className={styles.containerDrag}
-      style={style}
       variants={animations ? variants : undefined}
       initial="hidden"
       animate="visible"
       exit="hidden"
+      style={{ "--color": list.list.color } as React.CSSProperties}
     >
-      <div
-        className={styles.cardFx}
-        style={{
-          boxShadow:
-            pathname === `/alino-app/${list.list_id}`
-              ? `${list.list.color} 100px 50px 50px`
-              : `initial`,
-        }}
-      ></div>
+      <div className={`${styles.cardFx} ${styles.cardFxActive}`}></div>
 
-      <div className={styles.colorPickerContainer} style={{ minWidth: "16px" }}>
+      <div className={styles.colorPickerContainer}>
         {list.list.icon ? (
-          <div
-            style={{
-              width: "16px",
-              height: "16px",
-            }}
-          >
-            <EmojiMartComponent shortcodes={list?.list.icon} size="16px" />
+          <div className={styles.emojiContainer}>
+            <EmojiMartComponent shortcodes={list.list.icon} size={16} />
           </div>
         ) : (
-          <SquircleIcon
-            style={{
-              width: "12px",
-              fill: `${list?.list.color}`,
-              transition: "fill 0.2s ease-in-out",
-            }}
-          />
+          <SquircleIcon className={styles.squircleIcon} />
         )}
       </div>
 
@@ -101,27 +70,13 @@ export function DragListCard({ list }: { list: ListsType }) {
       <div className={styles.listManagerContainer}>
         {list.list.is_shared && (
           <div className={styles.pinContainer}>
-            <Colaborate
-              style={{
-                width: "100%",
-                height: "auto",
-                stroke: "var(--icon-color)",
-                strokeWidth: 2,
-                opacity: 0.4,
-              }}
-            />
+            <Colaborate className={styles.colaborateIcon} />
           </div>
         )}
+
         {list.pinned && (
           <div className={styles.pinContainer}>
-            <Pin
-              style={{
-                width: "100%",
-                height: "auto",
-                stroke: "rgb(210, 210, 210)",
-                strokeWidth: 2,
-              }}
-            />
+            <Pin className={styles.pinIcon} />
           </div>
         )}
 
@@ -132,27 +87,19 @@ export function DragListCard({ list }: { list: ListsType }) {
                 className={`${styles.configButtonContainer} ${styles.Mobile}`}
               >
                 <div className={styles.moreOptions}>
-                  <MoreVertical
-                    style={{
-                      stroke: "var(--text)",
-                      width: "20px",
-                      strokeWidth: "3",
-                    }}
-                  />
+                  <MoreVertical className={styles.moreVerticalIcon} />
                 </div>
               </div>
             </div>
             <div className={styles.configsContainer}>
               <p className={`${styles.counter} ${styles.Mobile}`}>
-                {filteredTasks?.length}
+                {taskCount}
               </p>
             </div>
           </>
         ) : (
           <div className={styles.configsContainer}>
-            <p className={`${styles.counter} ${styles.Desktop}`}>
-              {filteredTasks?.length}
-            </p>
+            <p className={`${styles.counter} ${styles.Desktop}`}>{taskCount}</p>
           </div>
         )}
       </div>

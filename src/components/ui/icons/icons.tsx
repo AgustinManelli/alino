@@ -104,13 +104,19 @@ export const HomeIcon2 = ({
   );
 };
 
-export const LoadingIcon = ({ style }: { style?: React.CSSProperties }) => {
+export const LoadingIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       style={style}
+      className={className}
+      {...props}
     >
       <path
         d="M12 3V6"
@@ -216,16 +222,21 @@ export const AppleIcon = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const DeleteIcon = ({ style }: { style?: React.CSSProperties }) => {
+export const DeleteIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       style={style}
-      className={styles.deleteIcon}
+      className={`${styles.deleteIcon} ${className}`}
       shapeRendering="geometricPrecision"
       textRendering="geometricPrecision"
+      {...props}
     >
       <g transform="translate(12,3.75)" className={styles.deleteIconLid}>
         <g transform="rotate(0)" className={styles.deleteIconLidChild}>
@@ -318,9 +329,19 @@ export const PaintBoard = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const SquircleIcon = ({ style }: { style?: React.CSSProperties }) => {
+export const SquircleIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={style}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      style={style}
+      className={className}
+      {...props}
+    >
       <path d="M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z" />
     </svg>
   );
@@ -476,13 +497,19 @@ export const MenuIcon = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const ArrowThin = ({ style }: { style?: React.CSSProperties }) => {
+export const ArrowThin = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       style={style}
+      className={className}
+      {...props}
     >
       <path
         d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
@@ -493,13 +520,19 @@ export const ArrowThin = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const MoreVertical = ({ style }: { style?: React.CSSProperties }) => {
+export const MoreVertical = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       style={style}
+      className={className}
+      {...props}
     >
       <path
         d="M11.992 12H12.001"
@@ -520,13 +553,19 @@ export const MoreVertical = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const Edit = ({ style }: { style?: React.CSSProperties }) => {
+export const Edit = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       style={style}
+      className={className}
+      {...props}
     >
       <path
         d="M14.0737 3.88545C14.8189 3.07808 15.1915 2.6744 15.5874 2.43893C16.5427 1.87076 17.7191 1.85309 18.6904 2.39232C19.0929 2.6158 19.4769 3.00812 20.245 3.79276C21.0131 4.5774 21.3972 4.96972 21.6159 5.38093C22.1438 6.37312 22.1265 7.57479 21.5703 8.5507C21.3398 8.95516 20.9446 9.33578 20.1543 10.097L10.7506 19.1543C9.25288 20.5969 8.504 21.3182 7.56806 21.6837C6.63212 22.0493 5.6032 22.0224 3.54536 21.9686L3.26538 21.9613C2.63891 21.9449 2.32567 21.9367 2.14359 21.73C1.9615 21.5234 1.98636 21.2043 2.03608 20.5662L2.06308 20.2197C2.20301 18.4235 2.27297 17.5255 2.62371 16.7182C2.97444 15.9109 3.57944 15.2555 4.78943 13.9445L14.0737 3.88545Z"
@@ -538,13 +577,19 @@ export const Edit = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const Check = ({ style }: { style?: React.CSSProperties }) => {
+export const Check = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       style={style}
+      className={className}
+      {...props}
     >
       <path d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z" />
       <path
@@ -593,13 +638,19 @@ export const Alert = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const Pin = ({ style }: { style?: React.CSSProperties }) => {
+export const Pin = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       style={style}
+      className={className}
+      {...props}
     >
       <path d="M3 21L8 16" strokeLinecap="round" strokeLinejoin="round" />
       <path
@@ -611,13 +662,19 @@ export const Pin = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const Unpin = ({ style }: { style?: React.CSSProperties }) => {
+export const Unpin = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       style={style}
+      className={className}
+      {...props}
     >
       <path
         d="M7.5 8C6.95863 8.1281 6.49932 8.14239 5.99268 8.45891C5.07234 9.03388 4.85108 9.71674 5.08821 10.7612C5.94028 14.5139 9.48599 18.0596 13.2388 18.9117C14.2834 19.1489 14.9661 18.928 15.5416 18.0077C15.8411 17.5288 15.8716 17.0081 16 16.5"
@@ -686,13 +743,19 @@ export const Config = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const LogOut = ({ style }: { style?: React.CSSProperties }) => {
+export const LogOut = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       style={style}
+      className={className}
+      {...props}
     >
       <path
         d="M15 17.625C14.9264 19.4769 13.3831 21.0494 11.3156 20.9988C10.8346 20.987 10.2401 20.8194 9.05112 20.484C6.18961 19.6768 3.70555 18.3203 3.10956 15.2815C3 14.723 3 14.0944 3 12.8373L3 11.1627C3 9.90561 3 9.27705 3.10956 8.71846C3.70555 5.67965 6.18961 4.32316 9.05112 3.51603C10.2401 3.18064 10.8346 3.01295 11.3156 3.00119C13.3831 2.95061 14.9264 4.52307 15 6.37501"
@@ -824,13 +887,19 @@ export const Clock = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const Colaborate = ({ style }: { style?: React.CSSProperties }) => {
+export const Colaborate = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill={"none"}
       style={style}
+      className={className}
+      {...props}
     >
       <path d="M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7Z"></path>
       <path
@@ -939,13 +1008,19 @@ export const Note = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const FolderOpen = ({ style }: { style?: React.CSSProperties }) => {
+export const FolderOpen = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill={"none"}
       style={style}
+      className={className}
+      {...props}
     >
       <path d="M2.36064 15.1788C1.98502 13.2956 1.79721 12.354 2.33084 11.7159C2.36642 11.6734 2.40405 11.6323 2.44361 11.5927C3.03686 11 4.08674 11 6.1865 11H17.8135C19.9133 11 20.9631 11 21.5564 11.5927C21.5959 11.6323 21.6336 11.6734 21.6692 11.7159C22.2028 12.354 22.015 13.2956 21.6394 15.1788C21.0993 17.8865 20.8292 19.2404 19.8109 20.0721C19.7414 20.1288 19.6698 20.1833 19.5961 20.2354C18.5163 21 17.0068 21 13.9876 21H10.0124C6.99323 21 5.48367 21 4.40387 20.2354C4.33022 20.1833 4.2586 20.1288 4.18914 20.0721C3.17075 19.2404 2.90072 17.8865 2.36064 15.1788Z" />
       <path
@@ -957,13 +1032,19 @@ export const FolderOpen = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const FolderClosed = ({ style }: { style?: React.CSSProperties }) => {
+export const FolderClosed = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill={"none"}
       style={style}
+      className={className}
+      {...props}
     >
       <path
         d="M8 7H16.75C18.8567 7 19.91 7 20.6667 7.50559C20.9943 7.72447 21.2755 8.00572 21.4944 8.33329C22 9.08996 22 10.1433 22 12.25C22 15.7612 22 17.5167 21.1573 18.7779C20.7926 19.3238 20.3238 19.7926 19.7779 20.1573C18.5167 21 16.7612 21 13.25 21H12C7.28595 21 4.92893 21 3.46447 19.5355C2 18.0711 2 15.714 2 11V7.94427C2 6.1278 2 5.21956 2.38032 4.53806C2.65142 4.05227 3.05227 3.65142 3.53806 3.38032C4.21956 3 5.1278 3 6.94427 3C8.10802 3 8.6899 3 9.19926 3.19101C10.3622 3.62712 10.8418 4.68358 11.3666 5.73313L12 7"

@@ -44,6 +44,12 @@
   -ms-user-select: none;
   user-select: none;
   cursor: pointer;
+  background-color: var(--background-card-dragged);
+  pointer-events: auto;
+  box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.1);
+  z-index: 99;
+  padding: 7px 10px 7px 15px;
+  left: 0;
 }
 
 .cardFx {
@@ -51,9 +57,15 @@
   height: 200px;
   position: absolute;
   left: -200px;
-  opacity: 0;
+  box-shadow: initial;
   transition: opacity 0.3s ease-in-out;
   z-index: 0;
+  opacity: 0;
+  box-shadow: var(--color) 100px 50px 50px;
+}
+
+.cardFxActive {
+  opacity: 0.1;
 }
 
 @media only screen and (min-width: 851px) {
@@ -62,7 +74,7 @@
   }
 
   .container:hover .cardFx {
-    opacity: 0.05 !important;
+    opacity: 0.1 !important;
   }
 }
 
@@ -74,6 +86,42 @@
   flex-direction: row;
   gap: 3px;
   height: 100%;
+  min-width: 16px;
+}
+
+.emojiContainer {
+  width: 16px;
+  height: 16px;
+}
+
+.squircleIcon {
+  width: 12px;
+  fill: var(--color);
+  transition: fill 0.2s ease-in-out;
+}
+
+.colaborateIcon {
+  width: 100%;
+  height: auto;
+  stroke: var(--icon-color);
+  stroke-width: 2;
+  opacity: 0.4;
+}
+
+.pinIcon {
+  width: 100%;
+  height: auto;
+  stroke: var(--icon-color);
+  stroke-width: 2;
+  opacity: 0.4;
+}
+
+.moreVerticalIcon {
+  width: 20px;
+  height: auto;
+  stroke: var(--icon-color);
+  stroke-width: 3;
+  opacity: 0.4;
 }
 
 .textContainer {
@@ -151,6 +199,14 @@
   height: 23px;
 }
 
+.configsContainerMobile {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
 .configButtonContainer,
 .configButtonContainerDesktop {
   border: none;
@@ -201,6 +257,13 @@
 
 .Mobile {
   position: relative;
+}
+
+.iconStyle {
+  width: 14px;
+  height: auto;
+  stroke: var(--text);
+  stroke-width: 2;
 }
 
 /* @media only screen and (max-width: 850px) {

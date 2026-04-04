@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 
 import { ColorPicker } from "@/components/ui/ColorPicker";
 import { ListsType } from "@/lib/schemas/database.types";
-//import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { TextTitlesAnimation } from "@/components/ui/text-titles-animation";
 
 import { hexColorSchema } from "@/lib/schemas/list/validation";
@@ -14,7 +13,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { Check } from "@/components/ui/icons/icons";
 import styles from "./ListInfoEdit.module.css";
 
-interface props {
+interface Props {
   list: ListsType;
   isNameChange: boolean;
   setIsNameChange: (value: boolean) => void;
@@ -27,6 +26,20 @@ interface props {
   inFolder?: boolean;
 }
 
+const isValidHex = (value: string) => {
+  return hexColorSchema.safeParse(value).success;
+};
+
+const motionBgState = {
+  backgroundColor: "var(--background-over-container)",
+};
+
+const motionTransition = {
+  backgroundColor: {
+    duration: 0.3,
+  },
+};
+
 export const ListInfoEdit = memo(function ListInfoEdit({
   list,
   isNameChange,
@@ -38,15 +51,9 @@ export const ListInfoEdit = memo(function ListInfoEdit({
   uniqueId = "default",
   big = false,
   inFolder = false,
-}: props) {
-  //const animations = useUserPreferencesStore((state) => state.animations);
+}: Props) {
   const updateDataList = useTodoDataStore((state) => state.updateDataList);
-
   const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const isValidHex = useCallback((value: string) => {
-    return hexColorSchema.safeParse(value).success;
-  }, []);
 
   const handleSetColor = useCallback(
     (color: string, typing?: boolean) => {
@@ -66,7 +73,7 @@ export const ListInfoEdit = memo(function ListInfoEdit({
       setColorTemp(color);
       inputRef.current?.focus();
     },
-    [isValidHex, setColorTemp, emoji, setEmoji, list.list.color, list.list.icon]
+    [setColorTemp, emoji, setEmoji, list.list.color, list.list.icon],
   );
 
   const handleSetEmoji = useCallback(
@@ -74,7 +81,7 @@ export const ListInfoEdit = memo(function ListInfoEdit({
       setEmoji(newEmoji);
       inputRef.current?.focus();
     },
-    [setEmoji]
+    [setEmoji],
   );
 
   const setOriginalColor = useCallback(() => {
@@ -110,7 +117,7 @@ export const ListInfoEdit = memo(function ListInfoEdit({
       list.list_id,
       formatText,
       colorTemp,
-      emoji
+      emoji,
     );
 
     if (error) {
@@ -141,8 +148,22 @@ export const ListInfoEdit = memo(function ListInfoEdit({
         setIsNameChange(false);
       }
     },
-    [handleSaveName, setIsNameChange]
+    [handleSaveName, setIsNameChange],
   );
+
+  const handleSaveClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleSaveName();
+    },
+    [handleSaveName],
+  );
+
+  const inputStyle = {
+    fontSize: big ? "18px" : "14px",
+    fontWeight: big ? "600" : "initial",
+  };
 
   return (
     <>
@@ -152,31 +173,20 @@ export const ListInfoEdit = memo(function ListInfoEdit({
           setColor={handleSetColor}
           emoji={emoji}
           setEmoji={handleSetEmoji}
-          active={isNameChange ? true : false}
+          active={isNameChange}
           setOriginalColor={setOriginalColor}
-          uniqueId={"navbar-list-card"}
-          big={big ? true : false}
+          uniqueId={uniqueId}
+          big={big}
         />
       </div>
       <div className={styles.textContainer}>
         {isNameChange ? (
           <motion.input
-            style={{
-              fontSize: big ? "18px" : "14px",
-              fontWeight: big ? "600" : "initial",
-            }}
+            style={inputStyle}
             maxLength={30}
-            initial={{
-              backgroundColor: "var(--background-over-container)",
-            }}
-            animate={{
-              backgroundColor: "var(--background-over-container)",
-            }}
-            transition={{
-              backgroundColor: {
-                duration: 0.3,
-              },
-            }}
+            initial={motionBgState}
+            animate={motionBgState}
+            transition={motionTransition}
             className={styles.nameChangerInput}
             type="text"
             defaultValue={list.list.list_name}
@@ -198,22 +208,8 @@ export const ListInfoEdit = memo(function ListInfoEdit({
         )}
       </div>
       {isNameChange && (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleSaveName();
-          }}
-          className={styles.checkButton}
-        >
-          <Check
-            style={{
-              width: "23px",
-              height: "auto",
-              stroke: "var(--icon-color)",
-              strokeWidth: 2,
-            }}
-          />
+        <button onClick={handleSaveClick} className={styles.checkButton}>
+          <Check className={styles.checkIconStyle} />
         </button>
       )}
     </>

@@ -1,14 +1,19 @@
-import React from "react";
-import { Variants } from "motion";
+"use client";
+
+import React, { CSSProperties, useMemo } from "react";
 import { motion } from "motion/react";
+import { Variants } from "motion";
+
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+
 import { FolderType } from "@/lib/schemas/database.types";
+
 import {
   ArrowThin,
   FolderClosed,
   MoreVertical,
 } from "@/components/ui/icons/icons";
-import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
-
 import styles from "./SortableFolder.module.css";
 
 const variants: Variants = {
@@ -28,85 +33,70 @@ const variants: Variants = {
 
 interface Props {
   folder: FolderType;
-  listCount: number;
 }
 
-export const DragSortableFolder = ({ folder, listCount = 0 }: Props) => {
+export const DragSortableFolder = ({ folder }: Props) => {
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
+  const animations = useUserPreferencesStore((state) => state.animations);
 
-  const folderStyle = {
-    stroke: folder.folder_color ?? "var(--text-not-available)",
-    width: "15px",
-    height: "15px",
-    strokeWidth: 2,
-  };
-  const menuStyle = {
-    stroke: "var(--text)",
-    width: "20px",
-    height: "20px",
-    strokeWidth: 3,
-  };
+  const dragStyles = useMemo(
+    () => ({
+      border: "solid 1px #3ebb00",
+      zIndex: 1,
+    }),
+    [],
+  );
+
+  const arrowStyle = useMemo(
+    () => ({
+      stroke: folder.folder_color ?? "var(--text-not-available)",
+    }),
+    [folder.folder_color],
+  );
+
+  const listsCount =
+    Array.isArray(folder.memberships) && folder.memberships.length > 0
+      ? folder.memberships[0].count
+      : 0;
 
   return (
     <motion.div
       className={styles.folderContainer}
-      variants={variants}
+      variants={animations ? variants : undefined}
       initial="hidden"
       animate="visible"
-      style={{
-        border: "solid 1px #3ebb00",
-        zIndex: "1",
-      }}
+      style={dragStyles}
     >
       <div className={styles.folderHeader}>
         <div className={styles.button}>
-          <ArrowThin
-            style={{
-              stroke: folder.folder_color ?? "var(--text-not-available)",
-              width: "15px",
-              height: "15px",
-              strokeWidth: 2,
-              transform: "rotate(-90deg)",
-              transition: "transform 0.1s ease-in-out",
-            }}
-          />
+          <ArrowThin className={styles.arrowIconClosed} style={arrowStyle} />
         </div>
         <div className={styles.infoEditContainer}>
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              gap: "5px",
-              alignItems: "center",
-            }}
-          >
-            <FolderClosed style={folderStyle} />
-            <p style={{ color: "var(--text)" }}>{folder.folder_name}</p>
+          <div className={styles.dragInfoWrapper}>
+            <FolderClosed
+              className={styles.dragFolderIcon}
+              style={
+                {
+                  "--color": folder.folder_color ?? "var(--text-not-available)",
+                } as CSSProperties
+              }
+            />
+            <p className={styles.dragFolderName}>{folder.folder_name}</p>
           </div>
         </div>
         <section className={styles.buttonsContainer}>
           {isMobile ? (
             <section className={styles.rightButtonsMobile}>
               <div className={styles.moreConfigMenuMobile}>
-                <div
-                  style={{
-                    backgroundColor: "var(--background-over-container)",
-                    width: "23px",
-                    height: "23px",
-                    borderRadius: "5px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <MoreVertical style={menuStyle} />
+                <div className={styles.dragMenuWrapper}>
+                  <MoreVertical className={styles.dragMenuIcon} />
                 </div>
               </div>
-              <div className={styles.counterMobile}>{listCount}</div>
+              <div className={styles.counterMobile}>{listsCount}</div>
             </section>
           ) : (
             <div className={styles.counter} style={{ opacity: 1 }}>
-              {listCount}
+              {listsCount}
             </div>
           )}
         </section>

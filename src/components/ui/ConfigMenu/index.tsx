@@ -42,9 +42,7 @@ export const ConfigMenu = memo(function ConfigMenu({
   }, [optionalState]);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) return;
 
     const triggerElement = triggerRef.current;
     const menuElement = menuRef.current;
@@ -93,45 +91,52 @@ export const ConfigMenu = memo(function ConfigMenu({
     };
   }, [open, handleClose, idScrollArea]);
 
-  const handleTriggerClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const newOpenState = !open;
-    setOpen(newOpenState);
-    optionalState?.(newOpenState);
-  };
+  const handleTriggerClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setOpen((prevOpen) => {
+        const newState = !prevOpen;
+        optionalState?.(newState);
+        return newState;
+      });
+    },
+    [optionalState],
+  );
+
+  const handleOptionClick = useCallback(
+    (action: () => void) => {
+      action();
+      handleClose();
+    },
+    [handleClose],
+  );
 
   return (
     <>
       <div className={styles.fit} ref={triggerRef}>
         <button
           className={styles.mainButton}
-          style={{
-            width: iconWidth,
-            height: iconWidth,
-            backgroundColor: withoutBg
-              ? "transparent"
-              : open
-                ? "var(--background-over-container-hover)"
-                : "var(--background-over-container)",
-          }}
+          style={
+            {
+              "--icon-width": iconWidth,
+              "--bg-color": withoutBg
+                ? "transparent"
+                : open
+                  ? "var(--background-over-container-hover)"
+                  : "var(--background-over-container)",
+            } as React.CSSProperties
+          }
           onClick={handleTriggerClick}
         >
-          <MoreVertical
-            style={{
-              stroke: "var(--text)",
-              width: "20px",
-              strokeWidth: "3",
-              display: "flex",
-            }}
-          />
+          <MoreVertical className={styles.moreVerticalIcon} />
         </button>
       </div>
       <ClientOnlyPortal>
         {open && (
           <section
             ref={menuRef}
-            className={`${styles.container} ignore-sidebar-close`}
+            className={`${styles.container} ignore-sidebar-close config-menu-portal`}
             id={`config-menu-container-${uniqueId}`}
             onClick={(e) => {
               e.stopPropagation();
@@ -143,10 +148,7 @@ export const ConfigMenu = memo(function ConfigMenu({
                   key={`${option.name}-${index}`}
                   name={option.name}
                   icon={option.icon}
-                  action={() => {
-                    option.action();
-                    handleClose();
-                  }}
+                  action={() => handleOptionClick(option.action)}
                 />
               ))}
             </section>

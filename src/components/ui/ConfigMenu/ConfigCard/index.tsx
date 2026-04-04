@@ -1,16 +1,23 @@
 "use client";
 
+import { memo } from "react";
+
 import styles from "./ConfigCard.module.css";
 
-type props = {
+interface Props {
   name: string;
   icon: React.ReactNode;
   action: () => void;
-};
+}
 
-export function ConfigCard({ name, icon, action }: props) {
+export const ConfigCard = memo(function ConfigCard({
+  name,
+  icon,
+  action,
+}: Props) {
   return (
-    <div
+    <button
+      type="button"
       className={styles.options}
       onClick={(e) => {
         e.preventDefault();
@@ -20,6 +27,6 @@ export function ConfigCard({ name, icon, action }: props) {
     >
       {icon}
       <p>{name}</p>
-    </div>
+    </button>
   );
-}
+});

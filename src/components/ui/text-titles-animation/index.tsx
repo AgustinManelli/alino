@@ -2,13 +2,12 @@
 
 import React, { useMemo } from "react";
 import { motion } from "motion/react";
-
 import GraphemeSplitter from "grapheme-splitter";
 
 import type { Variants } from "motion/react";
 import styles from "./TextTitlesAnimation.module.css";
 
-interface props {
+interface Props {
   text: string;
   className?: string;
   delay?: number;
@@ -21,6 +20,8 @@ interface props {
   limitLenght?: number;
 }
 
+const splitter = new GraphemeSplitter();
+
 export const TextTitlesAnimation = React.memo(function TextTitlesAnimation({
   text,
   className = "",
@@ -32,46 +33,52 @@ export const TextTitlesAnimation = React.memo(function TextTitlesAnimation({
   fontWeight = "500",
   colorEffect = "#1c1c1c",
   limitLenght = 30,
-}: props) {
+}: Props) {
   const characters = useMemo(() => {
-    const splitter = new GraphemeSplitter();
     const normalizedText = text.replace(/\s+/g, " ");
-    return splitter.splitGraphemes(normalizedText);
-  }, [text]);
+    return splitter.splitGraphemes(normalizedText).slice(0, limitLenght);
+  }, [text, limitLenght]);
 
-  const containerVariants = {
-    hidden: {},
-    visible: {
-      transition: {
-        delayChildren: delay * 1.5,
-        staggerChildren: stagger,
-      },
-    },
-  };
-
-  const charVariants: Variants = {
-    hidden: {
-      opacity: 0,
-      // scale: 0,
-      // filter: "blur(10px)",
-      color: "transparent",
-    },
-    visible: {
-      opacity: 1,
-      // scale: 1,
-      // filter: "blur(0px)",
-      color: [colorEffect, color],
-      transition: {
-        default: {
-          duration: duration,
-          ease: [0.2, 0.65, 0.3, 0.9],
-        },
-        color: {
-          duration: duration * 2,
+  const containerVariants = useMemo(
+    () => ({
+      hidden: {},
+      visible: {
+        transition: {
+          delayChildren: delay * 1.5,
+          staggerChildren: stagger,
         },
       },
-    },
-  };
+    }),
+    [delay, stagger],
+  );
+
+  const charVariants = useMemo<Variants>(
+    () => ({
+      hidden: {
+        opacity: 0,
+        color: "transparent",
+      },
+      visible: {
+        opacity: 1,
+        color: [colorEffect, color],
+        transition: {
+          default: {
+            duration: duration,
+            ease: [0.2, 0.65, 0.3, 0.9],
+          },
+          color: {
+            duration: duration * 2,
+          },
+        },
+      },
+    }),
+    [colorEffect, color, duration],
+  );
+
+  const spanStyle = useMemo(
+    () => ({ fontSize: charSize, fontWeight }),
+    [charSize, fontWeight],
+  );
 
   return (
     <motion.span
@@ -79,9 +86,9 @@ export const TextTitlesAnimation = React.memo(function TextTitlesAnimation({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      style={{ fontSize: charSize, fontWeight }}
+      style={spanStyle}
     >
-      {characters.slice(0, limitLenght).map((char, index) => (
+      {characters.map((char, index) => (
         <motion.span
           key={`${char}-${index}`}
           className={styles.character}

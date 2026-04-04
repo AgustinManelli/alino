@@ -8,11 +8,9 @@ import type { ListsType, FolderType } from "@/lib/schemas/database.types";
 
 export function DragOverlayView({
   draggedItem,
-  tempListLength,
   modifiers,
 }: {
   draggedItem: NormalizedItem | null;
-  tempListLength: number;
   modifiers?: Modifier[];
 }) {
   return (
@@ -21,10 +19,7 @@ export function DragOverlayView({
         draggedItem.kind === "list" ? (
           <DragListCard list={draggedItem.data as ListsType} />
         ) : (
-          <DragSortableFolder
-            folder={draggedItem.data as FolderType}
-            listCount={tempListLength}
-          />
+          <DragSortableFolder folder={draggedItem.data as FolderType} />
         )
       ) : null}
     </DragOverlay>

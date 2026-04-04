@@ -10,6 +10,11 @@ import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-compone
 import { EmojiMartPicker } from "@/components/ui/EmojiMart/emoji-mart-picker";
 import colorsData from "./colors.json";
 
+import { useModalUbication } from "@/hooks/useModalUbication";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+
+import { hexColorSchema } from "@/lib/schemas/list/validation";
+
 import {
   ArrowThin,
   CopyToClipboardIcon,
@@ -17,11 +22,39 @@ import {
   SquircleIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./ColorPicker.module.css";
-import { hexColorSchema } from "@/lib/schemas/list/validation";
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
-import { useModalUbication } from "@/hooks/useModalUbication";
 
-interface props {
+const modalInitial = { scale: 0, opacity: 0, filter: "blur(30px)" };
+const modalAnimate = {
+  scale: 1,
+  opacity: 1,
+  filter: "blur(0px)",
+  transition: { duration: 0.2 },
+};
+const modalExit = { scale: 0, opacity: 0, filter: "blur(30px)" };
+const modalTransition = {
+  type: "spring" as const,
+  stiffness: 700,
+  damping: 40,
+};
+
+const arrowInitial = { opacity: 0, width: 0, marginRight: 0, scale: 0 };
+const arrowAnimate = {
+  opacity: 1,
+  width: "16px",
+  marginRight: "10px",
+  scale: 1,
+};
+
+interface EmojiType {
+  id: string;
+  keywords: string[];
+  name: string;
+  native: string;
+  shortcodes: string;
+  unified: string;
+}
+
+interface Props {
   color: string | null;
   setColor: (value: string, typing?: boolean) => void;
   emoji: string | null;
@@ -33,38 +66,35 @@ interface props {
 }
 
 export function ColorPicker({
-  color = "#1c1c1c", //indica el color que está seleccionado en ese momento, no corresponde al original
-  setColor, //corresponde a la función para cambiar el valor de los colores temporales, no cambia valor de color original
-  emoji, //corresponde al valor del emoji temporal, no al original
-  setEmoji, //corresponde a la función para cambiar el valor del emoji temporal, similar a la de color
-  active = true, //activar o desactivar funcion de cambiar de color (estatico o color-picker)
+  color = "#1c1c1c",
+  setColor,
+  emoji,
+  setEmoji,
+  active = true,
   setOriginalColor,
   uniqueId = "",
   big = false,
-}: props) {
-  //estados locales
-  const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false); //estado para abrir o cerrar color-picker-container
-  const [type, setType] = useState<string>("color"); //modo color o emoji picker en la modal
+}: Props) {
+  const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
+  const [type, setType] = useState<string>("color");
 
-  //estados globales
   const { animations } = useUserPreferencesStore();
-
-  //ref's
   const pickerRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
 
-  //funciones
-  const onEmojiSelect = (selectedEmoji: emoji) => {
-    setEmoji(selectedEmoji.shortcodes as string);
-    const palette: string[] = generatePalette(selectedEmoji.native);
-    const dominantColor: string = palette[Math.floor(palette.length / 2)];
-    setColor(dominantColor);
-    setIsOpenPicker(false);
-  };
+  const onEmojiSelect = useCallback(
+    (selectedEmoji: EmojiType) => {
+      setEmoji(selectedEmoji.shortcodes as string);
+      const palette: string[] = generatePalette(selectedEmoji.native);
+      const dominantColor: string = palette[Math.floor(palette.length / 2)];
+      setColor(dominantColor);
+      setIsOpenPicker(false);
+    },
+    [setColor, setEmoji],
+  );
 
   useModalUbication(pickerRef, portalRef, () => {
     const validation = hexColorSchema.safeParse(color);
-
     if (!validation.success) {
       setOriginalColor();
     }
@@ -72,52 +102,31 @@ export function ColorPicker({
     setType("color");
   });
 
-  const renderIcon = () => (
-    <div className={styles.renderIconContainer}>
-      {emoji === null || emoji === "" ? (
-        <SquircleIcon
-          style={{
-            fill: color ?? "var(--text-not-available)",
-            transition: "fill 0.3s ease-in-out",
-            width: big ? "16px" : "12px",
-          }}
-        />
-      ) : (
-        <div
-          style={{
-            width: big ? "20px" : "16px",
-            height: big ? "20px" : "16px",
-          }}
-        >
-          <EmojiMartComponent shortcodes={emoji} size={big ? "20px" : "16px"} />
-        </div>
-      )}
-    </div>
+  const togglePicker = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (active) setIsOpenPicker((prev) => !prev);
+      setType("color");
+    },
+    [active],
   );
 
-  const titleButtons = (typeSelected: string, titleButton: string) => (
-    <button
-      className={styles.title}
-      style={{
-        color:
-          type === typeSelected ? "var(--text)" : "var(--text-not-available)",
-      }}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setType(typeSelected);
-      }}
-    >
-      {titleButton}
-    </button>
-  );
+  const copyToClipboard = useCallback(() => {
+    if (color) {
+      navigator.clipboard.writeText(color);
+      toast("Color copiado al portapapeles");
+    }
+  }, [color]);
+
+  const isColorValid = hexColorSchema.safeParse(color).success && color;
 
   return (
     <>
       <div className={styles.pickerContainer} ref={pickerRef}>
         <AnimatePresence>
           <motion.button
-            key={"color-picker-selector"}
+            key="color-picker-selector"
             className={styles.mainButton}
             animate={
               animations ? { paddingLeft: active ? "10px" : "5px" } : undefined
@@ -132,46 +141,42 @@ export function ColorPicker({
               paddingLeft: animations ? undefined : active ? "10px" : "5px",
               cursor: active ? "pointer" : "default",
             }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              active && setIsOpenPicker(!isOpenPicker);
-              setType("color");
-            }}
+            onClick={togglePicker}
             disabled={!active}
           >
-            {renderIcon()}
+            <div className={styles.renderIconContainer}>
+              {!emoji ? (
+                <SquircleIcon
+                  style={{
+                    fill: color ?? "var(--text-not-available)",
+                    transition: "fill 0.3s ease-in-out",
+                    width: big ? "16px" : "12px",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: big ? "20px" : "16px",
+                    height: big ? "20px" : "16px",
+                  }}
+                >
+                  <EmojiMartComponent
+                    shortcodes={emoji}
+                    size={big ? "20px" : "16px"}
+                  />
+                </div>
+              )}
+            </div>
+
             <AnimatePresence>
               {active && (
                 <motion.div
                   layout
-                  key={"color-picker-arrow"}
+                  key="color-picker-arrow"
                   className={styles.arrowContainer}
-                  initial={
-                    animations
-                      ? {
-                          opacity: 0,
-                          width: 0,
-                          marginRight: 0,
-                          scale: 0,
-                        }
-                      : undefined
-                  }
-                  animate={
-                    animations
-                      ? {
-                          opacity: 1,
-                          width: "16px",
-                          marginRight: "10px",
-                          scale: 1,
-                        }
-                      : undefined
-                  }
-                  exit={
-                    animations
-                      ? { opacity: 0, width: 0, marginRight: 0, scale: 0 }
-                      : undefined
-                  }
+                  initial={animations ? arrowInitial : undefined}
+                  animate={animations ? arrowAnimate : undefined}
+                  exit={animations ? arrowInitial : undefined}
                 >
                   <motion.div
                     animate={{ rotate: isOpenPicker ? 180 : 0 }}
@@ -179,16 +184,12 @@ export function ColorPicker({
                       animations
                         ? {
                             rotate: {
-                              type: "spring",
+                              type: "spring" as const,
                               stiffness: 300,
                               damping: 20,
                             },
                           }
-                        : {
-                            rotate: {
-                              duration: 0.2,
-                            },
-                          }
+                        : { rotate: { duration: 0.2 } }
                     }
                     style={{
                       width: "fit-content",
@@ -211,25 +212,17 @@ export function ColorPicker({
           </motion.button>
         </AnimatePresence>
       </div>
+
       {createPortal(
         <>
           {isOpenPicker && (
             <motion.section
-              className={`${styles.modalContainer} ignore-sidebar-close`}
+              className={`${styles.modalContainer} ignore-sidebar-close color-picker-portal`}
               ref={portalRef}
-              initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-                filter: "blur(0px)",
-                transition: { duration: 0.2 },
-              }}
-              exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
-              transition={{
-                type: "spring",
-                stiffness: 700,
-                damping: 40,
-              }}
+              initial={modalInitial}
+              animate={modalAnimate}
+              exit={modalExit}
+              transition={modalTransition}
               id={`color-picker-container-${uniqueId}`}
             >
               <section className={styles.titleSection}>
@@ -237,12 +230,42 @@ export function ColorPicker({
                   className={styles.titleButtons}
                   style={{
                     justifyContent:
-                      "flex-" + (type === "color" ? "start" : "end"),
+                      type === "color" ? "flex-start" : "flex-end",
                   }}
                 >
                   <motion.div className={styles.titleSelector} layout />
-                  {titleButtons("color", "color")}
-                  {titleButtons("emoji", "emoji")}
+                  <button
+                    className={styles.title}
+                    style={{
+                      color:
+                        type === "color"
+                          ? "var(--text)"
+                          : "var(--text-not-available)",
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setType("color");
+                    }}
+                  >
+                    color
+                  </button>
+                  <button
+                    className={styles.title}
+                    style={{
+                      color:
+                        type === "emoji"
+                          ? "var(--text)"
+                          : "var(--text-not-available)",
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setType("emoji");
+                    }}
+                  >
+                    emoji
+                  </button>
                 </div>
               </section>
 
@@ -251,13 +274,13 @@ export function ColorPicker({
               {type === "color" ? (
                 <div className={styles.colorSelectorContainer}>
                   <section className={styles.buttonSection}>
-                    {colorsData.COLORS.map((colorHex, index) => (
+                    {colorsData.COLORS.map((colorHex) => (
                       <SquircleColorSelector
-                        color={color}
+                        key={colorHex}
+                        isSelected={color === colorHex}
                         setColor={setColor}
                         colorHex={colorHex}
                         setIsOpenPicker={setIsOpenPicker}
-                        index={index}
                         setEmoji={setEmoji}
                       />
                     ))}
@@ -275,12 +298,12 @@ export function ColorPicker({
                             e.stopPropagation();
                             setColor(e.target.value);
                           }}
-                        ></input>
+                        />
                         <label
                           htmlFor="colorInput"
                           className={styles.labelColor}
                         >
-                          {hexColorSchema.safeParse(color).success && color ? (
+                          {isColorValid ? (
                             <>
                               <SquircleIcon
                                 style={{ fill: `${color}`, width: "18px" }}
@@ -312,9 +335,7 @@ export function ColorPicker({
                         className={styles.hexCode}
                         type="text"
                         value={color ?? undefined}
-                        onChange={(e) => {
-                          setColor(e.target.value, true);
-                        }}
+                        onChange={(e) => setColor(e.target.value, true)}
                         onKeyDown={(e) => {
                           const target = e.target as HTMLInputElement;
                           if (e.key === "Enter" || e.key === "Escape") {
@@ -322,18 +343,11 @@ export function ColorPicker({
                             setColor(target.value);
                           }
                         }}
-                        onBlur={(e) => {
-                          setColor(e.target.value);
-                        }}
-                      ></input>
+                        onBlur={(e) => setColor(e.target.value)}
+                      />
                       <button
                         disabled={!color}
-                        onClick={() => {
-                          if (color) {
-                            navigator.clipboard.writeText(color);
-                            toast("color copiado al portapapeles");
-                          }
-                        }}
+                        onClick={copyToClipboard}
                         className={styles.copyButton}
                         style={{
                           opacity: !color ? 0.3 : 1,
@@ -357,78 +371,69 @@ export function ColorPicker({
                   id="emoji-picker-parent"
                 >
                   <EmojiMartPicker
-                    // locale={"es"}
-                    theme={"light"}
+                    theme="light"
                     onEmojiSelect={onEmojiSelect}
-                    emojiButtonRadius={"5px"}
+                    emojiButtonRadius="5px"
                     maxFrequentRows={0}
                     perLine={6}
-                    previewPosition={"none"}
-                    searchPosition={"static"}
+                    previewPosition="none"
+                    searchPosition="static"
                     skin={1}
                     emojiSize={24}
                     dynamicWidth
-                    set={"apple"}
+                    set="apple"
                     noCountryFlags={false}
-                    navPosition={"none"}
+                    navPosition="none"
                   />
                 </div>
               )}
             </motion.section>
           )}
         </>,
-        // document.getElementById("app") as HTMLElement
-        document.body
+        document.body,
       )}
     </>
   );
 }
 
-interface emoji {
-  id: string;
-  keywords: string[];
-  name: string;
-  native: string;
-  shortcodes: string;
-  unified: string;
-}
-
-interface SquircleColorButonType {
-  color: string | null;
+interface SquircleColorButtonType {
+  isSelected: boolean;
   setColor: (value: string) => void;
   colorHex: string;
   setIsOpenPicker: (value: boolean) => void;
-  index: number;
   setEmoji: (value: string | null) => void;
 }
 
-function SquircleColorSelector({
-  color,
+const SquircleColorSelector = memo(function SquircleColorSelector({
+  isSelected,
   setColor,
   colorHex,
   setIsOpenPicker,
-  index,
   setEmoji,
-}: SquircleColorButonType) {
+}: SquircleColorButtonType) {
   const [hoverColor, setHoverColor] = useState<boolean>(false);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setColor(colorHex);
+      setEmoji(null);
+      setIsOpenPicker(false);
+    },
+    [colorHex, setColor, setEmoji, setIsOpenPicker],
+  );
+
+  const handleMouseEnter = useCallback(() => setHoverColor(true), []);
+  const handleMouseLeave = useCallback(() => setHoverColor(false), []);
+
   return (
     <div className={styles.buttonContainer}>
       <button
         className={styles.button}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setColor(colorHex);
-          setEmoji(null);
-          setIsOpenPicker(false);
-        }}
-        key={index}
-        onMouseEnter={() => {
-          setHoverColor(true);
-        }}
-        onMouseLeave={() => {
-          setHoverColor(false);
-        }}
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <SquircleIcon style={{ fill: `${colorHex}`, width: "18px" }} />
         <SquircleIcon
@@ -437,16 +442,15 @@ function SquircleColorSelector({
             position: "absolute",
             width: "30px",
             strokeWidth: "1.5",
-            stroke:
-              color === colorHex
+            stroke: isSelected
+              ? `${colorHex}`
+              : hoverColor
                 ? `${colorHex}`
-                : hoverColor
-                  ? `${colorHex}`
-                  : "var(--border-container-color)",
+                : "var(--border-container-color)",
             transition: "stroke 0.3s ease-in-out",
           }}
         />
       </button>
     </div>
   );
-}
+});

@@ -1,3 +1,5 @@
+// DropdownListInput.tsx
+import { memo, useCallback } from "react";
 import { Dropdown } from "@/components/ui/Dropdown";
 import { FolderOpen, ListIcon } from "@/components/ui/icons/icons";
 import styles from "./DropdownListInput.module.css";
@@ -20,92 +22,68 @@ const items: Item[] = [
   { id: 2, label: "Carpeta" },
 ];
 
-export const DropdownListInput = ({
+const triggerStyle = { height: "30px", width: "30px", aspectRatio: "1/1" };
+const containerStyle = { justifyContent: "start" };
+const iconContainerStyle = { width: "15px", height: "15px", display: "flex" };
+const iconStyle = {
+  stroke: "var(--text-not-available)",
+  width: "15px",
+  height: "15px",
+  strokeWidth: 2,
+};
+
+export const DropdownListInput = memo(function DropdownListInput({
   isList,
   color,
   setIsList,
   setColor,
   DEFAULT_COLOR,
-}: Props): JSX.Element => {
-  const handleSelected = (item: Item): void => {
-    if (item.id === 1) {
-      setIsList(true);
-      if (color === null) setColor(DEFAULT_COLOR);
-      return;
-    }
-    if (item.id === 2) {
-      setIsList(false);
-      setColor(null);
-      return;
-    }
-  };
-
-  const renderTriggerContent = (): JSX.Element => (
-    <div
-      className={styles.dropdownItemContainer}
-      style={{ justifyContent: "start" }}
-    >
-      <div
-        style={{
-          width: "15px",
-          height: "15px",
-          display: "flex",
-        }}
-      >
-        {isList ? (
-          <ListIcon
-            style={{
-              stroke: "var(--text-not-available)",
-              width: "15px",
-              height: "15px",
-              strokeWidth: 2,
-            }}
-          />
-        ) : (
-          <FolderOpen
-            style={{
-              stroke: "var(--text-not-available)",
-              width: "15px",
-              height: "15px",
-              strokeWidth: 2,
-            }}
-          />
-        )}
-      </div>
-    </div>
-  );
-
-  const renderItemContent = (item: Item): JSX.Element => (
-    <div
-      className={styles.dropdownItemContainer}
-      style={{ justifyContent: "start" }}
-    >
-      <p>{item.label}</p>
-    </div>
+}: Props) {
+  const handleSelected = useCallback(
+    (item: Item) => {
+      if (item.id === 1) {
+        setIsList(true);
+        if (color === null) setColor(DEFAULT_COLOR);
+        return;
+      }
+      if (item.id === 2) {
+        setIsList(false);
+        setColor(null);
+        return;
+      }
+    },
+    [color, DEFAULT_COLOR, setColor, setIsList],
   );
 
   return (
     <Dropdown>
-      <Dropdown.Trigger
-        style={{
-          height: "30px",
-          width: "30px",
-          aspectRatio: "1/1",
-        }}
-      >
-        {renderTriggerContent()}
+      <Dropdown.Trigger style={triggerStyle}>
+        <div className={styles.dropdownItemContainer} style={containerStyle}>
+          <div style={iconContainerStyle}>
+            {isList ? (
+              <ListIcon style={iconStyle} />
+            ) : (
+              <FolderOpen style={iconStyle} />
+            )}
+          </div>
+        </div>
       </Dropdown.Trigger>
 
       <Dropdown.Content>
-        {items.map((item, index) => (
+        {items.map((item) => (
           <Dropdown.Item
             key={`dropdown-item-${item.id}`}
             onClick={() => handleSelected(item)}
           >
-            {renderItemContent(item)}
+            <div
+              className={styles.dropdownItemContainer}
+              style={containerStyle}
+            >
+              <p>{item.label}</p>
+            </div>
           </Dropdown.Item>
         ))}
       </Dropdown.Content>
     </Dropdown>
   );
-};
+});

@@ -1,27 +1,34 @@
+"use client";
+
 import React, {
-  CSSProperties,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-
+import { motion } from "motion/react";
 import { useDndMonitor, useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { FolderType, ListsType } from "@/lib/schemas/database.types";
+
+import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+
 import { ListCard } from "../list-card";
-import styles from "./SortableFolder.module.css";
-interface SortableFolderProps {
-  folder: FolderType;
-  lists: ListsType[] | null;
-  isDragging: boolean;
-  dropAllowed?: boolean;
-}
+import { ConfigMenu } from "@/components/ui/ConfigMenu";
+import { CounterAnimation } from "@/components/ui/CounterAnimation";
+import { FolderInfoEdit } from "@/components/ui/folder-info-edit";
+
+import { FolderType, ListsType } from "@/lib/schemas/database.types";
+
+import { variants } from "../draggable-board/animations/variants";
 import {
   ArrowThin,
   DeleteIcon,
@@ -30,26 +37,13 @@ import {
   Unpin,
   LoadingIcon,
 } from "@/components/ui/icons/icons";
-import { ConfigMenu } from "@/components/ui/ConfigMenu";
-import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
-import { CounterAnimation } from "@/components/ui/CounterAnimation";
-import { FolderInfoEdit } from "@/components/ui/folder-info-edit";
-import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-import { motion } from "motion/react";
-import { variants } from "../draggable-board/animations/variants";
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import styles from "./SortableFolder.module.css";
 
-function readFolderMembershipCount(
-  folder: FolderType,
-  lists: ListsType[],
-): number {
-  const payload = folder.memberships;
-  if (Array.isArray(payload) && payload.length > 0) {
-    return payload[0].count;
-  }
-  return lists.filter((l) => l.folder === folder.folder_id).length;
+interface SortableFolderProps {
+  folder: FolderType;
+  lists: ListsType[] | null;
+  isDragging: boolean;
+  dropAllowed?: boolean;
 }
 
 export const SortableFolder = ({
@@ -82,12 +76,12 @@ export const SortableFolder = ({
   );
 
   const listIds = useMemo(() => lists?.map((list) => list.list_id), [lists]);
-
   const hasFetched = !!folderPagination;
 
-  const listsCount = useMemo(() => {
-    return readFolderMembershipCount(folder, lists ?? []);
-  }, [lists, folder]);
+  const listsCount =
+    Array.isArray(folder.memberships) && folder.memberships.length > 0
+      ? folder.memberships[0].count
+      : 0;
 
   const divRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -150,7 +144,7 @@ export const SortableFolder = ({
     },
   });
 
-  const { setNodeRef: setDroppableNodeRef, isOver } = useDroppable({
+  const { setNodeRef: setDroppableNodeRef } = useDroppable({
     id: `folder-${folder.folder_id}-dropzone`,
     data: {
       type: "folder-dropzone",
@@ -159,21 +153,32 @@ export const SortableFolder = ({
     },
   });
 
-  const style = {
-    transform: `translate3d(${transform?.x || 0}px, ${transform?.y || 0}px, 0)`,
-    transition,
-    pointerEvents: isCurrentlyDraggingThis ? "none" : "auto",
-    zIndex: isCurrentlyDraggingThis ? 99 : 1,
-    opacity: isCurrentlyDraggingThis ? 0.3 : 1,
-    border: dropAllowed
+  const dynamicStyle = useMemo(() => {
+    const borderStyle = dropAllowed
       ? containsOver && !isCurrentlyDraggingThis
         ? "1px solid #3ebb00"
         : "1px solid var(--border-container-color)"
       : containsOver && !isCurrentlyDraggingThis
         ? "1px solid #ef4444"
-        : "1px solid var(--border-container-color)",
-    "--bgColor": colorTemp ?? "transparent",
-  } as CSSProperties;
+        : "1px solid var(--border-container-color)";
+
+    return {
+      transform: `translate3d(${transform?.x || 0}px, ${transform?.y || 0}px, 0)`,
+      transition,
+      pointerEvents: isCurrentlyDraggingThis ? "none" : ("auto" as any),
+      zIndex: isCurrentlyDraggingThis ? 99 : 1,
+      opacity: isCurrentlyDraggingThis ? 0.3 : 1,
+      border: borderStyle,
+      "--bgColor": colorTemp ?? "transparent",
+    };
+  }, [
+    transform,
+    transition,
+    isCurrentlyDraggingThis,
+    dropAllowed,
+    containsOver,
+    colorTemp,
+  ]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -215,19 +220,23 @@ export const SortableFolder = ({
     const baseOptions = [
       {
         name: "Editar",
-        icon: <Edit style={iconStyle} />,
+        icon: <Edit className={styles.iconAction} />,
         action: handleInfoEdit,
         enabled: true,
       },
       {
         name: "Fijar",
-        icon: false ? <Unpin style={iconStyle} /> : <Pin style={iconStyle} />,
+        icon: false ? (
+          <Unpin className={styles.iconAction} />
+        ) : (
+          <Pin className={styles.iconAction} />
+        ),
         action: () => {},
         enabled: false,
       },
       {
         name: "Eliminar",
-        icon: <DeleteIcon style={iconStyle} />,
+        icon: <DeleteIcon className={styles.iconAction} />,
         action: handleConfirm,
         enabled: true,
       },
@@ -236,26 +245,38 @@ export const SortableFolder = ({
   }, [handleInfoEdit, handleConfirm]);
 
   useEffect(() => {
-    const input = document.getElementById("folder-info-edit-container");
-    if (input) {
-      input.focus();
+    if (isNameChange) {
+      const input = document.getElementById("folder-info-edit-container");
+      if (input) input.focus();
     }
   }, [isNameChange]);
 
-  useOnClickOutside(divRef, () => {
-    const colorPickerContainer = document.getElementById(
-      "color-picker-container-folder",
-    );
-    if (colorPickerContainer) return;
+  useOnClickOutside(divRef, (e) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.closest(".color-picker-portal") ||
+      target.closest(".config-menu-portal")
+    ) {
+      return;
+    }
     setIsNameChange(false);
     setColorTemp(folder.folder_color);
   });
+
+  const toggleOpen = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (isNameChange) return;
+      setOpen((prev) => !prev);
+    },
+    [isNameChange],
+  );
 
   return (
     <div
       ref={setSortableNodeRef}
       className={styles.folderContainer}
-      style={style}
+      style={dynamicStyle}
       data-open={open}
     >
       <div
@@ -265,27 +286,18 @@ export const SortableFolder = ({
         className={styles.folderDropOverlay}
         style={{ pointerEvents: isDragging ? "auto" : "none" }}
       />
-      <div
+      <motion.div
         className={styles.folderHeader}
         {...listeners}
         {...attributes}
         ref={divRef}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (isNameChange) return;
-          setOpen((prev) => !prev);
-        }}
+        onClick={toggleOpen}
+        layout="position"
       >
         <div className={styles.button}>
           <ArrowThin
-            style={{
-              stroke: colorTemp ?? "var(--text-not-available)",
-              width: "15px",
-              height: "15px",
-              strokeWidth: 2,
-              transform: open ? "rotate(0deg)" : "rotate(-90deg)",
-              transition: "transform 0.1s ease-in-out",
-            }}
+            className={open ? styles.arrowIconOpen : styles.arrowIconClosed}
+            style={{ stroke: colorTemp ?? "var(--text-not-available)" }}
           />
         </div>
         <div className={styles.infoEditContainer}>
@@ -304,10 +316,10 @@ export const SortableFolder = ({
               <section className={styles.rightButtonsMobile}>
                 <div className={styles.moreConfigMenuMobile}>
                   <ConfigMenu
-                    iconWidth={"23px"}
+                    iconWidth="23px"
                     configOptions={configOptions}
-                    idScrollArea={"list-container"}
-                    uniqueId={"navbar-list-card"}
+                    idScrollArea="list-container"
+                    uniqueId={`folder-config-${folder.folder_id}`}
                   />
                 </div>
                 <div className={styles.counterMobile}>
@@ -318,10 +330,10 @@ export const SortableFolder = ({
               <>
                 <div className={styles.moreConfigMenu}>
                   <ConfigMenu
-                    iconWidth={"23px"}
+                    iconWidth="23px"
                     configOptions={configOptions}
-                    idScrollArea={"list-container"}
-                    uniqueId={"navbar-list-card"}
+                    idScrollArea="list-container"
+                    uniqueId={`folder-config-${folder.folder_id}`}
                   />
                 </div>
                 <div className={styles.counter}>
@@ -331,10 +343,12 @@ export const SortableFolder = ({
             )}
           </section>
         )}
-      </div>
+      </motion.div>
       {open && (
-        <div
+        <motion.div
           ref={scrollContainerRef}
+          layout
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={`${styles.listWrapper} ${isDragging ? styles.draggingActive : ""}`}
           style={{ maxHeight: "250px" }}
         >
@@ -343,23 +357,8 @@ export const SortableFolder = ({
             strategy={verticalListSortingStrategy}
           >
             {!hasFetched ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: "15px 0",
-                  width: "100%",
-                }}
-              >
-                <LoadingIcon
-                  style={{
-                    width: "15px",
-                    height: "auto",
-                    stroke: "var(--text)",
-                    strokeWidth: "2.5",
-                  }}
-                />
+              <div className={styles.loadingContainer}>
+                <LoadingIcon className={styles.loadingIcon} />
               </div>
             ) : (
               <>
@@ -372,57 +371,32 @@ export const SortableFolder = ({
                       initial="initial"
                       animate="visible"
                       exit="exit"
-                      layout={isDragging ? false : true}
-                      style={{
-                        width: "100%",
-                      }}
+                      layout={!isDragging}
+                      className={styles.motionListWrapper}
                     >
                       <ListCard list={list} inFolder />
                     </motion.div>
                   ))
                 ) : !isFetchingFolderLists ? (
-                  <p>Arrastra una lista aquí</p>
+                  <p className={styles.emptyIndicator}>
+                    Arrastra una lista aquí
+                  </p>
                 ) : null}
 
                 {isFetchingFolderLists && (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      padding: "15px 0",
-                      width: "100%",
-                    }}
-                  >
-                    <LoadingIcon
-                      style={{
-                        width: "15px",
-                        height: "auto",
-                        stroke: "var(--text)",
-                        strokeWidth: "2.5",
-                      }}
-                    />
+                  <div className={styles.loadingContainer}>
+                    <LoadingIcon className={styles.loadingIcon} />
                   </div>
                 )}
 
                 {folderPagination?.hasMore && (
-                  <div
-                    ref={sentinelRef}
-                    style={{ height: "1px", width: "100%" }}
-                  />
+                  <div ref={sentinelRef} className={styles.sentinel} />
                 )}
               </>
             )}
           </SortableContext>
-        </div>
+        </motion.div>
       )}
     </div>
   );
-};
-
-const iconStyle = {
-  width: "14px",
-  height: "auto",
-  stroke: "var(--text)",
-  strokeWidth: 2,
 };

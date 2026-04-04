@@ -1,9 +1,22 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, {
+  useRef,
+  useState,
+  useCallback,
+  memo,
+  CSSProperties,
+} from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import colorsData from "../colors.json";
+
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { useModalUbication } from "@/hooks/useModalUbication";
+
+import { ClientOnlyPortal } from "../../ClientOnlyPortal";
+
+import { hexColorSchema } from "@/lib/schemas/list/validation";
 
 import {
   ArrowThin,
@@ -14,12 +27,30 @@ import {
   SquircleIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./FolderColorPicker.module.css";
-import { hexColorSchema } from "@/lib/schemas/list/validation";
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
-import { useModalUbication } from "@/hooks/useModalUbication";
-import { ClientOnlyPortal } from "../../ClientOnlyPortal";
 
-interface props {
+const modalInitial = { scale: 0, opacity: 0, filter: "blur(30px)" };
+const modalAnimate = {
+  scale: 1,
+  opacity: 1,
+  filter: "blur(0px)",
+  transition: { duration: 0.2 },
+};
+const modalExit = { scale: 0, opacity: 0, filter: "blur(30px)" };
+const modalTransition = {
+  type: "spring" as const,
+  stiffness: 700,
+  damping: 40,
+};
+
+const arrowInitial = { opacity: 0, width: 0, marginRight: 0, scale: 0 };
+const arrowAnimate = {
+  opacity: 1,
+  width: "16px",
+  marginRight: "10px",
+  scale: 1,
+};
+
+interface Props {
   color: string | null;
   setColor: (value: string, typing?: boolean) => void;
   active?: boolean;
@@ -27,83 +58,52 @@ interface props {
   folderOpen?: boolean;
 }
 
-export function FolderColorPicker({
-  color = "#1c1c1c", //indica el color que está seleccionado en ese momento, no corresponde al original
-  setColor, //corresponde a la función para cambiar el valor de los colores temporales, no cambia valor de color original
-  active = true, //activar o desactivar funcion de cambiar de color (estatico o color-picker)
+export const FolderColorPicker = memo(function FolderColorPicker({
+  color = "#1c1c1c",
+  setColor,
+  active = true,
   setOriginalColor,
   folderOpen = false,
-}: props) {
-  //estados locales
-  const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false); //estado para abrir o cerrar color-picker-container
-  const [type, setType] = useState<string>("color"); //modo color o emoji picker en la modal
+}: Props) {
+  const [isOpenPicker, setIsOpenPicker] = useState<boolean>(false);
 
-  //estados globales
   const { animations } = useUserPreferencesStore();
-
-  //ref's
   const pickerRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
 
   useModalUbication(pickerRef, portalRef, () => {
     const validation = hexColorSchema.safeParse(color);
-
     if (!validation.success) {
       setOriginalColor();
     }
     setIsOpenPicker(false);
-    setType("color");
   });
 
-  const renderIcon = () => (
-    <div className={styles.renderIconContainer}>
-      {folderOpen ? (
-        <FolderOpen
-          style={{
-            stroke: color ?? "var(--text-not-available)",
-            width: "15px",
-            height: "15px",
-            strokeWidth: 2,
-            transition: "fill 0.3s ease-in-out",
-          }}
-        />
-      ) : (
-        <FolderClosed
-          style={{
-            stroke: color ?? "var(--text-not-available)",
-            width: "15px",
-            height: "15px",
-            strokeWidth: 2,
-            transition: "fill 0.3s ease-in-out",
-          }}
-        />
-      )}
-    </div>
+  const togglePicker = useCallback(
+    (e: React.MouseEvent) => {
+      if (!active) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setIsOpenPicker((prev) => !prev);
+    },
+    [active],
   );
 
-  const titleButtons = (typeSelected: string, titleButton: string) => (
-    <button
-      className={styles.title}
-      style={{
-        color:
-          type === typeSelected ? "var(--text)" : "var(--text-not-available)",
-      }}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setType(typeSelected);
-      }}
-    >
-      {titleButton}
-    </button>
-  );
+  const copyToClipboard = useCallback(() => {
+    if (color) {
+      navigator.clipboard.writeText(color);
+      toast("color copiado al portapapeles");
+    }
+  }, [color]);
+
+  const isColorValid = hexColorSchema.safeParse(color).success && color;
 
   return (
     <>
       <div className={styles.pickerContainer} ref={pickerRef}>
         <AnimatePresence>
           <motion.button
-            key={"color-picker-selector"}
+            key="color-picker-selector"
             className={`${styles.mainButton} ${!active ? styles.inactive : ""}`}
             animate={
               animations ? { paddingLeft: active ? "10px" : "0px" } : undefined
@@ -117,48 +117,33 @@ export function FolderColorPicker({
                 : "transparent",
               paddingLeft: animations ? undefined : active ? "10px" : "5px",
             }}
-            onClick={(e) => {
-              if (!active) return;
-              e.preventDefault();
-              e.stopPropagation();
-              setIsOpenPicker((v) => !v);
-              setType("color");
-            }}
+            onClick={togglePicker}
             aria-disabled={!active}
             tabIndex={active ? 0 : -1}
           >
-            {renderIcon()}
+            <div
+              className={styles.renderIconContainer}
+              style={
+                {
+                  "--color": color ?? "var(--text-not-available)",
+                } as React.CSSProperties
+              }
+            >
+              {folderOpen ? (
+                <FolderOpen className={styles.folderIcon} />
+              ) : (
+                <FolderClosed className={styles.folderIcon} />
+              )}
+            </div>
             <AnimatePresence>
               {active && (
                 <motion.div
                   layout
-                  key={"color-picker-arrow"}
+                  key="color-picker-arrow"
                   className={styles.arrowContainer}
-                  initial={
-                    animations
-                      ? {
-                          opacity: 0,
-                          width: 0,
-                          marginRight: 0,
-                          scale: 0,
-                        }
-                      : undefined
-                  }
-                  animate={
-                    animations
-                      ? {
-                          opacity: 1,
-                          width: "16px",
-                          marginRight: "10px",
-                          scale: 1,
-                        }
-                      : undefined
-                  }
-                  exit={
-                    animations
-                      ? { opacity: 0, width: 0, marginRight: 0, scale: 0 }
-                      : undefined
-                  }
+                  initial={animations ? arrowInitial : undefined}
+                  animate={animations ? arrowAnimate : undefined}
+                  exit={animations ? arrowInitial : undefined}
                 >
                   <motion.div
                     animate={{ rotate: isOpenPicker ? 180 : 0 }}
@@ -171,11 +156,7 @@ export function FolderColorPicker({
                               damping: 20,
                             },
                           }
-                        : {
-                            rotate: {
-                              duration: 0.2,
-                            },
-                          }
+                        : { rotate: { duration: 0.2 } }
                     }
                     style={{
                       width: "fit-content",
@@ -183,14 +164,7 @@ export function FolderColorPicker({
                       display: "flex",
                     }}
                   >
-                    <ArrowThin
-                      style={{
-                        stroke: "var(--icon-color)",
-                        strokeWidth: "1.5",
-                        width: "18px",
-                        height: "auto",
-                      }}
-                    />
+                    <ArrowThin className={styles.arrowIcon} />
                   </motion.div>
                 </motion.div>
               )}
@@ -201,180 +175,143 @@ export function FolderColorPicker({
       <ClientOnlyPortal>
         {isOpenPicker && (
           <motion.section
-            className={`${styles.modalContainer} ignore-sidebar-close`}
+            className={`${styles.modalContainer} ignore-sidebar-close color-picker-portal`}
             ref={portalRef}
-            initial={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
-            animate={{
-              scale: 1,
-              opacity: 1,
-              filter: "blur(0px)",
-              transition: { duration: 0.2 },
-            }}
-            exit={{ scale: 0, opacity: 0, filter: "blur(30px)" }}
-            transition={{
-              type: "spring",
-              stiffness: 700,
-              damping: 40,
-            }}
-            id={`color-picker-container-folder`}
+            initial={modalInitial}
+            animate={modalAnimate}
+            exit={modalExit}
+            transition={modalTransition}
+            id="color-picker-container-folder"
           >
-            {/* <section className={styles.titleSection}>
-              <div
-                className={styles.titleButtons}
-                style={{
-                  justifyContent:
-                    "flex-" + (type === "color" ? "start" : "end"),
-                }}
-              >
-                <motion.div className={styles.titleSelector} layout />
-                {titleButtons("icono", "icono")}
-                {titleButtons("color", "color")}
-              </div>
-            </section> */}
             <p className={styles.titleText}>Color de carpeta</p>
-
             <div className={styles.separator}></div>
-
-            {type === "color" && (
-              <div className={styles.colorSelectorContainer}>
-                <section className={styles.buttonSection}>
-                  {colorsData.COLORS.map((colorHex, index) => (
-                    <SquircleColorSelector
-                      color={color}
-                      setColor={setColor}
-                      colorHex={colorHex}
-                      setIsOpenPicker={setIsOpenPicker}
-                      index={index}
-                    />
-                  ))}
-                </section>
-                <footer className={styles.footer}>
-                  <div className={styles.hexContainer}>
-                    <div className={styles.inputColorContainer}>
-                      <input
-                        className={styles.inputColor}
-                        id="colorInput"
-                        type="color"
-                        value={color ?? undefined}
-                        onChange={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setColor(e.target.value);
-                        }}
-                      ></input>
-                      <label htmlFor="colorInput" className={styles.labelColor}>
-                        {hexColorSchema.safeParse(color).success && color ? (
-                          <>
-                            <SquircleIcon
-                              style={{ fill: `${color}`, width: "18px" }}
-                            />
-                            {colorsData.COLORS.includes(color) && (
-                              <SquircleIcon
-                                style={{
-                                  fill: "transparent",
-                                  position: "absolute",
-                                  width: "30px",
-                                  strokeWidth: "1.5",
-                                  stroke: `${color}`,
-                                }}
-                              />
-                            )}
-                          </>
-                        ) : (
-                          <Cross
-                            style={{
-                              width: "18px",
-                              stroke: "var(--icon-color)",
-                              strokeWidth: "3",
-                            }}
-                          />
-                        )}
-                      </label>
-                    </div>
+            <div className={styles.colorSelectorContainer}>
+              <section className={styles.buttonSection}>
+                {colorsData.COLORS.map((colorHex) => (
+                  <SquircleColorSelector
+                    key={colorHex}
+                    isSelected={color === colorHex}
+                    setColor={setColor}
+                    colorHex={colorHex}
+                    setIsOpenPicker={setIsOpenPicker}
+                  />
+                ))}
+              </section>
+              <footer className={styles.footer}>
+                <div className={styles.hexContainer}>
+                  <div className={styles.inputColorContainer}>
                     <input
-                      className={styles.hexCode}
-                      type="text"
+                      className={styles.inputColor}
+                      id="colorInput"
+                      type="color"
                       value={color ?? undefined}
                       onChange={(e) => {
-                        setColor(e.target.value, true);
-                      }}
-                      onKeyDown={(e) => {
-                        const target = e.target as HTMLInputElement;
-                        if (e.key === "Enter" || e.key === "Escape") {
-                          setIsOpenPicker(false);
-                          setColor(target.value);
-                        }
-                      }}
-                      onBlur={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         setColor(e.target.value);
                       }}
-                    ></input>
-                    <button
-                      disabled={!color}
-                      onClick={() => {
-                        if (color) {
-                          navigator.clipboard.writeText(color);
-                          toast("color copiado al portapapeles");
-                        }
-                      }}
-                      className={styles.copyButton}
-                      style={{
-                        opacity: !color ? 0.3 : 1,
-                        cursor: !color ? "initial" : "pointer",
-                      }}
+                    />
+                    <label
+                      htmlFor="colorInput"
+                      className={styles.labelColor}
+                      style={{ "--color": color } as CSSProperties}
                     >
-                      <CopyToClipboardIcon
-                        style={{
-                          strokeWidth: "1.5",
-                          stroke: "var(--icon-color)",
-                          width: "20px",
-                        }}
-                      />
-                    </button>
+                      {isColorValid ? (
+                        <>
+                          <SquircleIcon className={styles.squircleIcon} />
+                          {colorsData.COLORS.includes(color) && (
+                            <SquircleIcon
+                              className={styles.squircleIconBorder}
+                            />
+                          )}
+                        </>
+                      ) : (
+                        <Cross
+                          style={{
+                            width: "18px",
+                            stroke: "var(--icon-color)",
+                            strokeWidth: "3",
+                          }}
+                        />
+                      )}
+                    </label>
                   </div>
-                </footer>
-              </div>
-            )}
+                  <input
+                    className={styles.hexCode}
+                    type="text"
+                    value={color ?? undefined}
+                    onChange={(e) => setColor(e.target.value, true)}
+                    onKeyDown={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      if (e.key === "Enter" || e.key === "Escape") {
+                        setIsOpenPicker(false);
+                        setColor(target.value);
+                      }
+                    }}
+                    onBlur={(e) => setColor(e.target.value)}
+                  />
+                  <button
+                    disabled={!color}
+                    onClick={copyToClipboard}
+                    className={styles.copyButton}
+                    style={{
+                      opacity: !color ? 0.3 : 1,
+                      cursor: !color ? "initial" : "pointer",
+                    }}
+                  >
+                    <CopyToClipboardIcon
+                      style={{
+                        strokeWidth: "1.5",
+                        stroke: "var(--icon-color)",
+                        width: "20px",
+                      }}
+                    />
+                  </button>
+                </div>
+              </footer>
+            </div>
           </motion.section>
         )}
       </ClientOnlyPortal>
     </>
   );
-}
+});
 
-interface SquircleColorButonType {
-  color: string | null;
+interface SquircleColorButtonType {
+  isSelected: boolean;
   setColor: (value: string) => void;
   colorHex: string;
   setIsOpenPicker: (value: boolean) => void;
-  index: number;
 }
 
-function SquircleColorSelector({
-  color,
+const SquircleColorSelector = memo(function SquircleColorSelector({
+  isSelected,
   setColor,
   colorHex,
   setIsOpenPicker,
-  index,
-}: SquircleColorButonType) {
+}: SquircleColorButtonType) {
   const [hoverColor, setHoverColor] = useState<boolean>(false);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setColor(colorHex);
+      setIsOpenPicker(false);
+    },
+    [colorHex, setColor, setIsOpenPicker],
+  );
+
+  const handleMouseEnter = useCallback(() => setHoverColor(true), []);
+  const handleMouseLeave = useCallback(() => setHoverColor(false), []);
+
   return (
     <div className={styles.buttonContainer}>
       <button
         className={styles.button}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setColor(colorHex);
-          setIsOpenPicker(false);
-        }}
-        key={index}
-        onMouseEnter={() => {
-          setHoverColor(true);
-        }}
-        onMouseLeave={() => {
-          setHoverColor(false);
-        }}
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <SquircleIcon style={{ fill: `${colorHex}`, width: "18px" }} />
         <SquircleIcon
@@ -383,16 +320,15 @@ function SquircleColorSelector({
             position: "absolute",
             width: "30px",
             strokeWidth: "1.5",
-            stroke:
-              color === colorHex
+            stroke: isSelected
+              ? `${colorHex}`
+              : hoverColor
                 ? `${colorHex}`
-                : hoverColor
-                  ? `${colorHex}`
-                  : "var(--border-container-color)",
+                : "var(--border-container-color)",
             transition: "stroke 0.3s ease-in-out",
           }}
         />
       </button>
     </div>
   );
-}
+});
