@@ -10,6 +10,8 @@ import type {
 import type { ListsType, FolderType } from "@/lib/schemas/database.types";
 import type { NormalizedItem } from "../utils/types";
 import { calcNewRank } from "@/lib/lexorank";
+import { LexoRank } from "lexorank";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 
 type Params = {
   combinedItems: NormalizedItem[];
@@ -176,11 +178,34 @@ export function useDragHandlers({
               "list"
             );
 
+            const targetFolder = folders.find(
+              (f) => f.folder_id === targetFolderId
+            );
+            const maxRankDB = targetFolder ? (targetFolder as any).max_rank : null;
+            const paginationCheck = useTodoDataStore.getState().listsPagination[targetFolderId];
+            const hasMore = !paginationCheck || paginationCheck.hasMore;
+
             const contextIndex = contextItems.findIndex(
               (item) => item.id === moved.id
             );
 
-            const computedRank = calcNewRank(contextItems, contextIndex);
+            let computedRank;
+            
+            if (contextIndex === contextItems.length - 1 && hasMore && maxRankDB) {
+              const localPrev = contextItems[contextIndex - 1]?.rank;
+              let highestRank = LexoRank.parse(maxRankDB);
+              
+              if (localPrev) {
+                const localRankParsed = LexoRank.parse(localPrev);
+                if (localRankParsed.compareTo(highestRank) > 0) {
+                  highestRank = localRankParsed;
+                }
+              }
+              
+              computedRank = highestRank.genNext().toString();
+            } else {
+              computedRank = calcNewRank(contextItems, contextIndex);
+            }
             movedList.folder = targetFolderId;
             movedList.rank = computedRank;
 
@@ -229,9 +254,8 @@ export function useDragHandlers({
         .filter((item) => item.kind === "list")
         .map((item) => item.data as ListsType);
 
-      // Commit
-      setLists(finalLists);
-      setFolders(finalFolders);
+      // setLists(finalLists);
+      // setFolders(finalFolders);
 
       // estado UI
       setDraggedItem(null);

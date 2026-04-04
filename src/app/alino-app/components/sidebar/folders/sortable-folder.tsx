@@ -1,10 +1,12 @@
 import React, {
   CSSProperties,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+
 import { useDndMonitor, useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -24,10 +26,9 @@ import {
   ArrowThin,
   DeleteIcon,
   Edit,
-  FolderClosed,
-  FolderOpen,
   Pin,
   Unpin,
+  LoadingIcon,
 } from "@/components/ui/icons/icons";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
@@ -36,6 +37,20 @@ import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { CounterAnimation } from "@/components/ui/CounterAnimation";
 import { FolderInfoEdit } from "@/components/ui/folder-info-edit";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { motion } from "motion/react";
+import { variants } from "../draggable-board/animations/variants";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+
+function readFolderMembershipCount(
+  folder: FolderType,
+  lists: ListsType[],
+): number {
+  const payload = folder.memberships;
+  if (Array.isArray(payload) && payload.length > 0) {
+    return payload[0].count;
+  }
+  return lists.filter((l) => l.folder === folder.folder_id).length;
+}
 
 export const SortableFolder = ({
   folder,
@@ -47,19 +62,54 @@ export const SortableFolder = ({
   const [containsOver, setContainsOver] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string | null>(
-    folder.folder_color
+    folder.folder_color,
   );
 
   const openModal = useConfirmationModalStore((state) => state.openModal);
   const deleteFolder = useTodoDataStore((state) => state.deleteFolder);
-
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
+  const animations = useUserPreferencesStore((state) => state.animations);
+
+  const fetchListsPage = useTodoDataStore((state) => state.fetchListsPage);
+  const folderPagination = useTodoDataStore(
+    (state) => state.listsPagination[folder.folder_id],
+  );
+  const isFetchingFolderLists = useTodoDataStore(
+    (state) => state.fetchingListsQueue[folder.folder_id],
+  );
 
   const listIds = useMemo(() => lists?.map((list) => list.list_id), [lists]);
 
-  const listsCount = useMemo(() => lists?.length, [lists]);
+  const hasFetched = !!folderPagination;
+
+  const listsCount = useMemo(() => {
+    return readFolderMembershipCount(folder, lists ?? []);
+  }, [lists, folder]);
 
   const divRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (open && !folderPagination) {
+      fetchListsPage(folder.folder_id);
+    }
+  }, [open, folder.folder_id, folderPagination, fetchListsPage]);
+
+  useEffect(() => {
+    if (!open || !sentinelRef.current || !scrollContainerRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && folderPagination?.hasMore) {
+          fetchListsPage(folder.folder_id);
+        }
+      },
+      { root: scrollContainerRef.current, rootMargin: "100px", threshold: 0.1 },
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [open, folderPagination, folder.folder_id, fetchListsPage]);
 
   useDndMonitor({
     onDragOver: (event) => {
@@ -89,7 +139,6 @@ export const SortableFolder = ({
     transform,
     transition,
     isDragging: isCurrentlyDraggingThis,
-    isOver: sortOver,
   } = useSortable({
     id: folder.folder_id,
     data: {
@@ -120,6 +169,7 @@ export const SortableFolder = ({
       : containsOver && !isCurrentlyDraggingThis
         ? "1px solid #ef4444"
         : "1px solid var(--border-container-color)",
+    "--bgColor": colorTemp ?? "transparent",
   } as CSSProperties;
 
   useEffect(() => {
@@ -132,22 +182,22 @@ export const SortableFolder = ({
     return () => clearTimeout(timer);
   }, [containsOver, isCurrentlyDraggingThis]);
 
-  const handleConfirm = () => {
+  const handleDelete = useCallback(() => {
+    deleteFolder(folder.folder_id);
+  }, [deleteFolder, folder.folder_id]);
+
+  const handleConfirm = useCallback(() => {
     openModal({
       text: `¿Desea eliminar la carpeta "${folder.folder_name}"?`,
       onConfirm: handleDelete,
       additionalText:
         "Esta acción es irreversible, pero tranquilo, tus listas no se eliminan.",
     });
-  };
+  }, [openModal, folder.folder_name, handleDelete]);
 
-  const handleDelete = () => {
-    deleteFolder(folder.folder_id);
-  };
-
-  const handleInfoEdit = () => {
+  const handleInfoEdit = useCallback(() => {
     setIsNameChange(true);
-  };
+  }, []);
 
   const configOptions = useMemo(() => {
     const baseOptions = [
@@ -171,7 +221,7 @@ export const SortableFolder = ({
       },
     ];
     return baseOptions.filter((bs) => bs.enabled);
-  }, []);
+  }, [handleInfoEdit, handleConfirm]);
 
   useEffect(() => {
     const input = document.getElementById("folder-info-edit-container");
@@ -182,7 +232,7 @@ export const SortableFolder = ({
 
   useOnClickOutside(divRef, () => {
     const colorPickerContainer = document.getElementById(
-      "color-picker-container-folder"
+      "color-picker-container-folder",
     );
     if (colorPickerContainer) return;
     setIsNameChange(false);
@@ -194,6 +244,7 @@ export const SortableFolder = ({
       ref={setSortableNodeRef}
       className={styles.folderContainer}
       style={style}
+      data-open={open}
     >
       <div
         id={`folder-${folder.folder_id}-dropzone`}
@@ -269,25 +320,84 @@ export const SortableFolder = ({
           </section>
         )}
       </div>
-      {open /*&& !isCurrentlyDraggingThis*/ && (
+      {open && (
         <div
-          className={styles.listWrapper}
-          style={
-            {
-              "--bgColor": colorTemp ?? "transparent",
-            } as React.CSSProperties
-          }
+          ref={scrollContainerRef}
+          className={`${styles.listWrapper} ${isDragging ? styles.draggingActive : ""}`}
+          style={{ maxHeight: "250px" }}
         >
           <SortableContext
-            items={listIds || []}
+            items={hasFetched ? listIds || [] : []}
             strategy={verticalListSortingStrategy}
           >
-            {lists && lists.length > 0 ? (
-              lists.map((list) => (
-                <ListCard list={list} key={list.list_id} inFolder />
-              ))
+            {!hasFetched ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: "15px 0",
+                  width: "100%",
+                }}
+              >
+                <LoadingIcon
+                  style={{
+                    width: "15px",
+                    height: "auto",
+                    stroke: "var(--text)",
+                    strokeWidth: "2.5",
+                  }}
+                />
+              </div>
             ) : (
-              <p>Arrastra una lista aquí</p>
+              <>
+                {lists && lists.length > 0 ? (
+                  lists.map((list, index) => (
+                    <motion.div
+                      key={list.list_id}
+                      custom={index}
+                      variants={animations ? variants : undefined}
+                      initial="initial"
+                      animate="visible"
+                      exit="exit"
+                      layout={isDragging ? false : true}
+                      style={{ width: "100%" }}
+                    >
+                      <ListCard list={list} inFolder />
+                    </motion.div>
+                  ))
+                ) : !isFetchingFolderLists ? (
+                  <p>Arrastra una lista aquí</p>
+                ) : null}
+
+                {isFetchingFolderLists && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: "15px 0",
+                      width: "100%",
+                    }}
+                  >
+                    <LoadingIcon
+                      style={{
+                        width: "15px",
+                        height: "auto",
+                        stroke: "var(--text)",
+                        strokeWidth: "2.5",
+                      }}
+                    />
+                  </div>
+                )}
+
+                {folderPagination?.hasMore && (
+                  <div
+                    ref={sentinelRef}
+                    style={{ height: "1px", width: "100%" }}
+                  />
+                )}
+              </>
             )}
           </SortableContext>
         </div>

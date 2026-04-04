@@ -41,55 +41,54 @@ interface props {
 }
 
 export const ListCard = memo(({ list, inFolder = false }: props) => {
-  //estados locales
-  if (!list?.list) return null;
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(
-    list?.list?.color ?? "#87189d"
+    list?.list?.color ?? "#87189d",
   );
-  const [emoji, setEmoji] = useState<string | null>(list.list.icon ?? null);
+  const [emoji, setEmoji] = useState<string | null>(list.list?.icon ?? null);
 
-  //estados globales
   const deleteList = useTodoDataStore((state) => state.deleteList);
   const leaveList = useTodoDataStore((state) => state.leaveList);
   const updatePinnedList = useTodoDataStore((state) => state.updatePinnedList);
+
+  const taskCount = useTodoDataStore(
+    useCallback(
+      (state) => state.getTaskCountByListId(list.list_id),
+      [list.list_id],
+    ),
+  );
+
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const animations = useUserPreferencesStore((state) => state.animations);
-  const taskCount = useTodoDataStore((state) =>
-    state.getTaskCountByListId(list.list_id)
-  );
   const openModal = useConfirmationModalStore((state) => state.openModal);
   const setNavbarStatus = useSidebarStateStore(
-    (state) => state.setNavbarStatus
+    (state) => state.setNavbarStatus,
   );
 
-  //ref's
   const divRef = useRef<HTMLInputElement | null>(null);
 
-  //next router
   const pathname = usePathname();
   const router = useRouter();
 
-  //funciones
   const handleLeave = useCallback(() => {
     if (!list) return;
     leaveList(list.list_id);
-  }, [list, leaveList, pathname]);
+  }, [list, leaveList]);
 
   const handleDelete = useCallback(() => {
     if (!list) return;
     deleteList(list.list_id);
-  }, [list, deleteList, pathname]);
+  }, [list, deleteList]);
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     openModal({
       text: `¿Desea eliminar la lista "${list.list.list_name}"?`,
       onConfirm: handleDelete,
       additionalText:
         "Esta acción es irreversible y eliminará todas las tareas de la lista.",
     });
-  };
+  }, [openModal, list.list.list_name, handleDelete]);
 
   const handleConfirmLeave = useCallback(() => {
     openModal({
@@ -98,18 +97,17 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
       additionalText: "Puedes regresar a ella con otra invitación.",
       actionButton: "Salir",
     });
-  }, [openModal, list, handleLeave]);
+  }, [openModal, list.list.list_name, handleLeave]);
 
-  const handleNameChange = () => {
+  const handleNameChange = useCallback(() => {
     setIsNameChange(true);
     setIsMoreOptions(false);
-  };
+  }, []);
 
-  const handlePin = () => {
+  const handlePin = useCallback(() => {
     updatePinnedList(list.list_id, !list.pinned);
-  };
+  }, [updatePinnedList, list.list_id, list.pinned]);
 
-  //useEffect's
   useEffect(() => {
     const input = document.getElementById("list-info-edit-container-list-card");
     if (input) {
@@ -119,14 +117,13 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
 
   useEffect(() => {
     if (!list?.list) return;
-    setColorTemp(list.list.color);
-    setEmoji(list.list.icon);
-  }, [list]);
+    setColorTemp((prev) => (prev !== list.list.color ? list.list.color : prev));
+    setEmoji((prev) => (prev !== list.list.icon ? list.list.icon : prev));
+  }, [list.list.color, list.list.icon]);
 
-  //custom hook's
   useOnClickOutside(divRef, () => {
     const colorPickerContainer = document.getElementById(
-      "color-picker-container-navbar-list-card"
+      "color-picker-container-navbar-list-card",
     );
     if (colorPickerContainer) return;
     setIsNameChange(false);
@@ -134,7 +131,6 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
     setEmoji(list.list.icon);
   });
 
-  //dndkit
   const {
     isDragging,
     attributes,
@@ -151,21 +147,28 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
 
   const isActive = pathname === `/alino-app/${list.list_id}`;
 
-  const style = {
-    transform: `translate3d(${transform?.x || 0}px, ${transform?.y || 0}px, 0)`,
-    transition,
-    pointerEvents: isDragging ? "none" : "auto",
-    zIndex: isDragging ? 99 : 1,
-    opacity: isDragging ? 0.3 : 1,
-    backgroundColor: isActive
-      ? "var(--background-over-container)"
-      : "transparent",
-  } as CSSProperties;
+  const style = useMemo(
+    () =>
+      ({
+        transform: `translate3d(${transform?.x || 0}px, ${transform?.y || 0}px, 0)`,
+        transition,
+        pointerEvents: isDragging ? "none" : "auto",
+        zIndex: isDragging ? 99 : 1,
+        opacity: isDragging ? 0.3 : 1,
+        backgroundColor: isActive
+          ? "var(--background-over-container)"
+          : "transparent",
+      }) as CSSProperties,
+    [transform, transition, isDragging, isActive],
+  );
+
+  if (!list?.list) return null;
 
   const role = list?.role;
   const canDelete = role === "owner" || role === "admin";
   const canEdit = role === "owner" || role === "admin";
-  const owner = role !== "owner";
+  const isNotOwner = role !== "owner";
+
   const configOptions = useMemo(() => {
     const baseOptions = [
       {
@@ -188,7 +191,7 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
         name: "Salir",
         icon: <LogOut style={iconStyle} />,
         action: handleConfirmLeave,
-        enabled: owner,
+        enabled: isNotOwner,
       },
       {
         name: "Eliminar",
@@ -202,18 +205,51 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
   }, [
     canEdit,
     canDelete,
-    owner,
+    isNotOwner,
     list.pinned,
     handleNameChange,
     handlePin,
     handleConfirm,
+    handleConfirmLeave,
   ]);
 
-  const handleConfigMenu = (state: boolean) => {
+  const handleConfigMenu = useCallback((state: boolean) => {
     setIsMoreOptions(state);
-  };
+  }, []);
 
   const content = useMemo(() => {
+    const counterDisplay = (
+      <p
+        className={
+          isMobile
+            ? `${styles.counter} ${styles.Mobile}`
+            : `${styles.counterDesktop} ${styles.Desktop}`
+        }
+        style={!isMobile ? { opacity: isMoreOptions ? "0" : "1" } : undefined}
+      >
+        <CounterAnimation tasksLength={taskCount} />
+      </p>
+    );
+
+    const configDisplay = (
+      <div
+        className={
+          isMobile
+            ? `${styles.configButtonContainer} ${styles.Mobile}`
+            : `${styles.configButtonContainerDesktop} ${styles.Desktop}`
+        }
+        style={!isMobile ? { opacity: isMoreOptions ? "1" : "0" } : undefined}
+      >
+        <ConfigMenu
+          iconWidth={"23px"}
+          configOptions={configOptions}
+          optionalState={handleConfigMenu}
+          idScrollArea={"list-container"}
+          uniqueId={"navbar-list-card"}
+        />
+      </div>
+    );
+
     return (
       <>
         <ListInfoEdit
@@ -254,73 +290,27 @@ export const ListCard = memo(({ list, inFolder = false }: props) => {
               />
             </div>
           )}
-          {!isNameChange &&
-            (isMobile ? (
-              <>
-                <div className={styles.configsContainer}>
-                  <div
-                    className={`${styles.configButtonContainer} ${styles.Mobile}`}
-                  >
-                    <ConfigMenu
-                      iconWidth={"23px"}
-                      configOptions={configOptions}
-                      optionalState={handleConfigMenu}
-                      idScrollArea={"list-container"}
-                      uniqueId={"navbar-list-card"}
-                    />
-                  </div>
-                </div>
-                <div className={styles.configsContainer}>
-                  <p className={`${styles.counter} ${styles.Mobile}`}>
-                    {animations && !inFolder ? (
-                      <CounterAnimation tasksLength={taskCount} />
-                    ) : (
-                      taskCount
-                    )}
-                  </p>
-                </div>
-              </>
-            ) : (
-              <div className={styles.configsContainer}>
-                <div
-                  className={`${styles.configButtonContainerDesktop} ${styles.Desktop}`}
-                  style={{
-                    opacity: isMoreOptions ? "1" : "0",
-                  }}
-                >
-                  <ConfigMenu
-                    iconWidth={"23px"}
-                    configOptions={configOptions}
-                    optionalState={handleConfigMenu}
-                    idScrollArea={"list-container"}
-                    uniqueId={"navbar-list-card"}
-                  />
-                </div>
-                <p
-                  className={`${styles.counterDesktop} ${styles.Desktop}`}
-                  style={{
-                    opacity: isMoreOptions ? "0" : "1",
-                  }}
-                >
-                  {animations && !inFolder ? (
-                    <CounterAnimation tasksLength={taskCount} />
-                  ) : (
-                    taskCount
-                  )}
-                </p>
-              </div>
-            ))}
+          {!isNameChange && (
+            <div className={styles.configsContainer}>
+              {configDisplay}
+              {counterDisplay}
+            </div>
+          )}
         </div>
       </>
     );
   }, [
-    emoji,
-    isMoreOptions,
-    isNameChange,
-    taskCount,
-    isMobile,
-    colorTemp,
     list,
+    isNameChange,
+    colorTemp,
+    emoji,
+    isMobile,
+    isMoreOptions,
+    animations,
+    inFolder,
+    taskCount,
+    configOptions,
+    handleConfigMenu,
   ]);
 
   return (

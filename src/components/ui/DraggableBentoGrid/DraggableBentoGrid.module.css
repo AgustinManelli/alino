@@ -287,14 +287,10 @@
   opacity: 1;
 }
 
-.bentoBody > :global(.simplebar-track.simplebar-horizontal) {
-  display: none;
+.bentoBody :global(.simplebar-track.simplebar-horizontal) {
+  display: none !important;
 }
 
-.bentoBody > :global(.simplebar-track.simplebar-horizontal) {
-  display: none;
-}
-
-.bentoBody > :global(.simplebar-content) {
-  height: 100%;
+.bentoBody :global(.simplebar-content) {
+  height: 100% !important;
 }

@@ -74,7 +74,7 @@ export function DragListCard({ list }: { list: ListsType }) {
       ></div>
 
       <div className={styles.colorPickerContainer} style={{ minWidth: "16px" }}>
-        {list.list.icon !== null || list.list.icon === "" ? (
+        {list.list.icon ? (
           <div
             style={{
               width: "16px",

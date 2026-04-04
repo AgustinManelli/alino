@@ -20,11 +20,12 @@ export function RootItems({
 }) {
   return (
     <AnimatePresence>
-      {items.map((item) => {
+      {items.map((item, index) => {
         if (item.kind === "folder") {
           const folder = item.data as FolderType;
           return (
             <motion.div
+              custom={index}
               layout={draggedItem ? false : true}
               variants={animations ? variants : undefined}
               initial="initial"
@@ -45,6 +46,7 @@ export function RootItems({
         const list = item.data as ListsType;
         return (
           <motion.div
+            custom={index}
             layout={draggedItem ? false : true}
             variants={animations ? variants : undefined}
             initial="initial"

@@ -4,8 +4,6 @@ import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 
-import { createClient } from "@/utils/supabase/client";
-
 import {
   createListInvitation,
   deleteAllLists,
@@ -32,12 +30,13 @@ import {
 } from "@/lib/api/task/actions";
 
 import {
-  Database,
   FolderType,
   InvitationRow,
   ListsRow,
   ListsType,
+  MembershipCountPayload,
   MembershipRow,
+  TaskCountPayload,
   TaskType,
   UserProfile,
   UserWithMembershipRole,
@@ -47,12 +46,86 @@ import { globalUserStore } from "@/store/useUserDataStore";
 
 const POS_INDEX = 16384;
 
+// ---------------------------------------------------------------------------
+// Helpers DRY para lectura de conteos embebidos
+// ---------------------------------------------------------------------------
+
+/**
+ * Lee el conteo de tareas embebido en una lista.
+ * Supabase lo devuelve como `[{ count: N }]` cuando se usa tasks(count) en la query.
+ */
+function readTaskCount(
+  list: ListsType,
+  fallbackTasks: TaskType[]
+): number {
+  const payload = list.list.tasks;
+  if (Array.isArray(payload) && payload.length > 0) {
+    return payload[0].count;
+  }
+  return fallbackTasks.filter((t) => t.list_id === list.list_id).length;
+}
+
+/**
+ * Lee el conteo de membresías embebido en una carpeta.
+ * El RPC lo devuelve como `[{ count: N }]`.
+ */
+function readFolderMembershipCount(
+  folder: FolderType,
+  lists: ListsType[]
+): number {
+  const payload = folder.memberships;
+  if (Array.isArray(payload) && payload.length > 0) {
+    return payload[0].count;
+  }
+  return lists.filter((l) => l.folder === folder.folder_id).length;
+}
+
+/**
+ * Construye un nuevo payload de conteo de tareas a partir del valor recibido.
+ */
+function makeTaskCountPayload(count: number): TaskCountPayload {
+  return [{ count }];
+}
+
+/**
+ * Construye un nuevo payload de conteo de membresías.
+ */
+function makeMembershipCountPayload(count: number): MembershipCountPayload {
+  return [{ count }];
+}
+
+const calculateNewIndex = (
+  a: ListsType[] | FolderType[],
+  b: ListsType[] | FolderType[]
+) => {
+  const maxOf = (arr: ListsType[] | FolderType[]) =>
+    arr.length > 0 ? Math.max(...arr.map((x) => x.index ?? 0)) : 0;
+
+  const maxIdx = Math.max(maxOf(a), maxOf(b));
+  return maxIdx <= 0 ? POS_INDEX : maxIdx + POS_INDEX;
+};
+
+function handleError(err: unknown) {
+  toast.error((err as Error).message || "Error desconocido");
+}
+
+// Tipo del store
+
 type TodoStore = {
   lists: ListsType[];
   tasks: TaskType[];
+  tasksByList: Record<string, { tasks: TaskType[]; page: number; hasMore: boolean }>;
   folders: FolderType[];
   initialFetch: boolean;
   loadingQueue: number;
+  tasksPage: number;
+  hasMoreTasks: boolean;
+  currentListId: string | "home" | null;
+  fetchingListsQueue: Record<string, boolean>;
+  listsPagination: Record<string, { page: number; hasMore: boolean }>;
+
+  fetchListsPage: (folderId: string | "root") => Promise<void>;
+  fetchTasksPage: (listId: string | "home", reset?: boolean) => Promise<void>;
   setLists: (list: ListsType[]) => Promise<void>;
   setFolders: (folders: FolderType[]) => Promise<void>;
   getLists: () => Promise<void>;
@@ -65,7 +138,7 @@ type TodoStore = {
     name: string,
     color: string,
     icon: string | null
-  ) => Promise<{ error: string | null, list_id?: string }>;
+  ) => Promise<{ error: string | null; list_id?: string }>;
   insertFolder: (
     folder_name: string,
     folder_color: string | null
@@ -82,7 +155,7 @@ type TodoStore = {
   updateDataFolder: (
     folder_id: string,
     folder_name: string,
-    folde_color: string | null
+    folder_color: string | null
   ) => Promise<{ error: string | null }>;
   deleteAllLists: () => Promise<void>;
   addTask: (
@@ -107,12 +180,12 @@ type TodoStore = {
     folder_id: string | null,
     rank: string
   ) => Promise<void>;
-  updateIndexFolders: (folder_id: string, rank:string) => Promise<void>;
+  updateIndexFolders: (folder_id: string, rank: string) => Promise<void>;
   updateTaskName: (
     task_id: string,
     task_content: string,
     completed: boolean | null,
-    target_date: string | null,
+    target_date: string | null
   ) => Promise<{ error: string | null }>;
   getUsersMembersList: (listId: string) => Promise<UserWithMembershipRole[]>;
   createListInvitation: (
@@ -125,50 +198,194 @@ type TodoStore = {
   getTaskCountByListId: (listId: string) => number;
 };
 
-const calculateNewIndex = (
-  a: ListsType[] | FolderType[],
-  b: ListsType[] | FolderType[]
-) => {
-  // extraemos índices, forzando a number (fallback 0)
-  const idxA = a
-    ? a.length > 0
-      ? Math.max(...a.map((x) => x.index ?? 0))
-      : 0
-    : 0;
-  const idxB = b
-    ? b.length > 0
-      ? Math.max(...b.map((x) => x.index ?? 0))
-      : 0
-    : 0;
+// Tipos para el _item_type tag que agrega getPaginatedLists
 
-  const maxIdx = Math.max(idxA, idxB);
-
-  return maxIdx <= 0 ? POS_INDEX : maxIdx + POS_INDEX;
-};
-
-function handleError(err: unknown) {
-  toast.error((err as Error).message || "Error desconocido");
-}
-
-async function getCurrentUserId(): Promise<string | null> {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    return null;
-  }
-
-  return session.user.id;
-}
+type TaggedAsList = ListsType & { _item_type: "list" };
+type TaggedAsFolder = FolderType & { _item_type: "folder" };
+type TaggedSidebarItem = TaggedAsList | TaggedAsFolder;
 
 export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   lists: [],
   tasks: [],
+  tasksByList: {},
   folders: [],
   initialFetch: false,
   loadingQueue: 0,
+
+  tasksPage: 0,
+  hasMoreTasks: true,
+  currentListId: null,
+  fetchingListsQueue: {},
+  listsPagination: {},
+
+  fetchListsPage: async (folderId) => {
+    try {
+      const state = get();
+      if (state.fetchingListsQueue[folderId]) return;
+
+      const currentPagination = state.listsPagination[folderId] ?? {
+        page: -1,
+        hasMore: true,
+      };
+
+      if (!currentPagination.hasMore) return;
+
+      set((s) => ({
+        fetchingListsQueue: { ...s.fetchingListsQueue, [folderId]: true },
+      }));
+
+      const newPage = currentPagination.page + 1;
+
+      const { getPaginatedLists } = await import("@/lib/api/list/actions");
+      const targetFolderId = folderId === "root" ? null : folderId;
+      const { data } = await getPaginatedLists(targetFolderId, newPage, 200);
+
+      if (!data) return;
+
+      const items = data as TaggedSidebarItem[];
+      const newLists = items.filter(
+        (i): i is TaggedAsList =>
+          i._item_type === "list" || !("_item_type" in i)
+      ) as ListsType[];
+      const newFolders = items.filter(
+        (i): i is TaggedAsFolder => i._item_type === "folder"
+      ) as FolderType[];
+
+      const hasMoreFetched = data.length >= 200;
+
+      set((s) => {
+        const existingListIds = new Set(s.lists.map((l) => l.list_id));
+        const filteredNewLists = newLists.filter(
+          (l) => !existingListIds.has(l.list_id)
+        );
+
+        const existingFolderIds = new Set(s.folders.map((f) => f.folder_id));
+        const filteredNewFolders = newFolders.filter(
+          (f) => !existingFolderIds.has(f.folder_id)
+        );
+
+        return {
+          lists: [...s.lists, ...filteredNewLists],
+          folders: [...s.folders, ...filteredNewFolders],
+          listsPagination: {
+            ...s.listsPagination,
+            [folderId]: { page: newPage, hasMore: hasMoreFetched },
+          },
+        };
+      });
+    } catch (err) {
+      handleError(err);
+    } finally {
+      set((s) => ({
+        fetchingListsQueue: { ...s.fetchingListsQueue, [folderId]: false },
+      }));
+    }
+  },
+
+  fetchTasksPage: async (listId, reset = false) => {
+    try {
+      const state = get();
+
+      if (reset) {
+        const savedCache: Record<
+          string,
+          { tasks: TaskType[]; page: number; hasMore: boolean }
+        > = {};
+
+        if (state.currentListId) {
+          savedCache[state.currentListId] = {
+            tasks: state.tasks,
+            page: state.tasksPage,
+            hasMore: state.hasMoreTasks,
+          };
+        }
+
+        const cached = state.tasksByList[listId] ?? savedCache[listId];
+
+        if (cached) {
+          set((s) => ({
+            tasks: cached.tasks,
+            tasksPage: cached.page,
+            hasMoreTasks: cached.hasMore,
+            currentListId: listId,
+            tasksByList: {
+              ...s.tasksByList,
+              ...(state.currentListId
+                ? {
+                    [state.currentListId]: {
+                      tasks: state.tasks,
+                      page: state.tasksPage,
+                      hasMore: state.hasMoreTasks,
+                    },
+                  }
+                : {}),
+            },
+          }));
+          if (cached.tasks.length > 0) return;
+        } else {
+          set((s) => ({
+            tasks: [],
+            tasksPage: 0,
+            hasMoreTasks: true,
+            currentListId: listId,
+            tasksByList: {
+              ...s.tasksByList,
+              ...(state.currentListId
+                ? {
+                    [state.currentListId]: {
+                      tasks: state.tasks,
+                      page: state.tasksPage,
+                      hasMore: state.hasMoreTasks,
+                    },
+                  }
+                : {}),
+            },
+          }));
+        }
+      }
+
+      const currentState = get();
+      if (!currentState.hasMoreTasks || currentState.loadingQueue > 0) return;
+
+      const newPage = currentState.tasksPage + 1;
+      set({ loadingQueue: currentState.loadingQueue + 1 });
+
+      const listIdsToFetch: string[] =
+        listId === "home"
+          ? currentState.lists.map((l) => l.list_id)
+          : [listId];
+
+      const { getPaginatedTasks } = await import("@/lib/api/task/actions");
+      const { data } = await getPaginatedTasks(
+        listIdsToFetch,
+        reset ? 0 : newPage,
+        40
+      );
+
+      const newTasks = reset
+        ? (data ?? [])
+        : [...currentState.tasks, ...(data ?? [])];
+      const newHasMore = Boolean(data && data.length === 40);
+
+      set((s) => ({
+        tasks: newTasks as TaskType[],
+        tasksPage: reset ? 0 : newPage,
+        hasMoreTasks: newHasMore,
+        tasksByList: {
+          ...s.tasksByList,
+          [listId]: {
+            tasks: newTasks as TaskType[],
+            page: reset ? 0 : newPage,
+            hasMore: newHasMore,
+          },
+        },
+      }));
+    } catch (err) {
+      handleError(err);
+    } finally {
+      set((state) => ({ loadingQueue: Math.max(0, state.loadingQueue - 1) }));
+    }
+  },
 
   setLists: async (list) => {
     set(() => ({ lists: list }));
@@ -183,7 +400,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       return;
     }
 
-    set((state) => ({ ...state, loadingQueue: state.loadingQueue + 1 }));
+    set((state) => ({ loadingQueue: state.loadingQueue + 1 }));
 
     try {
       const { data, error } = await getLists();
@@ -193,15 +410,18 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       }
 
       set(() => ({
-        lists: data?.lists,
-        tasks: data?.tasks,
-        folders: data?.folders,
+        lists: data?.lists ?? [],
+        tasks: data?.tasks ?? [],
+        folders: data?.folders ?? [],
+        listsPagination: {
+          root: { page: 0, hasMore: data?.hasMoreRoot ?? false },
+        },
         initialFetch: true,
       }));
     } catch (err) {
       handleError(err);
     } finally {
-      set((state) => ({ ...state, loadingQueue: state.loadingQueue - 1 }));
+      set((state) => ({ loadingQueue: state.loadingQueue - 1 }));
     }
   },
 
@@ -210,17 +430,19 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   getTaskCountByListId: (listId: string) => {
-    return get().tasks.filter((task) => task.list_id === listId).length;
+    const listMem = get().lists.find((list) => list.list_id === listId);
+    if (!listMem) return 0;
+    return readTaskCount(listMem, get().tasks);
   },
 
   subscriptionAddList: async (membership) => {
-    const list = await getSingleLists(membership.list_id);
+    const result = await getSingleLists(membership.list_id);
 
-    if (!list) return;
+    if (!result?.data) return;
 
     const newItemForStore: ListsType = {
       ...membership,
-      list: list.data,
+      list: result.data as ListsRow,
     };
 
     set((state) => {
@@ -258,7 +480,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     set((state) => ({
       lists: state.lists.map((currentItem) =>
         currentItem.list.list_id === updatedList.list_id
-          ? { ...currentItem, list: updatedList }
+          ? { ...currentItem, list: { ...currentItem.list, ...updatedList } }
           : currentItem
       ),
     }));
@@ -275,12 +497,34 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   subscriptionAddTask: (task) => {
-    set((state) => ({
-      tasks: [task, ...state.tasks].filter(
-        (t, index, self) =>
-          index === self.findIndex((tt) => tt.task_id === t.task_id)
-      ),
-    }));
+    set((state) => {
+      const taskExists = state.tasks.some((t) => t.task_id === task.task_id);
+
+      let updatedLists = state.lists;
+      if (!taskExists) {
+        updatedLists = state.lists.map((currentItem) => {
+          if (currentItem.list.list_id === task.list_id) {
+            const currentCount = readTaskCount(currentItem, state.tasks);
+            return {
+              ...currentItem,
+              list: {
+                ...currentItem.list,
+                tasks: makeTaskCountPayload(currentCount + 1),
+              },
+            };
+          }
+          return currentItem;
+        });
+      }
+
+      return {
+        tasks: [task, ...state.tasks].filter(
+          (t, index, self) =>
+            index === self.findIndex((tt) => tt.task_id === t.task_id)
+        ),
+        lists: updatedLists,
+      };
+    });
   },
 
   subscriptionUpdateTask: (task) => {
@@ -290,9 +534,31 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   subscriptionDeleteTask: (task) => {
-    set((state) => ({
-      tasks: state.tasks.filter((t) => t.task_id !== task.task_id),
-    }));
+    set((state) => {
+      const existingTask = state.tasks.find((t) => t.task_id === task.task_id);
+
+      let updatedLists = state.lists;
+      if (existingTask) {
+        updatedLists = state.lists.map((currentItem) => {
+          if (currentItem.list.list_id === existingTask.list_id) {
+            const currentCount = readTaskCount(currentItem, state.tasks);
+            return {
+              ...currentItem,
+              list: {
+                ...currentItem.list,
+                tasks: makeTaskCountPayload(Math.max(0, currentCount - 1)),
+              },
+            };
+          }
+          return currentItem;
+        });
+      }
+
+      return {
+        tasks: state.tasks.filter((t) => t.task_id !== task.task_id),
+        lists: updatedLists,
+      };
+    });
   },
 
   updateIndexList: async (list_id, folder_id, rank) => {
@@ -302,13 +568,35 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     const previousRank = originalList.rank;
 
     try {
-      set((state) => ({
-        lists: state.lists.map((currentItem) =>
-          currentItem.list_id === list_id
-            ? { ...currentItem, folder_id, rank}
-            : currentItem
-        ),
-      }));
+      set((state) => {
+        const newFolders = state.folders.map((f) => {
+          let countChange = 0;
+          if (f.folder_id === folder_id && previousFolder !== folder_id)
+            countChange++;
+          if (f.folder_id === previousFolder && previousFolder !== folder_id)
+            countChange--;
+
+          if (countChange !== 0) {
+            const currentCount = readFolderMembershipCount(f, state.lists);
+            return {
+              ...f,
+              memberships: makeMembershipCountPayload(
+                Math.max(0, currentCount + countChange)
+              ),
+            };
+          }
+          return f;
+        });
+
+        return {
+          folders: newFolders,
+          lists: state.lists.map((currentItem) =>
+            currentItem.list_id === list_id
+              ? { ...currentItem, folder: folder_id, rank }
+              : currentItem
+          ),
+        };
+      });
 
       const { error } = await updateIndexList(list_id, folder_id, rank);
 
@@ -319,7 +607,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       set((state) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === list_id
-            ? { ...currentItem, folder: previousFolder, rank: previousRank}
+            ? { ...currentItem, folder: previousFolder, rank: previousRank }
             : currentItem
         ),
       }));
@@ -328,17 +616,17 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   updateIndexFolders: async (folder_id, rank) => {
-    const originalFolders = get().folders.find(
+    const originalFolder = get().folders.find(
       (folder) => folder.folder_id === folder_id
     );
-    if (!originalFolders) return;
-    const previousRank = originalFolders.rank;
+    if (!originalFolder) return;
+    const previousRank = originalFolder.rank;
 
     try {
       set((state) => ({
         folders: state.folders.map((currentItem) =>
           currentItem.folder_id === folder_id
-            ? { ...currentItem, rank}
+            ? { ...currentItem, rank }
             : currentItem
         ),
       }));
@@ -364,21 +652,40 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   updatePinnedList: async (list_id: string, pinned: boolean) => {
     const originalList = get().lists.find((list) => list.list_id === list_id);
     if (!originalList) return;
-    const previousIndex = originalList.pinned;
+    const previousPinned = originalList.pinned;
     const previousFolder = originalList.folder;
-    let errorResult;
+    let errorResult: string | undefined;
 
     try {
       if (pinned === true) {
-        set((state) => ({
-          lists: state.lists.map((currentItem) =>
-            currentItem.list_id === list_id
-              ? { ...currentItem, pinned, folder: null }
-              : currentItem
-          ),
-        }));
-        const { error } = await updatePinnedList(list_id, pinned, null);
-        errorResult = error;
+        set((state) => {
+          let updatedFolders = state.folders;
+          if (previousFolder) {
+            updatedFolders = state.folders.map((f) => {
+              if (f.folder_id === previousFolder) {
+                const currentCount = readFolderMembershipCount(f, state.lists);
+                return {
+                  ...f,
+                  memberships: makeMembershipCountPayload(
+                    Math.max(0, currentCount - 1)
+                  ),
+                };
+              }
+              return f;
+            });
+          }
+
+          return {
+            folders: updatedFolders,
+            lists: state.lists.map((currentItem) =>
+              currentItem.list_id === list_id
+                ? { ...currentItem, pinned, folder: null }
+                : currentItem
+            ),
+          };
+        });
+        const result = await updatePinnedList(list_id, pinned, null);
+        errorResult = result?.error;
       } else {
         const lists = get().lists;
         const folders = get().folders;
@@ -390,8 +697,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
               : currentItem
           ),
         }));
-        const { error } = await updatePinnedList(list_id, pinned, index);
-        errorResult = error;
+        const result = await updatePinnedList(list_id, pinned, index);
+        errorResult = result?.error;
       }
 
       if (errorResult) {
@@ -401,7 +708,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       set((state) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === list_id
-            ? { ...currentItem, pinned: previousIndex, folder: previousFolder }
+            ? { ...currentItem, pinned: previousPinned, folder: previousFolder }
             : currentItem
         ),
       }));
@@ -410,7 +717,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   insertList: async (name, color, icon) => {
-    const user_id = await getCurrentUserId();
+    const user = globalUserStore?.getState().user;
+    const user_id = user?.user_id ?? "";
 
     const optimisticId = uuidv4();
     const lists = get().lists;
@@ -429,7 +737,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       role: "owner",
       shared_by: null,
       shared_since: now,
-      user_id: user_id || "",
+      updated_at: null,
+      user_id,
       list: {
         color: color ?? "#87189d",
         created_at: now,
@@ -437,16 +746,24 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         icon: icon ?? null,
         list_id: optimisticId,
         list_name: name,
-        owner_id: user_id || "",
+        owner_id: user_id,
         updated_at: null,
         is_shared: false,
         non_owner_count: 0,
       },
     };
+
     try {
       set((state) => ({ lists: [...state.lists, optimistic] }));
 
-      const { error } = await insertList(optimisticId, name, color, icon, rank, index);
+      const { error } = await insertList(
+        optimisticId,
+        name,
+        color,
+        icon,
+        rank,
+        index
+      );
 
       if (error) {
         throw new Error(error || "No se recibieron datos del servidor.");
@@ -463,7 +780,9 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   insertFolder: async (folder_name, folder_color) => {
-    const user_id = await getCurrentUserId();
+    const user = globalUserStore?.getState().user;
+    const user_id = user?.user_id ?? "";
+
     const optimisticId = uuidv4();
     const lists = get().lists;
     const folders = get().folders;
@@ -479,10 +798,11 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       folder_description: null,
       index,
       rank,
-      user_id: user_id || "",
+      user_id,
       updated_at: null,
       created_at: now,
     };
+
     try {
       set((state) => ({ folders: [...state.folders, optimistic] }));
 
@@ -499,7 +819,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       }
     } catch (err) {
       set((state) => ({
-        lists: state.lists.filter((l) => l.list_id !== optimisticId),
+        folders: state.folders.filter((f) => f.folder_id !== optimisticId),
       }));
 
       handleError(err);
@@ -572,9 +892,9 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
               ...list,
               list: {
                 ...list.list,
-                list_name: list_name,
-                color: color,
-                icon: icon,
+                list_name,
+                color,
+                icon,
               },
             }
           : list
@@ -600,8 +920,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         folder.folder_id === folder_id
           ? {
               ...folder,
-              folder_name: folder_name,
-              folder_color: folder_color,
+              folder_name,
+              folder_color,
             }
           : folder
       ),
@@ -629,7 +949,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     set({ lists: [], tasks: [] });
   },
 
-  //TASKS ACTIONS
+  // TASKS
+
   addTask: async (list_id, task_content, target_date, note) => {
     const optimisticId = uuidv4();
 
@@ -641,7 +962,14 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       return { error: errorMsg };
     }
 
-    const optimisticTask = {
+    const createdBy: UserProfile = {
+      user_id: user.user_id,
+      display_name: user.display_name,
+      username: user.username,
+      avatar_url: user.avatar_url,
+    };
+
+    const optimisticTask: TaskType = {
       task_id: optimisticId,
       task_content,
       list_id,
@@ -650,20 +978,33 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       index: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      created_by: {
-        user_id: user.user_id,
-        display_name: user.display_name,
-        username: user.username,
-        avatar_url: user.avatar_url,
-      },
+      created_by: createdBy,
       description: "",
     };
 
     const prevTasks = get().tasks.slice();
+    const prevLists = get().lists.slice();
 
-    set((state) => ({
-      tasks: [optimisticTask, ...state.tasks],
-    }));
+    set((state) => {
+      const updatedLists = state.lists.map((currentItem) => {
+        if (currentItem.list.list_id === list_id) {
+          const currentCount = readTaskCount(currentItem, state.tasks);
+          return {
+            ...currentItem,
+            list: {
+              ...currentItem.list,
+              tasks: makeTaskCountPayload(currentCount + 1),
+            },
+          };
+        }
+        return currentItem;
+      });
+
+      return {
+        tasks: [optimisticTask, ...state.tasks],
+        lists: updatedLists,
+      };
+    });
 
     const { data, error } = await insertTask(
       list_id,
@@ -675,14 +1016,14 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
 
     if (error) {
       handleError(error);
-      set({ tasks: prevTasks });
+      set({ tasks: prevTasks, lists: prevLists });
       return { error };
     }
 
     set((state) => ({
       tasks: state.tasks.map((t) => {
-        if (t.task_id === optimisticId) {
-          const { created_by, ...restData } = data;
+        if (t.task_id === optimisticId && data) {
+          const { created_by: _discarded, ...restData } = data;
           return { ...t, ...restData, created_by: t.created_by };
         }
         return t;
@@ -702,7 +1043,14 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     }
 
     const now = new Date().toISOString();
-    const optimisticTasks = tasksData.map((t) => ({
+    const createdBy: UserProfile = {
+      user_id: user.user_id,
+      display_name: user.display_name,
+      username: user.username,
+      avatar_url: user.avatar_url,
+    };
+
+    const optimisticTasks: TaskType[] = tasksData.map((t) => ({
       task_id: uuidv4(),
       task_content: t.task_content,
       list_id: t.list_id,
@@ -711,12 +1059,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       index: 0,
       created_at: now,
       updated_at: now,
-      created_by: {
-        user_id: user.user_id,
-        display_name: user.display_name,
-        username: user.username,
-        avatar_url: user.avatar_url,
-      },
+      created_by: createdBy,
       description: "",
     }));
 
@@ -746,7 +1089,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       tasks: state.tasks.map((t) => {
         const found = data?.find((d) => d.task_id === t.task_id);
         if (found) {
-          const { created_by, ...restData } = found;
+          const { created_by: _discarded, ...restData } = found;
           return { ...t, ...restData, created_by: t.created_by };
         }
         return t;
@@ -756,20 +1099,40 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     return { error: null };
   },
 
-  // //ACCIONES DE TAREAS
-
   deleteTask: async (task_id) => {
+    const originalTask = get().tasks.find((t) => t.task_id === task_id);
     const prevTasks = get().tasks.slice();
+    const prevLists = get().lists.slice();
 
-    set((state) => ({
-      tasks: state.tasks.filter((t) => t.task_id !== task_id),
-    }));
+    set((state) => {
+      let updatedLists = state.lists;
+      if (originalTask) {
+        updatedLists = state.lists.map((currentItem) => {
+          if (currentItem.list.list_id === originalTask.list_id) {
+            const currentCount = readTaskCount(currentItem, state.tasks);
+            return {
+              ...currentItem,
+              list: {
+                ...currentItem.list,
+                tasks: makeTaskCountPayload(Math.max(0, currentCount - 1)),
+              },
+            };
+          }
+          return currentItem;
+        });
+      }
 
-    const { error } = await deleteTask(task_id);
+      return {
+        tasks: state.tasks.filter((task) => task.task_id !== task_id),
+        lists: updatedLists,
+      };
+    });
 
-    if (error) {
-      handleError(error);
-      set({ tasks: prevTasks });
+    const result = await deleteTask(task_id);
+
+    if (result?.error) {
+      handleError(result.error);
+      set({ tasks: prevTasks, lists: prevLists });
       return;
     }
   },
@@ -779,7 +1142,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
 
     set((state) => ({
       tasks: state.tasks.map((task) =>
-        task.task_id === task_id ? { ...task, completed: completed } : task
+        task.task_id === task_id ? { ...task, completed } : task
       ),
     }));
 
@@ -798,17 +1161,22 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     set((state) => ({
       tasks: state.tasks.map((task) =>
         task.task_id === task_id
-          ? { ...task, task_content: task_content, completed: completed, target_date: target_date}
+          ? { ...task, task_content, completed, target_date }
           : task
       ),
     }));
 
-    const { error } = await updateNameTask(task_id, task_content, completed, target_date);
+    const { error } = await updateNameTask(
+      task_id,
+      task_content,
+      completed,
+      target_date
+    );
 
     if (error) {
       handleError(error);
       set({ tasks: prevTasks });
-      return { error: error };
+      return { error };
     }
 
     return { error: null };
@@ -823,6 +1191,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
     } catch (err) {
       handleError(err);
     }
+    return [];
   },
 
   createListInvitation: async (

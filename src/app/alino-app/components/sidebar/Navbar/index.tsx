@@ -22,7 +22,7 @@
  * <Navbar />
  */
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { useShallow } from "zustand/shallow";
 
@@ -38,6 +38,7 @@ import { ListInput } from "../ListInput";
 import { NavbarButton } from "./NavbarButton";
 
 import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
+import { LoadingIcon } from "@/components/ui/icons/icons";
 import styles from "./Navbar.module.css";
 
 export const Navbar = () => {
@@ -47,7 +48,7 @@ export const Navbar = () => {
       navbarStatus: state.navbarStatus,
       setNavbarStatus: state.setNavbarStatus,
       toggleNavbar: state.toggleNavbarStatus,
-    }))
+    })),
   );
 
   //Estado para saber si se está en mobile basado en ancho de pantalla.
@@ -55,10 +56,42 @@ export const Navbar = () => {
 
   //Flag para conocer si ya se recuperaron los datos iniciales de la base de datos
   const initialFetch = useTodoDataStore(
-    useShallow((state) => state.initialFetch)
+    useShallow((state) => state.initialFetch),
+  );
+
+  const fetchListsPage = useTodoDataStore(
+    useShallow((state) => state.fetchListsPage),
+  );
+  const listsPagination = useTodoDataStore(
+    useShallow((state) => state.listsPagination),
+  );
+  const fetchingListsQueue = useTodoDataStore(
+    useShallow((state) => state.fetchingListsQueue),
   );
 
   const navbarContainerRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          if (listsPagination["root"]?.hasMore) {
+            fetchListsPage("root");
+          }
+        }
+      },
+      {
+        root: document.getElementById("list-container"),
+        rootMargin: "100px",
+        threshold: 0.1,
+      },
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [listsPagination, fetchListsPage]);
 
   const handleToggleNavbar = useCallback(() => {
     toggleNavbar();
@@ -73,7 +106,7 @@ export const Navbar = () => {
     navbarContainerRef,
     handleCloseNavbar,
     [],
-    "ignore-sidebar-close"
+    "ignore-sidebar-close",
   );
 
   return (
@@ -128,6 +161,32 @@ export const Navbar = () => {
                 <>
                   <HomeCard key={"homecard"} />
                   <DraggableBoard />
+                  {fetchingListsQueue["root"] && (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        padding: "15px 0",
+                        width: "100%",
+                      }}
+                    >
+                      <LoadingIcon
+                        style={{
+                          width: "15px",
+                          height: "auto",
+                          stroke: "var(--text)",
+                          strokeWidth: "2.5",
+                        }}
+                      />
+                    </div>
+                  )}
+                  {listsPagination["root"]?.hasMore && (
+                    <div
+                      ref={sentinelRef}
+                      style={{ height: "1px", width: "100%" }}
+                    />
+                  )}
                 </>
               )}
             </div>

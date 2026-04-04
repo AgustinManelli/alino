@@ -1,7 +1,15 @@
 "use server";
+
 import { createClient as createClientServer } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
 import { z } from "zod";
+import {
+  FolderType,
+  ListsType,
+  MembershipCountPayload,
+  TaskCountPayload,
+  UserWithMembershipRole,
+} from "@/lib/schemas/database.types";
 
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
@@ -23,6 +31,53 @@ const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
   }
 };
 
+interface SidebarListPayload {
+  folder: string | null;
+  index: number;
+  list_id: string;
+  pinned: boolean;
+  rank: string | null;
+  role: string;
+  shared_by: string | null;
+  shared_since: string;
+  updated_at: string | null;
+  user_id: string;
+  list: {
+    list_id: string;
+    list_name: string;
+    color: string;
+    icon: string | null;
+    owner_id: string;
+    is_shared: boolean;
+    non_owner_count?: number;
+    created_at?: string;
+    updated_at?: string | null;
+    description?: string | null;
+    tasks?: TaskCountPayload;
+  };
+}
+
+interface SidebarFolderPayload {
+  folder_id: string;
+  folder_name: string;
+  folder_color: string | null;
+  folder_description: string | null;
+  user_id: string;
+  updated_at: string | null;
+  created_at: string;
+  index: number;
+  rank: string | null;
+  memberships: MembershipCountPayload;
+  max_rank: string | null;
+}
+
+interface SidebarRpcRow {
+  item_id: string;
+  item_type: "folder" | "list";
+  item_rank: string | null;
+  payload: SidebarListPayload | SidebarFolderPayload;
+}
+
 export async function getSingleLists(list_id: string) {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
@@ -39,8 +94,8 @@ export async function getSingleLists(list_id: string) {
       );
     }
 
-    if (!listData || listData.length === 0) {
-      return { data: {} };
+    if (!listData) {
+      return { data: null };
     }
 
     return { data: listData };
@@ -53,70 +108,75 @@ export async function getSingleLists(list_id: string) {
   }
 }
 
-export async function getLists() {
+export async function getLists(): Promise<{
+  data?: {
+    lists: ListsType[];
+    tasks: never[];
+    folders: FolderType[];
+    hasMoreRoot: boolean;
+  };
+  error?: string;
+}> {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const { data: foldersData, error: foldersError } = await supabase
-      .from("list_folders")
-      .select(`*`)
-      .eq("user_id", user.id);
-
-    if (foldersError) {
-      throw new Error(
-        "No se pudieron obtener las carpetas. Intentalo nuevamente o contacta con soporte."
-      );
-    }
-
-    const { data: listsData, error: listsError } = await supabase
+    const { data: pinnedData, error: pinnedError } = await supabase
       .from("list_memberships")
-      .select(`*, list: lists (*)`)
+      .select(`*, list: lists (*, tasks(count))`)
       .eq("user_id", user.id)
-      .order("index", { ascending: true });
+      .eq("pinned", true)
+      .order("rank", { ascending: true });
 
-    if (listsError) {
+    if (pinnedError) {
+      throw new Error("No se pudieron obtener las listas fijadas.");
+    }
+
+    const { data: mixedData, error: mixedError } = await supabase
+      .rpc("get_paginated_sidebar", {
+        p_user_id: user.id,
+        p_page_limit: 200,
+        p_offset: 0,
+      });
+
+    if (mixedError) {
       throw new Error(
-        "No se pudieron obtener las listas. Intentalo nuevamente o contacta con soporte."
+        "No se pudo inicializar la barra lateral. Intentalo nuevamente."
       );
     }
 
-    if (!listsData || listsData.length === 0) {
-      return {
-        data: {
-          lists: [],
-          tasks: [],
-          folders: !foldersData || foldersData.length === 0 ? [] : foldersData,
-        },
-      };
-    }
+    const rows = (mixedData ?? []) as SidebarRpcRow[];
 
-    const listIds = listsData.map((membership) => membership.list.list_id);
+    const folders: FolderType[] = [];
+    const unpinnedLists: ListsType[] = [];
 
-    const { data: tasksData, error: tasksError } = await supabase
-      .from("tasks")
-      .select(
-        `*,
-        created_by:users (
-        user_id,
-        display_name,
-        username,
-        avatar_url
-      )`
-      )
-      .in("list_id", listIds)
-      .order("created_at", { ascending: false });
+    rows.forEach((item) => {
+      if (item.item_type === "folder") {
+        const p = item.payload as SidebarFolderPayload;
+        folders.push({
+          folder_id: p.folder_id,
+          folder_name: p.folder_name,
+          folder_color: p.folder_color,
+          folder_description: p.folder_description,
+          user_id: p.user_id,
+          updated_at: p.updated_at,
+          created_at: p.created_at,
+          index: p.index,
+          rank: p.rank,
+          memberships: p.memberships ?? [{ count: 0 }],
+        });
+      } else if (item.item_type === "list") {
+        unpinnedLists.push(item.payload as ListsType);
+      }
+    });
 
-    if (tasksError) {
-      throw new Error(
-        "No se pudieron obtener las tareas. Intentalo nuevamente o contacta con soporte."
-      );
-    }
+    const LIMIT = 200;
 
     return {
       data: {
-        lists: listsData,
-        tasks: tasksData,
-        folders: !foldersData || foldersData.length === 0 ? [] : foldersData,
+        lists: [...(pinnedData as ListsType[] ?? []), ...unpinnedLists],
+        tasks: [],
+        folders,
+        hasMoreRoot: rows.length >= LIMIT,
       },
     };
   } catch (error: unknown) {
@@ -127,6 +187,71 @@ export async function getLists() {
     return { error: UNKNOWN_ERROR_MESSAGE };
   }
 }
+
+export const getPaginatedLists = async (
+  folderId: string | null = null,
+  page: number = 0,
+  limit: number = 200
+): Promise<{ data?: (ListsType | FolderType)[]; error?: string }> => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const from = page * limit;
+
+    if (folderId) {
+      const { data: qData, error } = await supabase
+        .from("list_memberships")
+        .select(`*, list: lists (*, tasks(count))`)
+        .eq("user_id", user.id)
+        .order("rank", { ascending: true })
+        .range(from, from + limit - 1)
+        .eq("folder", folderId);
+
+      if (error) throw new Error("No se pudieron cargar las listas.");
+      return { data: (qData as ListsType[]) ?? [] };
+    } else {
+      const { data: mixData, error } = await supabase.rpc(
+        "get_paginated_sidebar",
+        {
+          p_user_id: user.id,
+          p_page_limit: limit,
+          p_offset: from,
+        }
+      );
+
+      if (error) throw new Error("No se pudo cargar la barra lateral.");
+
+      const rows = (mixData ?? []) as SidebarRpcRow[];
+      const items: (ListsType | FolderType)[] = rows.map((item) => {
+        if (item.item_type === "folder") {
+          const p = item.payload as SidebarFolderPayload;
+          const folder: FolderType = {
+            folder_id: p.folder_id,
+            folder_name: p.folder_name,
+            folder_color: p.folder_color,
+            folder_description: p.folder_description,
+            user_id: p.user_id,
+            updated_at: p.updated_at,
+            created_at: p.created_at,
+            index: p.index,
+            rank: p.rank,
+            memberships: p.memberships ?? [{ count: 0 }],
+          };
+          return Object.assign(folder, { _item_type: "folder" as const });
+        } else {
+          return Object.assign(item.payload as ListsType, {
+            _item_type: "list" as const,
+          });
+        }
+      });
+
+      return { data: items };
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
 
 export const updateIndexList = async (
   list_id: string,
@@ -158,7 +283,7 @@ export const updateIndexList = async (
   }
 };
 
-export const updateIndexFolder = async (folder_id: string, rank:string) => {
+export const updateIndexFolder = async (folder_id: string, rank: string) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
@@ -190,28 +315,22 @@ export const insertList = async (
   color: string | null,
   icon: string | null,
   rank: string,
-  index: number,
+  index: number
 ) => {
   try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    const { supabase } = await getAuthenticatedSupabaseClient();
 
-    // const { data, error } = await supabase.from("lists").insert({
-    //   list_id,
-    //   owner_id: user.id,
-    //   list_name,
-    //   color,
-    //   icon,
-    // });
-    // //create_list_and_owner_membership
-
-    const { data, error } = await supabase.rpc("create_list_and_owner_membership", {
-      p_list_id: list_id,
-      p_list_name: list_name,
-      p_color: color,
-      p_icon: icon,
-      p_rank: rank,
-      p_index: index
-    });
+    const { data, error } = await supabase.rpc(
+      "create_list_and_owner_membership",
+      {
+        p_list_id: list_id,
+        p_list_name: list_name,
+        p_color: color,
+        p_icon: icon,
+        p_rank: rank,
+        p_index: index,
+      }
+    );
 
     if (error) {
       throw new Error(
@@ -219,7 +338,7 @@ export const insertList = async (
       );
     }
 
-    return { data: data?.[0] || null };
+    return { data: data ?? null };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };
@@ -245,7 +364,7 @@ export const insertFolder = async (
       folder_name,
       folder_color,
       index,
-      rank
+      rank,
     });
 
     if (error) {
@@ -254,7 +373,7 @@ export const insertFolder = async (
       );
     }
 
-    return { data: data?.[0] || null };
+    return { data: data ?? null };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };
@@ -346,9 +465,9 @@ export const updateDataList = async (
     const { data, error } = await supabase
       .from("lists")
       .update({
-        list_name: list_name,
-        color: color,
-        icon: icon,
+        list_name,
+        color,
+        icon,
       })
       .eq("list_id", list_id);
 
@@ -379,8 +498,8 @@ export const updateDataFolder = async (
     const { data, error } = await supabase
       .from("list_folders")
       .update({
-        folder_name: folder_name,
-        folder_color: folder_color,
+        folder_name,
+        folder_color,
       })
       .eq("folder_id", folder_id);
 
@@ -407,36 +526,25 @@ export const updatePinnedList = async (
 ) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
-    let errorResult;
-    let dataResult;
 
-    if (index) {
-      const { data, error } = await supabase
-        .from("list_memberships")
-        .update({ pinned, index })
-        .eq("list_id", list_id)
-        .eq("user_id", user.id)
-        .select();
-      errorResult = error;
-      dataResult = data;
-    } else {
-      const { data, error } = await supabase
-        .from("list_memberships")
-        .update({ pinned, folder: null })
-        .eq("list_id", list_id)
-        .eq("user_id", user.id)
-        .select();
-      errorResult = error;
-      dataResult = data;
-    }
+    const updatePayload = pinned
+      ? { pinned, folder: null as string | null }
+      : { pinned, index: index ?? undefined };
 
-    if (errorResult) {
+    const { data, error } = await supabase
+      .from("list_memberships")
+      .update(updatePayload)
+      .eq("list_id", list_id)
+      .eq("user_id", user.id)
+      .select();
+
+    if (error) {
       throw new Error(
         "No se pudo actualizar la lista. Intentalo nuevamente o contacta con soporte."
       );
     }
 
-    return { dataResult };
+    return { data };
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return { error: error.errors[0].message };
@@ -473,7 +581,9 @@ export const deleteAllLists = async () => {
   }
 };
 
-export const getUsersMembersList = async (list_id: string) => {
+export const getUsersMembersList = async (
+  list_id: string
+): Promise<{ data?: UserWithMembershipRole[]; error?: string }> => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
 
@@ -487,7 +597,7 @@ export const getUsersMembersList = async (list_id: string) => {
       );
     }
 
-    return { data };
+    return { data: data as UserWithMembershipRole[] };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
     return { error: UNKNOWN_ERROR_MESSAGE };
@@ -511,29 +621,49 @@ export const createListInvitation = async (
 
     if (error) {
       const errorMsg = error.message || "";
-      // Mapeo de errores según el mensaje devuelto por la función RPC
       if (errorMsg.includes("Acceso no autorizado") || error.code === "UNATH") {
-        return { error: "Acceso no autorizado. Inténtalo nuevamente o contacta con soporte." };
+        return {
+          error:
+            "Acceso no autorizado. Inténtalo nuevamente o contacta con soporte.",
+        };
       }
-      if (errorMsg.includes("usuario no fue encontrado") || error.code === "USRNF") {
+      if (
+        errorMsg.includes("usuario no fue encontrado") ||
+        error.code === "USRNF"
+      ) {
         return { error: "El usuario ingresado no fue encontrado." };
       }
-      if (errorMsg.includes("No tenés permiso") || error.code === "FRBDN") {
-        return { error: "No tienes permisos para invitar usuarios a esta lista." };
+      if (
+        errorMsg.includes("No tenés permiso") ||
+        error.code === "FRBDN"
+      ) {
+        return {
+          error: "No tienes permisos para invitar usuarios a esta lista.",
+        };
       }
-      if (errorMsg.includes("No puedes invitarte a ti mismo") || error.code === "SLFIV") {
+      if (
+        errorMsg.includes("No puedes invitarte a ti mismo") ||
+        error.code === "SLFIV"
+      ) {
         return { error: "No puedes invitarte a ti mismo." };
       }
       if (errorMsg.includes("ya es miembro") || error.code === "ALRDM") {
         return { error: "El usuario ya es miembro de la lista." };
       }
-      if (errorMsg.includes("invitación pendiente") || error.code === "INVPD") {
-        return { error: "Ya existe una invitación pendiente para este usuario." };
+      if (
+        errorMsg.includes("invitación pendiente") ||
+        error.code === "INVPD"
+      ) {
+        return {
+          error: "Ya existe una invitación pendiente para este usuario.",
+        };
       }
       if (errorMsg.includes("lista no existe") || error.code === "LSTNF") {
         return { error: "La lista no existe o hubo un error inesperado." };
       }
-      return { error: "Ocurrió un error inesperado. Por favor, intenta de nuevo." };
+      return {
+        error: "Ocurrió un error inesperado. Por favor, intenta de nuevo.",
+      };
     }
 
     return { data };
@@ -541,6 +671,8 @@ export const createListInvitation = async (
     if (error instanceof Error) {
       return { error: error.message };
     }
-    return { error: "Ocurrió un error inesperado. Por favor, intenta de nuevo." };
+    return {
+      error: "Ocurrió un error inesperado. Por favor, intenta de nuevo.",
+    };
   }
 };

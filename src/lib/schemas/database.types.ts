@@ -24,6 +24,7 @@ export type Database = {
           is_published: boolean
           published_at: string | null
           title: string
+          updated_at: string | null
           version: string | null
         }
         Insert: {
@@ -35,6 +36,7 @@ export type Database = {
           is_published?: boolean
           published_at?: string | null
           title: string
+          updated_at?: string | null
           version?: string | null
         }
         Update: {
@@ -46,6 +48,7 @@ export type Database = {
           is_published?: boolean
           published_at?: string | null
           title?: string
+          updated_at?: string | null
           version?: string | null
         }
         Relationships: []
@@ -115,6 +118,7 @@ export type Database = {
           list_name: string
           responded_at: string | null
           status: Database["public"]["Enums"]["status_shared_types"]
+          updated_at: string | null
         }
         Insert: {
           created_at?: string
@@ -129,6 +133,7 @@ export type Database = {
           list_name: string
           responded_at?: string | null
           status?: Database["public"]["Enums"]["status_shared_types"]
+          updated_at?: string | null
         }
         Update: {
           created_at?: string
@@ -143,6 +148,7 @@ export type Database = {
           list_name?: string
           responded_at?: string | null
           status?: Database["public"]["Enums"]["status_shared_types"]
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -192,6 +198,7 @@ export type Database = {
           role: Database["public"]["Enums"]["roles_types"]
           shared_by: string | null
           shared_since: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -203,6 +210,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["roles_types"]
           shared_by?: string | null
           shared_since?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -214,6 +222,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["roles_types"]
           shared_by?: string | null
           shared_since?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -424,6 +433,7 @@ export type Database = {
           endpoint: string
           id: string
           p256dh: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -432,6 +442,7 @@ export type Database = {
           endpoint: string
           id?: string
           p256dh: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -440,6 +451,7 @@ export type Database = {
           endpoint?: string
           id?: string
           p256dh?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1022,6 +1034,15 @@ export type Database = {
           username: string
         }[]
       }
+      get_paginated_sidebar: {
+        Args: { p_offset: number; p_page_limit: number; p_user_id: string }
+        Returns: {
+          item_id: string
+          item_rank: string
+          item_type: string
+          payload: Json
+        }[]
+      }
       get_predefined_widgets_catalog: {
         Args: never
         Returns: {
@@ -1128,6 +1149,7 @@ export type Database = {
         | "improvement"
         | "bug_fix"
         | "announcement"
+      notification_type: "list_invitation" | "app_update" | "system"
       roles_types: "admin" | "editor" | "reader" | "owner"
       status_shared_types: "pending" | "accepted" | "rejected"
       subscription_status:
@@ -1276,6 +1298,7 @@ export const Constants = {
         "bug_fix",
         "announcement",
       ],
+      notification_type: ["list_invitation", "app_update", "system"],
       roles_types: ["admin", "editor", "reader", "owner"],
       status_shared_types: ["pending", "accepted", "rejected"],
       subscription_status: [
@@ -1297,10 +1320,18 @@ export const Constants = {
   },
 } as const
 
+
 export type MembershipRow =
   Database["public"]["Tables"]["list_memberships"]["Row"];
 export type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
-export type ListsType = MembershipRow & { list: ListsRow };
+
+export type TaskCountPayload = [{ count: number }];
+
+export type MembershipCountPayload = [{ count: number }];
+
+export type ListsType = MembershipRow & {
+  list: ListsRow & { tasks?: TaskCountPayload };
+};
 
 export type TaskRow = Database["public"]["Tables"]["tasks"]["Row"];
 export type UserProfile = Pick<
@@ -1323,7 +1354,9 @@ export type UserType = Database["public"]["Tables"]["users"]["Row"] & {
 export type InvitationRow =
   Database["public"]["Tables"]["list_invitations"]["Row"];
 
-export type FolderType = Database["public"]["Tables"]["list_folders"]["Row"];
+export type FolderType = Database["public"]["Tables"]["list_folders"]["Row"] & {
+  memberships?: MembershipCountPayload;
+};
 
 export type AppUpdatesType = Database["public"]["Tables"]["app_updates"]["Row"];
 

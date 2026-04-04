@@ -20,6 +20,7 @@ import { ListsType } from "@/lib/schemas/database.types";
 import ListInformation from "@/app/alino-app/components/list-information";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
+import { Skeleton } from "@/components/ui/skeleton";
 import TaskInput from "../task-input/task-input";
 
 import styles from "./manager.module.css";
@@ -44,7 +45,14 @@ export const Manager = memo(function Manager({
   const [emoji, setEmoji] = useState<string | null>(setList?.list.icon ?? null);
   const [infoActive, setInfoActive] = useState<boolean>(false);
 
-  const { tasks, deleteList, leaveList } = useTodoDataStore();
+  const {
+    tasks,
+    deleteList,
+    leaveList,
+    fetchTasksPage,
+    hasMoreTasks,
+    loadingQueue,
+  } = useTodoDataStore();
   const user = useUserDataStore((state) => state.user);
   const openModal = useConfirmationModalStore((state) => state.openModal);
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
@@ -53,6 +61,7 @@ export const Manager = memo(function Manager({
   const section1Ref = useRef<HTMLDivElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
   const prevLengthRef = useRef(tasks.length);
+  const prevListIdRef = useRef<string | null>(null);
 
   const displayName = useMemo(
     () => user?.display_name.split(" ")[0] ?? "Bienvenido",
@@ -62,10 +71,42 @@ export const Manager = memo(function Manager({
     () => tasks.filter((task) => task.list_id === setList?.list_id),
     [tasks, setList?.list_id],
   );
+
   const activeTaskCount = useMemo(() => {
     const source = h ? tasks : filteredTasks;
     return source.filter((task) => task.completed === false).length;
   }, [tasks, filteredTasks, h]);
+
+  const currentViewId = h ? "home" : setList?.list_id || null;
+
+  useEffect(() => {
+    if (!currentViewId) return;
+    if (prevListIdRef.current !== currentViewId) {
+      fetchTasksPage(currentViewId, true);
+      prevListIdRef.current = currentViewId;
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+      }
+    }
+  }, [currentViewId, fetchTasksPage]);
+
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+    if (scrollHeight - scrollTop <= clientHeight + 150) {
+      if (hasMoreTasks && loadingQueue === 0 && currentViewId) {
+        fetchTasksPage(currentViewId, false);
+      }
+    }
+  }, [hasMoreTasks, loadingQueue, currentViewId, fetchTasksPage]);
+
+  useEffect(() => {
+    const scrollEl = scrollRef.current;
+    if (scrollEl) {
+      scrollEl.addEventListener("scroll", handleScroll);
+      return () => scrollEl.removeEventListener("scroll", handleScroll);
+    }
+  }, [handleScroll]);
   const formattedDate = useMemo(() => {
     return new Date().toLocaleDateString("es-ES", {
       weekday: "long",
@@ -166,11 +207,11 @@ export const Manager = memo(function Manager({
   }, [setList?.list.color, setBlurredFx]);
 
   useEffect(() => {
-    if (scrollRef.current && tasks.length > prevLengthRef.current) {
-      scrollRef.current.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+    if (
+      scrollRef.current &&
+      tasks.length > 0 &&
+      tasks.length !== prevLengthRef.current
+    ) {
       prevLengthRef.current = tasks.length;
     }
   }, [tasks.length]);
@@ -238,8 +279,8 @@ export const Manager = memo(function Manager({
                       {formattedDate} <br />
                       <span>
                         {activeTaskCount === 0
-                          ? "No tienes tareas activas"
-                          : `Tienes ${activeTaskCount} ${activeTaskCount > 1 ? "tareas activas" : "tarea activa"}`}
+                          ? "No tienes tareas activas por aquí"
+                          : `Viendo ${activeTaskCount} ${activeTaskCount > 1 ? "tareas activas" : "tarea activa"}${hasMoreTasks ? "+" : ""}`}
                       </span>
                     </p>
                   </div>
@@ -265,8 +306,8 @@ export const Manager = memo(function Manager({
                 <p className={styles.listSubtitle}>
                   <span>
                     {activeTaskCount === 0
-                      ? "No tienes tareas activas"
-                      : `Tienes ${activeTaskCount} ${activeTaskCount > 1 ? "tareas activas" : "tarea activa"}`}
+                      ? "No tienes tareas activas por aquí"
+                      : `Viendo ${activeTaskCount} ${activeTaskCount > 1 ? "tareas activas" : "tarea activa"}${hasMoreTasks ? "+" : ""}`}
                   </span>
                 </p>
               </div>
@@ -292,12 +333,111 @@ export const Manager = memo(function Manager({
                 {tasks.map((task) => (
                   <TaskCardStatic key={task.task_id} task={task} />
                 ))}
+                {loadingQueue > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <Skeleton
+                      style={{
+                        height: "70px",
+                        width: "100%",
+                        borderRadius: "14px",
+                      }}
+                      delay={0.1}
+                    />
+                    <Skeleton
+                      style={{
+                        height: "70px",
+                        width: "100%",
+                        borderRadius: "14px",
+                      }}
+                      delay={0.2}
+                    />
+                    <Skeleton
+                      style={{
+                        height: "70px",
+                        width: "100%",
+                        borderRadius: "14px",
+                      }}
+                      delay={0.3}
+                    />
+                  </div>
+                )}
               </div>
             ) : filteredTasks.length > 0 ? (
               <div className={styles.tasks}>
                 {filteredTasks.map((task) => (
                   <TaskCardStatic key={task.task_id} task={task} />
                 ))}
+                {loadingQueue > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <Skeleton
+                      style={{
+                        height: "70px",
+                        width: "100%",
+                        borderRadius: "14px",
+                      }}
+                      delay={0.1}
+                    />
+                    <Skeleton
+                      style={{
+                        height: "70px",
+                        width: "100%",
+                        borderRadius: "14px",
+                      }}
+                      delay={0.2}
+                    />
+                    <Skeleton
+                      style={{
+                        height: "70px",
+                        width: "100%",
+                        borderRadius: "14px",
+                      }}
+                      delay={0.3}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : loadingQueue > 0 ? (
+              <div className={styles.tasks} style={{ marginTop: "10px" }}>
+                <Skeleton
+                  style={{
+                    height: "70px",
+                    width: "100%",
+                    borderRadius: "14px",
+                    marginBottom: "8px",
+                  }}
+                  delay={0.1}
+                />
+                <Skeleton
+                  style={{
+                    height: "70px",
+                    width: "100%",
+                    borderRadius: "14px",
+                    marginBottom: "8px",
+                  }}
+                  delay={0.2}
+                />
+                <Skeleton
+                  style={{
+                    height: "70px",
+                    width: "100%",
+                    borderRadius: "14px",
+                  }}
+                  delay={0.3}
+                />
               </div>
             ) : (
               <div className={styles.empty}>

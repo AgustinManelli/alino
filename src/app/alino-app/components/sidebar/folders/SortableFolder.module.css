@@ -2,15 +2,32 @@
   position: relative;
   border: 1px solid var(--border-container-color);
   border-radius: 15px;
-  padding: 5px 5px 5px 5px;
+  padding: 5px;
   transition: background-color 0.2s ease-in-out;
   min-height: 45px;
+  max-height: 300px;
   cursor: pointer;
   background-color: var(--background-container);
   overflow: hidden;
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  z-index: 1;
+}
+
+.folderContainer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 15%, var(--bgColor) 100%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.folderContainer[data-open="true"]::before {
+  opacity: 0.06;
 }
 
 .folderHeader {
@@ -26,6 +43,7 @@
   -ms-user-select: none;
   user-select: none;
   height: 33px;
+  z-index: 2;
 }
 
 .infoEditContainer {
@@ -41,35 +59,51 @@
 
 .listWrapper {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
+  overflow-y: auto;
+  overflow-x: hidden;
   min-height: 45px;
-  z-index: 1;
   margin-top: 5px;
+  padding: 4px;
+  scrollbar-gutter: stable;
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  z-index: 2;
+
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease;
+}
+
+.listWrapper:hover {
+  scrollbar-color: rgba(128, 128, 128, 0.3) transparent;
+}
+.listWrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.listWrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.listWrapper::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 10px;
+}
+
+.listWrapper:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.3);
 }
 
 .listWrapper p {
   color: var(--text-not-available);
   font-size: 12px;
+  margin: 0;
 }
 
-.listWrapper::before {
-  content: "";
-  position: absolute;
-  top: 5px;
-  left: -5px;
-  width: calc(100% + 10px);
-  height: calc(100% + 10px);
-  background: linear-gradient(180deg, transparent 20%, var(--bgColor));
-  opacity: 0.02;
-  filter: saturate(200%);
-  z-index: -1;
+.listWrapper p {
+  color: var(--text-not-available);
+  font-size: 12px;
 }
 
 .buttonsContainer {
@@ -102,7 +136,7 @@
   opacity: 0;
   position: absolute;
   right: 0;
-  z-index: 1;
+  z-index: 10;
   transition: opacity 0.2s ease-in-out;
 }
 
@@ -143,7 +177,7 @@
 .folderDropOverlay {
   position: absolute;
   inset: 0;
-  z-index: 100;
+  z-index: 0;
   background: transparent;
   height: 100%;
   padding-top: 5px;
