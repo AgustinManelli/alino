@@ -361,7 +361,9 @@ export const SortableFolder = ({
                       animate="visible"
                       exit="exit"
                       layout={isDragging ? false : true}
-                      style={{ width: "100%" }}
+                      style={{
+                        width: "100%",
+                      }}
                     >
                       <ListCard list={list} inFolder />
                     </motion.div>
