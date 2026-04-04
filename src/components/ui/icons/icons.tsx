@@ -85,13 +85,19 @@ export const HomeIcon = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const HomeIcon2 = ({ style }: { style?: React.CSSProperties }) => {
+export const HomeIcon2 = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 16 16"
       fill="none"
+      className={className}
       style={style}
+      {...props}
     >
       <path d="M14.48,8.81l-.2,1.32c-.34,2.19-.5,3.28-1.29,3.94-.79.65-1.93.65-4.22.65h-1.53c-2.29,0-3.44,0-4.22-.65-.79-.65-.95-1.75-1.29-3.94l-.2-1.32c-.24-1.54-.36-2.31-.06-3,.29-.69.93-1.16,2.23-2.09l.97-.7c1.61-1.16,2.42-1.75,3.34-1.75s1.73.58,3.34,1.75l.97.7c1.3.93,1.94,1.4,2.23,2.09.3.69.17,1.46-.06,3Z" />
     </svg>
@@ -1115,8 +1121,11 @@ export const GridPlusIcon = ({ style }: { style?: React.CSSProperties }) => {
         strokeLinecap="square"
         strokeLinejoin="round"
       />
-      <path d="M17.25 13.5V21M13.5 17.25H21" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M17.25 13.5V21M13.5 17.25H21"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 };
-

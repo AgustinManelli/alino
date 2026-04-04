@@ -2,30 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useShallow } from "zustand/shallow";
 
-import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
 
-import { CounterAnimation } from "@/components/ui/CounterAnimation";
 import { HomeIcon2 } from "@/components/ui/icons/icons";
 
 import styles from "./HomeCard.module.css";
 
+const APP_PATH = "/alino-app";
+
 export const HomeCard = () => {
-  const tasksLength = useTodoDataStore(
-    useShallow((state) => state.tasks.length)
-  );
-  const animations = useUserPreferencesStore(
-    useShallow((state) => state.animations)
-  );
   const setNavbarStatus = useSidebarStateStore(
-    useShallow((state) => state.setNavbarStatus)
+    (state) => state.setNavbarStatus,
   );
+
   const pathname = usePathname();
 
-  const isActive = pathname === "/alino-app";
+  const isActive = pathname === APP_PATH;
 
   const handleCloseNavbar = () => {
     setNavbarStatus(false);
@@ -33,57 +26,23 @@ export const HomeCard = () => {
 
   return (
     <Link
-      className={`${styles.container}`}
-      style={{
-        backgroundColor: isActive
-          ? "var(--background-over-container)"
-          : "transparent",
-      }}
-      href="/alino-app"
+      className={`${styles.container} ${isActive ? styles.containerActive : ""}`}
+      href={APP_PATH}
       onClick={handleCloseNavbar}
       aria-current={isActive ? "page" : undefined}
       prefetch={false}
     >
       <div
-        className={styles.cardFx}
-        style={{
-          opacity: isActive ? 0.1 : 0,
-          boxShadow: "rgb(106, 195, 255) 100px 50px 50px",
-        }}
+        className={`${styles.cardFx} ${isActive ? styles.cardFxActive : ""}`}
       ></div>
 
-      <div className={styles.colorPickerContainer} style={{ minWidth: "16px" }}>
-        <HomeIcon2
-          style={{
-            stroke: "rgb(106, 195, 255)",
-            width: "12px",
-            height: "auto",
-            strokeWidth: "2.5",
-          }}
-        />
+      <div className={styles.colorPickerContainer}>
+        <HomeIcon2 className={styles.homeIcon} />
       </div>
 
       <div className={styles.textContainer}>
-        <p
-          className={styles.listName}
-          style={{
-            color: "var(--text)",
-          }}
-        >
-          home
-        </p>
+        <p className={styles.listName}>home</p>
       </div>
-      {/* <div className={styles.listManagerContainer}>
-        <div className={styles.configsContainer}>
-          <p className={`${styles.counter} ${styles.Mobile}`}>
-            {animations ? (
-              <CounterAnimation tasksLength={tasksLength} />
-            ) : (
-              tasksLength
-            )}
-          </p>
-        </div>
-      </div> */}
     </Link>
   );
 };
