@@ -1,15 +1,19 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, Transition } from "motion/react";
 import { Editor } from "@tiptap/react";
 import { useShallow } from "zustand/shallow";
+
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
-import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
+
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
-import { Calendar } from "../Calendar";
+
 import { RichTextToolbar } from "../RichTextEditor/RichTextToolbar";
 import { AIEnhanceButton } from "../AIEnhanceButton/AIEnhanceButton";
-import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { TaskCard } from "@/app/alino-app/components/todo/task-card/task-card";
+import { Calendar } from "../Calendar";
+
 import styles from "./EditTaskModal.module.css";
 
 const computeTargetY = (rectHeight: number, viewportWidth: number) => {
@@ -37,6 +41,25 @@ const computeTargetY = (rectHeight: number, viewportWidth: number) => {
     );
   }
 };
+
+const backdropInitial = { opacity: 0, backdropFilter: "blur(0px)" };
+const backdropAnimate = { opacity: 1, backdropFilter: "blur(10px)" };
+const backdropExit = { opacity: 0, backdropFilter: "blur(0px)" };
+const backdropTransition = { duration: 0.3 };
+
+const elementInitial = { scale: 0, opacity: 0 };
+const toolbarAnimate = {
+  scale: 1,
+  opacity: 1,
+  transition: { duration: 0.2, delay: 0.15 },
+};
+const optionsAnimate = {
+  scale: 1,
+  opacity: 1,
+  transition: { duration: 0.2, delay: 0.2 },
+};
+const elementExit = { scale: 0, opacity: 0 };
+const modalTransition: Transition = { duration: 0.3, ease: "easeInOut" };
 
 export const EditTaskModal = () => {
   const {
@@ -130,13 +153,23 @@ export const EditTaskModal = () => {
     }
   }, [isOpen, taskEditor, setAnimating]);
 
+  const handleOutsideClick = useCallback(() => {
+    closeModal();
+    setSelected(undefined);
+    setHour(undefined);
+  }, [closeModal]);
+
+  const handleStopPropagation = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
+
+  const handleFocusToParentInput = useCallback(() => {
+    taskEditor?.commands.focus();
+  }, [taskEditor]);
+
   useOnClickOutside(
     contentRef,
-    () => {
-      closeModal();
-      setSelected(undefined);
-      setHour(undefined);
-    },
+    handleOutsideClick,
     [toolsRef, toolbarRef],
     "no-close-edit",
   );
@@ -147,10 +180,10 @@ export const EditTaskModal = () => {
         <ClientOnlyPortal>
           <motion.div
             className={styles.modalBackdrop}
-            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(10px)" }}
-            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            transition={{ duration: 0.3 }}
+            initial={backdropInitial}
+            animate={backdropAnimate}
+            exit={backdropExit}
+            transition={backdropTransition}
           />
 
           <div className={styles.modalContainerLimit}>
@@ -159,7 +192,7 @@ export const EditTaskModal = () => {
               initial={initialAnimation}
               animate={targetAnimation}
               exit={{ x: initialAnimation.x, y: initialAnimation.y }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
+              transition={modalTransition}
               onAnimationComplete={handleAnimationComplete}
             >
               <div
@@ -187,27 +220,19 @@ export const EditTaskModal = () => {
               <motion.div
                 ref={toolbarRef}
                 className={styles.toolbarContainer}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{
-                  scale: 1,
-                  opacity: 1,
-                  transition: { duration: 0.2, delay: 0.15 },
-                }}
-                exit={{ scale: 0, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
+                initial={elementInitial}
+                animate={toolbarAnimate}
+                exit={elementExit}
+                onClick={handleStopPropagation}
               >
-                <RichTextToolbar editor={taskEditor} visible={!!taskEditor} />
+                <RichTextToolbar editor={taskEditor} />
               </motion.div>
 
               <motion.div
                 className={styles.moreOptions}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{
-                  scale: 1,
-                  opacity: 1,
-                  transition: { duration: 0.2, delay: 0.2 },
-                }}
-                exit={{ scale: 0, opacity: 0 }}
+                initial={elementInitial}
+                animate={optionsAnimate}
+                exit={elementExit}
                 ref={toolsRef}
               >
                 <Calendar
@@ -215,7 +240,7 @@ export const EditTaskModal = () => {
                   setSelected={setSelected}
                   hour={hour}
                   setHour={setHour}
-                  focusToParentInput={() => taskEditor?.commands.focus()}
+                  focusToParentInput={handleFocusToParentInput}
                 />
                 <AIEnhanceButton
                   editor={taskEditor}

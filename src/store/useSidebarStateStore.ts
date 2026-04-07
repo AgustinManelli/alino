@@ -4,6 +4,8 @@ type SidebarStateStore = {
   navbarStatus: boolean;
   setNavbarStatus: (value: boolean) => void;
   toggleNavbarStatus: () => void;
+  pendingListId: string | null;
+  setPendingListId: (id: string | null) => void;
 };
 
 export const useSidebarStateStore = create<SidebarStateStore>((set) => ({
@@ -11,4 +13,6 @@ export const useSidebarStateStore = create<SidebarStateStore>((set) => ({
   setNavbarStatus: (value) => set({ navbarStatus: value }),
   toggleNavbarStatus: () =>
     set((state) => ({ navbarStatus: !state.navbarStatus })),
+  pendingListId: null,
+  setPendingListId: (id) => set({ pendingListId: id }),
 }));

@@ -1,5 +1,4 @@
 "use client";
-
 import {
   useEffect,
   useMemo,
@@ -10,28 +9,40 @@ import {
   useLayoutEffect,
 } from "react";
 import { AnimatePresence } from "motion/react";
-
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { ListsType } from "@/lib/schemas/database.types";
-
 import ListInformation from "@/app/alino-app/components/list-information";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
+import { Dropdown } from "@/components/ui/Dropdown";
 import { Skeleton } from "@/components/ui/skeleton";
 import TaskInput from "../task-input/task-input";
-
 import styles from "./manager.module.css";
 import {
   DeleteIcon,
   Edit,
   Information,
+  LoadingIcon,
   LogOut,
+  DefaultSortIcon,
+  DueAscSortIcon,
+  DueDescSortIcon,
+  AlphaAscSortIcon,
+  AlphaDescSortIcon,
 } from "@/components/ui/icons/icons";
 import { TaskCardStatic } from "../task-card/task-card-static";
 import { useUserDataStore } from "@/store/useUserDataStore";
+
+const SORT_OPTIONS = [
+  { value: "default", label: "Por defecto", icon: DefaultSortIcon },
+  { value: "due_asc", label: "Fecha (asc.)", icon: DueAscSortIcon },
+  { value: "due_desc", label: "Fecha (desc.)", icon: DueDescSortIcon },
+  { value: "alpha_asc", label: "Nomb. (asc.)", icon: AlphaAscSortIcon },
+  { value: "alpha_desc", label: "Nomb. (desc.)", icon: AlphaDescSortIcon },
+] as const;
 
 export const Manager = memo(function Manager({
   setList,
@@ -44,7 +55,6 @@ export const Manager = memo(function Manager({
   const [colorTemp, setColorTemp] = useState<string>(setList?.list.color ?? "");
   const [emoji, setEmoji] = useState<string | null>(setList?.list.icon ?? null);
   const [infoActive, setInfoActive] = useState<boolean>(false);
-
   const {
     tasks,
     deleteList,
@@ -52,11 +62,12 @@ export const Manager = memo(function Manager({
     fetchTasksPage,
     hasMoreTasks,
     loadingQueue,
+    taskSort,
+    setTaskSort,
   } = useTodoDataStore();
   const user = useUserDataStore((state) => state.user);
   const openModal = useConfirmationModalStore((state) => state.openModal);
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
-
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const section1Ref = useRef<HTMLDivElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
@@ -67,6 +78,7 @@ export const Manager = memo(function Manager({
     () => user?.display_name.split(" ")[0] ?? "Bienvenido",
     [user],
   );
+
   const filteredTasks = useMemo(
     () => tasks.filter((task) => task.list_id === setList?.list_id),
     [tasks, setList?.list_id],
@@ -107,6 +119,7 @@ export const Manager = memo(function Manager({
       return () => scrollEl.removeEventListener("scroll", handleScroll);
     }
   }, [handleScroll]);
+
   const formattedDate = useMemo(() => {
     return new Date().toLocaleDateString("es-ES", {
       weekday: "long",
@@ -239,16 +252,34 @@ export const Manager = memo(function Manager({
     const sectionEl = section1Ref.current;
     const scrollEl = scrollRef.current;
     if (!sectionEl || !scrollEl) return;
+    scrollEl.style.paddingTop = `${sectionEl.offsetHeight}px`;
+  }, []);
+
+  useEffect(() => {
+    const sectionEl = section1Ref.current;
+    const scrollEl = scrollRef.current;
+    if (!sectionEl || !scrollEl) return;
+
+    // Guardamos la altura inicial
+    let prevHeight = sectionEl.offsetHeight;
 
     const applyPadding = () => {
-      scrollEl.style.paddingTop = `${sectionEl.offsetHeight}px`;
+      if (sectionEl && scrollEl) {
+        const currentHeight = sectionEl.offsetHeight;
+
+        if (currentHeight < prevHeight) {
+          scrollEl.style.transition = "none";
+          scrollEl.style.paddingTop = `${currentHeight}px`;
+        } else {
+          scrollEl.style.transition = "padding-top 0.1s ease-in-out";
+          scrollEl.style.paddingTop = `${currentHeight}px`;
+        }
+
+        prevHeight = currentHeight;
+      }
     };
 
-    applyPadding();
-
-    const ro = new ResizeObserver(() => {
-      requestAnimationFrame(applyPadding);
-    });
+    const ro = new ResizeObserver(applyPadding);
     ro.observe(sectionEl);
 
     return () => {
@@ -314,7 +345,58 @@ export const Manager = memo(function Manager({
             )}
             <div className={styles.configSection}>
               {!h && (
-                <ConfigMenu iconWidth={"25px"} configOptions={configOptions} />
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "4px" }}
+                >
+                  <Dropdown>
+                    <Dropdown.Trigger
+                      style={{
+                        width: "25px",
+                        height: "25px",
+                        borderRadius: "5px",
+                        color: "var(--text)",
+                        padding: 0,
+                      }}
+                    >
+                      {(() => {
+                        const Icon =
+                          SORT_OPTIONS.find((o) => o.value === taskSort)
+                            ?.icon || DefaultSortIcon;
+                        return (
+                          <Icon
+                            style={{
+                              width: "18px",
+                              height: "18px",
+                              strokeWidth: 2,
+                            }}
+                          />
+                        );
+                      })()}
+                    </Dropdown.Trigger>
+                    <Dropdown.Content>
+                      {SORT_OPTIONS.map((opt) => (
+                        <Dropdown.Item
+                          key={opt.value}
+                          onClick={() => setTaskSort(opt.value)}
+                          isActive={taskSort === opt.value}
+                        >
+                          <opt.icon
+                            style={{
+                              width: "16px",
+                              height: "16px",
+                              strokeWidth: 2,
+                            }}
+                          />
+                          {opt.label}
+                        </Dropdown.Item>
+                      ))}
+                    </Dropdown.Content>
+                  </Dropdown>
+                  <ConfigMenu
+                    iconWidth={"25px"}
+                    configOptions={configOptions}
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -342,30 +424,19 @@ export const Manager = memo(function Manager({
                       marginTop: "10px",
                     }}
                   >
-                    <Skeleton
-                      style={{
-                        height: "70px",
-                        width: "100%",
-                        borderRadius: "14px",
-                      }}
-                      delay={0.1}
-                    />
-                    <Skeleton
-                      style={{
-                        height: "70px",
-                        width: "100%",
-                        borderRadius: "14px",
-                      }}
-                      delay={0.2}
-                    />
-                    <Skeleton
-                      style={{
-                        height: "70px",
-                        width: "100%",
-                        borderRadius: "14px",
-                      }}
-                      delay={0.3}
-                    />
+                    {Array(3)
+                      .fill(null)
+                      .map((_, index) => (
+                        <Skeleton
+                          style={{
+                            width: "100%",
+                            height: "50px",
+                            borderRadius: "15px",
+                          }}
+                          delay={index * 0.15}
+                          key={`skeleton-${index}`}
+                        />
+                      ))}
                   </div>
                 )}
               </div>
@@ -378,66 +449,36 @@ export const Manager = memo(function Manager({
                   <div
                     style={{
                       display: "flex",
-                      flexDirection: "column",
-                      gap: "8px",
-                      marginTop: "10px",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: "16px 0",
+                      width: "100%",
                     }}
                   >
-                    <Skeleton
+                    <LoadingIcon
                       style={{
-                        height: "70px",
-                        width: "100%",
-                        borderRadius: "14px",
+                        width: "22px",
+                        stroke: "var(--text-not-available)",
                       }}
-                      delay={0.1}
-                    />
-                    <Skeleton
-                      style={{
-                        height: "70px",
-                        width: "100%",
-                        borderRadius: "14px",
-                      }}
-                      delay={0.2}
-                    />
-                    <Skeleton
-                      style={{
-                        height: "70px",
-                        width: "100%",
-                        borderRadius: "14px",
-                      }}
-                      delay={0.3}
                     />
                   </div>
                 )}
               </div>
             ) : loadingQueue > 0 ? (
-              <div className={styles.tasks} style={{ marginTop: "10px" }}>
-                <Skeleton
-                  style={{
-                    height: "70px",
-                    width: "100%",
-                    borderRadius: "14px",
-                    marginBottom: "8px",
-                  }}
-                  delay={0.1}
-                />
-                <Skeleton
-                  style={{
-                    height: "70px",
-                    width: "100%",
-                    borderRadius: "14px",
-                    marginBottom: "8px",
-                  }}
-                  delay={0.2}
-                />
-                <Skeleton
-                  style={{
-                    height: "70px",
-                    width: "100%",
-                    borderRadius: "14px",
-                  }}
-                  delay={0.3}
-                />
+              <div className={styles.tasks}>
+                {Array(3)
+                  .fill(null)
+                  .map((_, index) => (
+                    <Skeleton
+                      style={{
+                        width: "100%",
+                        height: "50px",
+                        borderRadius: "15px",
+                      }}
+                      delay={index * 0.15}
+                      key={`skeleton-${index}`}
+                    />
+                  ))}
               </div>
             ) : (
               <div className={styles.empty}>

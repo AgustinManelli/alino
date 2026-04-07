@@ -24,8 +24,10 @@
 
 .dropdownMenu {
   position: absolute;
-  background: var(--background-container);
-  border-radius: 10px;
+  background-color: var(--background-container-translucent);
+  backdrop-filter: blur(15px) saturate(180%);
+  -webkit-backdrop-filter: blur(15px) saturate(180%);
+  border-radius: 20px;
   border: 1px solid var(--border-container-color);
   box-shadow:
     0 4px 12px #0c144205,
@@ -33,10 +35,11 @@
     inset 0 0 #e6e9ed;
   z-index: 1000;
   overflow: hidden;
-  width: 150px;
-  max-height: 222px;
+  width: fit-content;
+  max-width: 200px;
+  /* max-height: 222px; */
   scrollbar-width: none;
-  padding: 5px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -48,7 +51,7 @@
   overflow: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  gap: 3px;
+  gap: 5px;
 }
 
 .items::-webkit-scrollbar {
@@ -64,7 +67,17 @@
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.2s ease;
-  border-radius: 5px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-weight: 400;
+}
+
+.dropdownItem[data-active="true"] {
+  color: var(--alino-secondary-color) !important;
+  font-weight: 600;
 }
 
 .dropdownItem:hover {

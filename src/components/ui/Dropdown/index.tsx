@@ -13,7 +13,6 @@ import { useModalUbication } from "@/hooks/useModalUbication";
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
 import styles from "./Dropdown.module.css";
 
-// Context para compartir estado entre componentes
 interface DropdownContextType {
   isOpen: boolean;
   triggerRef: React.RefObject<HTMLButtonElement>;
@@ -32,7 +31,6 @@ const useDropdownContext = (): DropdownContextType => {
   return context;
 };
 
-// Componente principal Dropdown
 interface DropdownProps {
   children: ReactNode;
   side?: boolean;
@@ -153,12 +151,14 @@ interface DropdownItemProps {
   children: ReactNode;
   onClick?: () => void;
   className?: string;
+  isActive?: boolean;
 }
 
 export const DropdownItem = ({
   children,
   onClick,
   className,
+  isActive = false,
 }: DropdownItemProps): JSX.Element => {
   const { closeDropdown } = useDropdownContext();
 
@@ -172,6 +172,7 @@ export const DropdownItem = ({
     <button
       className={`${styles.dropdownItem} ${className || ""}`}
       onClick={handleClick}
+      data-active={isActive}
     >
       {children}
     </button>

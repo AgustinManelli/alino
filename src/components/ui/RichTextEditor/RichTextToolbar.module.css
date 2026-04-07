@@ -6,13 +6,11 @@
   padding: 5px 8px;
   background-color: var(--background-container);
   border-radius: 12px;
-  box-shadow:
-    0 4px 12px rgba(12, 20, 66, 0.06),
-    0 8px 32px rgba(12, 20, 66, 0.1);
   scrollbar-width: none;
   -ms-overflow-style: none;
   width: 100%;
   box-sizing: border-box;
+  margin-top: 8px;
 }
 
 .toolbar::-webkit-scrollbar {
@@ -81,6 +79,11 @@
     background-color 0.15s ease,
     opacity 0.15s ease;
   flex-shrink: 0;
+}
+
+.select option {
+  background-color: var(--background-container);
+  color: var(--text);
 }
 
 .select:hover {

@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 
+import type { TaskSortOption } from "@/lib/api/task/actions";
 import {
   createListInvitation,
   deleteAllLists,
@@ -46,15 +47,8 @@ import { calculateNewRank } from "@/lib/lexorank";
 import { globalUserStore } from "@/store/useUserDataStore";
 
 const POS_INDEX = 16384;
+const PAGE_SIZE = 40;
 
-// ---------------------------------------------------------------------------
-// Helpers DRY para lectura de conteos embebidos
-// ---------------------------------------------------------------------------
-
-/**
- * Lee el conteo de tareas embebido en una lista.
- * Supabase lo devuelve como `[{ count: N }]` cuando se usa tasks(count) en la query.
- */
 function readTaskCount(
   list: ListsType,
   fallbackTasks: TaskType[]
@@ -66,10 +60,6 @@ function readTaskCount(
   return fallbackTasks.filter((t) => t.list_id === list.list_id).length;
 }
 
-/**
- * Lee el conteo de membresías embebido en una carpeta.
- * El RPC lo devuelve como `[{ count: N }]`.
- */
 function readFolderMembershipCount(
   folder: FolderType,
   lists: ListsType[]
@@ -81,16 +71,10 @@ function readFolderMembershipCount(
   return lists.filter((l) => l.folder === folder.folder_id).length;
 }
 
-/**
- * Construye un nuevo payload de conteo de tareas a partir del valor recibido.
- */
 function makeTaskCountPayload(count: number): TaskCountPayload {
   return [{ count }];
 }
 
-/**
- * Construye un nuevo payload de conteo de membresías.
- */
 function makeMembershipCountPayload(count: number): MembershipCountPayload {
   return [{ count }];
 }
@@ -124,6 +108,7 @@ type TodoStore = {
   currentListId: string | "home" | null;
   fetchingListsQueue: Record<string, boolean>;
   listsPagination: Record<string, { page: number; hasMore: boolean }>;
+  taskSort: TaskSortOption;
 
   fetchListsPage: (folderId: string | "root") => Promise<void>;
   fetchTasksPage: (listId: string | "home", reset?: boolean) => Promise<void>;
@@ -198,9 +183,8 @@ type TodoStore = {
   subscriptionUpdateTask: (task: TaskType) => void;
   subscriptionDeleteTask: (task: { task_id: string }) => void;
   getTaskCountByListId: (listId: string) => number;
+  setTaskSort: (sort: TaskSortOption) => Promise<void>;
 };
-
-// Tipos para el _item_type tag que agrega getPaginatedLists
 
 type TaggedAsList = ListsType & { _item_type: "list" };
 type TaggedAsFolder = FolderType & { _item_type: "folder" };
@@ -214,11 +198,12 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   initialFetch: false,
   loadingQueue: 0,
 
-  tasksPage: 0,
+  tasksPage: -1,
   hasMoreTasks: true,
   currentListId: null,
   fetchingListsQueue: {},
   listsPagination: {},
+  taskSort: "default",
 
   fetchListsPage: async (folderId) => {
     try {
@@ -327,7 +312,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         } else {
           set((s) => ({
             tasks: [],
-            tasksPage: 0,
+            tasksPage: -1,
             hasMoreTasks: true,
             currentListId: listId,
             tasksByList: {
@@ -360,24 +345,25 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       const { getPaginatedTasks } = await import("@/lib/api/task/actions");
       const { data } = await getPaginatedTasks(
         listIdsToFetch,
-        reset ? 0 : newPage,
-        40
+        newPage,
+        PAGE_SIZE,
+        currentState.taskSort
       );
 
-      const newTasks = reset
+      const newTasks = reset || currentState.tasksPage === -1
         ? (data ?? [])
         : [...currentState.tasks, ...(data ?? [])];
-      const newHasMore = Boolean(data && data.length === 40);
+      const newHasMore = Boolean(data && data.length === PAGE_SIZE);
 
       set((s) => ({
         tasks: newTasks as TaskType[],
-        tasksPage: reset ? 0 : newPage,
+        tasksPage: newPage,
         hasMoreTasks: newHasMore,
         tasksByList: {
           ...s.tasksByList,
           [listId]: {
             tasks: newTasks as TaskType[],
-            page: reset ? 0 : newPage,
+            page: newPage,
             hasMore: newHasMore,
           },
         },
@@ -386,6 +372,20 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       handleError(err);
     } finally {
       set((state) => ({ loadingQueue: Math.max(0, state.loadingQueue - 1) }));
+    }
+  },
+
+  setTaskSort: async (sort) => {
+    const { currentListId } = get();
+    set({
+      taskSort: sort,
+      tasksByList: {},
+      tasks: [],
+      tasksPage: -1,
+      hasMoreTasks: true,
+    });
+    if (currentListId) {
+      await get().fetchTasksPage(currentListId, false);
     }
   },
 
@@ -472,10 +472,29 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       return;
     }
 
-    set((state) => ({
-      lists: state.lists.filter((l) => l.list_id !== list.list_id),
-      tasks: state.tasks.filter((t) => t.list_id !== list.list_id),
-    }));
+    set((state) => {
+      const deletedList = state.lists.find((l) => l.list_id === list.list_id);
+      const folderId = deletedList?.folder ?? null;
+
+      const updatedFolders = folderId
+        ? state.folders.map((f) => {
+            if (f.folder_id !== folderId) return f;
+            const currentCount = readFolderMembershipCount(f, state.lists);
+            return {
+              ...f,
+              memberships: makeMembershipCountPayload(
+                Math.max(0, currentCount - 1)
+              ),
+            };
+          })
+        : state.folders;
+
+      return {
+        lists: state.lists.filter((l) => l.list_id !== list.list_id),
+        tasks: state.tasks.filter((t) => t.list_id !== list.list_id),
+        folders: updatedFolders,
+      };
+    });
   },
 
   subscriptionUpdateList: (updatedList) => {
@@ -829,19 +848,40 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   deleteList: async (list_id) => {
-    const prevLists = get().lists.slice();
-    const prevTasks = get().tasks.slice();
+    const state = get();
+    const deletedList = state.lists.find((l) => l.list_id === list_id);
+    const folderId = deletedList?.folder ?? null;
 
-    set((state) => ({
-      lists: state.lists.filter((l) => l.list_id !== list_id),
-      tasks: state.tasks.filter((t) => t.list_id !== list_id),
-    }));
+    const prevLists = state.lists.slice();
+    const prevTasks = state.tasks.slice();
+    const prevFolders = state.folders.slice();
+
+    set((s) => {
+      const updatedFolders = folderId
+        ? s.folders.map((f) => {
+            if (f.folder_id !== folderId) return f;
+            const currentCount = readFolderMembershipCount(f, s.lists);
+            return {
+              ...f,
+              memberships: makeMembershipCountPayload(
+                Math.max(0, currentCount - 1)
+              ),
+            };
+          })
+        : s.folders;
+
+      return {
+        lists: s.lists.filter((l) => l.list_id !== list_id),
+        tasks: s.tasks.filter((t) => t.list_id !== list_id),
+        folders: updatedFolders,
+      };
+    });
 
     const result = await deleteList(list_id);
 
     if (result?.error) {
       handleError(result.error);
-      set({ lists: prevLists, tasks: prevTasks });
+      set({ lists: prevLists, tasks: prevTasks, folders: prevFolders });
       return;
     }
   },
@@ -892,19 +932,40 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   leaveList: async (list_id) => {
-    const prevLists = get().lists.slice();
-    const prevTasks = get().tasks.slice();
+    const state = get();
+    const leavingList = state.lists.find((l) => l.list_id === list_id);
+    const folderId = leavingList?.folder ?? null;
 
-    set((state) => ({
-      lists: state.lists.filter((l) => l.list_id !== list_id),
-      tasks: state.tasks.filter((t) => t.list_id !== list_id),
-    }));
+    const prevLists = state.lists.slice();
+    const prevTasks = state.tasks.slice();
+    const prevFolders = state.folders.slice();
+
+    set((s) => {
+      const updatedFolders = folderId
+        ? s.folders.map((f) => {
+            if (f.folder_id !== folderId) return f;
+            const currentCount = readFolderMembershipCount(f, s.lists);
+            return {
+              ...f,
+              memberships: makeMembershipCountPayload(
+                Math.max(0, currentCount - 1)
+              ),
+            };
+          })
+        : s.folders;
+
+      return {
+        lists: s.lists.filter((l) => l.list_id !== list_id),
+        tasks: s.tasks.filter((t) => t.list_id !== list_id),
+        folders: updatedFolders,
+      };
+    });
 
     const result = await leaveList(list_id);
 
     if (result?.error) {
       handleError(result.error);
-      set({ lists: prevLists, tasks: prevTasks });
+      set({ lists: prevLists, tasks: prevTasks, folders: prevFolders });
       return;
     }
   },

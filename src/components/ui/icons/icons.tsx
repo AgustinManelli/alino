@@ -364,16 +364,24 @@ export const SquircleIconSquish = ({
   );
 };
 
-export const SendIcon = ({ style }: { style?: React.CSSProperties }) => {
+export const SendIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
+      color="currentColor"
       fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
       style={style}
+      className={className}
+      {...props}
     >
-      <path d="M21.0477 3.05293C18.8697 0.707363 2.48648 6.4532 2.50001 8.551C2.51535 10.9299 8.89809 11.6617 10.6672 12.1581C11.7311 12.4565 12.016 12.7625 12.2613 13.8781C13.3723 18.9305 13.9301 21.4435 15.2014 21.4996C17.2278 21.5892 23.1733 5.342 21.0477 3.05293Z" />
-      <path d="M11.5 12.5L15 9" />
+      <path d="M11.922 4.79004C16.6963 3.16245 19.0834 2.34866 20.3674 3.63261C21.6513 4.91656 20.8375 7.30371 19.21 12.078L18.1016 15.3292C16.8517 18.9958 16.2267 20.8291 15.1964 20.9808C14.9195 21.0216 14.6328 20.9971 14.3587 20.9091C13.3395 20.5819 12.8007 18.6489 11.7231 14.783C11.4841 13.9255 11.3646 13.4967 11.0924 13.1692C11.0134 13.0742 10.9258 12.9866 10.8308 12.9076C10.5033 12.6354 10.0745 12.5159 9.21705 12.2769C5.35111 11.1993 3.41814 10.6605 3.0909 9.64127C3.00292 9.36724 2.97837 9.08053 3.01916 8.80355C3.17088 7.77332 5.00419 7.14834 8.6708 5.89838L11.922 4.79004Z" />
     </svg>
   );
 };
@@ -799,13 +807,19 @@ export const Cloud = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const Calendar = ({ style }: { style?: React.CSSProperties }) => {
+export const Calendar = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       style={style}
+      className={className}
+      {...props}
     >
       <path d="M18 2V4M6 2V4" strokeLinecap="round" strokeLinejoin="round" />
       <path
@@ -986,13 +1000,21 @@ export const Link = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const Note = ({ style }: { style?: React.CSSProperties }) => {
+export const Note = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill={"none"}
+      stroke="currentColor"
+      strokeWidth="1.5"
       style={style}
+      className={className}
+      {...props}
     >
       <path
         d="M14 20.5V20C14 17.1716 14 15.7574 14.8787 14.8787C15.7574 14 17.1716 14 20 14H20.5"
@@ -1207,6 +1229,137 @@ export const GridPlusIcon = ({ style }: { style?: React.CSSProperties }) => {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+};
+
+export const DefaultSortIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      fill="none"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      {...props}
+    >
+      <path d="M3 6H21" />
+      <path d="M6 12H18" />
+      <path d="M9 18H15" />
+    </svg>
+  );
+};
+
+export const DueAscSortIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      {...props}
+    >
+      <path d="M16 2V6M8 2V6" />
+      <path d="M21 13V12C21 8.22876 21 6.34315 19.8284 5.17157C18.6569 4 16.7712 4 13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22H14" />
+      <path d="M15 17.5C15.4915 16.9943 16.7998 15 17.5 15C18.2002 15 19.5085 16.9943 20 17.5M17.5 15.5L17.5 22" />
+      <path d="M3 10H21" />
+    </svg>
+  );
+};
+
+export const DueDescSortIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      {...props}
+    >
+      <path d="M16 2V6M8 2V6" />
+      <path d="M21 14V12C21 8.22876 21 6.34315 19.8284 5.17157C18.6569 4 16.7712 4 13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22H13" />
+      <path d="M15 19.5C15.4915 20.0057 16.7998 22 17.5 22C18.2002 22 19.5085 20.0057 20 19.5M17.5 21.5L17.5 15" />
+      <path d="M3 10H21" />
+    </svg>
+  );
+};
+
+export const AlphaAscSortIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      {...props}
+    >
+      <path d="M8 19V4" />
+      <path d="M16 8H20" />
+      <path d="M20 10V6C20 4.89543 19.1046 4 18 4C16.8954 4 16 4.89543 16 6V10" />
+      <path d="M16 14H18.365C19.2886 14 19.7504 14 19.8853 14.2879C20.0201 14.5758 19.7245 14.9306 19.1332 15.6402L16.8668 18.3598C16.2755 19.0694 15.9799 19.4242 16.1147 19.7121C16.2496 20 16.7114 20 17.635 20H20" />
+      <path d="M4 16C4 16 6.94596 20 8.00003 20C9.05411 20 12 16 12 16" />
+    </svg>
+  );
+};
+
+export const AlphaDescSortIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      {...props}
+    >
+      <path d="M16 18H20" />
+      <path d="M20 20V16C20 14.8954 19.1046 14 18 14C16.8954 14 16 14.8954 16 16V20" />
+      <path d="M4 7.99997C4 7.99997 6.94596 4.00001 8.00003 4C9.05411 3.99999 12 8 12 8" />
+      <path d="M8 5V20" />
+      <path d="M16 4H18.365C19.2886 4 19.7504 4 19.8853 4.28792C20.0201 4.57584 19.7245 4.93062 19.1332 5.64018L16.8668 8.35982C16.2755 9.06938 15.9799 9.42416 16.1147 9.71208C16.2496 10 16.7114 10 17.635 10H20" />
     </svg>
   );
 };

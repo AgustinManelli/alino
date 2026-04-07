@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import { TextStyle } from "@tiptap/extension-text-style";
@@ -28,6 +28,7 @@ import { useSmartDateInteraction } from "@/hooks/useSmartDateInteraction";
 import { SmartDateBubble } from "@/components/ui/SmartDateBubble/SmartDateBubble";
 import { SmartDateHighlighter } from "@/components/ui/RichTextEditor/SmartDateHighlighter";
 import { AIEnhanceButton } from "@/components/ui/AIEnhanceButton/AIEnhanceButton";
+import { TASK_CHAR_LIMIT } from "@/config/app-config";
 
 const MAX_HEIGHT = 200;
 
@@ -45,28 +46,45 @@ const RICH_TEXT_EXTENSIONS = [
   FontFamily,
   FontSizeExtension,
   TextAlign.configure({ types: ["paragraph"] }),
-  CharacterCount.configure({ limit: 1000 }),
-  Link.configure({
-    openOnClick: false,
-    autolink: true,
-  }),
+  CharacterCount.configure({ limit: TASK_CHAR_LIMIT }),
+  Link.configure({ openOnClick: false, autolink: true }),
   SmartDateHighlighter,
 ];
+
+const PLACEHOLDER_TEXTS = [
+  "Planificar las vacaciones 🏖️",
+  "Sacar a pasear al perro 🐶❣️",
+  "Estudiar para el examen",
+  "Ponerme al día con los estudios",
+  "Pagar las facturas de servicios 💸",
+  "Lavar la ropa 🫧",
+  "Hacer la compra semanal",
+  "Regar las plantas 🪴",
+  "Organizar mi semana escolar",
+  "Entregar trabajo",
+];
+
+const ITEM_SPRING = { type: "spring", stiffness: 500, damping: 28 } as const;
+
+function combineDateAndTime(d?: Date, h?: string): string | null {
+  if (!d) return null;
+  const combined = new Date(d);
+  const [hours, minutes] = (h ?? "23:59").split(":").map(Number);
+  combined.setHours(hours, minutes, 0, 0);
+  return combined.toISOString();
+}
+
 export default function TaskInput({ setList }: { setList?: ListsType }) {
   const lists = useTodoDataStore((state) => state.lists);
   const addTask = useTodoDataStore((state) => state.addTask);
   const addTasks = useTodoDataStore((state) => state.addTasks);
-
   const [focus, setFocus] = useState(false);
   const [selected, setSelected] = useState<Date | undefined>(undefined);
   const [hour, setHour] = useState<string | undefined>(undefined);
   const [isNote, setIsNote] = useState(false);
-  const [height, setHeight] = useState("40px");
-  const [isScrollable, setIsScrollable] = useState(false);
   const [selectedListHome, setSelectedListHome] = useState<
     ListsType | undefined
   >(lists[0]);
-
   const [editorText, setEditorText] = useState("");
   const [cursorPos, setCursorPos] = useState(-1);
   const [dismissedText, setDismissedText] = useState<string | null>(null);
@@ -74,12 +92,17 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   const detectedDate = useSmartDate(editorText);
   const activeDetected =
     detectedDate && detectedDate.text !== dismissedText ? detectedDate : null;
-
   const [bubbleCoords, setBubbleCoords] = useState<{
     top: number;
     left: number;
   } | null>(null);
+
   const formContainerRef = useRef<HTMLDivElement>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const handleAddRef = useRef<() => void>(() => {});
+  const setFocusRef = useRef(setFocus);
+  const editorRef = useRef<Editor | null>(null);
 
   const { showBubble, setIsHoveringBubble } = useSmartDateInteraction(
     activeDetected,
@@ -87,53 +110,40 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     formContainerRef,
   );
 
-  const texts = [
-    "Planificar las vacaciones 🏖️",
-    "Sacar a pasear al perro 🐶❣️",
-    "Estudiar para el examen",
-    "Ponerme al día con los estudios",
-    "Pagar las facturas de servicios 💸",
-    "Lavar la ropa 🫧",
-    "Hacer la compra semanal",
-    "Regar las plantas 🪴",
-    "Organizar mi semana escolar",
-    "Entregar trabajo",
-  ];
   const [currentText, setCurrentText] = useState(
-    () => texts[Math.floor(Math.random() * texts.length)],
+    () =>
+      PLACEHOLDER_TEXTS[Math.floor(Math.random() * PLACEHOLDER_TEXTS.length)],
   );
 
   useEffect(() => {
-    setCurrentText(texts[Math.floor(Math.random() * texts.length)]);
+    if (focus) return;
+    setCurrentText(
+      PLACEHOLDER_TEXTS[Math.floor(Math.random() * PLACEHOLDER_TEXTS.length)],
+    );
     const interval = setInterval(() => {
       setCurrentText((prev) => {
-        const idx = texts.indexOf(prev);
-        return texts[(idx + 1) % texts.length];
+        const idx = PLACEHOLDER_TEXTS.indexOf(prev);
+        return PLACEHOLDER_TEXTS[(idx + 1) % PLACEHOLDER_TEXTS.length];
       });
     }, 6000);
     return () => clearInterval(interval);
   }, [focus]);
 
-  const executedRef = useRef(false);
   useEffect(() => {
-    executedRef.current = true;
+    if (lists.length === 0) return;
     if (
-      (lists.length > 0 && !selectedListHome) ||
-      (lists.length > 0 &&
-        !lists.find((l) => l.list_id === selectedListHome?.list_id))
+      !selectedListHome ||
+      !lists.some((l) => l.list_id === selectedListHome.list_id)
     ) {
       setSelectedListHome(lists[0]);
-    } else if (selectedListHome) {
-      setSelectedListHome(
-        lists[lists.findIndex((l) => l.list_id === selectedListHome.list_id)],
+    } else {
+      const updatedList = lists.find(
+        (l) => l.list_id === selectedListHome.list_id,
       );
+      if (updatedList && updatedList !== selectedListHome)
+        setSelectedListHome(updatedList);
     }
-  }, [lists]);
-
-  const handleAddRef = useRef<() => void>(() => {});
-  const setFocusRef = useRef(setFocus);
-  const setHeightRef = useRef(setHeight);
-  const setScrollableRef = useRef(setIsScrollable);
+  }, [lists, selectedListHome]);
 
   const editor = useEditor({
     extensions: RICH_TEXT_EXTENSIONS,
@@ -157,8 +167,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
           event.preventDefault();
           editorRef.current?.commands.clearContent();
           setFocusRef.current(false);
-          setHeightRef.current("40px");
-          setScrollableRef.current(false);
           return true;
         }
         return false;
@@ -174,15 +182,45 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   });
 
   useEffect(() => {
-    if (!editor) return;
+    editorRef.current = editor;
+  }, [editor]);
 
+  useEffect(() => {
+    const container = inputContainerRef.current;
+    if (!container || !editor) return;
+
+    if (!focus) {
+      container.style.height = "0px";
+      container.style.marginTop = "0px";
+      container.style.overflowY = "hidden";
+      return;
+    }
+
+    container.style.marginTop = "17px";
+
+    const el = editor.view.dom as HTMLElement;
+
+    const update = () => {
+      const rawH = el.scrollHeight;
+      const clamped = Math.min(rawH + 13, MAX_HEIGHT);
+      container.style.height = `${clamped}px`;
+      container.style.overflowY = rawH + 13 > MAX_HEIGHT ? "auto" : "hidden";
+    };
+
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [editor, focus]);
+
+  useEffect(() => {
+    if (!editor) return;
     editor.view.dispatch(
       editor.state.tr.setMeta(
         "smartDateHighlight",
         activeDetected?.text || null,
       ),
     );
-
     if (activeDetected) {
       const timer = setTimeout(() => {
         const el = editor.view.dom.querySelector(".smart-date-highlight");
@@ -191,12 +229,9 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
           const containerRect =
             formContainerRef.current?.getBoundingClientRect();
           if (containerRect) {
-            const calculatedTop = rect.top - containerRect.top - 40;
-            const calculatedLeft =
-              rect.left - containerRect.left + rect.width / 2;
             setBubbleCoords({
-              top: calculatedTop,
-              left: calculatedLeft,
+              top: rect.top - containerRect.top - 40,
+              left: rect.left - containerRect.left + rect.width / 2,
             });
           }
         } else {
@@ -209,42 +244,12 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     }
   }, [activeDetected, editorText, editor]);
 
-  const editorRef = useRef(editor);
   useEffect(() => {
-    editorRef.current = editor;
-  }, [editor]);
-
-  useEffect(() => {
-    if (!editor || !focus) return;
-    const el = editor.view.dom as HTMLElement;
-
-    const update = () => {
-      const h = el.offsetHeight + 13;
-      const clamped = Math.min(h, MAX_HEIGHT);
-      setHeight(clamped + "px");
-      setIsScrollable(h > MAX_HEIGHT);
-    };
-
-    const timer = setTimeout(() => {
-      update();
-      const observer = new ResizeObserver(update);
-      observer.observe(el);
-      (update as any)._observer = observer;
-    }, 16);
-
-    return () => {
-      clearTimeout(timer);
-      ((update as any)._observer as ResizeObserver | undefined)?.disconnect();
-    };
-  }, [editor, focus]);
-
-  function combineDateAndTime(d?: Date, h?: string) {
-    if (!d) return null;
-    const combined = new Date(d);
-    const [hours, minutes] = (h ?? "23:59").split(":").map(Number);
-    combined.setHours(hours, minutes, 0, 0);
-    return combined.toISOString();
-  }
+    if (focus && editor) {
+      const t = setTimeout(() => editor.commands.focus(), 20);
+      return () => clearTimeout(t);
+    }
+  }, [focus, editor]);
 
   const handleAdd = useCallback(() => {
     const ed = editorRef.current;
@@ -253,8 +258,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
       setSelected(undefined);
       setHour(undefined);
       setFocus(false);
-      setHeight("40px");
-      setIsScrollable(false);
       return;
     }
     const html = ed.getHTML();
@@ -263,11 +266,8 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     setSelected(undefined);
     setHour(undefined);
     setFocus(false);
-    setHeight("40px");
-    setIsScrollable(false);
     setEditorText("");
     setDismissedText(null);
-
     if (setList) {
       addTask(setList.list_id, html, combinedDate, isNote);
     } else {
@@ -280,33 +280,23 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     handleAddRef.current = handleAdd;
   }, [handleAdd]);
 
-  useEffect(() => {
-    if (focus && editor) {
-      const t = setTimeout(() => editor.commands.focus(), 20);
-      return () => clearTimeout(t);
-    }
-  }, [focus, editor]);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-  useOnClickOutside(containerRef, () => {
-    const calendarEl = document.getElementById("calendar-component");
-    const dropdownEl = document.getElementById("dropdown-component");
-    const aiPanelEl = document.getElementById("ai-enhance-panel");
-    if (calendarEl || dropdownEl || aiPanelEl) return;
+  useOnClickOutside(containerRef, (e: MouseEvent | TouchEvent) => {
+    const target = e.target as Element | null;
+    const isInsideClickablePortal = target?.closest(
+      "#calendar-component, #dropdown-component, #ai-enhance-panel, .smart-date-bubble-container, [data-tippy-root], .tippy-box, [data-radix-popper-content-wrapper]",
+    );
+    if (isInsideClickablePortal) return;
     if (editor && !editor.isEmpty) return;
     setFocus(false);
     editor?.commands.clearContent();
     setHour(undefined);
     setSelected(undefined);
-    setHeight("40px");
-    setIsScrollable(false);
     setEditorText("");
     setDismissedText(null);
   });
 
   const pathname = usePathname();
   const isHome = pathname === "/alino-app";
-
   const charCount = editor?.storage?.characterCount?.characters?.() ?? 0;
 
   return (
@@ -338,9 +328,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
               onAssign={(d, h, txt) => {
                 setSelected(d);
                 if (h) setHour(h);
-                if (editor) {
-                  editor.commands.focus();
-                }
+                editor?.commands.focus();
                 setDismissedText(txt ?? null);
               }}
               onDismiss={() => {
@@ -356,10 +344,9 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             style={{ marginTop: "12.5px" }}
           >
             <motion.div
-              key="type-dropdown"
-              initial={{ scale: 0 }}
-              animate={{ scale: focus ? 1 : 0 }}
-              exit={{ scale: 0 }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: focus ? 1 : 0, opacity: focus ? 1 : 0 }}
+              transition={ITEM_SPRING}
             >
               <ItemTypeDropdown
                 isNote={isNote}
@@ -369,51 +356,56 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             </motion.div>
           </div>
 
-          <motion.div
-            className={styles.inputContainer}
-            initial={{ height: 40 }}
-            animate={{ height }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            style={{
-              overflowY: isScrollable ? "auto" : "hidden",
-              marginTop: focus ? "17px" : "0",
-            }}
-          >
+          <div ref={inputContainerRef} className={styles.inputContainer}>
             <div
               className={styles.editorWrapper}
-              style={{ display: focus ? "flex" : "none" }}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <EditorContent editor={editor} className={styles.editorContent} />
             </div>
-          </motion.div>
+          </div>
 
-          {!focus && (
-            <div className={styles.placeholder}>
-              <TextAnimation
-                style={{
-                  fontSize: "14px",
-                  height: "17px",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
+          <AnimatePresence>
+            {!focus && (
+              <motion.div
+                className={styles.placeholder}
+                initial={{ opacity: 0, y: 6, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 28,
+                  mass: 0.6,
+                  opacity: { duration: 0.18 },
+                  filter: { duration: 0.2 },
                 }}
-                text={currentText}
-                textColor="var(--placeholder-text-color)"
-                opacity={0.3}
-              />
-            </div>
-          )}
+              >
+                <TextAnimation
+                  style={{
+                    fontSize: "14px",
+                    height: "17px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  text={currentText}
+                  textColor="var(--placeholder-text-color)"
+                  opacity={0.3}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className={styles.inputManagerContainer}>
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence>
               {isHome && (
                 <motion.div
                   key="list-selector"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: focus ? 1 : 0 }}
-                  exit={{ scale: 0 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: focus ? 1 : 0.6, opacity: focus ? 1 : 0 }}
+                  exit={{ scale: 0.6, opacity: 0 }}
+                  transition={ITEM_SPRING}
                   layout
                 >
                   <ListSelectorDropdown
@@ -424,117 +416,126 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                   />
                 </motion.div>
               )}
-
-              <motion.div
-                key="calendar"
-                initial={{ scale: 0 }}
-                animate={{ scale: focus ? 1 : 0 }}
-                exit={{ scale: 0 }}
-                transition={{ delay: 0.05 }}
-                layout
-              >
-                <Calendar
-                  selected={selected}
-                  setSelected={setSelected}
-                  hour={hour}
-                  setHour={setHour}
-                  focusToParentInput={() => editor?.commands.focus()}
-                />
-              </motion.div>
-
               {focus && (
                 <motion.div
-                  key="ai-btn"
-                  initial={{ opacity: 0, scale: 0.7 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.7 }}
-                  transition={{ duration: 0.15 }}
+                  key="calendar"
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: focus ? 1 : 0.6, opacity: focus ? 1 : 0 }}
+                  exit={{ scale: 0.6, opacity: 0 }}
+                  transition={{ ...ITEM_SPRING, delay: 0.04 }}
                   layout
                 >
-                  <AIEnhanceButton
-                    editor={editor}
-                    visible
-                    onCreateTasks={(tasks) => {
-                      const listId = setList
-                        ? setList.list_id
-                        : selectedListHome?.list_id;
-                      if (!listId) return;
-
-                      addTasks(
-                        tasks.map((t) => ({
-                          list_id: listId,
-                          task_content: `<p>${t.text}</p>`,
-                          target_date: t.target_date,
-                          note: t.type === "note",
-                        })),
-                      );
-                    }}
+                  <Calendar
+                    selected={selected}
+                    setSelected={setSelected}
+                    hour={hour}
+                    setHour={setHour}
+                    focusToParentInput={() => editor?.commands.focus()}
                   />
                 </motion.div>
               )}
-
+              <AnimatePresence>
+                {focus && (
+                  <motion.div
+                    key="ai-btn"
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.6, opacity: 0 }}
+                    transition={{ ...ITEM_SPRING, delay: 0.08 }}
+                    layout
+                  >
+                    <AIEnhanceButton
+                      editor={editor}
+                      visible
+                      onCreateTasks={(tasks) => {
+                        const listId = setList
+                          ? setList.list_id
+                          : selectedListHome?.list_id;
+                        if (!listId) return;
+                        addTasks(
+                          tasks.map((t) => ({
+                            list_id: listId,
+                            task_content: `<p>${t.text}</p>`,
+                            target_date: t.target_date,
+                            note: t.type === "note",
+                          })),
+                        );
+                      }}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <motion.div
                 key="sep"
-                initial={{ height: 0 }}
-                animate={{ height: focus ? 30 : 0 }}
-                exit={{ height: 0 }}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: focus ? 30 : 0, opacity: focus ? 0.2 : 0 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.18 }}
                 style={{
                   width: "1px",
                   backgroundColor: "var(--icon-color)",
-                  opacity: 0.2,
+                  flexShrink: 0,
                 }}
               />
-
-              <motion.button
-                key="send"
-                className={styles.taskSendButton}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleAdd();
-                }}
-                initial={{ scale: 0 }}
-                animate={{ scale: focus ? 1 : 0 }}
-                exit={{ scale: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <SendIcon
-                  style={{
-                    width: "20px",
-                    height: "auto",
-                    stroke: "var(--icon-color)",
-                    strokeWidth: 1.5,
+              {focus && (
+                <motion.button
+                  key="send"
+                  className={styles.taskSendButton}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAdd();
                   }}
-                />
-              </motion.button>
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.6, opacity: 0 }}
+                  transition={{ ...ITEM_SPRING, delay: 0.12 }}
+                >
+                  <SendIcon className={styles.sendIcon} />
+                </motion.button>
+              )}
             </AnimatePresence>
           </div>
+        </div>
 
-          {charCount > 0 && (
-            <p
-              className={styles.limitIndicator}
-              style={{
-                color:
-                  charCount > 900
-                    ? "#fc0303"
-                    : charCount > 800
-                      ? "#fc8003"
-                      : charCount > 700
-                        ? "#ffb300"
-                        : "#8a8a8a",
+        <AnimatePresence>
+          {focus && (
+            <motion.div
+              className={styles.toolbarWrapper}
+              initial={{ scale: 0.9, opacity: 0, y: 10, height: 0 }}
+              animate={{ scale: 1, opacity: 1, y: 0, height: "auto" }}
+              exit={{ scale: 0.9, opacity: 0, y: 10, height: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 400,
+                damping: 25,
+                height: { duration: 0.1, ease: "linear" },
               }}
+              style={{ overflow: "visible" }}
+              onClick={(e) => e.stopPropagation()}
             >
-              {charCount}/1000
-            </p>
+              <RichTextToolbar editor={editor} />
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
 
-        <div
-          className={styles.toolbarWrapper}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <RichTextToolbar editor={editor} visible={focus} />
-        </div>
+        {charCount > 0 && (
+          <p
+            className={styles.limitIndicator}
+            style={{
+              color:
+                charCount > TASK_CHAR_LIMIT * 0.9
+                  ? "#fc0303"
+                  : charCount > TASK_CHAR_LIMIT * 0.8
+                    ? "#fc8003"
+                    : charCount > TASK_CHAR_LIMIT * 0.7
+                      ? "#ffb300"
+                      : "#8a8a8a",
+            }}
+          >
+            {charCount}/{TASK_CHAR_LIMIT}
+          </p>
+        )}
       </div>
     </section>
   );

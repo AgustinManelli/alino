@@ -58,33 +58,26 @@ export const ListSelectorDropdown = ({
     </div>
   );
 
-  const renderItemContent = (list: ListsType): JSX.Element => (
-    <div
-      className={styles.dropdownItemContainer}
-      style={{ justifyContent: "start" }}
-    >
-      <div style={{ width: "16px", height: "16px" }}>
-        {list.list.icon ? (
-          <EmojiMartComponent shortcodes={list.list.icon} size="16px" />
-        ) : (
-          <SquircleIcon style={{ width: "14px", fill: list.list.color }} />
-        )}
-      </div>
-      <p>{list.list.list_name}</p>
-    </div>
-  );
 
   return (
     <Dropdown>
       <Dropdown.Trigger>{renderTriggerContent()}</Dropdown.Trigger>
 
       <Dropdown.Content>
-        {lists.map((list) => (
+        {lists.map((l) => (
           <Dropdown.Item
-            key={list.list.list_id}
-            onClick={() => handleItemSelect(list)}
+            key={l.list.list_id}
+            onClick={() => handleItemSelect(l)}
+            isActive={selectedList?.list_id === l.list_id}
           >
-            {renderItemContent(list)}
+            <div style={{ width: "16px", height: "16px" }}>
+              {l.list.icon ? (
+                <EmojiMartComponent shortcodes={l.list.icon} size="16px" />
+              ) : (
+                <SquircleIcon style={{ width: "14px", fill: l.list.color }} />
+              )}
+            </div>
+            <p style={{ margin: 0 }}>{l.list.list_name}</p>
           </Dropdown.Item>
         ))}
       </Dropdown.Content>

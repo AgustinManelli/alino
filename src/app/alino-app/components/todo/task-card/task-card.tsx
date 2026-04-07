@@ -30,6 +30,7 @@ import { useSmartDate } from "@/hooks/useSmartDate";
 import { useSmartDateInteraction } from "@/hooks/useSmartDateInteraction";
 import { SmartDateBubble } from "@/components/ui/SmartDateBubble/SmartDateBubble";
 import { SmartDateHighlighter } from "@/components/ui/RichTextEditor/SmartDateHighlighter";
+import { TASK_CHAR_LIMIT } from "@/config/app-config";
 
 const RICH_TEXT_EXTENSIONS = [
   StarterKit.configure({
@@ -45,13 +46,65 @@ const RICH_TEXT_EXTENSIONS = [
   FontFamily,
   FontSizeExtension,
   TextAlign.configure({ types: ["paragraph"] }),
-  CharacterCount.configure({ limit: 1000 }),
+  CharacterCount.configure({ limit: TASK_CHAR_LIMIT }),
   Link.configure({
     openOnClick: false,
     autolink: true,
   }),
   SmartDateHighlighter,
 ];
+
+function combineDateAndTime(d?: Date, h?: string) {
+  if (!d) return null;
+  const combined = new Date(d);
+  const [hours, minutes] = (h ?? "23:59").split(":").map(Number);
+  combined.setHours(hours, minutes, 0, 0);
+  return combined.toISOString();
+}
+
+const uncompletedIconStyle = {
+  width: "15px",
+  stroke: "var(--icon-colorv2)",
+  strokeWidth: "2",
+  overflow: "visible",
+  transition: "fill 0.1s ease-in-out",
+};
+
+const checkPathStyle = {
+  stroke: "var(--icon-color-inside)",
+  strokeWidth: 2,
+};
+
+const noteIconStyle = {
+  width: "15px",
+  stroke: "var(--icon-colorv2)",
+  strokeWidth: "2",
+  opacity: "0.2",
+};
+
+const userAvatarStyle = {
+  width: "30px",
+  height: "30px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  opacity: 0.2,
+};
+
+const avatarImgStyle = {
+  width: "25px",
+  height: "25px",
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  borderRadius: "50%",
+};
+
+const checkButtonStyle = {
+  width: "100%",
+  height: "auto",
+  stroke: "var(--icon-color)",
+  strokeWidth: 2,
+};
 
 export const TaskCard = memo(
   ({
@@ -100,12 +153,11 @@ export const TaskCard = memo(
       textContainerRef,
     );
 
-    const { updateTaskName } = useTodoDataStore(
-      useShallow((state) => ({ updateTaskName: state.updateTaskName })),
-    );
+    const updateTaskName = useTodoDataStore((state) => state.updateTaskName);
     const user = useUserDataStore((state) => state.user);
 
     const handleSaveRef = useRef<() => Promise<void>>(async () => {});
+    const editorRef = useRef<Editor | null>(null);
 
     const editor = useEditor({
       extensions: RICH_TEXT_EXTENSIONS,
@@ -139,7 +191,6 @@ export const TaskCard = memo(
       onCreate: ({ editor }) => {
         onEditorReady?.(editor);
         setEditorText(editor.getText());
-        // Focus at end
         setTimeout(() => {
           editor.commands.focus("end");
         }, 50);
@@ -152,6 +203,14 @@ export const TaskCard = memo(
         setCursorPos(editor.state.selection.from);
       },
     });
+
+    useEffect(() => {
+      editorRef.current = editor;
+    }, [editor]);
+
+    useEffect(() => {
+      if (editor) onEditorReady?.(editor);
+    }, [editor, onEditorReady]);
 
     useEffect(() => {
       if (!editor) return;
@@ -185,35 +244,16 @@ export const TaskCard = memo(
       }
     }, [activeDetected, editorText, editor, isModalAnimating]);
 
-    const editorRef = useRef(editor);
-    useEffect(() => {
-      editorRef.current = editor;
-    }, [editor]);
-
-    useEffect(() => {
-      if (editor) onEditorReady?.(editor);
-    }, [editor]);
-
     useEffect(() => {
       setCompleted(task.completed);
       if (editor) {
         const current = editor.getHTML();
         const next = parseRichTextContent(task.task_content);
         if (current !== next) {
-          editor.commands.setContent(next, {
-            emitUpdate: false,
-          });
+          editor.commands.setContent(next, { emitUpdate: false });
         }
       }
-    }, [task.task_content, task.completed]);
-
-    function combineDateAndTime(d?: Date, h?: string) {
-      if (!d) return null;
-      const combined = new Date(d);
-      const [hours, minutes] = (h ?? "23:59").split(":").map(Number);
-      combined.setHours(hours, minutes, 0, 0);
-      return combined.toISOString();
-    }
+    }, [task.task_content, task.completed, editor]);
 
     const handleSaveName = useCallback(async () => {
       const ed = editorRef.current;
@@ -250,6 +290,43 @@ export const TaskCard = memo(
       handleSaveRef.current = handleSaveName;
     }, [handleSaveName]);
 
+    const handleSaveClick = useCallback(
+      (e: React.MouseEvent) => {
+        e.preventDefault();
+        handleSaveName();
+      },
+      [handleSaveName],
+    );
+
+    const handleBubbleHoverEnter = useCallback(
+      () => setIsHoveringBubble(true),
+      [setIsHoveringBubble],
+    );
+    const handleBubbleHoverLeave = useCallback(
+      () => setIsHoveringBubble(false),
+      [setIsHoveringBubble],
+    );
+
+    const handleBubbleAssign = useCallback(
+      (
+        d: Date | undefined,
+        h: string | undefined,
+        txt: string | null | undefined,
+      ) => {
+        setSelected(d);
+        if (h) setHour(h);
+        if (editor) editor.commands.focus();
+        setDismissedText(txt ?? null);
+      },
+      [editor, setHour, setSelected],
+    );
+
+    const handleBubbleDismiss = useCallback(() => {
+      if (activeDetected) setDismissedText(activeDetected.text);
+    }, [activeDetected]);
+
+    const isCreatedByOther = user?.user_id !== task.created_by?.user_id;
+
     return (
       <div
         className={styles.cardContainer}
@@ -267,19 +344,14 @@ export const TaskCard = memo(
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 style={{
-                  width: "15px",
-                  stroke: "var(--icon-colorv2)",
-                  strokeWidth: "2",
-                  overflow: "visible",
+                  ...uncompletedIconStyle,
                   fill: task.completed ? "var(--icon-colorv2)" : "transparent",
-                  transition: "fill 0.1s ease-in-out",
                 }}
               >
                 <path d="M12,2.5c-7.6,0-9.5,1.9-9.5,9.5s1.9,9.5,9.5,9.5s9.5-1.9,9.5-9.5S19.6,2.5,12,2.5z" />
                 <path
                   style={{
-                    stroke: "var(--icon-color-inside)",
-                    strokeWidth: 2,
+                    ...checkPathStyle,
                     opacity: task.completed ? "1" : "0",
                   }}
                   strokeLinejoin="round"
@@ -287,14 +359,7 @@ export const TaskCard = memo(
                 />
               </svg>
             ) : (
-              <Note
-                style={{
-                  width: "15px",
-                  stroke: "var(--icon-colorv2)",
-                  strokeWidth: "2",
-                  opacity: "0.2",
-                }}
-              />
+              <Note style={noteIconStyle} />
             )
           ) : (
             <ItemTypeDropdown
@@ -318,8 +383,8 @@ export const TaskCard = memo(
             ReactDOM.createPortal(
               <div
                 className="no-close-edit"
-                onMouseEnter={() => setIsHoveringBubble(true)}
-                onMouseLeave={() => setIsHoveringBubble(false)}
+                onMouseEnter={handleBubbleHoverEnter}
+                onMouseLeave={handleBubbleHoverLeave}
                 style={{
                   position: "fixed",
                   top: `${bubbleCoords.top}px`,
@@ -330,15 +395,8 @@ export const TaskCard = memo(
               >
                 <SmartDateBubble
                   detected={activeDetected}
-                  onAssign={(d, h, txt) => {
-                    setSelected(d);
-                    if (h) setHour(h);
-                    if (editor) editor.commands.focus();
-                    setDismissedText(txt ?? null);
-                  }}
-                  onDismiss={() => {
-                    if (activeDetected) setDismissedText(activeDetected.text);
-                  }}
+                  onAssign={handleBubbleAssign}
+                  onDismiss={handleBubbleDismiss}
                 />
               </div>,
               document.body,
@@ -376,25 +434,12 @@ export const TaskCard = memo(
           )}
         </div>
 
-        {user?.user_id !== task.created_by?.user_id && (
-          <div
-            style={{
-              width: "30px",
-              height: "30px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              opacity: 0.2,
-            }}
-          >
+        {isCreatedByOther && (
+          <div style={userAvatarStyle}>
             <div
               style={{
-                width: "25px",
-                height: "25px",
+                ...avatarImgStyle,
                 backgroundImage: `url(${task.created_by?.avatar_url})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                borderRadius: "50%",
               }}
             />
           </div>
@@ -407,21 +452,8 @@ export const TaskCard = memo(
             completed={completed}
           />
           {modalEditOpen && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                handleSaveName();
-              }}
-              className={styles.checkButton}
-            >
-              <Check
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  stroke: "var(--icon-color)",
-                  strokeWidth: 2,
-                }}
-              />
+            <button onClick={handleSaveClick} className={styles.checkButton}>
+              <Check style={checkButtonStyle} />
             </button>
           )}
         </div>

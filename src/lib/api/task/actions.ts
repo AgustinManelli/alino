@@ -244,35 +244,67 @@ export const getUpcomingTasks = async () => {
   }
 };
 
+export type TaskSortOption =
+  | "default"
+  | "due_asc"
+  | "due_desc"
+  | "alpha_asc"
+  | "alpha_desc";
+
 export const getPaginatedTasks = async (
   listIds: string[],
   page: number = 0,
-  limit: number = 40
+  limit: number = 15,
+  sort: TaskSortOption = "default"
 ) => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
 
     if (!listIds || listIds.length === 0) {
-       return { data: [] };
+      return { data: [] };
     }
 
     const from = page * limit;
     const to = from + limit - 1;
 
-    const { data: tasksData, error: tasksError } = await supabase
+    let query = supabase
       .from("tasks")
       .select(
         `*,
         created_by:users (
-        user_id,
-        display_name,
-        username,
-        avatar_url
-      )`
+          user_id,
+          display_name,
+          username,
+          avatar_url
+        )`
       )
-      .in("list_id", listIds)
-      .order("created_at", { ascending: false })
-      .range(from, to);
+      .in("list_id", listIds);
+
+    switch (sort) {
+      case "due_asc":
+        query = query
+          .order("target_date", { ascending: true, nullsFirst: false })
+          .order("created_at", { ascending: false });
+        break;
+      case "due_desc":
+        query = query
+          .order("target_date", { ascending: false, nullsFirst: true })
+          .order("created_at", { ascending: false });
+        break;
+      case "alpha_asc":
+        query = query.order("task_content", { ascending: true });
+        break;
+      case "alpha_desc":
+        query = query.order("task_content", { ascending: false });
+        break;
+      default:
+        query = query.order("created_at", { ascending: false });
+        break;
+    }
+
+    query = query.range(from, to);
+
+    const { data: tasksData, error: tasksError } = await query;
 
     if (tasksError) {
       throw new Error(

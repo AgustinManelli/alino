@@ -60,6 +60,9 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
   const setNavbarStatus = useSidebarStateStore(
     (state) => state.setNavbarStatus,
   );
+  const setPendingListId = useSidebarStateStore(
+    (state) => state.setPendingListId,
+  );
 
   const divRef = useRef<HTMLInputElement | null>(null);
   const pathname = usePathname();
@@ -225,6 +228,7 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
               e.preventDefault();
               return;
             }
+            setPendingListId(list.list_id);
             setNavbarStatus(false);
           }}
           onContextMenu={(e) => e.preventDefault()}

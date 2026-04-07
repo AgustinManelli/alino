@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+
+import { useEffect, useRef, useState, useCallback, useMemo, memo } from "react";
 import { Editor } from "@tiptap/react";
 import { AnimatePresence, motion } from "motion/react";
 import styles from "./RichTextToolbar.module.css";
@@ -141,28 +142,24 @@ const UnlinkIcon = () => (
 );
 
 const FONT_SIZES = ["10", "12", "14", "16", "18", "20", "24", "28", "32"];
+
 const FONT_FAMILIES = [
   { label: "Predeter.", value: "inherit" },
-
   { label: "Serif", value: "Georgia, serif" },
   { label: "Times", value: "'Times New Roman', Times, serif" },
-
   { label: "Arial", value: "Arial, Helvetica, sans-serif" },
   { label: "Verdana", value: "Verdana, Geneva, sans-serif" },
   { label: "Tahoma", value: "Tahoma, Geneva, sans-serif" },
   { label: "Trebuchet", value: "'Trebuchet MS', sans-serif" },
-
   { label: "Mono", value: "'Courier New', monospace" },
   { label: "Consolas", value: "Consolas, monospace" },
-
   { label: "Inter", value: "'Inter', sans-serif" },
   { label: "Roboto", value: "'Roboto', sans-serif" },
   { label: "Poppins", value: "'Poppins', sans-serif" },
-
   { label: "JetBrains Mono", value: "'JetBrains Mono', monospace" },
-
   { label: "Georgia", value: "Georgia, serif" },
 ];
+
 const TEXT_COLORS = [
   { label: "Default", value: null },
   { label: "Rojo", value: "#ef4444" },
@@ -174,6 +171,7 @@ const TEXT_COLORS = [
   { label: "Rosa", value: "#db2777" },
   { label: "Gris", value: "#6b7280" },
 ];
+
 const HIGHLIGHT_COLORS = [
   { label: "Ninguno", value: null },
   { label: "Amarillo", value: "#fef08a" },
@@ -184,15 +182,69 @@ const HIGHLIGHT_COLORS = [
   { label: "Naranja", value: "#fed7aa" },
 ];
 
-interface RichTextToolbarProps {
-  editor: Editor | null;
-  visible?: boolean;
+const ALIGNMENTS = [
+  { value: "left", label: "Izquierda", Icon: AlignLeftIcon },
+  { value: "center", label: "Centro", Icon: AlignCenterIcon },
+  { value: "right", label: "Derecha", Icon: AlignRightIcon },
+  { value: "justify", label: "Justificado", Icon: AlignJustifyIcon },
+] as const;
+
+const popoverMotion = {
+  initial: { opacity: 0, scale: 0.9, y: -4 },
+  animate: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.9, y: -4 },
+  transition: { duration: 0.13 },
+} as const;
+
+const fontFamilyStyle = { maxWidth: "82px" };
+const fontSizeStyle = { maxWidth: "52px" };
+
+interface SwatchProps {
+  label: string;
+  value: string | null;
+  onSelect: (val: string | null) => void;
 }
 
-export function RichTextToolbar({
+const ColorSwatch = memo(function ColorSwatch({
+  label,
+  value,
+  onSelect,
+}: SwatchProps) {
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      onSelect(value);
+    },
+    [value, onSelect],
+  );
+
+  const style = useMemo(
+    () => ({
+      backgroundColor: value ?? "transparent",
+      border: !value ? "1.5px dashed var(--icon-color)" : "none",
+      opacity: !value ? 0.5 : 1,
+    }),
+    [value],
+  );
+
+  return (
+    <button
+      className={styles.swatch}
+      style={style}
+      title={label}
+      onMouseDown={handleMouseDown}
+    />
+  );
+});
+
+interface RichTextToolbarProps {
+  editor: Editor | null;
+}
+
+export const RichTextToolbar = memo(function RichTextToolbar({
   editor,
-  visible = true,
 }: RichTextToolbarProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [, setRerender] = useState(0);
   const [colorOpen, setColorOpen] = useState(false);
   const [highlightOpen, setHighlightOpen] = useState(false);
@@ -210,19 +262,170 @@ export function RichTextToolbar({
 
   useEffect(() => {
     if (!colorOpen && !highlightOpen) return;
-    const handler = () => {
-      setColorOpen(false);
-      setHighlightOpen(false);
+    const handler = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setColorOpen(false);
+        setHighlightOpen(false);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [colorOpen, highlightOpen]);
+
+  const toggleBold = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      editor?.chain().focus().toggleBold().run();
+    },
+    [editor],
+  );
+
+  const toggleItalic = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      editor?.chain().focus().toggleItalic().run();
+    },
+    [editor],
+  );
+
+  const toggleUnderline = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      editor?.chain().focus().toggleUnderline().run();
+    },
+    [editor],
+  );
+
+  const toggleStrike = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      editor?.chain().focus().toggleStrike().run();
+    },
+    [editor],
+  );
+
+  const toggleBulletList = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      editor?.chain().focus().toggleBulletList().run();
+    },
+    [editor],
+  );
+
+  const toggleOrderedList = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      editor?.chain().focus().toggleOrderedList().run();
+    },
+    [editor],
+  );
+
+  const unsetLink = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      editor?.chain().focus().unsetLink().run();
+    },
+    [editor],
+  );
+
+  const handleAlign = useCallback(
+    (align: string) => (e: React.MouseEvent) => {
+      e.preventDefault();
+      editor?.chain().focus().setTextAlign(align).run();
+    },
+    [editor],
+  );
+
+  const handleFontFamily = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      if (e.target.value === "inherit") {
+        editor?.chain().focus().unsetFontFamily().run();
+      } else {
+        editor?.chain().focus().setFontFamily(e.target.value).run();
+      }
+    },
+    [editor],
+  );
+
+  const handleFontSize = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      editor?.chain().focus().setFontSize(`${e.target.value}px`).run();
+    },
+    [editor],
+  );
+
+  const setLink = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!editor) return;
+      const previousUrl = editor.getAttributes("link").href;
+      const url = window.prompt("Ingresa la URL del enlace:", previousUrl);
+
+      if (url === null) return;
+
+      if (url === "") {
+        editor.chain().focus().extendMarkRange("link").unsetLink().run();
+        return;
+      }
+
+      editor
+        .chain()
+        .focus()
+        .extendMarkRange("link")
+        .setLink({ href: url })
+        .run();
+    },
+    [editor],
+  );
+
+  const toggleColorOpen = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setColorOpen((v) => !v);
+    setHighlightOpen(false);
+  }, []);
+
+  const toggleHighlightOpen = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setHighlightOpen((v) => !v);
+    setColorOpen(false);
+  }, []);
+
+  const handleSetColor = useCallback(
+    (val: string | null) => {
+      if (!editor) return;
+      if (val) editor.chain().focus().setColor(val).run();
+      else editor.chain().focus().unsetColor().run();
+      setColorOpen(false);
+    },
+    [editor],
+  );
+
+  const handleSetHighlight = useCallback(
+    (val: string | null) => {
+      if (!editor) return;
+      if (val) editor.chain().focus().setHighlight({ color: val }).run();
+      else editor.chain().focus().unsetHighlight().run();
+      setHighlightOpen(false);
+    },
+    [editor],
+  );
+
+  const stopPropagation = useCallback(
+    (e: React.MouseEvent | React.UIEvent) => e.stopPropagation(),
+    [],
+  );
 
   if (!editor) return null;
 
   const activeColor = editor.getAttributes("textStyle").color as
     | string
     | undefined;
+
   const activeHighlight = editor.isActive("highlight")
     ? (editor.getAttributes("highlight").color as string | undefined)
     : undefined;
@@ -232,324 +435,205 @@ export function RichTextToolbar({
       "px",
       "",
     ) ?? "14";
+
   const currentFontFamily =
     (editor.getAttributes("textStyle").fontFamily as string | undefined) ??
     "inherit";
 
-  const setLink = () => {
-    const previousUrl = editor.getAttributes("link").href;
-    const url = window.prompt("Ingresa la URL del enlace:", previousUrl);
-
-    if (url === null) {
-      return;
-    }
-
-    if (url === "") {
-      editor.chain().focus().extendMarkRange("link").unsetLink().run();
-      return;
-    }
-
-    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  };
-
   return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          className={styles.toolbar}
-          initial={{ opacity: 0, y: -6, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -6, scale: 0.97 }}
-          transition={{ duration: 0.18, ease: "easeOut" }}
-          onMouseDown={(e) => e.stopPropagation()}
+    <div
+      className={styles.toolbar}
+      onMouseDown={stopPropagation}
+      ref={containerRef}
+    >
+      <button
+        className={`${styles.btn} ${editor.isActive("bold") ? styles.active : ""}`}
+        onMouseDown={toggleBold}
+        title="Negrita (Ctrl+B)"
+      >
+        <strong>B</strong>
+      </button>
+      <button
+        className={`${styles.btn} ${editor.isActive("italic") ? styles.active : ""}`}
+        onMouseDown={toggleItalic}
+        title="Cursiva (Ctrl+I)"
+      >
+        <em>I</em>
+      </button>
+      <button
+        className={`${styles.btn} ${editor.isActive("underline") ? styles.active : ""}`}
+        onMouseDown={toggleUnderline}
+        title="Subrayado (Ctrl+U)"
+      >
+        <u>U</u>
+      </button>
+      <button
+        className={`${styles.btn} ${editor.isActive("strike") ? styles.active : ""}`}
+        onMouseDown={toggleStrike}
+        title="Tachado"
+      >
+        <s>S</s>
+      </button>
+
+      <button
+        className={`${styles.btn} ${editor.isActive("link") ? styles.active : ""}`}
+        onMouseDown={setLink}
+        title="Añadir/Editar Enlace"
+      >
+        <LinkIcon />
+      </button>
+
+      {editor.isActive("link") && (
+        <button
+          className={styles.btn}
+          onMouseDown={unsetLink}
+          title="Quitar enlace"
         >
-          <button
-            className={`${styles.btn} ${editor.isActive("bold") ? styles.active : ""}`}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              editor.chain().focus().toggleBold().run();
-            }}
-            title="Negrita (Ctrl+B)"
-          >
-            <strong>B</strong>
-          </button>
-          <button
-            className={`${styles.btn} ${editor.isActive("italic") ? styles.active : ""}`}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              editor.chain().focus().toggleItalic().run();
-            }}
-            title="Cursiva (Ctrl+I)"
-          >
-            <em>I</em>
-          </button>
-          <button
-            className={`${styles.btn} ${editor.isActive("underline") ? styles.active : ""}`}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              editor.chain().focus().toggleUnderline().run();
-            }}
-            title="Subrayado (Ctrl+U)"
-          >
-            <u>U</u>
-          </button>
-          <button
-            className={`${styles.btn} ${editor.isActive("strike") ? styles.active : ""}`}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              editor.chain().focus().toggleStrike().run();
-            }}
-            title="Tachado"
-          >
-            <s>S</s>
-          </button>
-
-          <button
-            className={`${styles.btn} ${editor.isActive("link") ? styles.active : ""}`}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              setLink();
-            }}
-            title="Añadir/Editar Enlace"
-          >
-            <LinkIcon />
-          </button>
-
-          {editor.isActive("link") && (
-            <button
-              className={styles.btn}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                editor.chain().focus().unsetLink().run();
-              }}
-              title="Quitar enlace"
-            >
-              <UnlinkIcon />
-            </button>
-          )}
-
-          <div className={styles.sep} />
-
-          <select
-            className={styles.select}
-            style={{ maxWidth: "82px" }}
-            value={currentFontFamily}
-            onMouseDown={(e) => e.stopPropagation()}
-            onChange={(e) => {
-              if (e.target.value === "inherit") {
-                editor.chain().focus().unsetFontFamily().run();
-              } else {
-                editor.chain().focus().setFontFamily(e.target.value).run();
-              }
-            }}
-            title="Fuente"
-          >
-            {FONT_FAMILIES.map((f) => (
-              <option key={f.value} value={f.value}>
-                {f.label}
-              </option>
-            ))}
-          </select>
-
-          <select
-            className={styles.select}
-            style={{ maxWidth: "52px" }}
-            value={currentFontSize}
-            onMouseDown={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              editor
-                .chain()
-                .focus()
-                .setFontSize(e.target.value + "px")
-                .run()
-            }
-            title="Tamaño"
-          >
-            {FONT_SIZES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-
-          <div className={styles.sep} />
-
-          <div className={styles.popoverWrapper}>
-            <button
-              className={`${styles.colorTriggerBtn} ${activeColor ? styles.active : ""}`}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setColorOpen((v) => !v);
-                setHighlightOpen(false);
-              }}
-              title="Color de texto"
-            >
-              <span className={styles.colorLabel}>A</span>
-              <span
-                className={styles.colorBar}
-                style={{ backgroundColor: activeColor ?? "var(--text)" }}
-              />
-            </button>
-
-            <AnimatePresence>
-              {colorOpen && (
-                <motion.div
-                  className={styles.popover}
-                  initial={{ opacity: 0, scale: 0.9, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: -4 }}
-                  transition={{ duration: 0.13 }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                >
-                  {TEXT_COLORS.map((c) => (
-                    <button
-                      key={c.label}
-                      className={styles.swatch}
-                      style={{
-                        backgroundColor: c.value ?? "transparent",
-                        border: !c.value
-                          ? "1.5px dashed var(--icon-color)"
-                          : "none",
-                        opacity: !c.value ? 0.5 : 1,
-                      }}
-                      title={c.label}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        if (c.value)
-                          editor.chain().focus().setColor(c.value).run();
-                        else editor.chain().focus().unsetColor().run();
-                        setColorOpen(false);
-                      }}
-                    />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div className={styles.popoverWrapper}>
-            <button
-              className={`${styles.colorTriggerBtn} ${editor.isActive("highlight") ? styles.active : ""}`}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setHighlightOpen((v) => !v);
-                setColorOpen(false);
-              }}
-              title="Resaltar texto"
-            >
-              <span className={styles.iconWrapper}>
-                <HighlightIcon />
-              </span>
-              <span
-                className={styles.colorBar}
-                style={{
-                  backgroundColor: activeHighlight ?? "transparent",
-                  border: !activeHighlight
-                    ? "1px solid var(--icon-color)"
-                    : "none",
-                  opacity: !activeHighlight ? 0.3 : 1,
-                }}
-              />
-            </button>
-
-            <AnimatePresence>
-              {highlightOpen && (
-                <motion.div
-                  className={styles.popover}
-                  initial={{ opacity: 0, scale: 0.9, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: -4 }}
-                  transition={{ duration: 0.13 }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                >
-                  {HIGHLIGHT_COLORS.map((h) => (
-                    <button
-                      key={h.label}
-                      className={styles.swatch}
-                      style={{
-                        backgroundColor: h.value ?? "transparent",
-                        border: !h.value
-                          ? "1.5px dashed var(--icon-color)"
-                          : "none",
-                        opacity: !h.value ? 0.5 : 1,
-                      }}
-                      title={h.label}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        if (h.value)
-                          editor
-                            .chain()
-                            .focus()
-                            .setHighlight({ color: h.value })
-                            .run();
-                        else editor.chain().focus().unsetHighlight().run();
-                        setHighlightOpen(false);
-                      }}
-                    />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div className={styles.sep} />
-
-          <button
-            className={`${styles.btn} ${editor.isActive("bulletList") ? styles.active : ""}`}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              editor.chain().focus().toggleBulletList().run();
-            }}
-            title="Lista de viñetas"
-          >
-            <BulletListIcon />
-          </button>
-          <button
-            className={`${styles.btn} ${editor.isActive("orderedList") ? styles.active : ""}`}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              editor.chain().focus().toggleOrderedList().run();
-            }}
-            title="Lista numerada"
-          >
-            <OrderedListIcon />
-          </button>
-
-          <div className={styles.sep} />
-
-          {(["left", "center", "right", "justify"] as const).map((align) => (
-            <button
-              key={align}
-              className={`${styles.btn} ${editor.isActive({ textAlign: align }) ? styles.active : ""}`}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                editor.chain().focus().setTextAlign(align).run();
-              }}
-              title={
-                align === "left"
-                  ? "Izquierda"
-                  : align === "center"
-                    ? "Centro"
-                    : align === "right"
-                      ? "Derecha"
-                      : "Justificado"
-              }
-            >
-              {align === "left" ? (
-                <AlignLeftIcon />
-              ) : align === "center" ? (
-                <AlignCenterIcon />
-              ) : align === "right" ? (
-                <AlignRightIcon />
-              ) : (
-                <AlignJustifyIcon />
-              )}
-            </button>
-          ))}
-        </motion.div>
+          <UnlinkIcon />
+        </button>
       )}
-    </AnimatePresence>
+
+      <div className={styles.sep} />
+
+      <select
+        className={styles.select}
+        style={fontFamilyStyle}
+        value={currentFontFamily}
+        onMouseDown={stopPropagation}
+        onChange={handleFontFamily}
+        title="Fuente"
+      >
+        {FONT_FAMILIES.map((f) => (
+          <option key={f.value} value={f.value}>
+            {f.label}
+          </option>
+        ))}
+      </select>
+
+      <select
+        className={styles.select}
+        style={fontSizeStyle}
+        value={currentFontSize}
+        onMouseDown={stopPropagation}
+        onChange={handleFontSize}
+        title="Tamaño"
+      >
+        {FONT_SIZES.map((s) => (
+          <option key={s} value={s}>
+            {s}
+          </option>
+        ))}
+      </select>
+
+      <div className={styles.sep} />
+
+      <div className={styles.popoverWrapper}>
+        <button
+          className={`${styles.colorTriggerBtn} ${activeColor ? styles.active : ""}`}
+          onMouseDown={toggleColorOpen}
+          title="Color de texto"
+        >
+          <span className={styles.colorLabel}>A</span>
+          <span
+            className={styles.colorBar}
+            style={{ backgroundColor: activeColor ?? "var(--text)" }}
+          />
+        </button>
+
+        <AnimatePresence>
+          {colorOpen && (
+            <motion.div
+              className={styles.popover}
+              initial={popoverMotion.initial}
+              animate={popoverMotion.animate}
+              exit={popoverMotion.exit}
+              transition={popoverMotion.transition}
+              onMouseDown={stopPropagation}
+            >
+              {TEXT_COLORS.map((c) => (
+                <ColorSwatch
+                  key={c.label}
+                  label={c.label}
+                  value={c.value}
+                  onSelect={handleSetColor}
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className={styles.popoverWrapper}>
+        <button
+          className={`${styles.colorTriggerBtn} ${editor.isActive("highlight") ? styles.active : ""}`}
+          onMouseDown={toggleHighlightOpen}
+          title="Resaltar texto"
+        >
+          <span className={styles.iconWrapper}>
+            <HighlightIcon />
+          </span>
+          <span
+            className={styles.colorBar}
+            style={{
+              backgroundColor: activeHighlight ?? "transparent",
+              border: !activeHighlight ? "1px solid var(--icon-color)" : "none",
+              opacity: !activeHighlight ? 0.3 : 1,
+            }}
+          />
+        </button>
+
+        <AnimatePresence>
+          {highlightOpen && (
+            <motion.div
+              className={styles.popover}
+              initial={popoverMotion.initial}
+              animate={popoverMotion.animate}
+              exit={popoverMotion.exit}
+              transition={popoverMotion.transition}
+              onMouseDown={stopPropagation}
+            >
+              {HIGHLIGHT_COLORS.map((h) => (
+                <ColorSwatch
+                  key={h.label}
+                  label={h.label}
+                  value={h.value}
+                  onSelect={handleSetHighlight}
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className={styles.sep} />
+
+      <button
+        className={`${styles.btn} ${editor.isActive("bulletList") ? styles.active : ""}`}
+        onMouseDown={toggleBulletList}
+        title="Lista de viñetas"
+      >
+        <BulletListIcon />
+      </button>
+      <button
+        className={`${styles.btn} ${editor.isActive("orderedList") ? styles.active : ""}`}
+        onMouseDown={toggleOrderedList}
+        title="Lista numerada"
+      >
+        <OrderedListIcon />
+      </button>
+
+      <div className={styles.sep} />
+
+      {ALIGNMENTS.map(({ value, label, Icon }) => (
+        <button
+          key={value}
+          className={`${styles.btn} ${editor.isActive({ textAlign: value }) ? styles.active : ""}`}
+          onMouseDown={handleAlign(value)}
+          title={label}
+        >
+          <Icon />
+        </button>
+      ))}
+    </div>
   );
-}
+});
