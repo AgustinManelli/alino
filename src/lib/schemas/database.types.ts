@@ -941,6 +941,10 @@ export type Database = {
     }
     Functions: {
       calculate_new_rank: { Args: { owner_id_param: string }; Returns: string }
+      cancel_list_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
       ch_edit_or_insert_task: { Args: { p_list_id: string }; Returns: boolean }
       ch_is_list_admin: { Args: { p_list_id: string }; Returns: boolean }
       ch_is_list_member: { Args: { p_list_id: string }; Returns: boolean }
@@ -1002,6 +1006,23 @@ export type Database = {
           shared_since: string
           user_id: string
           username: string
+        }[]
+      }
+      get_list_pending_invitations: {
+        Args: { p_list_id: string }
+        Returns: {
+          created_at: string
+          expires_at: string
+          invitation_id: string
+          invited_avatar_url: string
+          invited_display_name: string
+          invited_user_id: string
+          invited_username: string
+          inviter_display_name: string
+          inviter_user_id: string
+          list_id: string
+          list_name: string
+          status: string
         }[]
       }
       get_my_notifications: {
@@ -1122,6 +1143,10 @@ export type Database = {
         Args: { p_notification_id: string }
         Returns: undefined
       }
+      remove_list_member: {
+        Args: { p_list_id: string; p_target_user_id: string }
+        Returns: undefined
+      }
       save_widget_layouts: { Args: { p_layouts: Json }; Returns: undefined }
       search_users_input: {
         Args: { p_exclude_user?: string; p_search_term: string }
@@ -1138,6 +1163,14 @@ export type Database = {
       }
       uninstall_widget: {
         Args: { p_predefined_id?: string; p_user_widget_id?: string }
+        Returns: undefined
+      }
+      update_list_member_role: {
+        Args: {
+          p_list_id: string
+          p_new_role: string
+          p_target_user_id: string
+        }
         Returns: undefined
       }
       upsert_widget_instances: {
@@ -1321,6 +1354,7 @@ export const Constants = {
     },
   },
 } as const
+
 
 export type MembershipRow =
   Database["public"]["Tables"]["list_memberships"]["Row"];
