@@ -5,7 +5,8 @@
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 12px;
+  font-weight: 500;
   transition: background-color 0.3s ease-in-out;
   display: flex;
   justify-content: center;
@@ -20,6 +21,16 @@
     --custom-hover,
     var(--background-over-container-hover)
   ) !important;
+}
+
+.chevronIcon {
+  color: var(--text-not-available);
+  transition: transform 0.2s ease-in-out;
+  flex-shrink: 0;
+}
+
+.chevronIcon[data-open="true"] {
+  transform: rotate(180deg);
 }
 
 .dropdownMenu {

@@ -965,6 +965,7 @@ export type Database = {
         Args: { p_invited_username: string; p_list_id: string }
         Returns: Json
       }
+      delete_folder_with_lists: { Args: { p_folder_id: string }; Returns: Json }
       delete_notification: {
         Args: { p_notification_id: string }
         Returns: undefined
@@ -1115,6 +1116,7 @@ export type Database = {
         }
         Returns: Json
       }
+      lexorank_gen_next: { Args: { p_rank: string }; Returns: string }
       load_dashboard_full: { Args: never; Returns: Json }
       mark_notification_read: {
         Args: { p_notification_id: string }
@@ -1319,7 +1321,6 @@ export const Constants = {
     },
   },
 } as const
-
 
 export type MembershipRow =
   Database["public"]["Tables"]["list_memberships"]["Row"];

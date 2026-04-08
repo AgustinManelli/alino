@@ -6,7 +6,6 @@
 .inputContainer {
   display: flex;
   width: 100%;
-  /* overflow: hidden; */
   gap: 10px;
   position: relative;
 }
@@ -48,7 +47,6 @@
 
 .button {
   border: none;
-  /* background-color: var(--background-over-container); */
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
   border-radius: 10px;
@@ -59,17 +57,13 @@
   padding-right: 5px;
 }
 
-/* .button:hover {
-  background-color: var(--background-over-container-hover);
-} */
-
 .button:disabled {
   opacity: 0.7;
 }
 
 .resultsList {
   position: absolute;
-  top: 50px; /* Se posiciona justo debajo del input */
+  top: 50px;
   left: 0;
   right: 0;
   background-color: var(--background-container);
@@ -79,7 +73,7 @@
   padding: 10px;
   max-height: 250px;
   overflow-y: auto;
-  z-index: 5; /* Por debajo del input */
+  z-index: 5;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -132,6 +126,7 @@
     padding: 12px 10px;
     font-size: 12px;
   }
+
   .deco {
     font-size: 12px;
   }

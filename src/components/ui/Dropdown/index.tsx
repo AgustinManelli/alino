@@ -11,6 +11,7 @@ import React, {
 import { motion, AnimatePresence } from "motion/react";
 import { useModalUbication } from "@/hooks/useModalUbication";
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
+import { ChevronDown } from "@/components/ui/icons/icons";
 import styles from "./Dropdown.module.css";
 
 interface DropdownContextType {
@@ -79,6 +80,8 @@ interface DropdownTriggerProps {
   className?: string;
   bgColor?: string;
   hoverColor?: string;
+  disabled?: boolean;
+  chevron?: boolean;
 }
 
 export const DropdownTrigger = ({
@@ -87,6 +90,8 @@ export const DropdownTrigger = ({
   className,
   bgColor,
   hoverColor,
+  disabled,
+  chevron = false,
   ...props
 }: DropdownTriggerProps): JSX.Element => {
   const { isOpen, triggerRef, toggleDropdown } = useDropdownContext();
@@ -103,10 +108,18 @@ export const DropdownTrigger = ({
       className={`${styles.triggerButton} ${className || ""}`}
       style={dynamicStyles}
       onClick={toggleDropdown}
+      disabled={disabled}
       data-state={isOpen ? "open" : "closed"}
       {...props}
     >
       {children}
+      {chevron && (
+        <ChevronDown
+          className={styles.chevronIcon}
+          data-open={isOpen}
+          style={{ width: "16px", height: "16px", marginLeft: "5px" }}
+        />
+      )}
     </button>
   );
 };

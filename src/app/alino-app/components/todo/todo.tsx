@@ -7,7 +7,6 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
 import { Manager } from "./manager";
 
-import { ListsType } from "@/lib/schemas/database.types";
 import styles from "./todo.module.css";
 
 export const Todo = ({ list }: { list: string }) => {
@@ -23,11 +22,12 @@ export const Todo = ({ list }: { list: string }) => {
     () => pendingListId !== list,
   );
 
+  const verifyAndFetchList = useTodoDataStore(
+    (state) => state.verifyAndFetchList,
+  );
+
   const setList = useMemo(
-    () =>
-      lists.find((elemento) => elemento.list_id === list) as
-        | ListsType
-        | undefined,
+    () => lists.find((elemento) => elemento.list_id === list),
     [lists, list],
   );
 
@@ -35,24 +35,26 @@ export const Todo = ({ list }: { list: string }) => {
     if (pendingListId === list) {
       setPendingListId(null);
     }
-  }, []);
+  }, [pendingListId, list, setPendingListId]);
 
   useEffect(() => {
-    if (!isValidating) return;
-    if (!initialFetch) return;
-    if (!setList) {
-      router.replace("/alino-app");
-      return;
-    }
-    setIsValidating(false);
-  }, [initialFetch, lists]);
+    const validate = async () => {
+      if (!initialFetch) return;
 
-  useEffect(() => {
-    if (!initialFetch || isValidating) return;
-    if (!setList) {
-      router.replace("/alino-app");
-    }
-  }, [lists]);
+      if (!setList) {
+        const found = await verifyAndFetchList(list);
+        if (!found) {
+          router.replace("/alino-app");
+          return;
+        }
+        return;
+      }
+
+      setIsValidating(false);
+    };
+
+    validate();
+  }, [initialFetch, list, setList, verifyAndFetchList, router]);
 
   if (isValidating) {
     return null;

@@ -59,15 +59,6 @@
   gap: 10px;
 }
 
-.configSection button {
-  border: none;
-  background: none;
-  cursor: pointer;
-  width: fit-content;
-  height: fit-content;
-  display: flex;
-}
-
 .header {
   position: relative;
   width: 100%;

@@ -42,6 +42,8 @@
   -ms-user-select: none;
   user-select: none;
   height: 33px;
+  min-height: 33px;
+  transform: none !important;
   z-index: 2;
 }
 

@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useDndMonitor, useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -292,7 +292,7 @@ export const SortableFolder = ({
         {...attributes}
         ref={divRef}
         onClick={toggleOpen}
-        layout="position"
+        // layout
       >
         <div className={styles.button}>
           <ArrowThin
@@ -346,8 +346,10 @@ export const SortableFolder = ({
       </motion.div>
       {open && (
         <motion.div
+          key={`folder-lists-${folder.folder_id}`}
           ref={scrollContainerRef}
-          layout
+          layout="size"
+          layoutDependency={open}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={`${styles.listWrapper} ${isDragging ? styles.draggingActive : ""}`}
           style={{ maxHeight: "250px" }}
@@ -356,44 +358,57 @@ export const SortableFolder = ({
             items={hasFetched ? listIds || [] : []}
             strategy={verticalListSortingStrategy}
           >
-            {!hasFetched ? (
-              <div className={styles.loadingContainer}>
-                <LoadingIcon className={styles.loadingIcon} />
-              </div>
-            ) : (
-              <>
-                {lists && lists.length > 0 ? (
-                  lists.map((list, index) => (
-                    <motion.div
-                      key={list.list_id}
-                      custom={index}
-                      variants={animations ? variants : undefined}
-                      initial="initial"
-                      animate="visible"
-                      exit="exit"
-                      layout={!isDragging}
-                      className={styles.motionListWrapper}
-                    >
-                      <ListCard list={list} inFolder />
-                    </motion.div>
-                  ))
-                ) : !isFetchingFolderLists ? (
-                  <p className={styles.emptyIndicator}>
-                    Arrastra una lista aquí
-                  </p>
-                ) : null}
+            <AnimatePresence mode="wait">
+              {!hasFetched ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className={styles.loadingContainer}
+                >
+                  <LoadingIcon className={styles.loadingIcon} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="content"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className={styles.motionListWrapper}
+                >
+                  {lists && lists.length > 0 ? (
+                    lists.map((list, index) => (
+                      <motion.div
+                        key={list.list_id}
+                        custom={index}
+                        variants={animations ? variants : undefined}
+                        initial="initial"
+                        animate="visible"
+                        exit="exit"
+                        layout={!isDragging}
+                        className={styles.motionListWrapper}
+                      >
+                        <ListCard list={list} inFolder />
+                      </motion.div>
+                    ))
+                  ) : !isFetchingFolderLists ? (
+                    <p className={styles.emptyIndicator}>
+                      Arrastra una lista aquí
+                    </p>
+                  ) : null}
 
-                {isFetchingFolderLists && (
-                  <div className={styles.loadingContainer}>
-                    <LoadingIcon className={styles.loadingIcon} />
-                  </div>
-                )}
+                  {isFetchingFolderLists && (
+                    <div className={styles.loadingContainer}>
+                      <LoadingIcon className={styles.loadingIcon} />
+                    </div>
+                  )}
 
-                {folderPagination?.hasMore && (
-                  <div ref={sentinelRef} className={styles.sentinel} />
-                )}
-              </>
-            )}
+                  {folderPagination?.hasMore && (
+                    <div ref={sentinelRef} className={styles.sentinel} />
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </SortableContext>
         </motion.div>
       )}

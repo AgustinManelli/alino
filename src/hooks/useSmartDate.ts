@@ -17,7 +17,7 @@ export const useSmartDate = (text: string) => {
       return;
     }
 
-    const results = chrono.es.parse(text)
+    const results = chrono.es.parse(text, new Date(), { forwardDate: true });
 
     if (results.length > 0) {
       const match = results[0];

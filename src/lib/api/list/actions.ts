@@ -78,6 +78,31 @@ interface SidebarRpcRow {
   payload: SidebarListPayload | SidebarFolderPayload;
 }
 
+export async function getSingleListsAsMembership(list_id: string) {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data: membershipData, error: membershipError } = await supabase
+      .from("list_memberships")
+      .select(`*, list: lists (*, tasks(count))`)
+      .eq("user_id", user.id)
+      .eq("list_id", list_id)
+      .single();
+
+    if (membershipError) {
+      throw new Error("No se pudo obtener la lista.");
+    }
+
+    return { data: membershipData as ListsType };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+}
+
 export async function getSingleLists(list_id: string) {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
@@ -707,5 +732,127 @@ export const createListInvitation = async (
     return {
       error: "Ocurrió un error inesperado. Por favor, intenta de nuevo.",
     };
+  }
+};
+
+export type PendingInvitation = {
+  invitation_id: string;
+  invited_user_id: string;
+  inviter_user_id: string;
+  inviter_display_name: string;
+  list_id: string;
+  list_name: string;
+  status: string;
+  created_at: string;
+  expires_at: string | null;
+  invited_username: string;
+  invited_display_name: string;
+  invited_avatar_url: string | null;
+};
+
+export const getListPendingInvitations = async (
+  list_id: string
+): Promise<{ data?: PendingInvitation[]; error?: string }> => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { data, error } = await supabase.rpc(
+      "get_list_pending_invitations",
+      { p_list_id: list_id }
+    );
+    if (error) {
+      const msg = error.message || "";
+      if (msg.includes("FRBDN") || error.code === "FRBDN") {
+        return { error: "No tienes permisos para ver las invitaciones pendientes." };
+      }
+      throw new Error("No se pudieron obtener las invitaciones pendientes.");
+    }
+    return { data: (data ?? []) as PendingInvitation[] };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const cancelListInvitation = async (
+  invitation_id: string
+): Promise<{ error?: string }> => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { error } = await supabase.rpc("cancel_list_invitation", {
+      p_invitation_id: invitation_id,
+    });
+    if (error) {
+      const msg = error.message || "";
+      if (msg.includes("INVNF") || error.code === "INVNF") {
+        return { error: "La invitación no existe o ya fue procesada." };
+      }
+      if (msg.includes("FRBDN") || error.code === "FRBDN") {
+        return { error: "No tienes permisos para cancelar esta invitación." };
+      }
+      throw new Error("No se pudo cancelar la invitación.");
+    }
+    return {};
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const updateListMemberRole = async (
+  list_id: string,
+  target_user_id: string,
+  new_role: "admin" | "editor" | "reader"
+): Promise<{ error?: string }> => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { error } = await supabase.rpc("update_list_member_role", {
+      p_list_id: list_id,
+      p_target_user_id: target_user_id,
+      p_new_role: new_role,
+    });
+    if (error) {
+      const msg = error.message || "";
+      if (msg.includes("FRBDN") || error.code === "FRBDN") {
+        return { error: "No tienes permisos para cambiar este rol." };
+      }
+      if (msg.includes("INVRL") || error.code === "INVRL") {
+        return { error: "Rol inválido." };
+      }
+      if (msg.includes("USRNF") || error.code === "USRNF") {
+        return { error: "El usuario no es miembro de esta lista." };
+      }
+      throw new Error(msg || "No se pudo actualizar el rol.");
+    }
+    return {};
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const removeListMember = async (
+  list_id: string,
+  target_user_id: string
+): Promise<{ error?: string }> => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { error } = await supabase.rpc("remove_list_member", {
+      p_list_id: list_id,
+      p_target_user_id: target_user_id,
+    });
+    if (error) {
+      const msg = error.message || "";
+      if (msg.includes("FRBDN") || error.code === "FRBDN") {
+        return { error: "No tienes permisos para eliminar a este miembro." };
+      }
+      if (msg.includes("USRNF") || error.code === "USRNF") {
+        return { error: "El usuario no es miembro de esta lista." };
+      }
+      throw new Error(msg || "No se pudo eliminar al miembro.");
+    }
+    return {};
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
   }
 };

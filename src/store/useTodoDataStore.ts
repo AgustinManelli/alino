@@ -22,7 +22,12 @@ import {
   updateIndexFolder,
   updateIndexList,
   updatePinnedList,
+  getListPendingInvitations,
+  cancelListInvitation,
+  updateListMemberRole,
+  removeListMember,
 } from "@/lib/api/list/actions";
+import type { PendingInvitation } from "@/lib/api/list/actions";
 import {
   deleteTask,
   insertTask,
@@ -184,6 +189,15 @@ type TodoStore = {
   subscriptionDeleteTask: (task: { task_id: string }) => void;
   getTaskCountByListId: (listId: string) => number;
   setTaskSort: (sort: TaskSortOption) => Promise<void>;
+  getListPendingInvitations: (listId: string) => Promise<PendingInvitation[]>;
+  cancelListInvitation: (invitationId: string) => Promise<{ error?: string }>;
+  updateMemberRole: (
+    listId: string,
+    targetUserId: string,
+    newRole: "admin" | "editor" | "reader"
+  ) => Promise<{ error?: string }>,
+  removeMember: (listId: string, targetUserId: string) => Promise<{ error?: string }>,
+  verifyAndFetchList: (listId: string) => Promise<boolean>,
 };
 
 type TaggedAsList = ListsType & { _item_type: "list" };
@@ -1297,6 +1311,82 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       toast.success(`${invited_user_username} fue invitado correctamente.`);
     } catch (err) {
       handleError(err);
+    }
+  },
+
+  getListPendingInvitations: async (listId: string) => {
+    try {
+      const res = await getListPendingInvitations(listId);
+      console.log('DATOS QUE DEVUELVE LA BD: ', res.data)
+      if (res.data) return res.data;
+    } catch (err) {
+      handleError(err);
+    }
+    return [];
+  },
+ 
+  cancelListInvitation: async (invitationId: string) => {
+    try {
+      const { error } = await cancelListInvitation(invitationId);
+      if (error) throw new Error(error);
+      toast.success("Invitación cancelada.");
+      return {};
+    } catch (err) {
+      handleError(err);
+      return { error: (err as Error).message };
+    }
+  },
+ 
+  updateMemberRole: async (
+    listId: string,
+    targetUserId: string,
+    newRole: "admin" | "editor" | "reader"
+  ) => {
+    try {
+      const { error } = await updateListMemberRole(listId, targetUserId, newRole);
+      if (error) throw new Error(error);
+      toast.success("Rol actualizado correctamente.");
+      return {};
+    } catch (err) {
+      handleError(err);
+      return { error: (err as Error).message };
+    }
+  },
+ 
+  removeMember: async (listId: string, targetUserId: string) => {
+    try {
+      const { error } = await removeListMember(listId, targetUserId);
+      if (error) throw new Error(error);
+      toast.success("Miembro eliminado de la lista.");
+      return {};
+    } catch (err) {
+      handleError(err);
+      return { error: (err as Error).message };
+    }
+  },
+
+  verifyAndFetchList: async (listId: string) => {
+    const state = get();
+    if (state.lists.some((l) => l.list_id === listId)) {
+      return true;
+    }
+
+    try {
+      const { getSingleListsAsMembership } = await import(
+        "@/lib/api/list/actions"
+      );
+      const result = await getSingleListsAsMembership(listId);
+
+      if (result?.data) {
+        set((s) => ({
+          lists: [...s.lists, result.data as ListsType],
+        }));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error("Error verifying list:", err);
+      return false;
     }
   },
 }));

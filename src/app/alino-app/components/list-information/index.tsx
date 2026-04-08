@@ -1,20 +1,17 @@
 "use client";
-
-import React, { useEffect, useState } from "react";
-
+import React, { useCallback, useEffect, useState } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-
 import { InviteUserInput } from "./invite-user-input";
 import { MemberRow } from "./member-row";
+import { PendingInvitationRow } from "./pending-invitation-row";
 import { WindowComponent } from "@/components/ui/window-component";
-
 import { Database } from "@/lib/schemas/database.types";
+import type { PendingInvitation } from "@/lib/api/list/actions";
 import styles from "./ListInformation.module.css";
 
 type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
 type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
 type ListsType = MembershipRow & { list: ListsRow };
-
 type UserProfile = Pick<
   Database["public"]["Tables"]["users"]["Row"],
   "user_id" | "display_name" | "username" | "avatar_url"
@@ -22,111 +19,210 @@ type UserProfile = Pick<
 type MembershipInfo = Pick<MembershipRow, "role" | "shared_since">;
 export type UserWithMembershipRole = UserProfile & MembershipInfo;
 
-interface props {
+interface Props {
   handleCloseConfig: () => void;
   list: ListsType;
 }
 
-export default function ListInformation({ handleCloseConfig, list }: props) {
-  const getUsersMembersList = useTodoDataStore(
-    (state) => state.getUsersMembersList
+type ActiveTab = "members" | "invitations";
+
+export default function ListInformation({ handleCloseConfig, list }: Props) {
+  const getUsersMembersList = useTodoDataStore((s) => s.getUsersMembersList);
+  const getListPendingInvitations = useTodoDataStore(
+    (s) => s.getListPendingInvitations,
   );
+  const updateMemberRole = useTodoDataStore((s) => s.updateMemberRole);
+  const removeMember = useTodoDataStore((s) => s.removeMember);
+  const cancelListInvitation = useTodoDataStore((s) => s.cancelListInvitation);
 
   const [users, setUsers] = useState<UserWithMembershipRole[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [invitations, setInvitations] = useState<PendingInvitation[]>([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(true);
+  const [isLoadingInvitations, setIsLoadingInvitations] = useState(false);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("members");
+
+  const isAdminOrOwner = ["owner", "admin"].includes(list.role);
+  const currentUserId = list.user_id;
+
+  const fetchMembers = useCallback(async () => {
+    setIsLoadingMembers(true);
+    const data = await getUsersMembersList(list.list_id);
+    if (data) setUsers(data);
+    setIsLoadingMembers(false);
+  }, [list.list_id, getUsersMembersList]);
+
+  const fetchInvitations = useCallback(async () => {
+    if (!isAdminOrOwner) return;
+    setIsLoadingInvitations(true);
+    const data = await getListPendingInvitations(list.list_id);
+    setInvitations(data ?? []);
+    setIsLoadingInvitations(false);
+  }, [list.list_id, getListPendingInvitations, isAdminOrOwner]);
+
+  useEffect(() => {
+    fetchMembers();
+  }, [fetchMembers]);
+
+  useEffect(() => {
+    if (activeTab === "invitations") fetchInvitations();
+  }, [activeTab, fetchInvitations]);
+
+  const handleRoleChange = async (
+    userId: string,
+    newRole: "admin" | "editor" | "reader",
+  ) => {
+    const { error } = await updateMemberRole(list.list_id, userId, newRole);
+    if (!error) {
+      setUsers((prev) =>
+        prev.map((u) => (u.user_id === userId ? { ...u, role: newRole } : u)),
+      );
+    }
+  };
+
+  const handleRemoveMember = async (userId: string) => {
+    const { error } = await removeMember(list.list_id, userId);
+    if (!error) {
+      setUsers((prev) => prev.filter((u) => u.user_id !== userId));
+    }
+  };
+
+  const handleCancelInvitation = async (invitationId: string) => {
+    const { error } = await cancelListInvitation(invitationId);
+    if (!error) {
+      setInvitations((prev) =>
+        prev.filter((i) => i.invitation_id !== invitationId),
+      );
+    }
+  };
+
+  const handleInviteSuccess = () => {
+    if (isAdminOrOwner) fetchInvitations();
+  };
 
   const closeConfigModal = () => {
     const confirmationModal = document.getElementById(
-      "confirmation-modal-config-modal"
+      "confirmation-modal-config-modal",
     );
     if (confirmationModal) return;
     handleCloseConfig();
   };
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      const memberData = await getUsersMembersList(list.list_id);
-      if (memberData) {
-        setUsers(memberData);
-      }
-      setIsLoading(false);
-    };
-
-    fetchUsers();
-  }, [list.list_id, getUsersMembersList]);
+  const skeletonRows = Array.from({ length: 3 });
 
   return (
     <WindowComponent
-      windowTitle={`Información de la lista "${list?.list?.list_name}"`}
+      windowTitle={`"${list?.list?.list_name}"`}
       id={"list-config-section"}
       crossAction={closeConfigModal}
     >
-      <div className={styles.configModalContainer}>
-        {["owner", "admin"].includes(list.role) && (
-          <SectionContainer
-            sectionTitle="Invitar usuario"
-            configElements={[
-              { content: <InviteUserInput list_id={list.list_id} /> },
-            ]}
-          />
+      <div className={styles.container}>
+        {isAdminOrOwner && (
+          <section className={styles.inviteSection}>
+            <p className={styles.sectionLabel}>Invitar usuario</p>
+            <InviteUserInput
+              list_id={list.list_id}
+              onInviteSuccess={handleInviteSuccess}
+            />
+          </section>
         )}
-        <SectionContainer
-          sectionTitle="Miembros"
-          configElements={
-            isLoading
-              ? [
-                  {
-                    content: <MemberRow key={"skeleton"} user={null} />,
-                  },
-                ]
-              : users.map((user) => ({
-                  content: <MemberRow key={user.user_id} user={user} />,
-                }))
-          }
-        />
+
+        <div className={styles.tabBar}>
+          <button
+            className={`${styles.tab} ${activeTab === "members" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("members")}
+          >
+            Miembros
+            <span className={styles.tabBadge}>{users.length || ""}</span>
+          </button>
+          {isAdminOrOwner && (
+            <button
+              className={`${styles.tab} ${activeTab === "invitations" ? styles.tabActive : ""}`}
+              onClick={() => setActiveTab("invitations")}
+            >
+              Invitaciones pendientes
+              {invitations.length > 0 && (
+                <span
+                  className={`${styles.tabBadge} ${styles.tabBadgePending}`}
+                >
+                  {invitations.length}
+                </span>
+              )}
+            </button>
+          )}
+        </div>
+
+        {activeTab === "members" && (
+          <section className={styles.listSection}>
+            {isLoadingMembers
+              ? skeletonRows.map((_, i) => (
+                  <React.Fragment key={i}>
+                    <MemberRow
+                      user={null}
+                      isCurrentUser={false}
+                      callerRole={list.role}
+                      onRoleChange={handleRoleChange}
+                      onRemove={handleRemoveMember}
+                    />
+                    {i < skeletonRows.length - 1 && (
+                      <div className={styles.separator} />
+                    )}
+                  </React.Fragment>
+                ))
+              : users.map((user, i) => (
+                  <React.Fragment key={user.user_id}>
+                    <MemberRow
+                      user={user}
+                      isCurrentUser={user.user_id === currentUserId}
+                      callerRole={list.role}
+                      onRoleChange={handleRoleChange}
+                      onRemove={handleRemoveMember}
+                    />
+                    {i < users.length - 1 && (
+                      <div className={styles.separator} />
+                    )}
+                  </React.Fragment>
+                ))}
+            {!isLoadingMembers && users.length === 0 && (
+              <p className={styles.emptyState}>
+                No hay miembros en esta lista.
+              </p>
+            )}
+          </section>
+        )}
+
+        {activeTab === "invitations" && isAdminOrOwner && (
+          <section className={styles.listSection}>
+            {isLoadingInvitations
+              ? skeletonRows.map((_, i) => (
+                  <React.Fragment key={i}>
+                    <PendingInvitationRow
+                      invitation={null}
+                      onCancel={handleCancelInvitation}
+                    />
+                    {i < skeletonRows.length - 1 && (
+                      <div className={styles.separator} />
+                    )}
+                  </React.Fragment>
+                ))
+              : invitations.map((inv, i) => (
+                  <React.Fragment key={inv.invitation_id}>
+                    <PendingInvitationRow
+                      invitation={inv}
+                      onCancel={handleCancelInvitation}
+                    />
+                    {i < invitations.length - 1 && (
+                      <div className={styles.separator} />
+                    )}
+                  </React.Fragment>
+                ))}
+            {!isLoadingInvitations && invitations.length === 0 && (
+              <p className={styles.emptyState}>
+                No hay invitaciones pendientes.
+              </p>
+            )}
+          </section>
+        )}
       </div>
     </WindowComponent>
-  );
-}
-
-interface ConfigElement {
-  content: JSX.Element;
-  elementAction?: JSX.Element;
-}
-
-interface SectionProps {
-  sectionTitle: string;
-  sectionDescription?: string;
-  configElements: ConfigElement[];
-}
-
-function SectionContainer({
-  sectionTitle,
-  sectionDescription,
-  configElements,
-}: SectionProps) {
-  return (
-    <section className={styles.sectionContainer}>
-      <p className={styles.sectionTitle}>{sectionTitle}</p>
-      <section className={styles.sectionContent}>
-        {configElements.map((element, index) => (
-          <React.Fragment key={index}>
-            <div className={styles.sectionElement}>
-              {element.content}
-              <div className={styles.sectionAction}>
-                {element.elementAction}
-              </div>
-            </div>
-            {configElements.length !== index + 1 && (
-              <div className={styles.configElementSeparator}></div>
-            )}
-          </React.Fragment>
-        ))}
-      </section>
-      {sectionDescription && (
-        <p className={styles.sectionDescription}>{sectionDescription}</p>
-      )}
-    </section>
   );
 }

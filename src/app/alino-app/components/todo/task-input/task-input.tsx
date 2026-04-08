@@ -230,7 +230,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             formContainerRef.current?.getBoundingClientRect();
           if (containerRect) {
             setBubbleCoords({
-              top: rect.top - containerRect.top - 40,
+              top: rect.top - containerRect.top - 45,
               left: rect.left - containerRect.left + rect.width / 2,
             });
           }

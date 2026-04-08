@@ -40,19 +40,22 @@ export function WindowComponent({
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const createdRef = useRef<HTMLElement | null>(null);
 
-  useOnClickOutside(windowRef as any, () => {
-    crossAction();
-  });
+  useOnClickOutside(
+    windowRef as any,
+    () => {
+      crossAction();
+    },
+    [],
+    "ignore-sidebar-close",
+  );
 
   useEffect(() => {
-    // intentamos usar el portal-root existente
     const existing = document.getElementById("portal-root");
     if (existing) {
       setContainer(existing);
       return;
     }
 
-    // si no existe, creamos uno y lo añadimos a body
     const el = document.createElement("div");
     el.setAttribute("id", `portal-root-fallback-${id}`);
     document.body.appendChild(el);
@@ -60,7 +63,6 @@ export function WindowComponent({
     setContainer(el);
 
     return () => {
-      // limpieza al desmontar
       if (createdRef.current && createdRef.current.parentNode) {
         createdRef.current.parentNode.removeChild(createdRef.current);
       }
@@ -68,7 +70,6 @@ export function WindowComponent({
   }, [id]);
 
   if (!container) {
-    // mientras esperamos el container, no renderizamos nada (evita errores SSR)
     return null;
   }
 
@@ -149,6 +150,6 @@ export function WindowComponent({
         <section className={styles.windowContent}>{children}</section>
       </motion.section>
     </motion.div>,
-    container
+    container,
   );
 }

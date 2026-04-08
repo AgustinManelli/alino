@@ -4,8 +4,8 @@
   align-items: center;
   background-color: var(--background-container);
   border: 1px solid var(--border-container-color);
-  border-radius: 20px;
-  padding: 4px;
+  border-radius: 15px;
+  padding: 5px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   gap: 2px;
   max-width: fit-content;
@@ -20,7 +20,7 @@
   border: none;
   cursor: pointer;
   padding: 6px 8px;
-  border-radius: 16px;
+  border-radius: 10px;
   transition: background-color 0.2s;
 }
 
@@ -49,7 +49,7 @@
   color: var(--text-secondary, #8a8a8a);
   font-size: 16px;
   cursor: pointer;
-  border-radius: 50%;
+  border-radius: 10px;
   transition: all 0.2s;
   height: 28px;
   width: 28px;
