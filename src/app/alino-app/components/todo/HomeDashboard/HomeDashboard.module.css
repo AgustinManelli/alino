@@ -121,22 +121,37 @@
   text-align: start;
 }
 
+.buttonConfig {
+  width: 16px;
+  height: auto;
+  stroke: var(--text);
+  stroke-width: 2;
+}
+
+.configOptionButton {
+  width: 14px;
+  height: auto;
+  stroke: var(--text);
+  stroke-width: 2;
+}
+
 .galleryButton {
   border: none;
-  background: none;
+  background-color: var(--background-over-container);
   cursor: pointer;
   width: fit-content;
   height: fit-content;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border-radius: 8px;
+  border-radius: 7px;
   transition: background 0.15s ease;
+  width: 25px;
+  height: 25px;
 }
 
 .galleryButton:hover {
-  background: var(--button-hover, rgba(255, 255, 255, 0.08));
+  background: var(--background-over-container-hover);
 }
 
 .withoutWidgetsSection {

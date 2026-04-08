@@ -1,26 +1,41 @@
+/**
+ * app/api/ai/tasks/route.ts
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai/getProvider";
 import { createClient as createClientServer } from "@/utils/supabase/server";
+import {
+  sanitizeText,
+  containsInjection,
+  clampMaxTasks,
+  sanitizeTaskResponse,
+  LIMITS,
+} from "@/lib/ai/sanitize";
+
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
     const supabase = createClientServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json(
-        { error: "No autorizado. Inicia sesión para continuar." },
+        { error: "No autorizado. Iniciá sesión para continuar." },
         { status: 401 }
       );
     }
 
-    const { data: tier, error: tierError } = await supabase.rpc("get_user_tier", {
-      p_user_id: user.id,
-    });
+    const { data: tier, error: tierError } = await supabase.rpc(
+      "get_user_tier",
+      { p_user_id: user.id }
+    );
 
     if (tierError) {
-      console.error("Error obteniendo el tier:", tierError);
+      console.error("[AI Tasks] Error obteniendo tier:", tierError);
       return NextResponse.json(
         { error: "Error al verificar la suscripción." },
         { status: 500 }
@@ -32,32 +47,61 @@ export async function POST(req: NextRequest) {
 
     if (!hasAccess) {
       return NextResponse.json(
-        { error: "Acceso denegado. Esta funcionalidad requiere un plan Pro o Estudiante." },
+        {
+          error:
+            "Acceso denegado. Esta función requiere un plan Pro o Estudiante.",
+        },
         { status: 403 }
       );
     }
 
-    const { prompt, maxTasks } = (await req.json()) as {
-      prompt: string;
-      maxTasks: number | null;
-    };
-
-    if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== "object") {
       return NextResponse.json(
-        { error: "El prompt no puede estar vacío." },
-        { status: 400 },
+        { error: "Cuerpo de la solicitud inválido." },
+        { status: 400 }
       );
     }
 
-    let tasksLimit: number | null = null;
-    if (maxTasks !== null && typeof maxTasks === 'number') {
-      tasksLimit = Math.min(Math.max(maxTasks, 1), 20);
+    const rawPrompt = body.prompt;
+    if (!rawPrompt || typeof rawPrompt !== "string") {
+      return NextResponse.json(
+        { error: "El prompt no puede estar vacío." },
+        { status: 400 }
+      );
     }
 
-    const provider = getAIProvider();
-    const response = await provider.generateTasks(prompt.trim(), tasksLimit );
+    const prompt = sanitizeText(rawPrompt, LIMITS.PROMPT_MAX);
 
-    return NextResponse.json(response);
+    if (!prompt) {
+      return NextResponse.json(
+        { error: "El prompt no puede estar vacío." },
+        { status: 400 }
+      );
+    }
+
+    if (containsInjection(prompt)) {
+      return NextResponse.json(
+        { error: "El prompt contiene contenido no permitido." },
+        { status: 422 }
+      );
+    }
+
+    const tasksLimit = clampMaxTasks(body.maxTasks);
+
+    const provider = getAIProvider();
+    const rawResponse = await provider.generateTasks(prompt, tasksLimit);
+
+    const sanitized = sanitizeTaskResponse(rawResponse);
+
+    if (sanitized.tasks.length === 0) {
+      return NextResponse.json(
+        { error: "No se pudieron generar tareas válidas. Intentá de nuevo." },
+        { status: 422 }
+      );
+    }
+
+    return NextResponse.json(sanitized);
   } catch (err: unknown) {
     console.error("[AI Tasks] Error:", err);
     const message =
@@ -69,11 +113,14 @@ export async function POST(req: NextRequest) {
       message.includes("401")
     ) {
       return NextResponse.json(
-        { error: "API Key de IA no configurada. Añadila en .env.local." },
-        { status: 401 },
+        { error: "API Key de IA no configurada." },
+        { status: 401 }
       );
     }
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error interno del servidor." },
+      { status: 500 }
+    );
   }
 }

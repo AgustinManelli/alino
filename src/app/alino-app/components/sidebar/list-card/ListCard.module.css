@@ -234,7 +234,7 @@
   color: var(--text-not-available);
   font-size: 12px;
   background-color: var(--background-over-container);
-  border-radius: 5px;
+  border-radius: 7px;
 }
 
 .moreOptions {

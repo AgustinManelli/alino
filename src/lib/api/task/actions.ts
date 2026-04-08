@@ -1,5 +1,6 @@
 "use server";
 
+import { MAX_TASKS_PER_REQUEST, TASK_CHAR_LIMIT } from "@/config/app-config";
 import { createClient as createClientServer } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
 
@@ -74,10 +75,20 @@ export const insertTasks = async (
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const insertData = tasks.map((t) => ({
-      ...t,
-      created_by: user.id,
-    }));
+    if (!tasks || tasks.length === 0) return { data: [] };
+    if (tasks.length > MAX_TASKS_PER_REQUEST) {
+      throw new Error("No puedes insertar tantas tareas a la vez.");
+    }
+
+    const insertData = tasks.map((t) => {
+      if (t.task_content.length > TASK_CHAR_LIMIT) {
+         throw new Error("El contenido de la tarea es demasiado largo.");
+      }
+      return {
+        ...t,
+        created_by: user.id,
+      };
+    });
 
     const { data: insertedData, error } = await supabase
       .from("tasks")

@@ -447,19 +447,32 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
                     <AIEnhanceButton
                       editor={editor}
                       visible
-                      onCreateTasks={(tasks) => {
+                      onCreateTasks={async (tasks) => {
                         const listId = setList
                           ? setList.list_id
                           : selectedListHome?.list_id;
-                        if (!listId) return;
-                        addTasks(
-                          tasks.map((t) => ({
-                            list_id: listId,
-                            task_content: `<p>${t.text}</p>`,
-                            target_date: t.target_date,
-                            note: t.type === "note",
-                          })),
-                        );
+
+                        if (!listId)
+                          return { error: "No se seleccionó ninguna lista." };
+
+                        try {
+                          await addTasks(
+                            tasks.map((t) => ({
+                              list_id: listId,
+                              task_content: `<p>${t.text}</p>`,
+                              target_date: t.target_date,
+                              note: t.type === "note",
+                            })),
+                          );
+
+                          return { error: null };
+                        } catch (err: any) {
+                          return {
+                            error:
+                              err.message ||
+                              "Ocurrió un error al crear las tareas.",
+                          };
+                        }
                       }}
                     />
                   </motion.div>

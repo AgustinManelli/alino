@@ -22,19 +22,6 @@ import {
 import styles from "./HomeDashboard.module.css";
 
 const BLUR_COLOR = "rgb(106, 195, 255)";
-const ICON_CONFIG = {
-  width: "14px",
-  height: "auto" as const,
-  stroke: "var(--text)",
-  strokeWidth: 2,
-} as const;
-
-const EDIT_BUTTON_ICON_CONFIG = {
-  width: "20px",
-  height: "auto" as const,
-  stroke: "var(--icon-color)",
-  strokeWidth: 2,
-} as const;
 
 const Summary = dynamic(
   () => import("./parts/Summary").then((mod) => mod.Summary),
@@ -271,13 +258,13 @@ export const HomeDashboard = () => {
     () => [
       {
         name: "Editar dashboard",
-        icon: <EditGrid style={ICON_CONFIG} />,
+        icon: <EditGrid className={styles.configOptionButton} />,
         action: handleEditDashboard,
         enabled: true,
       },
       {
         name: "Auto-ordenar layout",
-        icon: <ReloadIcon style={ICON_CONFIG} />,
+        icon: <ReloadIcon className={styles.configOptionButton} />,
         action: handleAutoSortDashboard,
         enabled: true,
       },
@@ -310,7 +297,7 @@ export const HomeDashboard = () => {
                   className={styles.saveButton}
                   aria-label="Guardar cambios"
                 >
-                  <Check style={EDIT_BUTTON_ICON_CONFIG} />
+                  <Check className={styles.buttonConfig} />
                 </button>
               )}
               <button
@@ -318,7 +305,7 @@ export const HomeDashboard = () => {
                 title="Galería de widgets"
                 className={styles.galleryButton}
               >
-                <GridPlusIcon style={EDIT_BUTTON_ICON_CONFIG} />
+                <GridPlusIcon className={styles.buttonConfig} />
               </button>
               <ConfigMenu iconWidth="25px" configOptions={configOptions} />
             </div>

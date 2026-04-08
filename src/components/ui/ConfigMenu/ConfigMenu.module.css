@@ -9,7 +9,7 @@
   width: var(--icon-width);
   height: var(--icon-width);
   border: none;
-  border-radius: 5px;
+  border-radius: 7px;
   cursor: pointer;
   background-color: transparent;
   transition: scale 0.2s ease-in-out;

@@ -1,6 +1,5 @@
 "use client";
-
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Editor } from "@tiptap/react";
 import { EnhanceAction, AIGeneratedTask } from "@/lib/ai/aiProvider";
@@ -8,24 +7,22 @@ import { useAIEnhance } from "@/hooks/useAIEnhance";
 import { useAITaskGeneration } from "@/hooks/useAITaskGeneration";
 import { useModalUbication } from "@/hooks/useModalUbication";
 import { ClientOnlyPortal } from "@/components/ui/ClientOnlyPortal";
-import { IAStars } from "@/components/ui/icons/icons";
+import {
+  Check,
+  CompressIcon,
+  Cross,
+  ExpandIcon,
+  FixIcon,
+  IAStars,
+  Note,
+  SquircleIcon,
+} from "@/components/ui/icons/icons";
 import { useUserDataStore } from "@/store/useUserDataStore";
-import styles from "./AIEnhanceButton.module.css";
 import { IAStarsLoader } from "../icons/ia-loader";
+import styles from "./AIEnhanceButton.module.css";
 
-const CheckIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2.5}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    style={{ width: "12px", height: "12px", flexShrink: 0 }}
-  >
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
+// ─── Inline icons ─────────────────────────────────────────────────────────────
+
 const CloseIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -39,47 +36,58 @@ const CloseIcon = () => (
     <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
-const CheckTaskIcon = () => (
+
+const SpinnerIcon = () => (
   <svg
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth={1.8}
+    strokeWidth={2}
     strokeLinecap="round"
-    strokeLinejoin="round"
-    style={{ width: "13px", height: "13px", flexShrink: 0, opacity: 0.6 }}
+    style={{
+      width: "12px",
+      height: "12px",
+      flexShrink: 0,
+      animation: "ai-spin 0.7s linear infinite",
+    }}
   >
-    <rect x="3" y="3" width="18" height="18" rx="3" />
-    <polyline points="9 12 11.5 14.5 15 10" />
-  </svg>
-);
-const NoteTaskIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    style={{ width: "13px", height: "13px", flexShrink: 0, opacity: 0.6 }}
-  >
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-    <polyline points="14 2 14 8 20 8" />
-    <line x1="8" y1="13" x2="16" y2="13" />
-    <line x1="8" y1="17" x2="12" y2="17" />
+    <path d="M12 2a10 10 0 0 1 10 10" />
   </svg>
 );
 
-const ENHANCE_ACTIONS: { id: EnhanceAction; label: string; emoji: string }[] = [
-  { id: "improve", label: "Mejorar", emoji: "✨" },
-  { id: "summarize", label: "Resumir", emoji: "📝" },
-  { id: "expand", label: "Expandir", emoji: "💬" },
-  { id: "fix", label: "Corregir", emoji: "🔧" },
+// ─── Config ──────────────────────────────────────────────────────────────────
+const ENHANCE_ACTIONS: {
+  id: EnhanceAction;
+  label: string;
+  Icon?: React.ElementType;
+  emoji?: string;
+}[] = [
+  {
+    id: "improve",
+    label: "Mejorar",
+    Icon: IAStars,
+  },
+  {
+    id: "summarize",
+    label: "Resumir",
+    Icon: CompressIcon,
+  },
+  {
+    id: "expand",
+    label: "Expandir",
+    Icon: ExpandIcon,
+  },
+  {
+    id: "fix",
+    label: "Corregir",
+    Icon: FixIcon,
+  },
 ];
 
-const MAX_TASKS_OPTIONS = [3, 5, 7];
+const MAX_TASKS_OPTIONS = [3, 5, 7] as const;
 const DEFAULT_MAX_TASKS = 5;
 
+// ─── Types ────────────────────────────────────────────────────────────────────
 type Tab = "enhance" | "generate";
 
 type EnhanceFlow =
@@ -92,15 +100,24 @@ type GenerateFlow =
   | { phase: "idle" }
   | { phase: "loading" }
   | { phase: "result"; tasks: AIGeneratedTask[]; listSubject: string }
+  | { phase: "creating" } // batch insert in progress
+  | { phase: "success"; count: number }
   | { phase: "error"; message: string };
 
-interface AIEnhanceButtonProps {
+export interface AIEnhanceButtonProps {
   editor: Editor | null;
   visible: boolean;
-  onCreateTasks?: (tasks: AIGeneratedTask[]) => void;
+  /**
+   * Called when the user confirms task creation.
+   * Must return { error?: string } — use the store's addTasks batch method here.
+   */
+  onCreateTasks?: (
+    tasks: AIGeneratedTask[],
+  ) => Promise<{ error: string | null }>;
   showGenerateTasks?: boolean;
 }
 
+// ─── Component ────────────────────────────────────────────────────────────────
 export function AIEnhanceButton({
   editor,
   visible,
@@ -116,10 +133,9 @@ export function AIEnhanceButton({
     phase: "idle",
   });
   const [taskPrompt, setTaskPrompt] = useState("");
-  const [maxTasks, setMaxTasks] = useState(DEFAULT_MAX_TASKS);
+  const [maxTasks, setMaxTasks] = useState<number>(DEFAULT_MAX_TASKS);
 
-  // Obtener usuario actual y tier
-  const user = useUserDataStore((state) => state.user);
+  const user = useUserDataStore((s) => s.user);
   const userTier = (user as any)?.tier || "free";
   const canGenerateTasks = userTier === "pro" || userTier === "student";
 
@@ -129,29 +145,29 @@ export function AIEnhanceButton({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useModalUbication(
-    triggerRef,
-    containerRef,
-    () => {
-      setIsOpen(false);
-      setEnhanceFlow({ phase: "idle" });
-      setGenerateFlow({ phase: "idle" });
-    },
-    false,
-  );
+  const closePanel = useCallback(() => {
+    setIsOpen(false);
+    setEnhanceFlow({ phase: "idle" });
+    setGenerateFlow({ phase: "idle" });
+  }, []);
 
+  useModalUbication(triggerRef, containerRef, closePanel, false);
+
+  // ── Enhance handlers ────────────────────────────────────────────────────────
   const handleEnhance = async (action: EnhanceAction) => {
     if (!editor) return;
     const plainText = editor.getText().trim();
     if (!plainText) return;
+
     setEnhanceFlow({ phase: "loading", action });
     const result = await enhance(plainText, action);
+
     if (!result) {
       setEnhanceFlow({
         phase: "error",
         message: "No se pudo obtener respuesta.",
       });
-      setTimeout(() => setEnhanceFlow({ phase: "idle" }), 3000);
+      setTimeout(() => setEnhanceFlow({ phase: "idle" }), 3_000);
       return;
     }
     setEnhanceFlow({ phase: "result", result });
@@ -160,23 +176,24 @@ export function AIEnhanceButton({
   const handleAccept = (e: React.MouseEvent) => {
     e.preventDefault();
     if (enhanceFlow.phase !== "result" || !editor) return;
-    const text = enhanceFlow.result;
-    setIsOpen(false);
-    setEnhanceFlow({ phase: "idle" });
-    editor.commands.setContent(`<p>${text}</p>`);
+    editor.commands.setContent(`<p>${enhanceFlow.result}</p>`);
     editor.commands.focus("end");
+    closePanel();
   };
 
+  // ── Generate handlers ───────────────────────────────────────────────────────
   const handleGenerate = async () => {
     if (!taskPrompt.trim() || !canGenerateTasks) return;
     setGenerateFlow({ phase: "loading" });
+
     const data = await generate(taskPrompt.trim(), maxTasks);
+
     if (!data || !data.tasks.length) {
       setGenerateFlow({
         phase: "error",
         message: "No se pudieron generar tareas.",
       });
-      setTimeout(() => setGenerateFlow({ phase: "idle" }), 3000);
+      setTimeout(() => setGenerateFlow({ phase: "idle" }), 3_000);
       return;
     }
     setGenerateFlow({
@@ -186,16 +203,37 @@ export function AIEnhanceButton({
     });
   };
 
-  const handleCreateTasks = () => {
-    if (generateFlow.phase !== "result") return;
-    onCreateTasks?.(generateFlow.tasks);
-    setIsOpen(false);
-    setGenerateFlow({ phase: "idle" });
+  /**
+   * Batch-creates all AI tasks in a single store call.
+   * Shows a "creating…" state while the request is in-flight, then
+   * either a success confirmation or an error message.
+   */
+  const handleCreateTasks = async () => {
+    if (generateFlow.phase !== "result" || !onCreateTasks) return;
+
+    const { tasks } = generateFlow;
+    setGenerateFlow({ phase: "creating" });
+
+    const { error } = await onCreateTasks(tasks);
+
+    if (error) {
+      setGenerateFlow({ phase: "error", message: error });
+      setTimeout(() => setGenerateFlow({ phase: "idle" }), 4_000);
+      return;
+    }
+
+    setGenerateFlow({ phase: "success", count: tasks.length });
     setTaskPrompt("");
+
+    // Auto-close after brief success feedback
+    setTimeout(() => closePanel(), 1_800);
   };
 
+  // ── Derived ─────────────────────────────────────────────────────────────────
   const isEnhanceLoading = enhanceFlow.phase === "loading";
   const isGenerating = generateFlow.phase === "loading" || genLoading;
+  const isCreating = generateFlow.phase === "creating";
+  const isAnyLoading = isEnhanceLoading || isGenerating || isCreating;
 
   const formatDate = (iso: string | null) => {
     if (!iso) return null;
@@ -210,6 +248,7 @@ export function AIEnhanceButton({
     }
   };
 
+  // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <AnimatePresence>
       {visible && (
@@ -220,59 +259,47 @@ export function AIEnhanceButton({
           exit={{ opacity: 0, scale: 0.7 }}
           transition={{ duration: 0.16, ease: "easeOut" }}
         >
+          {/* Trigger button */}
           <div className={styles.btnWrapper}>
             <motion.div
               className={styles.glow}
-              animate={{
-                rotate: 360,
-                scale: isEnhanceLoading || isGenerating ? 1 : 0,
-              }}
+              animate={{ rotate: 360, scale: isAnyLoading ? 1 : 0 }}
               transition={{
-                rotate: {
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "linear",
-                },
-                scale: {
-                  delay: 0.1,
-                  duration: 0.35,
-                  ease: [0.22, 1, 0.36, 1],
-                },
+                rotate: { duration: 5, repeat: Infinity, ease: "linear" },
+                scale: { delay: 0.1, duration: 0.35, ease: [0.22, 1, 0.36, 1] },
               }}
               initial={{ scale: 0, rotate: 0 }}
             />
             <button
               ref={triggerRef}
-              className={`${styles.mainBtn} ${isEnhanceLoading || isGenerating ? styles.loading : ""}`}
+              className={`${styles.mainBtn} ${isAnyLoading ? styles.loading : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setIsOpen((v) => !v);
               }}
               title="Asistente IA"
               aria-label="Abrir asistente IA"
-              disabled={isEnhanceLoading || isGenerating}
+              disabled={isAnyLoading}
               style={{
-                backgroundColor:
-                  isEnhanceLoading || isGenerating
-                    ? "var(--background-container)"
-                    : "var(--background-over-container)",
+                backgroundColor: isAnyLoading
+                  ? "var(--background-container)"
+                  : "var(--background-over-container)",
               }}
             >
               <IAStarsLoader
                 size={20}
                 color={
-                  isEnhanceLoading || isGenerating || isOpen
-                    ? "var(--text)"
-                    : "var(--icon-color)"
+                  isAnyLoading || isOpen ? "var(--text)" : "var(--icon-color)"
                 }
                 duration={2}
-                title="Cargando IA"
-                animated={isEnhanceLoading || isGenerating || isOpen}
+                title="Asistente IA"
+                animated={isAnyLoading || isOpen}
                 strokeWidth={1.2}
               />
             </button>
           </div>
 
+          {/* Floating panel */}
           <ClientOnlyPortal>
             <AnimatePresence mode="wait">
               {isOpen && (
@@ -285,6 +312,7 @@ export function AIEnhanceButton({
                   exit={{ opacity: 0, scale: 0.95, y: -4 }}
                   transition={{ duration: 0.14, ease: "easeOut" }}
                 >
+                  {/* Header */}
                   <div className={styles.panelHeader}>
                     <IAStars
                       style={{
@@ -297,6 +325,7 @@ export function AIEnhanceButton({
                     <span className={styles.panelTitle}>Asistente IA</span>
                   </div>
 
+                  {/* Tabs */}
                   {showGenerateTasks && (
                     <div className={styles.tabs}>
                       <button
@@ -316,9 +345,9 @@ export function AIEnhanceButton({
 
                   <div className={styles.divisor} />
 
+                  {/* ── Enhance tab ─────────────────────────────────────── */}
                   {activeTab === "enhance" && (
                     <div className={styles.tabContent}>
-                      {/* ... Tu código actual de Enhance (idéntico) ... */}
                       {enhanceFlow.phase === "idle" && (
                         <div className={styles.actionList}>
                           {ENHANCE_ACTIONS.map((a) => (
@@ -329,7 +358,11 @@ export function AIEnhanceButton({
                               disabled={!editor?.getText().trim()}
                             >
                               <span className={styles.actionEmoji}>
-                                {a.emoji}
+                                {a.Icon ? (
+                                  <a.Icon className={styles.actionIcon} />
+                                ) : (
+                                  a.emoji
+                                )}
                               </span>
                               <span className={styles.actionLabel}>
                                 {a.label}
@@ -338,17 +371,13 @@ export function AIEnhanceButton({
                           ))}
                         </div>
                       )}
+
                       {enhanceFlow.phase === "loading" && (
                         <div className={styles.loadingState}>
-                          <motion.div
-                            className={styles.loadingDots}
-                            animate={{ opacity: [0.4, 1, 0.4] }}
-                            transition={{ duration: 1.2, repeat: Infinity }}
-                          >
-                            Procesando...
-                          </motion.div>
+                          <IAStarsLoader size={32} />
                         </div>
                       )}
+
                       {enhanceFlow.phase === "result" && (
                         <div className={styles.resultBody}>
                           <p className={styles.resultText}>
@@ -359,7 +388,7 @@ export function AIEnhanceButton({
                               className={styles.acceptBtn}
                               onMouseDown={handleAccept}
                             >
-                              <CheckIcon /> Aceptar
+                              <Check className={styles.checkIcon} /> Aceptar
                             </button>
                             <button
                               className={styles.cancelBtn}
@@ -370,6 +399,7 @@ export function AIEnhanceButton({
                           </div>
                         </div>
                       )}
+
                       {enhanceFlow.phase === "error" && (
                         <p className={styles.errorText}>
                           {enhanceFlow.message}
@@ -378,17 +408,17 @@ export function AIEnhanceButton({
                     </div>
                   )}
 
+                  {/* ── Generate tab ─────────────────────────────────────── */}
                   {activeTab === "generate" && (
                     <div className={styles.tabContent}>
-                      {/* VALIDACIÓN DE TIER AQUÍ */}
                       {!canGenerateTasks ? (
                         <div className={styles.upgradeContainer}>
                           <p className={styles.upgradeTitle}>
                             Función Exclusiva
                           </p>
                           <p className={styles.upgradeDesc}>
-                            Desbloqueá la generación automática de tareas y
-                            mucho más pasando a Pro o Estudiante.
+                            Desbloqueá la generación automática de tareas
+                            pasando a Pro o Estudiante.
                           </p>
                           <button className={styles.upgradeBtn}>
                             Mejorar mi plan
@@ -396,6 +426,7 @@ export function AIEnhanceButton({
                         </div>
                       ) : (
                         <>
+                          {/* ── idle / error ─── */}
                           {(generateFlow.phase === "idle" ||
                             generateFlow.phase === "error") && (
                             <>
@@ -405,6 +436,7 @@ export function AIEnhanceButton({
                                 value={taskPrompt}
                                 onChange={(e) => setTaskPrompt(e.target.value)}
                                 rows={4}
+                                maxLength={1_500}
                               />
                               <div className={styles.generateOptions}>
                                 <span className={styles.maxLabel}>
@@ -443,17 +475,15 @@ export function AIEnhanceButton({
                               </button>
                             </>
                           )}
+
+                          {/* ── generating ─── */}
                           {generateFlow.phase === "loading" && (
                             <div className={styles.loadingState}>
-                              <motion.div
-                                className={styles.loadingDots}
-                                animate={{ opacity: [0.4, 1, 0.4] }}
-                                transition={{ duration: 1.2, repeat: Infinity }}
-                              >
-                                Generando tareas...
-                              </motion.div>
+                              <IAStarsLoader size={32} />
                             </div>
                           )}
+
+                          {/* ── result: preview & confirm ─── */}
                           {generateFlow.phase === "result" && (
                             <div className={styles.tasksResult}>
                               <div className={styles.tasksList}>
@@ -464,9 +494,9 @@ export function AIEnhanceButton({
                                   >
                                     <span className={styles.taskTypeIcon}>
                                       {task.type === "check" ? (
-                                        <CheckTaskIcon />
+                                        <SquircleIcon />
                                       ) : (
-                                        <NoteTaskIcon />
+                                        <Note />
                                       )}
                                     </span>
                                     <div className={styles.taskPreviewContent}>
@@ -488,9 +518,13 @@ export function AIEnhanceButton({
                                 <button
                                   className={styles.acceptBtn}
                                   onClick={handleCreateTasks}
+                                  disabled={!onCreateTasks}
                                 >
-                                  <CheckIcon /> Crear{" "}
-                                  {generateFlow.tasks.length} tareas
+                                  <Check className={styles.checkIcon} />
+                                  Crear{" "}
+                                  {generateFlow.tasks.length > 1
+                                    ? "tareas"
+                                    : "tarea"}
                                 </button>
                                 <button
                                   className={styles.cancelBtn}
@@ -499,9 +533,44 @@ export function AIEnhanceButton({
                                     setTaskPrompt("");
                                   }}
                                 >
-                                  <CloseIcon /> Descartar
+                                  <Cross className={styles.crossIcon} />
+                                  Descartar
                                 </button>
                               </div>
+                            </div>
+                          )}
+
+                          {/* ── creating: batch insert in-flight ─── */}
+                          {generateFlow.phase === "creating" && (
+                            <div className={styles.loadingState}>
+                              <motion.div
+                                className={styles.loadingDots}
+                                animate={{ opacity: [0.4, 1, 0.4] }}
+                                transition={{ duration: 1.2, repeat: Infinity }}
+                              >
+                                <SpinnerIcon /> Creando tareas...
+                              </motion.div>
+                            </div>
+                          )}
+
+                          {/* ── success ─── */}
+                          {generateFlow.phase === "success" && (
+                            <div className={styles.successState}>
+                              <motion.div
+                                initial={{ scale: 0.7, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{
+                                  type: "spring",
+                                  stiffness: 300,
+                                  damping: 20,
+                                }}
+                                className={styles.successIcon}
+                              >
+                                <Check className={styles.successIcon} />
+                              </motion.div>
+                              <p className={styles.successText}>
+                                {generateFlow.count} tareas creadas
+                              </p>
                             </div>
                           )}
                         </>

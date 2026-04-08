@@ -353,7 +353,7 @@ export const Manager = memo(function Manager({
                       style={{
                         width: "25px",
                         height: "25px",
-                        borderRadius: "5px",
+                        borderRadius: "7px",
                         color: "var(--text)",
                         padding: 0,
                       }}
