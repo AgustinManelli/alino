@@ -20,7 +20,9 @@ import { useUserDataStore } from "@/store/useUserDataStore";
 export const ConfigSection = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [configActive, setConfigActive] = useState<boolean>(false);
-  const [configUserActive, setConfigUserActive] = useState<boolean>(false);
+  
+  const configUserActive = useUserDataStore((state) => state.configUserActive);
+  const setConfigUserActive = useUserDataStore((state) => state.setConfigUserActive);
   const { setLoading } = useNavigationLoader();
 
   const user = useUserDataStore((state) => state.user);
@@ -59,19 +61,13 @@ export const ConfigSection = () => {
     setConfigUserActive(true);
   };
 
-  const handleCloseConfigUser = () => {
-    setConfigUserActive(false);
-  };
-
   return (
     <>
       <AnimatePresence>
         {configActive && <ConfigModal handleCloseConfig={handleCloseConfig} />}
       </AnimatePresence>
       <AnimatePresence>
-        {configUserActive && (
-          <ConfigUser handleCloseConfig={handleCloseConfigUser} user={user} />
-        )}
+        {configUserActive && <ConfigUser />}
       </AnimatePresence>
       <div className={styles.configSection}>
         <CloudIndicator />

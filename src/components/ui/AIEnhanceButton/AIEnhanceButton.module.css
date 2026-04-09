@@ -521,18 +521,12 @@
   opacity: 0.9;
 }
 
-/* ============================================================
-   Append these rules to your AIEnhanceButton.module.css
-   ============================================================ */
-
-/* Spinning keyframe used by the inline SpinnerIcon inside loadingDots */
 @keyframes ai-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* ── Creating / Success states ─────────────────────────────── */
 .successState {
   display: flex;
   flex-direction: column;
@@ -560,7 +554,6 @@
   color: var(--text);
 }
 
-/* Make the loading dots flex so the spinner icon aligns */
 .loadingDots {
   display: flex;
   align-items: center;

@@ -2,14 +2,32 @@
 
 import { createStore, StoreApi, useStore } from "zustand";
 import { toast } from "sonner";
-import { setUsernameFirstTime as setUsernameFirstTimeAction } from "@/lib/api/user/actions";
+import { 
+  setUsernameFirstTime as setUsernameFirstTimeAction,
+  updateUserProfile as updateUserProfileAction,
+  getUserProfileStats as getUserProfileStatsAction,
+  uploadAvatarAction,
+  ProfileStats
+} from "@/lib/api/user/actions";
 import { UserType } from "@/lib/schemas/database.types";
 import { createContext, useContext } from "react";
 
 export interface UserState {
   user: UserType | null;
+  configUserActive: boolean;
+  profileStats: ProfileStats | null;
+  
   updateUser: (partial: Partial<UserType>) => void;
+  setConfigUserActive: (active: boolean) => void;
   setUsernameFirstTime: (username: string) => Promise<{ error: string | null }>;
+  fetchProfileStats: () => Promise<void>;
+  updateProfile: (updates: {
+    display_name?: string;
+    username?: string;
+    biography?: string;
+    website_url?: string;
+  }) => Promise<{ error: string | null }>;
+  uploadAvatar: (formData: FormData) => Promise<{ error: string | null }>;
 }
 
 export const UserStoreContext = createContext<StoreApi<UserState> | undefined>(
@@ -19,13 +37,60 @@ export const UserStoreContext = createContext<StoreApi<UserState> | undefined>(
 export let globalUserStore: StoreApi<UserState> | undefined = undefined;
 
 export const createUserDataStore = (initialState: Partial<UserState> = {}) => {
-  const store = createStore<UserState>()((set) => ({
+  const store = createStore<UserState>()((set, get) => ({
     user: initialState.user || null,
+    configUserActive: false,
+    profileStats: null,
 
     updateUser: (partial) =>
       set((state) => ({
         user: state.user ? { ...state.user, ...partial } : null,
       })),
+
+    setConfigUserActive: (active) => set({ configUserActive: active }),
+
+    fetchProfileStats: async () => {
+      const res = await getUserProfileStatsAction();
+      if (res.data) {
+        set({ profileStats: res.data });
+      }
+    },
+
+    updateProfile: async (updates) => {
+      try {
+        const res = await updateUserProfileAction(updates);
+        if (res.error) return { error: res.error };
+        
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null
+        }));
+        
+        if (updates.username) {
+          await get().fetchProfileStats();
+        }
+        
+        return { error: null };
+      } catch (err: any) {
+        return { error: err.message || "Error al actualizar perfil." };
+      }
+    },
+
+    uploadAvatar: async (formData) => {
+      try {
+        const res = await uploadAvatarAction(formData);
+        if (res.error) return { error: res.error };
+        
+        if (res.data) {
+          set((state) => ({
+            user: state.user ? { ...state.user, avatar_url: res.data!.avatar_url } : null
+          }));
+        }
+        
+        return { error: null };
+      } catch (err: any) {
+        return { error: err.message || "Error al subir avatar." };
+      }
+    },
 
     setUsernameFirstTime: async (username) => {
       try {
