@@ -8,6 +8,7 @@ import { Edit, UserIcon } from "@/components/ui/icons/icons";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { usePremiumModalStore } from "@/store/usePremiumModalStore";
 import { toast } from "sonner";
+import { getActiveSubscription, cancelSubscriptionAction } from "@/lib/api/user/actions";
 
 export default function ConfigUser() {
   const [isUploading, setIsUploading] = useState(false);
@@ -24,9 +25,39 @@ export default function ConfigUser() {
   
   const openPremiumModal = usePremiumModalStore((state) => state.openPremiumModal);
 
+  const isFreeTier = !user?.tier || user.tier === "free";
+
+  const [activeSub, setActiveSub] = useState<any>(null);
+  const [loadingSub, setLoadingSub] = useState(false);
+  const [loadingCancel, setLoadingCancel] = useState(false);
+
   useEffect(() => {
     fetchProfileStats();
   }, [fetchProfileStats]);
+
+  useEffect(() => {
+    if (!isFreeTier) {
+      setLoadingSub(true);
+      getActiveSubscription().then((res) => {
+        if (res.data) setActiveSub(res.data);
+        setLoadingSub(false);
+      });
+    }
+  }, [isFreeTier]);
+
+  const handleCancelSub = async () => {
+    if (!confirm("¿Estás seguro que deseas cancelar tu suscripción? Podrás disfrutar los beneficios hasta el final del período actual.")) return;
+    setLoadingCancel(true);
+    const { data, error } = await cancelSubscriptionAction();
+    if (error) {
+      toast.error(error);
+    } else {
+      toast.success(data);
+      // Actualizamos UI local
+      setActiveSub((prev: any) => prev ? { ...prev, cancel_at_period_end: true, status: 'canceled' } : null);
+    }
+    setLoadingCancel(false);
+  };
 
   const closeConfigModal = () => {
     const confirmationModal = document.getElementById(
@@ -80,7 +111,6 @@ export default function ConfigUser() {
     }
   };
 
-  const isFreeTier = !user?.tier || user.tier === "free";
 
   return (
     <WindowComponent
@@ -165,9 +195,10 @@ export default function ConfigUser() {
           </div>
         </section>
 
-        <AnimatePresence>
-          {isFreeTier && (
+        <AnimatePresence mode="wait">
+          {isFreeTier ? (
             <motion.div
+              key="freebanner"
               className={styles.upgradeBanner}
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
@@ -188,6 +219,44 @@ export default function ConfigUser() {
               <button onClick={openPremiumModal} className={styles.upgradeBannerBtn}>
                 Ver planes
               </button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="probanner"
+              className={styles.upgradeBanner}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ delay: 0.3 }}
+              style={{ background: 'var(--background-over-container)' }}
+            >
+              <div className={styles.upgradeBannerContent}>
+                <span className={styles.upgradeEmoji}>✦</span>
+                <div>
+                  <p className={styles.upgradeBannerTitle}>
+                    Suscripción {user?.tier?.toUpperCase()}
+                  </p>
+                  <p className={styles.upgradeBannerDesc} style={{ color: 'var(--text-not-available)', fontSize: '13px', marginTop: '2px' }}>
+                    {loadingSub ? "Cargando info..." : (
+                      activeSub?.cancel_at_period_end || activeSub?.status === 'canceled' || activeSub?.status === 'free'
+                      ? `Se cancelará el ${activeSub?.current_period_end ? new Date(activeSub.current_period_end).toLocaleDateString("es-AR") : ''}`
+                      : activeSub?.current_period_end 
+                        ? `Renueva el ${new Date(activeSub.current_period_end).toLocaleDateString("es-AR")}`
+                        : "Suscripción activa"
+                    )}
+                  </p>
+                </div>
+              </div>
+              {activeSub && !activeSub.cancel_at_period_end && activeSub.status !== 'canceled' && activeSub.status !== 'free' && (
+                <button 
+                  onClick={handleCancelSub} 
+                  className={styles.upgradeBannerBtn}
+                  style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}
+                  disabled={loadingCancel}
+                >
+                  {loadingCancel ? '...' : 'Cancelar'}
+                </button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

@@ -115,3 +115,9 @@ export async function createMPSubscription(
     subscriptionId: String(response.id),
   };
 }
+
+export async function cancelMPSubscription(subscriptionId: string) {
+  const preapprovalClient = new PreApproval(mpClient);
+  await preapprovalClient.update({ id: subscriptionId, body: { status: "cancelled" } });
+  console.log(`[MP] Suscripción cancelada manualmente: ${subscriptionId}`);
+}

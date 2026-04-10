@@ -214,8 +214,6 @@ export const uploadAvatarAction = async (
   }
 };
 
-// ─── SUSCRIPCIONES & PAGOS ─────────────────────────────────
-
 export type SubscriptionTier = "free" | "student" | "pro";
 
 export interface ActiveSubscription {
@@ -233,7 +231,6 @@ export interface ActiveSubscription {
   cancel_at_period_end?: boolean;
 }
 
-/** Obtiene la suscripción activa del usuario (para el modal / UI) */
 export const getActiveSubscription = async (): Promise<{
   data?: ActiveSubscription;
   error?: string;
@@ -246,6 +243,42 @@ export const getActiveSubscription = async (): Promise<{
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
     return { error: "Error desconocido." };
+  }
+};
+
+export const cancelSubscriptionAction = async (): Promise<{
+  data?: string;
+  error?: string;
+}> => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    
+    const { data: sub, error } = await supabase
+      .from('subscriptions')
+      .select('subscription_id, gateway, status')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'trialing'])
+      .order('current_period_end', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !sub) return { error: "No tienes una suscripción activa para cancelar." };
+
+    if (sub.gateway === "mercadopago" && sub.subscription_id) {
+      const { cancelMPSubscription } = await import("./payments");
+      await cancelMPSubscription(sub.subscription_id);
+      
+      await supabase
+        .from('subscriptions')
+        .update({ cancel_at_period_end: true, status: 'canceled' })
+        .eq('subscription_id', sub.subscription_id);
+        
+      return { data: "Suscripción cancelada con éxito." };
+    }
+    
+    return { error: "No se puede cancelar esta suscripción." };
+  } catch (error: any) {
+    return { error: error.message || "Error al cancelar la suscripción." };
   }
 };
 
