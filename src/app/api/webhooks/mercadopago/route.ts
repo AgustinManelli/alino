@@ -142,8 +142,6 @@ export async function POST(req: Request) {
 
       const eventId = `${type}:${id}:${sub.status}`;
 
-      // Si recién generamos el link, MP dispara "pending". 
-      // Lo ignoramos para no ensuciar la base de datos con subscripciones vacías.
       if (sub.status === "pending") {
         console.log(`[MP] Ignorando checkout iniciado (pending) para sub: ${sub.id}`);
         return new NextResponse("OK", { status: 200 });
@@ -171,12 +169,29 @@ export async function POST(req: Request) {
       const status = mapMPStatus(sub.status, hasActiveTrial);
 
       const now = new Date();
-      const periodEnd =
-        hasActiveTrial && startDate
-          ? startDate
-          : sub.next_payment_date
-            ? new Date(sub.next_payment_date)
-            : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+      const { data: existingSub } = await supabaseAdmin
+        .from("subscriptions")
+        .select("current_period_end")
+        .eq("subscription_id", String(sub.id))
+        .single();
+
+      let periodEnd = now;
+      if (existingSub) {
+        periodEnd = new Date(existingSub.current_period_end);
+      } else {
+        if (status === "canceled") {
+          console.log(`[MP] Ignorando checkout iniciado (cancelled/rejected) para sub: ${sub.id}`);
+          return new NextResponse("Ignored", { status: 200 });
+        } else {
+          periodEnd =
+            hasActiveTrial && startDate
+              ? startDate
+              : sub.next_payment_date
+                ? new Date(sub.next_payment_date)
+                : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        }
+      }
 
       const { error } = await supabaseAdmin.rpc(
         "process_gateway_subscription",
