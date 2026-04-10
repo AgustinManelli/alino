@@ -9,6 +9,7 @@ import { useUserDataStore } from "@/store/useUserDataStore";
 import { usePremiumModalStore } from "@/store/usePremiumModalStore";
 import { toast } from "sonner";
 import { getActiveSubscription, cancelSubscriptionAction } from "@/lib/api/user/actions";
+import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 
 export default function ConfigUser() {
   const [isUploading, setIsUploading] = useState(false);
@@ -24,6 +25,7 @@ export default function ConfigUser() {
   const uploadAvatar = useUserDataStore((state) => state.uploadAvatar);
   
   const openPremiumModal = usePremiumModalStore((state) => state.openPremiumModal);
+  const openConfirmationModal = useConfirmationModalStore((state) => state.openModal);
 
   const isFreeTier = !user?.tier || user.tier === "free";
 
@@ -46,20 +48,27 @@ export default function ConfigUser() {
   }, [isFreeTier]);
 
   const handleCancelSub = async () => {
-    if (!confirm("¿Estás seguro que deseas cancelar tu suscripción? Podrás disfrutar los beneficios hasta el final del período actual.")) return;
-    setLoadingCancel(true);
-    const { data, error } = await cancelSubscriptionAction();
-    if (error) {
-      toast.error(error);
-    } else {
-      toast.success(data);
-      // Actualizamos UI local
-      setActiveSub((prev: any) => prev ? { ...prev, cancel_at_period_end: true, status: 'canceled' } : null);
-    }
-    setLoadingCancel(false);
+    openConfirmationModal({
+      text: "¿Estás seguro de que deseas cancelar tu suscripción?",
+      additionalText: "Podrás disfrutar los beneficios hasta el final de tu período actual de facturación.",
+      actionButton: "Cancelar suscripción",
+      onConfirm: async () => {
+        setLoadingCancel(true);
+        const { data, error } = await cancelSubscriptionAction();
+        if (error) {
+          toast.error(error);
+        } else {
+          toast.success(data);
+          setActiveSub((prev: any) => prev ? { ...prev, cancel_at_period_end: true, status: 'canceled' } : null);
+        }
+        setLoadingCancel(false);
+      }
+    });
   };
 
   const closeConfigModal = () => {
+    if (useConfirmationModalStore.getState().isOpen) return;
+    
     const confirmationModal = document.getElementById(
       "confirmation-modal-my-account-config-modal",
     );
