@@ -1,26 +1,30 @@
 "use client";
-
 import { createStore, StoreApi, useStore } from "zustand";
 import { toast } from "sonner";
-import { 
+import {
   setUsernameFirstTime as setUsernameFirstTimeAction,
   updateUserProfile as updateUserProfileAction,
   getUserProfileStats as getUserProfileStatsAction,
   uploadAvatarAction,
-  ProfileStats
+  getFeatureUsageAction,
+  ProfileStats,
+  FeatureUsage,
 } from "@/lib/api/user/actions";
 import { UserType } from "@/lib/schemas/database.types";
+import { AI_FEATURE_KEY } from "@/lib/ai/creditCosts";
 import { createContext, useContext } from "react";
 
 export interface UserState {
   user: UserType | null;
   configUserActive: boolean;
   profileStats: ProfileStats | null;
-  
+  aiUsage: FeatureUsage | null;
+
   updateUser: (partial: Partial<UserType>) => void;
   setConfigUserActive: (active: boolean) => void;
   setUsernameFirstTime: (username: string) => Promise<{ error: string | null }>;
   fetchProfileStats: () => Promise<void>;
+  fetchAIUsage: () => Promise<void>;
   updateProfile: (updates: {
     display_name?: string;
     username?: string;
@@ -41,6 +45,7 @@ export const createUserDataStore = (initialState: Partial<UserState> = {}) => {
     user: initialState.user || null,
     configUserActive: false,
     profileStats: null,
+    aiUsage: null,
 
     updateUser: (partial) =>
       set((state) => ({
@@ -56,19 +61,26 @@ export const createUserDataStore = (initialState: Partial<UserState> = {}) => {
       }
     },
 
+    fetchAIUsage: async () => {
+      const res = await getFeatureUsageAction(AI_FEATURE_KEY);
+      if (res.data) {
+        set({ aiUsage: res.data });
+      }
+    },
+
     updateProfile: async (updates) => {
       try {
         const res = await updateUserProfileAction(updates);
         if (res.error) return { error: res.error };
-        
+
         set((state) => ({
-          user: state.user ? { ...state.user, ...updates } : null
+          user: state.user ? { ...state.user, ...updates } : null,
         }));
-        
+
         if (updates.username) {
           await get().fetchProfileStats();
         }
-        
+
         return { error: null };
       } catch (err: any) {
         return { error: err.message || "Error al actualizar perfil." };
@@ -79,13 +91,15 @@ export const createUserDataStore = (initialState: Partial<UserState> = {}) => {
       try {
         const res = await uploadAvatarAction(formData);
         if (res.error) return { error: res.error };
-        
+
         if (res.data) {
           set((state) => ({
-            user: state.user ? { ...state.user, avatar_url: res.data!.avatar_url } : null
+            user: state.user
+              ? { ...state.user, avatar_url: res.data!.avatar_url }
+              : null,
           }));
         }
-        
+
         return { error: null };
       } catch (err: any) {
         return { error: err.message || "Error al subir avatar." };

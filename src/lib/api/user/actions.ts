@@ -401,3 +401,27 @@ export const createCheckoutSessionAction = async (
     return { error: "Error desconocido al procesar el pago." };
   }
 };
+
+export interface FeatureUsage {
+  used: number;
+  limit: number;
+  remaining: number;
+  period_end: string;
+  tier: string;
+}
+
+export const getFeatureUsageAction = async (
+  featureKey: string,
+): Promise<{ data?: FeatureUsage; error?: string }> => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { data, error } = await supabase.rpc("get_feature_usage", {
+      p_feature_key: featureKey,
+    });
+    if (error) return { error: error.message };
+    return { data: data as FeatureUsage };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: "Error desconocido." };
+  }
+};

@@ -1,10 +1,10 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { WindowComponent } from "@/components/ui/window-component";
 import styles from "./ConfigUser.module.css";
 import { Edit, UserIcon } from "@/components/ui/icons/icons";
+import { IAStars } from "@/components/ui/icons/icons";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { usePremiumModalStore } from "@/store/usePremiumModalStore";
 import { toast } from "sonner";
@@ -13,20 +13,21 @@ import {
   cancelSubscriptionAction,
 } from "@/lib/api/user/actions";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
+// import { AI_CREDIT_COSTS } from "@/lib/ai/creditCosts";
 
 export default function ConfigUser() {
   const [isUploading, setIsUploading] = useState(false);
-
   const user = useUserDataStore((state) => state.user);
   const profileStats = useUserDataStore((state) => state.profileStats);
+  const aiUsage = useUserDataStore((state) => state.aiUsage);
   const setConfigUserActive = useUserDataStore(
     (state) => state.setConfigUserActive,
   );
   const fetchProfileStats = useUserDataStore(
     (state) => state.fetchProfileStats,
   );
+  const fetchAIUsage = useUserDataStore((state) => state.fetchAIUsage);
   const uploadAvatar = useUserDataStore((state) => state.uploadAvatar);
-
   const openPremiumModal = usePremiumModalStore(
     (state) => state.openPremiumModal,
   );
@@ -35,14 +36,14 @@ export default function ConfigUser() {
   );
 
   const isFreeTier = !user?.tier || user.tier === "free";
-
   const [activeSub, setActiveSub] = useState<any>(null);
   const [loadingSub, setLoadingSub] = useState(false);
   const [loadingCancel, setLoadingCancel] = useState(false);
 
   useEffect(() => {
     fetchProfileStats();
-  }, [fetchProfileStats]);
+    fetchAIUsage();
+  }, [fetchProfileStats, fetchAIUsage]);
 
   useEffect(() => {
     if (!isFreeTier) {
@@ -80,7 +81,6 @@ export default function ConfigUser() {
 
   const closeConfigModal = () => {
     if (useConfirmationModalStore.getState().isOpen) return;
-
     const confirmationModal = document.getElementById(
       "confirmation-modal-my-account-config-modal",
     );
@@ -93,10 +93,8 @@ export default function ConfigUser() {
   ) => {
     if (!event.target.files || event.target.files.length === 0) return;
     const file = event.target.files[0];
-
     const formData = new FormData();
     formData.append("file", file);
-
     setIsUploading(true);
     try {
       const res = await uploadAvatar(formData);
@@ -121,17 +119,6 @@ export default function ConfigUser() {
     }
   };
 
-  // const determineRingClass = (tier?: string) => {
-  //   switch (tier) {
-  //     case "pro":
-  //       return styles.ringPro;
-  //     case "student":
-  //       return styles.ringStudent;
-  //     default:
-  //       return styles.ringFree;
-  //   }
-  // };
-
   return (
     <WindowComponent
       windowTitle={"Mi cuenta"}
@@ -146,7 +133,6 @@ export default function ConfigUser() {
       >
         <section className={styles.userHeaderSection}>
           <div
-            // className={`${styles.configUserIcon} ${determineRingClass(user?.tier)}`}
             className={styles.configUserIcon}
             style={{
               backgroundImage: user?.avatar_url
@@ -199,7 +185,6 @@ export default function ConfigUser() {
               )}
             </div>
           </div>
-
           <div className={styles.userInfoContainer}>
             <h1 className={styles.displayName}>
               {user?.display_name || "Usuario"}
@@ -233,7 +218,7 @@ export default function ConfigUser() {
                     Potenciá tu cuenta
                   </p>
                   <p className={styles.upgradeBannerDesc}>
-                    Más cambios de usuario, widgets y funciones pro.
+                    Más tokens para IA, Widgets exclusivos y mucho más.
                   </p>
                 </div>
               </div>
@@ -315,7 +300,6 @@ export default function ConfigUser() {
             placeholder="Tu nombre"
             index={0}
           />
-
           <EditionSection
             title={"Nombre de usuario (@)"}
             dataKey={"username"}
@@ -324,7 +308,6 @@ export default function ConfigUser() {
             note={`Te quedan ${profileStats?.remaining_changes} cambios de usuario este mes. ${profileStats?.last_username_change ? `Último cambio: ${new Date(profileStats?.last_username_change).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })}` : ""}`}
             index={1}
           />
-
           <EditionSection
             title={"Biografía"}
             dataKey={"biography"}
@@ -334,8 +317,158 @@ export default function ConfigUser() {
             index={2}
           />
         </div>
+
+        <div className={styles.sectionDivider} />
+
+        <AICreditsSection aiUsage={aiUsage} userTier={user?.tier} index={3} />
       </motion.div>
     </WindowComponent>
+  );
+}
+
+interface AICreditsProps {
+  aiUsage: {
+    used: number;
+    limit: number;
+    remaining: number;
+    period_end: string;
+    tier: string;
+  } | null;
+  userTier?: string;
+  index: number;
+}
+
+function AICreditsSection({ aiUsage, userTier, index }: AICreditsProps) {
+  const isUnlimited = aiUsage ? aiUsage.limit >= 9999999 : false;
+  const usedPct =
+    aiUsage && !isUnlimited
+      ? Math.min((aiUsage.used / aiUsage.limit) * 100, 100)
+      : 0;
+  const remainingPct =
+    aiUsage && !isUnlimited
+      ? Math.max((aiUsage.remaining / aiUsage.limit) * 100, 0)
+      : 0;
+
+  const isNearLimit = usedPct >= 80 && !isUnlimited;
+  const isExhausted = aiUsage ? aiUsage.remaining === 0 && !isUnlimited : false;
+
+  const renewDate = aiUsage?.period_end
+    ? new Date(aiUsage.period_end).toLocaleDateString("es-AR", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : null;
+
+  return (
+    <motion.section
+      className={styles.aiCreditsSection}
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.1 * (index + 3) }}
+    >
+      <div className={styles.aiCreditsSectionHeader}>
+        <IAStars
+          style={{
+            width: "13px",
+            height: "13px",
+            stroke: "var(--icon-colorv2)",
+            opacity: 0.6,
+          }}
+        />
+        <h4 className={styles.aiCreditsSectionTitle}>
+          Inteligencia Artificial
+        </h4>
+      </div>
+
+      <div className={styles.aiCreditsCard}>
+        <div className={styles.aiCreditsRow}>
+          <div className={styles.aiCreditsInfo}>
+            <span className={styles.aiCreditsLabel}>Créditos este período</span>
+            {aiUsage ? (
+              <span className={styles.aiCreditsCount}>
+                {isUnlimited ? (
+                  <span className={styles.aiCreditsUnlimited}>
+                    Ilimitados ✦
+                  </span>
+                ) : (
+                  <>
+                    <span
+                      className={styles.aiCreditsUsed}
+                      style={{
+                        color: isExhausted
+                          ? "#ef4444"
+                          : isNearLimit
+                            ? "#f59e0b"
+                            : "var(--text)",
+                      }}
+                    >
+                      {aiUsage.remaining}
+                    </span>
+                    <span className={styles.aiCreditsTotal}>
+                      {" "}
+                      / {aiUsage.limit}
+                    </span>
+                  </>
+                )}
+              </span>
+            ) : (
+              <span className={styles.aiCreditsLoading}>Cargando...</span>
+            )}
+          </div>
+
+          {renewDate && !isUnlimited && (
+            <span className={styles.aiCreditsRenew}>
+              Renueva el {renewDate}
+            </span>
+          )}
+        </div>
+
+        {!isUnlimited && aiUsage && (
+          <div className={styles.aiCreditsBarTrack}>
+            <motion.div
+              className={styles.aiCreditsBarFill}
+              initial={{ width: "100%" }}
+              animate={{ width: `${remainingPct}%` }}
+              transition={{
+                duration: 0.6,
+                ease: "easeOut",
+                delay: 0.1 * (index + 3) + 0.2,
+              }}
+              style={{
+                background: isExhausted
+                  ? "rgba(239, 68, 68, 0.7)"
+                  : isNearLimit
+                    ? "linear-gradient(90deg, rgba(245, 158, 11, 0.8), rgba(239, 68, 68, 0.6))"
+                    : "linear-gradient(90deg, rgba(139, 92, 246, 0.8), rgba(168, 85, 247, 0.6))",
+              }}
+            />
+          </div>
+        )}
+
+        {isExhausted && (
+          <p className={styles.aiCreditsWarning}>
+            Sin créditos disponibles hasta la próxima renovación.
+          </p>
+        )}
+        {isNearLimit && !isExhausted && (
+          <p className={styles.aiCreditsWarning} style={{ color: "#f59e0b" }}>
+            Quedan pocos créditos para este período.
+          </p>
+        )}
+
+        {/* Costos de referencia */}
+        {/* <div className={styles.aiCreditsCosts}>
+          <span className={styles.aiCreditsCostItem}>
+            Mejorar texto — {AI_CREDIT_COSTS.enhance} crédito
+          </span>
+          <span className={styles.aiCreditsCostDot}>·</span>
+          <span className={styles.aiCreditsCostItem}>
+            Generar tareas — {AI_CREDIT_COSTS.generateTasks} créditos
+          </span>
+        </div> */}
+      </div>
+    </motion.section>
   );
 }
 
@@ -381,7 +514,6 @@ const EditionSection = ({
       toast.error("El valor debe tener al menos 3 caracteres.");
       return;
     }
-
     setIsLoading(true);
     const res = await updateProfile({ [dataKey]: trimmed });
     if (res.error) {
@@ -461,7 +593,6 @@ const EditionSection = ({
             )}
           </AnimatePresence>
         </div>
-
         <div className={styles.editionActions}>
           {isEditing ? (
             <>
@@ -490,7 +621,6 @@ const EditionSection = ({
           )}
         </div>
       </div>
-
       {note && isEditing && (
         <motion.span
           initial={{ opacity: 0, height: 0 }}
