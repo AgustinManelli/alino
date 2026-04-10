@@ -255,7 +255,7 @@ export const cancelSubscriptionAction = async (): Promise<{
     
     const { data: sub, error } = await supabase
       .from('subscriptions')
-      .select('subscription_id, gateway, status')
+      .select('id, subscription_id, gateway, status')
       .eq('user_id', user.id)
       .in('status', ['active', 'trialing'])
       .order('current_period_end', { ascending: false })
@@ -271,7 +271,14 @@ export const cancelSubscriptionAction = async (): Promise<{
       await supabase
         .from('subscriptions')
         .update({ cancel_at_period_end: true, status: 'canceled' })
-        .eq('subscription_id', sub.subscription_id);
+        .eq('id', sub.id);
+        
+      return { data: "Suscripción cancelada con éxito." };
+    } else if (sub.gateway === "promo" || sub.gateway === "manual") {
+      await supabase
+        .from('subscriptions')
+        .update({ cancel_at_period_end: true, status: 'canceled' })
+        .eq('id', sub.id);
         
       return { data: "Suscripción cancelada con éxito." };
     }

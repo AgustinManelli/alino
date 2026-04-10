@@ -247,16 +247,18 @@ export default function ConfigUser() {
                   </p>
                   <p className={styles.upgradeBannerDesc} style={{ color: 'var(--text-not-available)', fontSize: '13px', marginTop: '2px' }}>
                     {loadingSub ? "Cargando info..." : (
-                      activeSub?.cancel_at_period_end || activeSub?.status === 'canceled' || activeSub?.status === 'free'
-                      ? `Se cancelará el ${activeSub?.current_period_end ? new Date(activeSub.current_period_end).toLocaleDateString("es-AR") : ''}`
-                      : activeSub?.current_period_end 
-                        ? `Renueva el ${new Date(activeSub.current_period_end).toLocaleDateString("es-AR")}`
-                        : "Suscripción activa"
+                      activeSub?.gateway === 'promo' || activeSub?.gateway === 'manual'
+                      ? `Termina el ${activeSub?.current_period_end ? new Date(activeSub.current_period_end).toLocaleDateString("es-AR") : ''}`
+                      : activeSub?.cancel_at_period_end || activeSub?.status === 'canceled' || activeSub?.status === 'free'
+                        ? `Se cancelará el ${activeSub?.current_period_end ? new Date(activeSub.current_period_end).toLocaleDateString("es-AR") : ''}`
+                        : activeSub?.current_period_end 
+                          ? `Renueva el ${new Date(activeSub.current_period_end).toLocaleDateString("es-AR")}`
+                          : "Suscripción activa"
                     )}
                   </p>
                 </div>
               </div>
-              {activeSub && !activeSub.cancel_at_period_end && activeSub.status !== 'canceled' && activeSub.status !== 'free' && (
+              {activeSub && !activeSub.cancel_at_period_end && activeSub.status !== 'canceled' && activeSub.status !== 'free' && activeSub.gateway === 'mercadopago' && (
                 <button 
                   onClick={handleCancelSub} 
                   className={styles.upgradeBannerBtn}
