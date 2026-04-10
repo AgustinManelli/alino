@@ -8,7 +8,10 @@ import { Edit, UserIcon } from "@/components/ui/icons/icons";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { usePremiumModalStore } from "@/store/usePremiumModalStore";
 import { toast } from "sonner";
-import { getActiveSubscription, cancelSubscriptionAction } from "@/lib/api/user/actions";
+import {
+  getActiveSubscription,
+  cancelSubscriptionAction,
+} from "@/lib/api/user/actions";
 import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 
 export default function ConfigUser() {
@@ -23,9 +26,13 @@ export default function ConfigUser() {
     (state) => state.fetchProfileStats,
   );
   const uploadAvatar = useUserDataStore((state) => state.uploadAvatar);
-  
-  const openPremiumModal = usePremiumModalStore((state) => state.openPremiumModal);
-  const openConfirmationModal = useConfirmationModalStore((state) => state.openModal);
+
+  const openPremiumModal = usePremiumModalStore(
+    (state) => state.openPremiumModal,
+  );
+  const openConfirmationModal = useConfirmationModalStore(
+    (state) => state.openModal,
+  );
 
   const isFreeTier = !user?.tier || user.tier === "free";
 
@@ -50,7 +57,8 @@ export default function ConfigUser() {
   const handleCancelSub = async () => {
     openConfirmationModal({
       text: "¿Estás seguro de que deseas cancelar tu suscripción?",
-      additionalText: "Podrás disfrutar los beneficios hasta el final de tu período actual de facturación.",
+      additionalText:
+        "Podrás disfrutar los beneficios hasta el final de tu período actual de facturación.",
       actionButton: "Cancelar suscripción",
       onConfirm: async () => {
         setLoadingCancel(true);
@@ -59,16 +67,20 @@ export default function ConfigUser() {
           toast.error(error);
         } else {
           toast.success(data);
-          setActiveSub((prev: any) => prev ? { ...prev, cancel_at_period_end: true, status: 'canceled' } : null);
+          setActiveSub((prev: any) =>
+            prev
+              ? { ...prev, cancel_at_period_end: true, status: "canceled" }
+              : null,
+          );
         }
         setLoadingCancel(false);
-      }
+      },
     });
   };
 
   const closeConfigModal = () => {
     if (useConfirmationModalStore.getState().isOpen) return;
-    
+
     const confirmationModal = document.getElementById(
       "confirmation-modal-my-account-config-modal",
     );
@@ -109,17 +121,16 @@ export default function ConfigUser() {
     }
   };
 
-  const determineRingClass = (tier?: string) => {
-    switch (tier) {
-      case "pro":
-        return styles.ringPro;
-      case "student":
-        return styles.ringStudent;
-      default:
-        return styles.ringFree;
-    }
-  };
-
+  // const determineRingClass = (tier?: string) => {
+  //   switch (tier) {
+  //     case "pro":
+  //       return styles.ringPro;
+  //     case "student":
+  //       return styles.ringStudent;
+  //     default:
+  //       return styles.ringFree;
+  //   }
+  // };
 
   return (
     <WindowComponent
@@ -135,7 +146,8 @@ export default function ConfigUser() {
       >
         <section className={styles.userHeaderSection}>
           <div
-            className={`${styles.configUserIcon} ${determineRingClass(user?.tier)}`}
+            // className={`${styles.configUserIcon} ${determineRingClass(user?.tier)}`}
+            className={styles.configUserIcon}
             style={{
               backgroundImage: user?.avatar_url
                 ? `url('${user.avatar_url}')`
@@ -225,7 +237,10 @@ export default function ConfigUser() {
                   </p>
                 </div>
               </div>
-              <button onClick={openPremiumModal} className={styles.upgradeBannerBtn}>
+              <button
+                onClick={openPremiumModal}
+                className={styles.upgradeBannerBtn}
+              >
                 Ver planes
               </button>
             </motion.div>
@@ -237,7 +252,7 @@ export default function ConfigUser() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ delay: 0.3 }}
-              style={{ background: 'var(--background-over-container)' }}
+              style={{ background: "var(--background-over-container)" }}
             >
               <div className={styles.upgradeBannerContent}>
                 <span className={styles.upgradeEmoji}>✦</span>
@@ -245,29 +260,47 @@ export default function ConfigUser() {
                   <p className={styles.upgradeBannerTitle}>
                     Suscripción {user?.tier?.toUpperCase()}
                   </p>
-                  <p className={styles.upgradeBannerDesc} style={{ color: 'var(--text-not-available)', fontSize: '13px', marginTop: '2px' }}>
-                    {loadingSub ? "Cargando info..." : (
-                      activeSub?.gateway === 'promo' || activeSub?.gateway === 'manual'
-                      ? `Termina el ${activeSub?.current_period_end ? new Date(activeSub.current_period_end).toLocaleDateString("es-AR") : ''}`
-                      : activeSub?.cancel_at_period_end || activeSub?.status === 'canceled' || activeSub?.status === 'free'
-                        ? `Se cancelará el ${activeSub?.current_period_end ? new Date(activeSub.current_period_end).toLocaleDateString("es-AR") : ''}`
-                        : activeSub?.current_period_end 
-                          ? `Renueva el ${new Date(activeSub.current_period_end).toLocaleDateString("es-AR")}`
-                          : "Suscripción activa"
-                    )}
+                  <p
+                    className={styles.upgradeBannerDesc}
+                    style={{
+                      color: "var(--text-not-available)",
+                      fontSize: "13px",
+                      marginTop: "2px",
+                    }}
+                  >
+                    {loadingSub
+                      ? "Cargando info..."
+                      : activeSub?.gateway === "promo" ||
+                          activeSub?.gateway === "manual"
+                        ? `Termina el ${activeSub?.current_period_end ? new Date(activeSub.current_period_end).toLocaleDateString("es-AR") : ""}`
+                        : activeSub?.cancel_at_period_end ||
+                            activeSub?.status === "canceled" ||
+                            activeSub?.status === "free"
+                          ? `Se cancelará el ${activeSub?.current_period_end ? new Date(activeSub.current_period_end).toLocaleDateString("es-AR") : ""}`
+                          : activeSub?.current_period_end
+                            ? `Renueva el ${new Date(activeSub.current_period_end).toLocaleDateString("es-AR")}`
+                            : "Suscripción activa"}
                   </p>
                 </div>
               </div>
-              {activeSub && !activeSub.cancel_at_period_end && activeSub.status !== 'canceled' && activeSub.status !== 'free' && activeSub.gateway === 'mercadopago' && (
-                <button 
-                  onClick={handleCancelSub} 
-                  className={styles.upgradeBannerBtn}
-                  style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}
-                  disabled={loadingCancel}
-                >
-                  {loadingCancel ? '...' : 'Cancelar'}
-                </button>
-              )}
+              {activeSub &&
+                !activeSub.cancel_at_period_end &&
+                activeSub.status !== "canceled" &&
+                activeSub.status !== "free" &&
+                activeSub.gateway === "mercadopago" && (
+                  <button
+                    onClick={handleCancelSub}
+                    className={styles.upgradeBannerBtn}
+                    style={{
+                      background: "rgba(239, 68, 68, 0.1)",
+                      color: "#ef4444",
+                      border: "1px solid rgba(239,68,68,0.2)",
+                    }}
+                    disabled={loadingCancel}
+                  >
+                    {loadingCancel ? "..." : "Cancelar"}
+                  </button>
+                )}
             </motion.div>
           )}
         </AnimatePresence>

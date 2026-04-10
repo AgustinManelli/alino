@@ -56,7 +56,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 .header {
@@ -187,4 +187,28 @@
 
 .withoutWidgets button:hover {
   background-color: var(--background-over-container-hover);
+}
+
+.saveButton {
+  border: none;
+  background-color: var(--background-over-container);
+  cursor: pointer;
+  width: -moz-fit-content;
+  width: fit-content;
+  height: -moz-fit-content;
+  height: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  transition: background 0.15s ease;
+  width: 25px;
+  height: 25px;
+}
+
+.buttonConfig {
+  width: 16px;
+  height: auto;
+  stroke: var(--text);
+  stroke-width: 2;
 }
