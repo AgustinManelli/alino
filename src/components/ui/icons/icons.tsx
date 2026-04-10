@@ -4,12 +4,12 @@ export const AlinoLogo = ({
   style,
   decoFill,
 }: {
-  style: React.CSSProperties;
+  style?: React.CSSProperties;
   decoFill?: string;
 }) => {
   return (
     <svg
-      style={{ fill: style.fill ? style.fill : "var(--text)", ...style }}
+      style={{ fill: style?.fill ? style.fill : "var(--text)", ...style }}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 723.83 308.33"
       className={styles.alinoLogoIcon}

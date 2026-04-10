@@ -6,6 +6,7 @@ import { WindowComponent } from "@/components/ui/window-component";
 import styles from "./ConfigUser.module.css";
 import { Edit, UserIcon } from "@/components/ui/icons/icons";
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { usePremiumModalStore } from "@/store/usePremiumModalStore";
 import { toast } from "sonner";
 
 export default function ConfigUser() {
@@ -20,6 +21,8 @@ export default function ConfigUser() {
     (state) => state.fetchProfileStats,
   );
   const uploadAvatar = useUserDataStore((state) => state.uploadAvatar);
+  
+  const openPremiumModal = usePremiumModalStore((state) => state.openPremiumModal);
 
   useEffect(() => {
     fetchProfileStats();
@@ -182,9 +185,9 @@ export default function ConfigUser() {
                   </p>
                 </div>
               </div>
-              <a href="#" className={styles.upgradeBannerBtn}>
+              <button onClick={openPremiumModal} className={styles.upgradeBannerBtn}>
                 Ver planes
-              </a>
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
