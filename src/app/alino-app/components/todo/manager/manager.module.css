@@ -157,10 +157,11 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   overflow: hidden;
   padding-top: 20px;
+  box-sizing: border-box;
 }
 
 .tasksSection {
@@ -199,4 +200,134 @@
   .section1 {
     padding-top: 60px;
   }
+}
+
+.trashButton {
+  background: transparent;
+  border: none;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text);
+  border-radius: 7px;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+.trashButton:hover {
+  background-color: var(--background-over-container);
+  opacity: 0.7;
+}
+
+.trashButton.trashButtonActive {
+  opacity: 1;
+  color: hsl(340, 85%, 65%);
+  background-color: hsla(340, 85%, 65%, 0.12);
+}
+
+.trashButton.trashButtonActive:hover {
+  background-color: hsla(340, 85%, 65%, 0.2);
+}
+
+.trashBanner {
+  position: relative;
+  width: 100%;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 14px;
+  border-radius: 15px;
+  background: hsla(340, 85%, 65%, 0.07);
+  border: 1px solid hsla(340, 85%, 65%, 0.18);
+  backdrop-filter: blur(8px);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.trashBannerGlow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 20% 50%,
+    hsla(340, 85%, 65%, 0.08) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.trashBannerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: hsl(340, 85%, 68%);
+}
+
+.trashBannerIcon {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.trashBannerText {
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(340, 85%, 68%);
+  white-space: nowrap;
+}
+
+.trashBannerSub {
+  font-size: 12px;
+  color: var(--text-not-available);
+  white-space: nowrap;
+}
+
+.trashBannerClose {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-not-available);
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+  padding: 2px;
+}
+
+.trashBannerClose:hover {
+  opacity: 1;
+}
+
+.inputSectionDisabled {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.3;
+  user-select: none;
+}
+
+.emptyTrash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 0;
+  color: var(--text-not-available);
+}
+
+.emptyTrashIcon {
+  opacity: 0.25;
+}
+
+.emptyTrashText {
+  font-size: 14px;
+  opacity: 0.6;
 }

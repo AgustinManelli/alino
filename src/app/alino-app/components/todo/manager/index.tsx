@@ -8,7 +8,7 @@ import {
   memo,
   useLayoutEffect,
 } from "react";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
@@ -44,6 +44,7 @@ import {
   LoadingIcon,
   LogOut,
   Check,
+  Cross,
   DefaultSortIcon,
   DueAscSortIcon,
   DueDescSortIcon,
@@ -75,6 +76,7 @@ export const Manager = memo(function Manager({
   const [colorTemp, setColorTemp] = useState<string>(setList?.list.color ?? "");
   const [emoji, setEmoji] = useState<string | null>(setList?.list.icon ?? null);
   const [infoActive, setInfoActive] = useState<boolean>(false);
+  const [showCompleted, setShowCompleted] = useState<boolean>(false);
   const {
     tasks,
     deleteList,
@@ -85,6 +87,10 @@ export const Manager = memo(function Manager({
     taskSort,
     setTaskSort,
     updateTaskRank,
+    completedTasks,
+    hasMoreCompletedTasks,
+    loadingCompleted,
+    fetchCompletedTasksPage,
   } = useTodoDataStore();
   const user = useUserDataStore((state) => state.user);
   const openConfirmationModal = useModalStore((s) => s.open);
@@ -152,6 +158,7 @@ export const Manager = memo(function Manager({
   const divRef = useRef<HTMLDivElement>(null);
   const prevLengthRef = useRef(tasks.length);
   const prevListIdRef = useRef<string | null>(null);
+  const prevFilteredCountRef = useRef(0);
 
   const displayName = useMemo(
     () => user?.display_name.split(" ")[0] ?? "Bienvenido",
@@ -175,21 +182,52 @@ export const Manager = memo(function Manager({
     if (prevListIdRef.current !== currentViewId) {
       fetchTasksPage(currentViewId, true);
       prevListIdRef.current = currentViewId;
+      prevFilteredCountRef.current = 0;
       if (scrollRef.current) {
         scrollRef.current.scrollTop = 0;
       }
     }
   }, [currentViewId, fetchTasksPage]);
 
+  // Scroll al top cuando se agrega una nueva tarea
+  useEffect(() => {
+    if (showCompleted) return;
+    const count = filteredTasks.length + (h ? tasks.length : 0);
+    if (
+      count > prevFilteredCountRef.current &&
+      prevFilteredCountRef.current > 0
+    ) {
+      if (scrollRef.current && scrollRef.current.scrollTop > 0) {
+        scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+    prevFilteredCountRef.current = count;
+  }, [filteredTasks.length, tasks.length, h, showCompleted]);
+
   const handleScroll = useCallback(() => {
     if (!scrollRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
     if (scrollHeight - scrollTop <= clientHeight + 150) {
-      if (hasMoreTasks && loadingQueue === 0 && currentViewId) {
-        fetchTasksPage(currentViewId, false);
+      if (showCompleted) {
+        if (hasMoreCompletedTasks && !loadingCompleted && currentViewId) {
+          fetchCompletedTasksPage(currentViewId, false);
+        }
+      } else {
+        if (hasMoreTasks && loadingQueue === 0 && currentViewId) {
+          fetchTasksPage(currentViewId, false);
+        }
       }
     }
-  }, [hasMoreTasks, loadingQueue, currentViewId, fetchTasksPage]);
+  }, [
+    hasMoreTasks,
+    loadingQueue,
+    currentViewId,
+    fetchTasksPage,
+    showCompleted,
+    hasMoreCompletedTasks,
+    loadingCompleted,
+    fetchCompletedTasksPage,
+  ]);
 
   useEffect(() => {
     const scrollEl = scrollRef.current;
@@ -250,6 +288,20 @@ export const Manager = memo(function Manager({
     });
   }, [openConfirmationModal, setList, handleLeave]);
 
+  const handleToggleCompleted = useCallback(() => {
+    const next = !showCompleted;
+    setShowCompleted(next);
+    if (next) {
+      setIsReordering(false);
+      if (currentViewId) {
+        fetchCompletedTasksPage(currentViewId, true);
+      }
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+      }
+    }
+  }, [showCompleted, currentViewId, fetchCompletedTasksPage]);
+
   const configOptions = useMemo(() => {
     const baseOptions = [
       {
@@ -262,7 +314,7 @@ export const Manager = memo(function Manager({
         name: isReordering ? "Fin de reordenar" : "Reordenar tareas",
         icon: <DragIcon style={iconStyle} />,
         action: () => setIsReordering((prev) => !prev),
-        enabled: canEdit && taskSort === "default",
+        enabled: canEdit && taskSort === "default" && !showCompleted,
       },
       {
         name: "Eliminar lista",
@@ -467,6 +519,26 @@ export const Manager = memo(function Manager({
                       />
                     </button>
                   )}
+
+                  <button
+                    onClick={handleToggleCompleted}
+                    title={
+                      showCompleted
+                        ? "Salir de las tareas completadas"
+                        : "Ver tareas completadas"
+                    }
+                    className={`${styles.trashButton} ${showCompleted ? styles.trashButtonActive : ""}`}
+                  >
+                    <DeleteIcon
+                      style={{
+                        width: "18px",
+                        height: "18px",
+                        stroke: "currentColor",
+                        strokeWidth: 2,
+                      }}
+                    />
+                  </button>
+
                   <Dropdown>
                     <Dropdown.Trigger
                       style={{
@@ -521,7 +593,79 @@ export const Manager = memo(function Manager({
             </div>
           </div>
           <div className={styles.inputSection}>
-            <TaskInput setList={setList} />
+            <AnimatePresence mode="wait" initial={false}>
+              {showCompleted && !h ? (
+                <motion.div
+                  key="trash-banner"
+                  className={styles.trashBanner}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] },
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: 6,
+                    transition: { duration: 0.15, ease: "easeIn" },
+                  }}
+                >
+                  <div className={styles.trashBannerGlow} />
+                  <div className={styles.trashBannerLeft}>
+                    <DeleteIcon
+                      className={styles.trashBannerIcon}
+                      style={{
+                        width: "14px",
+                        height: "14px",
+                        stroke: "hsl(340, 85%, 68%)",
+                        strokeWidth: 2,
+                      }}
+                    />
+                    <span className={styles.trashBannerText}>
+                      Tareas completadas
+                    </span>
+                    <span className={styles.trashBannerSub}>
+                      {loadingCompleted
+                        ? "Cargando..."
+                        : completedTasks.length === 0
+                          ? "Sin tareas completadas"
+                          : `${completedTasks.length}${hasMoreCompletedTasks ? "+" : ""} tarea${completedTasks.length !== 1 ? "s" : ""}`}
+                    </span>
+                  </div>
+                  <button
+                    className={styles.trashBannerClose}
+                    onClick={() => setShowCompleted(false)}
+                    title="Cerrar papelera"
+                  >
+                    <Cross
+                      style={{
+                        width: "14px",
+                        height: "14px",
+                        stroke: "currentColor",
+                        strokeWidth: 2.5,
+                      }}
+                    />
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="task-input"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    transition: { duration: 0.18, ease: "easeOut" },
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: -4,
+                    transition: { duration: 0.12, ease: "easeIn" },
+                  }}
+                >
+                  <TaskInput setList={setList} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </section>
         <section className={styles.section2}>
@@ -530,11 +674,55 @@ export const Manager = memo(function Manager({
             id={"task-section-scroll-area"}
             ref={scrollRef}
           >
-            {h && !setList ? (
+            {showCompleted && !h ? (
               <div className={styles.tasks}>
-                {tasks.map((task) => (
-                  <TaskCardStatic key={task.task_id} task={task} />
-                ))}
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {completedTasks.map((task) => (
+                    <TaskCardStatic key={task.task_id} task={task} inTrash />
+                  ))}
+                </AnimatePresence>
+                {loadingCompleted && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: "16px 0",
+                      width: "100%",
+                    }}
+                  >
+                    <LoadingIcon
+                      style={{
+                        width: "22px",
+                        stroke: "var(--text-not-available)",
+                      }}
+                    />
+                  </div>
+                )}
+                {!loadingCompleted && completedTasks.length === 0 && (
+                  <div className={styles.emptyTrash}>
+                    <DeleteIcon
+                      className={styles.emptyTrashIcon}
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        stroke: "var(--text-not-available)",
+                        strokeWidth: 1.5,
+                      }}
+                    />
+                    <p className={styles.emptyTrashText}>
+                      No hay tareas completadas
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : h && !setList ? (
+              <div className={styles.tasks}>
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {tasks.map((task) => (
+                    <TaskCardStatic key={task.task_id} task={task} />
+                  ))}
+                </AnimatePresence>
                 {loadingQueue > 0 && (
                   <div
                     style={{
@@ -574,13 +762,15 @@ export const Manager = memo(function Manager({
                   strategy={verticalListSortingStrategy}
                 >
                   <div className={styles.tasks}>
-                    {filteredTasks.map((task) => (
-                      <TaskCardStatic
-                        key={task.task_id}
-                        task={task}
-                        isReordering={isReordering}
-                      />
-                    ))}
+                    <AnimatePresence mode="popLayout" initial={false}>
+                      {filteredTasks.map((task) => (
+                        <TaskCardStatic
+                          key={task.task_id}
+                          task={task}
+                          isReordering={isReordering}
+                        />
+                      ))}
+                    </AnimatePresence>
                     {loadingQueue > 0 && (
                       <div
                         style={{

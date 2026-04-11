@@ -35,6 +35,7 @@ import {
   updateCompletedTask,
   updateNameTask,
   updateTaskRank,
+  getCompletedTasks,
 } from "@/lib/api/task/actions";
 
 import {
@@ -121,6 +122,12 @@ type TodoStore = {
   fetchingListsQueue: Record<string, boolean>;
   listsPagination: Record<string, { page: number; hasMore: boolean }>;
   taskSort: TaskSortOption;
+
+  completedTasks: TaskType[];
+  completedTasksPage: number;
+  hasMoreCompletedTasks: boolean;
+  loadingCompleted: boolean;
+  fetchCompletedTasksPage: (listId: string | "home", reset?: boolean) => Promise<void>;
 
   fetchListsPage: (folderId: string | "root") => Promise<void>;
   fetchTasksPage: (listId: string | "home", reset?: boolean) => Promise<void>;
@@ -230,6 +237,11 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   fetchingListsQueue: {},
   listsPagination: {},
   taskSort: "default",
+
+  completedTasks: [],
+  completedTasksPage: -1,
+  hasMoreCompletedTasks: true,
+  loadingCompleted: false,
 
   fetchListsPage: async (folderId) => {
     try {
@@ -398,6 +410,46 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       handleError(err);
     } finally {
       set((state) => ({ loadingQueue: Math.max(0, state.loadingQueue - 1) }));
+    }
+  },
+
+  fetchCompletedTasksPage: async (listId, reset = false) => {
+    try {
+      const state = get();
+
+      if (reset) {
+        set({ completedTasks: [], completedTasksPage: -1, hasMoreCompletedTasks: true });
+      }
+
+      const currentState = get();
+      if (!currentState.hasMoreCompletedTasks || currentState.loadingCompleted) return;
+
+      set({ loadingCompleted: true });
+
+      const newPage = currentState.completedTasksPage + 1;
+
+      const listIdsToFetch: string[] =
+        listId === "home"
+          ? currentState.lists.map((l) => l.list_id)
+          : [listId];
+
+      const PAGE_SIZE_COMPLETED = 40;
+      const { data } = await getCompletedTasks(listIdsToFetch, newPage, PAGE_SIZE_COMPLETED);
+
+      const newTasks = reset || currentState.completedTasksPage === -1
+        ? (data ?? [])
+        : [...currentState.completedTasks, ...(data ?? [])];
+      const newHasMore = Boolean(data && data.length === PAGE_SIZE_COMPLETED);
+
+      set({
+        completedTasks: newTasks as TaskType[],
+        completedTasksPage: newPage,
+        hasMoreCompletedTasks: newHasMore,
+      });
+    } catch (err) {
+      handleError(err);
+    } finally {
+      set({ loadingCompleted: false });
     }
   },
 
@@ -603,6 +655,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
 
       return {
         tasks: state.tasks.filter((t) => t.task_id !== task.task_id),
+        completedTasks: state.completedTasks.filter((t) => t.task_id !== task.task_id),
         lists: updatedLists,
       };
     });
@@ -1236,8 +1289,11 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
   },
 
   deleteTask: async (task_id) => {
-    const originalTask = get().tasks.find((t) => t.task_id === task_id);
+    const originalTask =
+      get().tasks.find((t) => t.task_id === task_id) ??
+      get().completedTasks.find((t) => t.task_id === task_id);
     const prevTasks = get().tasks.slice();
+    const prevCompletedTasks = get().completedTasks.slice();
     const prevLists = get().lists.slice();
 
     set((state) => {
@@ -1260,6 +1316,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
 
       return {
         tasks: state.tasks.filter((task) => task.task_id !== task_id),
+        completedTasks: state.completedTasks.filter((task) => task.task_id !== task_id),
         lists: updatedLists,
       };
     });
@@ -1268,25 +1325,47 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
 
     if (result?.error) {
       handleError(result.error);
-      set({ tasks: prevTasks, lists: prevLists });
+      set({ tasks: prevTasks, completedTasks: prevCompletedTasks, lists: prevLists });
       return;
     }
   },
 
   updateTaskCompleted: async (task_id, completed) => {
     const prevTasks = get().tasks.slice();
+    const prevCompletedTasks = get().completedTasks.slice();
 
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.task_id === task_id ? { ...task, completed } : task
-      ),
-    }));
+    set((state) => {
+      const task = state.tasks.find((t) => t.task_id === task_id);
+      const completedTask = state.completedTasks.find((t) => t.task_id === task_id);
+
+      if (completed) {
+        const updatedTask = task ? { ...task, completed } : completedTask ? { ...completedTask, completed } : null;
+        return {
+          tasks: state.tasks.filter((t) => t.task_id !== task_id),
+          completedTasks: updatedTask
+            ? state.completedTasks.some((t) => t.task_id === task_id)
+              ? state.completedTasks.map((t) => t.task_id === task_id ? updatedTask : t)
+              : [updatedTask, ...state.completedTasks]
+            : state.completedTasks,
+        };
+      } else {
+        const updatedTask = completedTask ? { ...completedTask, completed } : task ? { ...task, completed } : null;
+        return {
+          completedTasks: state.completedTasks.filter((t) => t.task_id !== task_id),
+          tasks: updatedTask
+            ? state.tasks.some((t) => t.task_id === task_id)
+              ? state.tasks.map((t) => t.task_id === task_id ? updatedTask : t)
+              : [updatedTask, ...state.tasks]
+            : state.tasks,
+        };
+      }
+    });
 
     const { error } = await updateCompletedTask(task_id, completed);
 
     if (error) {
       handleError(error);
-      set({ tasks: prevTasks });
+      set({ tasks: prevTasks, completedTasks: prevCompletedTasks });
       return;
     }
   },

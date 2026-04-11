@@ -318,7 +318,8 @@ export const getPaginatedTasks = async (
           avatar_url
         )`
       )
-      .in("list_id", listIds);
+      .in("list_id", listIds)
+      .or("completed.is.null,completed.eq.false");
 
     switch (sort) {
       case "due_asc":
@@ -351,6 +352,51 @@ export const getPaginatedTasks = async (
     if (tasksError) {
       throw new Error(
         "No se pudieron cargar las tareas. Intentalo nuevamente."
+      );
+    }
+
+    return { data: tasksData || [] };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const getCompletedTasks = async (
+  listIds: string[],
+  page: number = 0,
+  limit: number = 40
+) => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+
+    if (!listIds || listIds.length === 0) {
+      return { data: [] };
+    }
+
+    const from = page * limit;
+    const to = from + limit - 1;
+
+    const { data: tasksData, error: tasksError } = await supabase
+      .from("tasks")
+      .select(
+        `*,
+        created_by:users (
+          user_id,
+          display_name,
+          username,
+          avatar_url
+        )`
+      )
+      .in("list_id", listIds)
+      .eq("completed", true)
+      .order("updated_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (tasksError) {
+      throw new Error(
+        "No se pudieron cargar las tareas completadas. Intentalo nuevamente."
       );
     }
 

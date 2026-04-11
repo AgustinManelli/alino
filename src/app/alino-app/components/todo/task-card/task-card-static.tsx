@@ -20,7 +20,6 @@ import {
   Edit,
   Note,
   SplitIcon,
-  DefaultSortIcon,
   DragDropVerticalIcon,
 } from "@/components/ui/icons/icons";
 import { isHtmlContent } from "@/components/ui/RichTextEditor/richTextUtils";
@@ -42,6 +41,29 @@ const overlayVariants: Variants = {
   },
 };
 
+const cardWrapperVariants: Variants = {
+  initial: {
+    opacity: 0,
+    scale: 0.98,
+  },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.2,
+      ease: [0.4, 0, 0.2, 1],
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.97,
+    transition: {
+      duration: 0.16,
+      ease: "easeIn",
+    },
+  },
+};
+
 export const TaskCardStatic = memo(
   ({
     task,
@@ -49,12 +71,14 @@ export const TaskCardStatic = memo(
     home = false,
     isOverlay = false,
     isReordering = false,
+    inTrash = false,
   }: {
     task: TaskType;
     editionMode?: boolean;
     home?: boolean;
     isOverlay?: boolean;
     isReordering?: boolean;
+    inTrash?: boolean;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
     const { openModal, taskEditing } = useEditTaskModalStore(
@@ -96,8 +120,22 @@ export const TaskCardStatic = memo(
     const handleUpdateStatus = useCallback(() => {
       const next = !completed;
       setCompleted(next);
-      updateTaskCompleted(task.task_id, next);
-    }, [completed, task.task_id, updateTaskCompleted]);
+
+      if (!animations) {
+        updateTaskCompleted(task.task_id, next);
+        return;
+      }
+
+      const estimatedLines = Math.max(
+        1,
+        Math.ceil((textRef.current?.offsetHeight ?? 20) / 22),
+      );
+      const waveDuration = estimatedLines * 100 + 200; // en ms
+
+      setTimeout(() => {
+        updateTaskCompleted(task.task_id, next);
+      }, waveDuration);
+    }, [completed, task.task_id, updateTaskCompleted, animations]);
 
     const handleEdit = useCallback(() => {
       const rect = cardRef.current?.getBoundingClientRect();
@@ -121,10 +159,13 @@ export const TaskCardStatic = memo(
       });
     }, [openModal, task]);
 
-    const handleDelete = useCallback(
-      () => deleteTask(task.task_id),
-      [task.task_id, deleteTask],
-    );
+    const handleDelete = useCallback(() => {
+      if (animations && completed) {
+        setTimeout(() => deleteTask(task.task_id), 150);
+      } else {
+        deleteTask(task.task_id);
+      }
+    }, [task.task_id, deleteTask, animations, completed]);
 
     const handleSplit = useCallback(() => {
       const allTasks = useTodoDataStore.getState().tasks;
@@ -250,127 +291,139 @@ export const TaskCardStatic = memo(
     );
 
     return (
-      <div ref={setNodeRef} style={style}>
+      <div ref={setNodeRef} style={{ ...style, width: "100%" }}>
         <motion.div
-          className={styles.cardContainer}
-          ref={cardRef as React.Ref<HTMLDivElement>}
-          variants={animations && isOverlay ? overlayVariants : undefined}
-          initial={isOverlay ? "hidden" : undefined}
-          animate={isOverlay ? "visible" : undefined}
+          style={{ width: "100%" }}
+          variants={!isOverlay ? cardWrapperVariants : undefined}
+          initial={!isOverlay ? "initial" : undefined}
+          animate={!isOverlay ? "animate" : undefined}
+          exit={!isOverlay ? "exit" : undefined}
+          layout
         >
-          <AnimatePresence mode="wait">
-            {isReordering &&
-            taskSort === "default" &&
-            !home &&
-            !editionMode &&
-            canEditOrDelete ? (
-              <div className={styles.dragDropContainer}>
+          <motion.div
+            className={styles.cardContainer}
+            ref={cardRef as React.Ref<HTMLDivElement>}
+            variants={animations && isOverlay ? overlayVariants : undefined}
+            initial={isOverlay ? "hidden" : undefined}
+            animate={isOverlay ? "visible" : undefined}
+          >
+            <AnimatePresence mode="wait">
+              {isReordering &&
+              taskSort === "default" &&
+              !home &&
+              !editionMode &&
+              canEditOrDelete ? (
+                <div className={styles.dragDropContainer}>
+                  <motion.div
+                    key="drag-drop-icon"
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.6, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    {...attributes}
+                    {...listeners}
+                    className={styles.dragDropIcon}
+                  >
+                    <DragDropVerticalIcon
+                      style={{
+                        width: "16px",
+                        height: "16px",
+                        stroke: "var(--text)",
+                        strokeWidth: 2,
+                      }}
+                    />
+                  </motion.div>
+                </div>
+              ) : (
                 <motion.div
-                  key="drag-drop-icon"
+                  key="checkbox-container"
+                  className={styles.checkboxContainer}
                   initial={{ scale: 0.6, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.6, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  {...attributes}
-                  {...listeners}
-                  className={styles.dragDropIcon}
                 >
-                  <DragDropVerticalIcon
-                    style={{
-                      width: "16px",
-                      height: "16px",
-                      stroke: "var(--text)",
-                      strokeWidth: 2,
-                    }}
-                  />
+                  {task.completed !== null ? (
+                    <Checkbox
+                      status={completed}
+                      handleUpdateStatus={handleUpdateStatus}
+                      ariaLabel="Marcar tarea como completada"
+                    />
+                  ) : (
+                    <Note
+                      style={{
+                        width: "15px",
+                        stroke: "var(--icon-colorv2)",
+                        strokeWidth: "2",
+                        opacity: "0.2",
+                      }}
+                    />
+                  )}
                 </motion.div>
-              </div>
-            ) : (
-              <motion.div
-                key="checkbox-container"
-                className={styles.checkboxContainer}
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.6, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {task.completed !== null ? (
-                  <Checkbox
-                    status={completed}
-                    handleUpdateStatus={handleUpdateStatus}
-                    ariaLabel="Marcar tarea como completada"
-                  />
-                ) : (
-                  <Note
-                    style={{
-                      width: "15px",
-                      stroke: "var(--icon-colorv2)",
-                      strokeWidth: "2",
-                      opacity: "0.2",
-                    }}
-                  />
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+              )}
+            </AnimatePresence>
 
-          <div className={styles.textContainer}>
-            {isHtml ? (
-              <div
-                ref={textRef as React.RefObject<HTMLDivElement>}
-                className={styles.text}
-                style={{ opacity: completed ? 0.3 : 1 }}
-                dangerouslySetInnerHTML={{ __html: displayContent }}
-              />
-            ) : (
-              <p
-                ref={textRef as React.RefObject<HTMLParagraphElement>}
-                className={styles.text}
-                style={{ opacity: completed ? 0.3 : 1 }}
-              >
-                {linkifyWithIcon(displayContent)}
-              </p>
-            )}
-            <WavyStrikethrough textRef={textRef as any} completed={completed} />
-          </div>
-
-          {user?.user_id !== task.created_by?.user_id && (
-            <div
-              style={{
-                position: "relative",
-                width: "30px",
-                height: "30px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                opacity: 0.2,
-              }}
-            >
-              <div
-                style={{
-                  width: "25px",
-                  height: "25px",
-                  backgroundImage: `url(${task.created_by?.avatar_url})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  borderRadius: "50%",
-                }}
+            <div className={styles.textContainer}>
+              {isHtml ? (
+                <div
+                  ref={textRef as React.RefObject<HTMLDivElement>}
+                  className={styles.text}
+                  style={{ opacity: completed ? 0.3 : 1 }}
+                  dangerouslySetInnerHTML={{ __html: displayContent }}
+                />
+              ) : (
+                <p
+                  ref={textRef as React.RefObject<HTMLParagraphElement>}
+                  className={styles.text}
+                  style={{ opacity: completed ? 0.3 : 1 }}
+                >
+                  {linkifyWithIcon(displayContent)}
+                </p>
+              )}
+              <WavyStrikethrough
+                textRef={textRef as any}
+                completed={completed}
               />
             </div>
-          )}
 
-          <div className={styles.editingButtons}>
-            <TimeLimitBox
-              target_date={task.target_date}
-              idScrollArea="task-section-scroll-area"
-              completed={completed}
-            />
-            <ConfigMenu
-              iconWidth="25px"
-              configOptions={configOptions}
-              idScrollArea="task-section-scroll-area"
-            />
-          </div>
+            {user?.user_id !== task.created_by?.user_id && (
+              <div
+                style={{
+                  position: "relative",
+                  width: "30px",
+                  height: "30px",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  opacity: 0.2,
+                }}
+              >
+                <div
+                  style={{
+                    width: "25px",
+                    height: "25px",
+                    backgroundImage: `url(${task.created_by?.avatar_url})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    borderRadius: "50%",
+                  }}
+                />
+              </div>
+            )}
+
+            <div className={styles.editingButtons}>
+              <TimeLimitBox
+                target_date={task.target_date}
+                idScrollArea="task-section-scroll-area"
+                completed={completed}
+              />
+              <ConfigMenu
+                iconWidth="25px"
+                configOptions={configOptions}
+                idScrollArea="task-section-scroll-area"
+              />
+            </div>
+          </motion.div>
         </motion.div>
       </div>
     );
