@@ -5,17 +5,23 @@ import { createHmac } from "crypto";
 
 const GATEWAY = "mercadopago" as const;
 
-const mpClient = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN!,
-});
-const preapproval = new PreApproval(mpClient);
-const payment = new Payment(mpClient);
+function getMPClients() {
+  const mpClient = new MercadoPagoConfig({
+    accessToken: process.env.MP_ACCESS_TOKEN!,
+  });
+  return {
+    preapproval: new PreApproval(mpClient),
+    payment: new Payment(mpClient),
+  };
+}
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } },
-);
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+}
 
 type OurSubscriptionStatus =
   | "active"
@@ -42,12 +48,17 @@ function verifyMPSignature(req: Request, rawBody: string): boolean {
 
   let parsedBody: any = {};
   if (rawBody) {
-    try { parsedBody = JSON.parse(rawBody); } catch (e) {}
+    try {
+      parsedBody = JSON.parse(rawBody);
+    } catch (e) {}
   }
 
   const url = new URL(req.url);
   const dataId =
-    url.searchParams.get("data.id") ?? url.searchParams.get("id") ?? parsedBody.data?.id ?? "";
+    url.searchParams.get("data.id") ??
+    url.searchParams.get("id") ??
+    parsedBody.data?.id ??
+    "";
 
   const parts: Record<string, string> = {};
   xSig.split(",").forEach((part) => {
@@ -82,6 +93,7 @@ function mapMPStatus(
 }
 
 async function registerEvent(
+  supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
   eventId: string,
   eventType: string,
   payload: object,
@@ -100,12 +112,18 @@ async function registerEvent(
 }
 
 export async function POST(req: Request) {
+  const supabaseAdmin = getSupabaseAdmin();
+  const { preapproval, payment } = getMPClients();
+
   let rawBody: string;
   let parsedBody: any = {};
+
   try {
     rawBody = await req.text();
     if (rawBody) {
-      try { parsedBody = JSON.parse(rawBody); } catch (e) {}
+      try {
+        parsedBody = JSON.parse(rawBody);
+      } catch (e) {}
     }
   } catch {
     return new NextResponse("Bad request", { status: 400 });
@@ -116,11 +134,18 @@ export async function POST(req: Request) {
   }
 
   const url = new URL(req.url);
-  let type = url.searchParams.get("type") ?? url.searchParams.get("topic") ?? parsedBody.type;
+  let type =
+    url.searchParams.get("type") ??
+    url.searchParams.get("topic") ??
+    parsedBody.type;
   if (!type && parsedBody.action) {
-     type = parsedBody.action.split('.')[0]; 
+    type = parsedBody.action.split(".")[0];
   }
-  const id = url.searchParams.get("data.id") ?? url.searchParams.get("id") ?? parsedBody.data?.id;
+
+  const id =
+    url.searchParams.get("data.id") ??
+    url.searchParams.get("id") ??
+    parsedBody.data?.id;
 
   if (!type || !id) {
     return new NextResponse("Missing fields", { status: 400 });
@@ -143,11 +168,13 @@ export async function POST(req: Request) {
       const eventId = `${type}:${id}:${sub.status}`;
 
       if (sub.status === "pending") {
-        console.log(`[MP] Ignorando checkout iniciado (pending) para sub: ${sub.id}`);
+        console.log(
+          `[MP] Ignorando checkout iniciado (pending) para sub: ${sub.id}`,
+        );
         return new NextResponse("OK", { status: 200 });
       }
 
-      const isNew = await registerEvent(eventId, type, {
+      const isNew = await registerEvent(supabaseAdmin, eventId, type, {
         type,
         id,
         status: sub.status,
@@ -164,10 +191,11 @@ export async function POST(req: Request) {
       const startDate = autoRecurring?.start_date
         ? new Date(autoRecurring.start_date)
         : null;
-      const hasActiveTrial = startDate !== null && ((startDate.getTime() - new Date().getTime()) > 2 * 24 * 60 * 60 * 1000);
+      const hasActiveTrial =
+        startDate !== null &&
+        startDate.getTime() - new Date().getTime() > 2 * 24 * 60 * 60 * 1000;
 
       const status = mapMPStatus(sub.status, hasActiveTrial);
-
       const now = new Date();
 
       const { data: existingSub } = await supabaseAdmin
@@ -181,7 +209,9 @@ export async function POST(req: Request) {
         periodEnd = new Date(existingSub.current_period_end);
       } else {
         if (status === "canceled") {
-          console.log(`[MP] Ignorando checkout iniciado (cancelled/rejected) para sub: ${sub.id}`);
+          console.log(
+            `[MP] Ignorando checkout iniciado (cancelled/rejected) para sub: ${sub.id}`,
+          );
           return new NextResponse("Ignored", { status: 200 });
         } else {
           periodEnd =
@@ -221,13 +251,14 @@ export async function POST(req: Request) {
       console.log(
         `[MP] ✅ sub ${sub.id}: MP="${sub.status}" trial=${hasActiveTrial} → BD="${status}" user=${userId}`,
       );
-    }
-
-    else if (type === "subscription_preapproval_deactivated") {
+    } else if (type === "subscription_preapproval_deactivated") {
       const sub = await preapproval.get({ id });
       const eventId = `${type}:${id}`;
 
-      const isNew = await registerEvent(eventId, type, { type, id });
+      const isNew = await registerEvent(supabaseAdmin, eventId, type, {
+        type,
+        id,
+      });
       if (!isNew) return new NextResponse("Duplicate", { status: 200 });
 
       const { error } = await supabaseAdmin.rpc("cancel_gateway_subscription", {
@@ -238,10 +269,10 @@ export async function POST(req: Request) {
 
       if (error) throw new Error(error.message);
       console.log(`[MP] ✅ Cancelada: ${sub.id}`);
-    }
-
-    else if (type === "payment" || type === "subscription_authorized_payment") {
-      
+    } else if (
+      type === "payment" ||
+      type === "subscription_authorized_payment"
+    ) {
       if (type === "subscription_authorized_payment") {
         const sub = await preapproval.get({ id });
         const rawRef = sub.external_reference || "";
@@ -253,12 +284,16 @@ export async function POST(req: Request) {
         }
 
         const cycleDate = sub.next_payment_date
-          ? new Date(sub.next_payment_date).toISOString().slice(0, 10) 
+          ? new Date(sub.next_payment_date).toISOString().slice(0, 10)
           : new Date().toISOString().slice(0, 10);
 
         const eventId = `${type}:${id}:${cycleDate}`;
 
-        const isNew = await registerEvent(eventId, type, { type, id, cycleDate });
+        const isNew = await registerEvent(supabaseAdmin, eventId, type, {
+          type,
+          id,
+          cycleDate,
+        });
         if (!isNew) {
           console.log(`[MP] Duplicado ignorado: ${eventId}`);
           return new NextResponse("Duplicate", { status: 200 });
@@ -287,15 +322,19 @@ export async function POST(req: Request) {
         );
 
         if (error) throw new Error(error.message);
-        console.log(`[MP] ✅ Renovación procesada para user ${userId}, ciclo: ${cycleDate}`);
-        
+        console.log(
+          `[MP] ✅ Renovación procesada para user ${userId}, ciclo: ${cycleDate}`,
+        );
       } else {
         const eventId = `${type}:${id}`;
-        const isNew = await registerEvent(eventId, type, { type, id });
+
+        const isNew = await registerEvent(supabaseAdmin, eventId, type, {
+          type,
+          id,
+        });
         if (!isNew) return new NextResponse("Duplicate", { status: 200 });
 
         const pay = await payment.get({ id });
-
         if (pay.status !== "approved") {
           console.log(`[MP] Pago ${id} ignorado (${pay.status})`);
           return new NextResponse("OK", { status: 200 });
@@ -308,6 +347,7 @@ export async function POST(req: Request) {
         const rawRef = sub.external_reference || "";
         const [userId, tierStr] = rawRef.split("|");
         const purchasedTier = tierStr || "pro";
+
         if (!userId) return new NextResponse("OK", { status: 200 });
 
         const periodEnd = sub.next_payment_date
