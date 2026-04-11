@@ -1,5 +1,5 @@
 import { AI_CONFIG } from "../config";
-import { ACTION_PROMPTS, AIProvider, EnhanceAction } from "../aiProvider";
+import { ACTION_PROMPTS, AIProvider, AITaskSplitResponse, EnhanceAction, SPLIT_TASK_SYSTEM_PROMPT } from "../aiProvider";
 
 const GENERATE_TASKS_SYSTEM_PROMPT = `Eres un asistente de planificación personal. El usuario describirá un objetivo o situación.
 Tu tarea es generar tareas concretas, accionables y bien distribuidas en el tiempo, con indicaciones bien detalladas para cada una.
@@ -109,4 +109,29 @@ export class DeepseekProvider implements AIProvider {
       return JSON.parse(jsonMatch[0]);
     }
   }
-}
+
+  async splitTask(taskContent: string, maxSubtasks: number): Promise<AITaskSplitResponse> {
+    const userPrompt = `Número máximo de subtareas: ${maxSubtasks}\n\nA continuación, la tarea que debes dividir en subtareas más pequeñas. Genera el JSON con las subtareas según las reglas.\n\n=== INICIO DE LA TAREA === ${taskContent}\n=== FIN DE LA TAREA ===`;
+
+    const raw = await this.callDeepSeek(SPLIT_TASK_SYSTEM_PROMPT, userPrompt, true);
+
+    if (!raw) throw new Error("No se recibió respuesta de DeepSeek.");
+
+    try {
+      const parsed = JSON.parse(raw) as AITaskSplitResponse;
+      parsed.tasks = (parsed.tasks ?? [])
+        .slice(0, maxSubtasks)
+        .map(task => ({
+          ...task,
+          text: (task.text ?? "").slice(0, 200),
+          type: task.type === "note" ? "note" : "check",
+          target_date: task.target_date ?? null,
+        }));
+      return parsed;
+    } catch {
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("DeepSeek no devolvió un JSON válido para el split.");
+      return JSON.parse(jsonMatch[0]);
+    }
+  }
+}

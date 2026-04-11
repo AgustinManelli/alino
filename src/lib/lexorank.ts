@@ -102,12 +102,17 @@ export function calcNewItemRankFromMultipleLists(
  * Intenta parsear un rank. Retorna null si el valor no es un LexoRank válido.
  * Esto protege contra ranks legacy, UUIDs, o valores corruptos en la DB.
  */
-function tryParse(rank: string): ReturnType<typeof LexoRank.parse> | null {
+export function parseRank(rank: string): ReturnType<typeof LexoRank.parse> | null {
   try {
     return LexoRank.parse(rank);
   } catch {
     return null;
   }
+}
+
+/** Alias interno */
+function tryParse(rank: string): ReturnType<typeof LexoRank.parse> | null {
+  return parseRank(rank);
 }
 
 /**
@@ -143,6 +148,16 @@ export function calculateNewRank(
   });
 
   return tryParse(maxRank)!.genNext().toString();
+}
+
+/**
+ * Genera el siguiente rank después del que se pasa como argumento.
+ * Útil para crear ranks consecutivos en una inserción batch.
+ */
+export function calculateNextRankAfter(currentRank: string): string {
+  const parsed = tryParse(currentRank);
+  if (!parsed) return LexoRank.middle().toString();
+  return parsed.genNext().toString();
 }
 
 

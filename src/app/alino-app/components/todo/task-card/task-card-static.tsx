@@ -5,13 +5,14 @@ import { animate } from "motion";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
+import { useSplitTaskModalStore } from "@/store/useSplitTaskModalStore";
 import type { TaskType } from "@/lib/schemas/database.types";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { linkifyWithIcon } from "@/utils/linkify";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
-import { DeleteIcon, Edit, Note } from "@/components/ui/icons/icons";
+import { DeleteIcon, Edit, Note, SplitIcon } from "@/components/ui/icons/icons";
 import { isHtmlContent } from "@/components/ui/RichTextEditor/richTextUtils";
 import styles from "./task-card.module.css";
 
@@ -40,6 +41,7 @@ export const TaskCardStatic = memo(
       })),
     );
     const user = useUserDataStore((state) => state.user);
+    const openSplitModal = useSplitTaskModalStore((state) => state.openModal);
     const cardRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLElement>(null);
 
@@ -92,6 +94,36 @@ export const TaskCardStatic = memo(
       [task.task_id, deleteTask],
     );
 
+    const handleSplit = useCallback(() => {
+      const allTasks = useTodoDataStore.getState().tasks;
+      const listTasks = allTasks.filter((t) => t.list_id === task.list_id);
+
+      const sorted = [...listTasks].sort((a, b) => {
+        const ra = a.rank;
+        const rb = b.rank;
+        if (ra && rb) return ra > rb ? -1 : ra < rb ? 1 : 0;
+        if (ra && !rb) return -1;
+        if (!ra && rb) return 1;
+        return (
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      });
+
+      const idx = sorted.findIndex((t) => t.task_id === task.task_id);
+      const prevTaskRank =
+        idx >= 0 && idx < sorted.length - 1
+          ? (sorted[idx + 1]?.rank ?? null)
+          : null;
+
+      openSplitModal({
+        taskContent: task.task_content,
+        taskId: task.task_id,
+        listId: task.list_id,
+        taskRank: task.rank ?? null,
+        prevTaskRank,
+      });
+    }, [task, openSplitModal]);
+
     const canEditOrDelete = list?.role !== "reader";
     const configOptions = useMemo(
       () =>
@@ -112,6 +144,21 @@ export const TaskCardStatic = memo(
             enabled: canEditOrDelete,
           },
           {
+            name: "Dividir",
+            icon: (
+              <SplitIcon
+                style={{
+                  width: "14px",
+                  height: "auto",
+                  stroke: "var(--text)",
+                  strokeWidth: 2,
+                }}
+              />
+            ),
+            action: handleSplit,
+            enabled: canEditOrDelete && task.completed !== null,
+          },
+          {
             name: "Eliminar",
             icon: (
               <DeleteIcon
@@ -127,7 +174,7 @@ export const TaskCardStatic = memo(
             enabled: canEditOrDelete,
           },
         ].filter((o) => o.enabled),
-      [handleEdit, handleDelete],
+      [handleEdit, handleSplit, handleDelete, canEditOrDelete, task.completed],
     );
 
     const isHtml = isHtmlContent(task.task_content);

@@ -50,6 +50,48 @@ export const ArrowLeft = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
+export const SplitIcon = ({ style }: { style?: React.CSSProperties }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      style={style}
+    >
+      <path
+        d="M16 3H21V8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M21 3L14 10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 3H3V8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M3 3L10 10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 14L12 21"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 10L12 14"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
 export const UserIcon = ({ style }: { style?: React.CSSProperties }) => {
   return (
     <svg

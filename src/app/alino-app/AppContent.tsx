@@ -14,6 +14,7 @@ import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { EditTaskModal } from "@/components/ui/EditTaskModal";
 import { PremiumModal } from "@/components/ui/PremiumModal";
 import { PomodoroMiniIndicator } from "@/components/ui/PomodoroMiniIndicator";
+import { SplitTaskModal } from "@/components/ui/SplitTaskModal";
 
 import styles from "./AlinoAppLayout.module.css";
 
@@ -46,6 +47,7 @@ export const AppContent = ({ children }: Props) => {
       <EditTaskModal />
       <ConfirmationModal />
       <PremiumModal />
+      <SplitTaskModal />
       <PomodoroMiniIndicator />
       <section className={styles.topButtons}>
         <NotificationsSection />

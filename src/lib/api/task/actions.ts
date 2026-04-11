@@ -29,7 +29,8 @@ export const insertTask = async (
   task_content: string,
   task_id: string,
   target_date: string | null,
-  note: boolean
+  note: boolean,
+  rank: string | null
 ) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
@@ -43,14 +44,14 @@ export const insertTask = async (
         task_content,
         target_date,
         completed: note ? null : false,
+        rank,
       })
       .select()
       .single();
 
     if (error) {
-      throw new Error(
-        "Failed to add the task to the database. Please try again later."
-      );
+      console.error("[insertTask] Supabase error:", error);
+      throw new Error(error.message || "Failed to add the task to the database.");
     }
 
     return { data };
@@ -70,6 +71,7 @@ export const insertTasks = async (
     task_id: string;
     target_date: string | null;
     completed: boolean | null;
+    rank: string | null;
   }[]
 ) => {
   try {
@@ -96,9 +98,8 @@ export const insertTasks = async (
       .select();
 
     if (error) {
-      throw new Error(
-        "Failed to add tasks to the database. Please try again later."
-      );
+      console.error("[insertTasks] Supabase error:", error);
+      throw new Error(error.message || "Failed to add tasks to the database.");
     }
 
     return { data: insertedData };
@@ -309,7 +310,9 @@ export const getPaginatedTasks = async (
         query = query.order("task_content", { ascending: false });
         break;
       default:
-        query = query.order("created_at", { ascending: false });
+        query = query
+          .order("rank", { ascending: false, nullsFirst: false })
+          .order("created_at", { ascending: false });
         break;
     }
 

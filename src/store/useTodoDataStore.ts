@@ -48,7 +48,7 @@ import {
   UserProfile,
   UserWithMembershipRole,
 } from "@/lib/schemas/database.types";
-import { calculateNewRank } from "@/lib/lexorank";
+import { calculateNewRank, calculateNextRankAfter } from "@/lib/lexorank";
 import { globalUserStore } from "@/store/useUserDataStore";
 
 const POS_INDEX = 16384;
@@ -96,7 +96,13 @@ const calculateNewIndex = (
 };
 
 function handleError(err: unknown) {
-  toast.error((err as Error).message || "Error desconocido");
+  if (err instanceof Error) {
+    toast.error(err.message || "Error desconocido");
+  } else if (typeof err === "string") {
+    toast.error(err || "Error desconocido");
+  } else {
+    toast.error("Error desconocido");
+  }
 }
 
 // Tipo del store
@@ -198,6 +204,7 @@ type TodoStore = {
   ) => Promise<{ error?: string }>,
   removeMember: (listId: string, targetUserId: string) => Promise<{ error?: string }>,
   verifyAndFetchList: (listId: string) => Promise<boolean>,
+  batchInjectTasks: (tasks: TaskType[]) => void;
 };
 
 type TaggedAsList = ListsType & { _item_type: "list" };
@@ -1071,6 +1078,10 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       avatar_url: user.avatar_url,
     };
 
+    // Calcular rank para que la nueva tarea aparezca primero (rank más alto en orden DESC)
+    const listTasks = get().tasks.filter((t) => t.list_id === list_id);
+    const rank = calculateNewRank(listTasks, []);
+
     const optimisticTask: TaskType = {
       task_id: optimisticId,
       task_content,
@@ -1078,6 +1089,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       target_date,
       completed: note ? null : false,
       index: 0,
+      rank,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       created_by: createdBy,
@@ -1113,7 +1125,8 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       task_content,
       optimisticId,
       target_date,
-      note
+      note,
+      rank
     );
 
     if (error) {
@@ -1152,13 +1165,28 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       avatar_url: user.avatar_url,
     };
 
-    const optimisticTasks: TaskType[] = tasksData.map((t) => ({
+    const primaryListId = tasksData[0]?.list_id;
+    const listTasks = primaryListId
+      ? get().tasks.filter((t) => t.list_id === primaryListId)
+      : [];
+
+    const taskRanks: string[] = [];
+    let currentRank = calculateNewRank(listTasks, []);
+    taskRanks.push(currentRank);
+    for (let i = 1; i < tasksData.length; i++) {
+      currentRank = calculateNextRankAfter(currentRank);
+      taskRanks.push(currentRank);
+    }
+    taskRanks.reverse();
+
+    const optimisticTasks: TaskType[] = tasksData.map((t, i) => ({
       task_id: uuidv4(),
       task_content: t.task_content,
       list_id: t.list_id,
       target_date: t.target_date,
       completed: t.note ? null : false,
       index: 0,
+      rank: taskRanks[i] ?? null,
       created_at: now,
       updated_at: now,
       created_by: createdBy,
@@ -1178,6 +1206,7 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         task_content: t.task_content,
         target_date: t.target_date,
         completed: t.completed,
+        rank: t.rank,
       }))
     );
 
@@ -1388,5 +1417,38 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       console.error("Error verifying list:", err);
       return false;
     }
+  },
+
+  batchInjectTasks: (newTasks) => {
+    if (!newTasks || newTasks.length === 0) return;
+
+    set((state) => {
+      const existingIds = new Set(state.tasks.map((t) => t.task_id));
+      const toAdd = newTasks.filter((t) => !existingIds.has(t.task_id));
+      if (toAdd.length === 0) return state;
+
+      const countsByList: Record<string, number> = {};
+      for (const t of toAdd) {
+        countsByList[t.list_id] = (countsByList[t.list_id] ?? 0) + 1;
+      }
+
+      const updatedLists = state.lists.map((l) => {
+        const addCount = countsByList[l.list_id] ?? 0;
+        if (addCount === 0) return l;
+        const currentCount = readTaskCount(l, state.tasks);
+        return {
+          ...l,
+          list: {
+            ...l.list,
+            tasks: makeTaskCountPayload(currentCount + addCount),
+          },
+        };
+      });
+
+      return {
+        tasks: [...toAdd, ...state.tasks],
+        lists: updatedLists,
+      };
+    });
   },
 }));

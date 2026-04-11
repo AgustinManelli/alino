@@ -5,6 +5,8 @@ export const AI_CREDIT_COSTS = {
   enhance: 1,
   /** Generar lista de tareas con IA */
   generateTasks: 3,
+  /** Dividir una tarea en subtareas con IA */
+  splitTask: 3,
 } as const;
 
 export type AIOperation = keyof typeof AI_CREDIT_COSTS;

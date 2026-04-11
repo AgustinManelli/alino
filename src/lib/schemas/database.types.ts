@@ -554,6 +554,7 @@ export type Database = {
           description: string | null
           index: number
           list_id: string
+          rank: string | null
           target_date: string | null
           task_content: string
           task_id: string
@@ -566,6 +567,7 @@ export type Database = {
           description?: string | null
           index?: number
           list_id: string
+          rank?: string | null
           target_date?: string | null
           task_content: string
           task_id?: string
@@ -578,6 +580,7 @@ export type Database = {
           description?: string | null
           index?: number
           list_id?: string
+          rank?: string | null
           target_date?: string | null
           task_content?: string
           task_id?: string

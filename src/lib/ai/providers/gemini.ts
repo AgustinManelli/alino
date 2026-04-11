@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { AI_CONFIG } from "../config";
-import { ACTION_PROMPTS, AIGeneratedTask, AIProvider, EnhanceAction } from "../aiProvider";
+import { ACTION_PROMPTS, AIGeneratedTask, AIProvider, AITaskSplitResponse, EnhanceAction, SPLIT_TASK_SYSTEM_PROMPT } from "../aiProvider";
 
 const GENERATE_TASKS_SYSTEM_PROMPT = `Eres un asistente de planificación personal. El usuario describirá un objetivo o situación.
 Tu tarea es generar tareas concretas, accionables y bien distribuidas en el tiempo.
@@ -66,6 +66,30 @@ export class GeminiProvider implements AIProvider {
 
     const parsed = JSON.parse(jsonMatch[0]) as import("../aiProvider").AITaskGenerationResponse;
     parsed.tasks = parsed.tasks.slice(0, maxTasks);
+    return parsed;
+  }
+
+  async splitTask(taskContent: string, maxSubtasks: number): Promise<AITaskSplitResponse> {
+    const fullPrompt = `${SPLIT_TASK_SYSTEM_PROMPT}\n\nNúmero máximo de subtareas: ${maxSubtasks}\n\nTarea a dividir:\n${taskContent}`;
+
+    const response = await this.client.models.generateContent({
+      model: AI_CONFIG.model,
+      contents: fullPrompt,
+    });
+
+    const raw = response.text?.trim();
+    if (!raw) throw new Error("No se recibió respuesta del modelo.");
+
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("La IA no devolvió JSON válido para el split.");
+
+    const parsed = JSON.parse(jsonMatch[0]) as AITaskSplitResponse;
+    parsed.tasks = (parsed.tasks ?? []).slice(0, maxSubtasks).map(task => ({
+      ...task,
+      text: (task.text ?? "").slice(0, 200),
+      type: task.type === "note" ? "note" : "check",
+      target_date: task.target_date ?? null,
+    }));
     return parsed;
   }
 }
