@@ -34,6 +34,7 @@ import {
   insertTasks,
   updateCompletedTask,
   updateNameTask,
+  updateTaskRank,
 } from "@/lib/api/task/actions";
 
 import {
@@ -184,6 +185,10 @@ type TodoStore = {
     task_content: string,
     completed: boolean | null,
     target_date: string | null
+  ) => Promise<{ error: string | null }>;
+  updateTaskRank: (
+    task_id: string,
+    rank: string
   ) => Promise<{ error: string | null }>;
   getUsersMembersList: (listId: string) => Promise<UserWithMembershipRole[]>;
   createListInvitation: (
@@ -1303,6 +1308,42 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
       completed,
       target_date
     );
+
+    if (error) {
+      handleError(error);
+      set({ tasks: prevTasks });
+      return { error };
+    }
+
+    return { error: null };
+  },
+
+  updateTaskRank: async (task_id, new_rank) => {
+    const originalTask = get().tasks.find((t) => t.task_id === task_id);
+    if (!originalTask) return { error: "Task not found" };
+    const prevTasks = get().tasks.slice();
+
+    set((state) => {
+      const newTasks = state.tasks.map((t) =>
+        t.task_id === task_id ? { ...t, rank: new_rank } : t
+      );
+
+      if (get().taskSort === "default") {
+        newTasks.sort((a, b) => {
+          const ra = a.rank ?? "";
+          const rb = b.rank ?? "";
+          if (ra > rb) return -1;
+          if (ra < rb) return 1;
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        });
+      }
+
+      return { tasks: newTasks };
+    });
+
+    const { error } = await updateTaskRank(task_id, new_rank);
 
     if (error) {
       handleError(error);

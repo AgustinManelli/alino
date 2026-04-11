@@ -2,6 +2,10 @@
 import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { animate } from "motion";
+import { AnimatePresence, motion } from "motion/react";
+import type { Variants } from "motion/react";
+import { useSortable } from "@dnd-kit/sortable";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
@@ -11,20 +15,46 @@ import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { linkifyWithIcon } from "@/utils/linkify";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
-import { DeleteIcon, Edit, Note, SplitIcon } from "@/components/ui/icons/icons";
+import {
+  DeleteIcon,
+  Edit,
+  Note,
+  SplitIcon,
+  DefaultSortIcon,
+  DragDropVerticalIcon,
+} from "@/components/ui/icons/icons";
 import { isHtmlContent } from "@/components/ui/RichTextEditor/richTextUtils";
 import styles from "./task-card.module.css";
 import { useModalStore } from "@/store/useModalStore";
+
+const overlayVariants: Variants = {
+  hidden: { opacity: 1 },
+  visible: {
+    rotate: [-1, 1],
+    x: [-0.5, 0.5],
+    y: [-0.5, 0.5],
+    transition: {
+      duration: 0.12,
+      ease: "easeInOut",
+      repeat: Infinity,
+      repeatType: "reverse",
+    },
+  },
+};
 
 export const TaskCardStatic = memo(
   ({
     task,
     editionMode = false,
     home = false,
+    isOverlay = false,
+    isReordering = false,
   }: {
     task: TaskType;
     editionMode?: boolean;
     home?: boolean;
+    isOverlay?: boolean;
+    isReordering?: boolean;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
     const { openModal, taskEditing } = useEditTaskModalStore(
@@ -40,7 +70,9 @@ export const TaskCardStatic = memo(
         updateTaskCompleted: state.updateTaskCompleted,
       })),
     );
+    const taskSort = useTodoDataStore((state) => state.taskSort);
     const user = useUserDataStore((state) => state.user);
+    const animations = useUserPreferencesStore((state) => state.animations);
     const openSplitModal = useModalStore((s) => s.open);
     const cardRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLElement>(null);
@@ -187,84 +219,159 @@ export const TaskCardStatic = memo(
         : task.task_content.slice(0, 200)
       : task.task_content;
 
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({
+      id: task.task_id,
+      disabled:
+        !isReordering ||
+        taskSort !== "default" ||
+        editionMode ||
+        home ||
+        isOverlay ||
+        !canEditOrDelete,
+    });
+
+    const style = useMemo<React.CSSProperties>(
+      () => ({
+        transform: `translate3d(${transform?.x || 0}px, ${transform?.y || 0}px, 0)`,
+        transition,
+        opacity: isDragging ? 0.3 : undefined,
+        zIndex: isDragging ? 99 : 1,
+        pointerEvents: isDragging ? "none" : "auto",
+        width: "100%",
+      }),
+      [transform, transition, isDragging],
+    );
+
     return (
-      <div className={styles.cardContainer} ref={cardRef}>
-        <div className={styles.checkboxContainer}>
-          {task.completed !== null ? (
-            <Checkbox
-              status={completed}
-              handleUpdateStatus={handleUpdateStatus}
-              ariaLabel="Marcar tarea como completada"
-            />
-          ) : (
-            <Note
-              style={{
-                width: "15px",
-                stroke: "var(--icon-colorv2)",
-                strokeWidth: "2",
-                opacity: "0.2",
-              }}
-            />
-          )}
-        </div>
+      <div ref={setNodeRef} style={style}>
+        <motion.div
+          className={styles.cardContainer}
+          ref={cardRef as React.Ref<HTMLDivElement>}
+          variants={animations && isOverlay ? overlayVariants : undefined}
+          initial={isOverlay ? "hidden" : undefined}
+          animate={isOverlay ? "visible" : undefined}
+        >
+          <AnimatePresence mode="wait">
+            {isReordering &&
+            taskSort === "default" &&
+            !home &&
+            !editionMode &&
+            canEditOrDelete ? (
+              <div className={styles.dragDropContainer}>
+                <motion.div
+                  key="drag-drop-icon"
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.6, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  {...attributes}
+                  {...listeners}
+                  className={styles.dragDropIcon}
+                >
+                  <DragDropVerticalIcon
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      stroke: "var(--text)",
+                      strokeWidth: 2,
+                    }}
+                  />
+                </motion.div>
+              </div>
+            ) : (
+              <motion.div
+                key="checkbox-container"
+                className={styles.checkboxContainer}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.6, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {task.completed !== null ? (
+                  <Checkbox
+                    status={completed}
+                    handleUpdateStatus={handleUpdateStatus}
+                    ariaLabel="Marcar tarea como completada"
+                  />
+                ) : (
+                  <Note
+                    style={{
+                      width: "15px",
+                      stroke: "var(--icon-colorv2)",
+                      strokeWidth: "2",
+                      opacity: "0.2",
+                    }}
+                  />
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        <div className={styles.textContainer}>
-          {isHtml ? (
+          <div className={styles.textContainer}>
+            {isHtml ? (
+              <div
+                ref={textRef as React.RefObject<HTMLDivElement>}
+                className={styles.text}
+                style={{ opacity: completed ? 0.3 : 1 }}
+                dangerouslySetInnerHTML={{ __html: displayContent }}
+              />
+            ) : (
+              <p
+                ref={textRef as React.RefObject<HTMLParagraphElement>}
+                className={styles.text}
+                style={{ opacity: completed ? 0.3 : 1 }}
+              >
+                {linkifyWithIcon(displayContent)}
+              </p>
+            )}
+            <WavyStrikethrough textRef={textRef as any} completed={completed} />
+          </div>
+
+          {user?.user_id !== task.created_by?.user_id && (
             <div
-              ref={textRef as React.RefObject<HTMLDivElement>}
-              className={styles.text}
-              style={{ opacity: completed ? 0.3 : 1 }}
-              dangerouslySetInnerHTML={{ __html: displayContent }}
-            />
-          ) : (
-            <p
-              ref={textRef as React.RefObject<HTMLParagraphElement>}
-              className={styles.text}
-              style={{ opacity: completed ? 0.3 : 1 }}
+              style={{
+                position: "relative",
+                width: "30px",
+                height: "30px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                opacity: 0.2,
+              }}
             >
-              {linkifyWithIcon(displayContent)}
-            </p>
+              <div
+                style={{
+                  width: "25px",
+                  height: "25px",
+                  backgroundImage: `url(${task.created_by?.avatar_url})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  borderRadius: "50%",
+                }}
+              />
+            </div>
           )}
-          <WavyStrikethrough textRef={textRef as any} completed={completed} />
-        </div>
 
-        {user?.user_id !== task.created_by?.user_id && (
-          <div
-            style={{
-              position: "relative",
-              width: "30px",
-              height: "30px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              opacity: 0.2,
-            }}
-          >
-            <div
-              style={{
-                width: "25px",
-                height: "25px",
-                backgroundImage: `url(${task.created_by?.avatar_url})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                borderRadius: "50%",
-              }}
+          <div className={styles.editingButtons}>
+            <TimeLimitBox
+              target_date={task.target_date}
+              idScrollArea="task-section-scroll-area"
+              completed={completed}
+            />
+            <ConfigMenu
+              iconWidth="25px"
+              configOptions={configOptions}
+              idScrollArea="task-section-scroll-area"
             />
           </div>
-        )}
-
-        <div className={styles.editingButtons}>
-          <TimeLimitBox
-            target_date={task.target_date}
-            idScrollArea="task-section-scroll-area"
-            completed={completed}
-          />
-          <ConfigMenu
-            iconWidth="25px"
-            configOptions={configOptions}
-            idScrollArea="task-section-scroll-area"
-          />
-        </div>
+        </motion.div>
       </div>
     );
   },

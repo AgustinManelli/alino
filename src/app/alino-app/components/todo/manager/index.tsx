@@ -12,7 +12,24 @@ import { AnimatePresence } from "motion/react";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { ListsType } from "@/lib/schemas/database.types";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragEndEvent,
+  closestCenter,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { calcNewRank, LexorankItem } from "@/lib/lexorank";
+import { ListsType, TaskType } from "@/lib/schemas/database.types";
 import ListInformation from "@/app/alino-app/components/list-information";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
@@ -26,13 +43,16 @@ import {
   Information,
   LoadingIcon,
   LogOut,
+  Check,
   DefaultSortIcon,
   DueAscSortIcon,
   DueDescSortIcon,
   AlphaAscSortIcon,
   AlphaDescSortIcon,
+  DragIcon,
 } from "@/components/ui/icons/icons";
 import { TaskCardStatic } from "../task-card/task-card-static";
+import { DragTaskCard } from "../task-card/drag-task-card";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useModalStore } from "@/store/useModalStore";
 
@@ -64,9 +84,68 @@ export const Manager = memo(function Manager({
     loadingQueue,
     taskSort,
     setTaskSort,
+    updateTaskRank,
   } = useTodoDataStore();
   const user = useUserDataStore((state) => state.user);
   const openConfirmationModal = useModalStore((s) => s.open);
+
+  const [draggedTask, setDraggedTask] = useState<TaskType | null>(null);
+  const [isReordering, setIsReordering] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (taskSort !== "default") {
+      setIsReordering(false);
+    }
+  }, [taskSort]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+  );
+
+  const handleDragStart = useCallback(
+    (e: DragStartEvent) => {
+      const { active } = e;
+      const task = tasks.find((t) => t.task_id === active.id);
+      if (task) setDraggedTask(task);
+    },
+    [tasks],
+  );
+
+  const handleDragEnd = useCallback(
+    (e: DragEndEvent) => {
+      const { active, over } = e;
+      setDraggedTask(null);
+
+      if (!over || active.id === over.id) return;
+
+      const sourceTasks = tasks.filter((t) => t.list_id === setList?.list_id);
+
+      const oldIndex = sourceTasks.findIndex((t) => t.task_id === active.id);
+      const newIndex = sourceTasks.findIndex((t) => t.task_id === over.id);
+
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      const mockOrder = arrayMove(sourceTasks, oldIndex, newIndex);
+
+      // We reverse it conceptually to pass an ASCENDING array to calcNewRank
+      const ascOrder = mockOrder.slice().reverse();
+      const newAscIndex = ascOrder.findIndex((t) => t.task_id === active.id);
+      const lexoOrder = ascOrder.map((t) => ({
+        rank: t.rank ?? "",
+      })) as any as LexorankItem[];
+
+      const newRank = calcNewRank(lexoOrder, newAscIndex);
+
+      updateTaskRank(active.id as string, newRank);
+    },
+    [tasks, setList?.list_id, updateTaskRank],
+  );
+
+  const handleDragCancel = useCallback(() => setDraggedTask(null), []);
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const section1Ref = useRef<HTMLDivElement>(null);
@@ -180,6 +259,12 @@ export const Manager = memo(function Manager({
         enabled: canEdit,
       },
       {
+        name: isReordering ? "Fin de reordenar" : "Reordenar tareas",
+        icon: <DragIcon style={iconStyle} />,
+        action: () => setIsReordering((prev) => !prev),
+        enabled: canEdit && taskSort === "default",
+      },
+      {
         name: "Eliminar lista",
         icon: <DeleteIcon style={iconStyle} />,
         action: handleConfirmDelete,
@@ -205,6 +290,8 @@ export const Manager = memo(function Manager({
     canEdit,
     canDelete,
     owner,
+    isReordering,
+    taskSort,
     handleNameChange,
     handleConfirmDelete,
     handleConfirmLeave,
@@ -354,6 +441,32 @@ export const Manager = memo(function Manager({
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "4px" }}
                 >
+                  {isReordering && (
+                    <button
+                      onClick={() => setIsReordering(false)}
+                      title={"Finalizar reordenamiento"}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        width: "25px",
+                        height: "25px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        color: "var(--text)",
+                      }}
+                    >
+                      <Check
+                        style={{
+                          width: "20px",
+                          height: "auto",
+                          stroke: "var(--text)",
+                          strokeWidth: 2,
+                        }}
+                      />
+                    </button>
+                  )}
                   <Dropdown>
                     <Dropdown.Trigger
                       style={{
@@ -398,6 +511,7 @@ export const Manager = memo(function Manager({
                       ))}
                     </Dropdown.Content>
                   </Dropdown>
+
                   <ConfigMenu
                     iconWidth={"25px"}
                     configOptions={configOptions}
@@ -447,29 +561,50 @@ export const Manager = memo(function Manager({
                 )}
               </div>
             ) : filteredTasks.length > 0 ? (
-              <div className={styles.tasks}>
-                {filteredTasks.map((task) => (
-                  <TaskCardStatic key={task.task_id} task={task} />
-                ))}
-                {loadingQueue > 0 && (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      padding: "16px 0",
-                      width: "100%",
-                    }}
-                  >
-                    <LoadingIcon
-                      style={{
-                        width: "22px",
-                        stroke: "var(--text-not-available)",
-                      }}
-                    />
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                onDragCancel={handleDragCancel}
+                modifiers={[restrictToVerticalAxis]}
+              >
+                <SortableContext
+                  items={filteredTasks.map((t) => t.task_id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className={styles.tasks}>
+                    {filteredTasks.map((task) => (
+                      <TaskCardStatic
+                        key={task.task_id}
+                        task={task}
+                        isReordering={isReordering}
+                      />
+                    ))}
+                    {loadingQueue > 0 && (
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          padding: "16px 0",
+                          width: "100%",
+                        }}
+                      >
+                        <LoadingIcon
+                          style={{
+                            width: "22px",
+                            stroke: "var(--text-not-available)",
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </SortableContext>
+                <DragOverlay>
+                  {draggedTask && <DragTaskCard task={draggedTask} />}
+                </DragOverlay>
+              </DndContext>
             ) : loadingQueue > 0 ? (
               <div className={styles.tasks}>
                 {Array(3)

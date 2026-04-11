@@ -193,6 +193,34 @@ export const updateNameTask = async (
   }
 };
 
+export const updateTaskRank = async (
+  task_id: string,
+  rank: string
+) => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase
+      .from("tasks")
+      .update({ rank: rank })
+      .eq("task_id", task_id);
+
+    if (error) {
+      throw new Error(
+        "Failed to update the task rank. Please try again later."
+      );
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
 export const getSummary = async () => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();

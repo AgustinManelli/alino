@@ -58,36 +58,12 @@ export const SplitIcon = ({ style }: { style?: React.CSSProperties }) => {
       fill="none"
       style={style}
     >
-      <path
-        d="M16 3H21V8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M21 3L14 10"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M8 3H3V8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M3 3L10 10"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 14L12 21"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 10L12 14"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M16 3H21V8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M21 3L14 10" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8 3H3V8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3 3L10 10" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 14L12 21" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 10L12 14" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 };
@@ -1537,6 +1513,60 @@ export const FixIcon = ({
       <path d="M20.3584 13.3567C19.1689 14.546 16.9308 14.4998 13.4992 14.4998C11.2914 14.4998 9.50138 12.7071 9.50024 10.4993C9.50024 7.07001 9.454 4.83065 10.6435 3.64138C11.8329 2.45212 12.3583 2.50027 17.6274 2.50027C18.1366 2.49809 18.3929 3.11389 18.0329 3.47394L15.3199 6.18714C14.6313 6.87582 14.6294 7.99233 15.3181 8.68092C16.0068 9.36952 17.1234 9.36959 17.8122 8.68109L20.5259 5.96855C20.886 5.60859 21.5019 5.86483 21.4997 6.37395C21.4997 11.6422 21.5479 12.1675 20.3584 13.3567Z" />
       <path d="M13.5 14.5L7.32842 20.6716C6.22386 21.7761 4.433 21.7761 3.32843 20.6716C2.22386 19.567 2.22386 17.7761 3.32843 16.6716L9.5 10.5" />
       <path d="M5.50896 18.5H5.5" />
+    </svg>
+  );
+};
+
+export const DragDropVerticalIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      {...props}
+    >
+      <path d="M16 6C16 6.55228 15.5523 7 15 7C14.4477 7 14 6.55228 14 6C14 5.44772 14.4477 5 15 5C15.5523 5 16 5.44772 16 6Z" />
+      <path d="M10 6C10 6.55228 9.55228 7 9 7C8.44772 7 8 6.55228 8 6C8 5.44772 8.44772 5 9 5C9.55228 5 10 5.44772 10 6Z" />
+      <path d="M16 18C16 18.5523 15.5523 19 15 19C14.4477 19 14 18.5523 14 18C14 17.4477 14.4477 17 15 17C15.5523 17 16 17.4477 16 18Z" />
+      <path d="M16 12C16 12.5523 15.5523 13 15 13C14.4477 13 14 12.5523 14 12C14 11.4477 14.4477 11 15 11C15.5523 11 16 11.4477 16 12Z" />
+      <path d="M10 18C10 18.5523 9.55228 19 9 19C8.44772 19 8 18.5523 8 18C8 17.4477 8.44772 17 9 17C9.55228 17 10 17.4477 10 18Z" />
+      <path d="M10 12C10 12.5523 9.55228 13 9 13C8.44772 13 8 12.5523 8 12C8 11.4477 8.44772 11 9 11C9.55228 11 10 11.4477 10 12Z" />
+    </svg>
+  );
+};
+
+export const DragIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      {...props}
+    >
+      <path d="M8.492 16.7708L8.7397 16.528C9.30111 15.9779 9.62089 15.2262 9.62853 14.4387L9.67839 9.29499C9.68515 8.5976 9.9101 7.86083 10.5428 7.57149C11.4996 7.13391 12.6822 7.38098 12.8952 9.42674L13.2233 11.1555L18.8027 4.45497C19.9702 3.35338 22.0426 4.74594 21.1388 6.47149L17.8575 10.4213C19.1379 11.2814 23.8618 16.1719 20.0362 18.6611C19.4845 19.1418 18.1777 19.839 17.0378 20.2016C15.951 20.5474 15.2689 21.7309 14.9345 22.0003" />
+      <path d="M9.48367 3.51398C9.48367 4.35006 10.1351 5.02784 10.9386 5.02784C11.7422 5.02784 12.3936 4.35006 12.3936 3.51398C12.3936 2.6779 11.7422 2.00012 10.9386 2.00012C10.1351 2.00012 9.48367 2.6779 9.48367 3.51398ZM9.48367 3.51398H8.8398L8.0692 3.58624M3.98952 8.94285C4.82649 8.9291 5.4637 9.58457 5.47696 10.3961C5.49021 11.2077 4.86737 11.9061 4.0304 11.9198C3.19343 11.9336 2.51131 11.2487 2.49806 10.4372C2.4848 9.62562 3.15255 8.95659 3.98952 8.94285ZM3.98952 8.94285L4.07917 7.60966M5.77439 4.65096L5.44659 4.9579L5.15694 5.27066" />
     </svg>
   );
 };
