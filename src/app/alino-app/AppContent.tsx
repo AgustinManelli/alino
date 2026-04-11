@@ -10,13 +10,11 @@ import { ConfigSection } from "./components/config-section";
 import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import { InitialUserConfiguration } from "./components/initial-user-configuration";
-import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { EditTaskModal } from "@/components/ui/EditTaskModal";
-import { PremiumModal } from "@/components/ui/PremiumModal";
 import { PomodoroMiniIndicator } from "@/components/ui/PomodoroMiniIndicator";
-import { SplitTaskModal } from "@/components/ui/SplitTaskModal";
 
 import styles from "./AlinoAppLayout.module.css";
+import { ModalRenderer } from "@/components/ui/ModalRenderer";
 
 interface Props {
   children: React.ReactNode;
@@ -45,9 +43,7 @@ export const AppContent = ({ children }: Props) => {
     <>
       <RealtimeProvider />
       <EditTaskModal />
-      <ConfirmationModal />
-      <PremiumModal />
-      <SplitTaskModal />
+      <ModalRenderer />
       <PomodoroMiniIndicator />
       <section className={styles.topButtons}>
         <NotificationsSection />

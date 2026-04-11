@@ -12,7 +12,6 @@ import { AnimatePresence } from "motion/react";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { ListsType } from "@/lib/schemas/database.types";
 import ListInformation from "@/app/alino-app/components/list-information";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";
@@ -35,6 +34,7 @@ import {
 } from "@/components/ui/icons/icons";
 import { TaskCardStatic } from "../task-card/task-card-static";
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { useModalStore } from "@/store/useModalStore";
 
 const SORT_OPTIONS = [
   { value: "default", label: "Por defecto", icon: DefaultSortIcon },
@@ -66,7 +66,7 @@ export const Manager = memo(function Manager({
     setTaskSort,
   } = useTodoDataStore();
   const user = useUserDataStore((state) => state.user);
-  const openModal = useConfirmationModalStore((state) => state.openModal);
+  const openConfirmationModal = useModalStore((s) => s.open);
   const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const section1Ref = useRef<HTMLDivElement>(null);
@@ -148,22 +148,28 @@ export const Manager = memo(function Manager({
   }, [setList, leaveList]);
 
   const handleConfirmDelete = useCallback(() => {
-    openModal({
-      text: `¿Desea eliminar la lista "${setList?.list.list_name}"?`,
-      onConfirm: handleDelete,
-      additionalText:
-        "Esta acción es irreversible y eliminará todas las tareas de la lista.",
+    openConfirmationModal({
+      type: "confirmation",
+      props: {
+        text: `¿Desea eliminar la lista "${setList?.list.list_name}"?`,
+        onConfirm: handleDelete,
+        additionalText:
+          "Esta acción es irreversible y eliminará todas las tareas de la lista.",
+      },
     });
-  }, [openModal, setList, handleDelete]);
+  }, [openConfirmationModal, setList, handleDelete]);
 
   const handleConfirmLeave = useCallback(() => {
-    openModal({
-      text: `¿Desea salir de la lista "${setList?.list.list_name}"?`,
-      onConfirm: handleLeave,
-      additionalText: "Puedes regresar a ella con otra invitación.",
-      actionButton: "Salir",
+    openConfirmationModal({
+      type: "confirmation",
+      props: {
+        text: `¿Desea salir de la lista "${setList?.list.list_name}"?`,
+        onConfirm: handleLeave,
+        additionalText: "Puedes regresar a ella con otra invitación.",
+        actionButton: "Salir",
+      },
     });
-  }, [openModal, setList, handleLeave]);
+  }, [openConfirmationModal, setList, handleLeave]);
 
   const configOptions = useMemo(() => {
     const baseOptions = [

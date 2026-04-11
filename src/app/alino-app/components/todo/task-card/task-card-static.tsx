@@ -5,7 +5,6 @@ import { animate } from "motion";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
-import { useSplitTaskModalStore } from "@/store/useSplitTaskModalStore";
 import type { TaskType } from "@/lib/schemas/database.types";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
@@ -15,6 +14,7 @@ import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
 import { DeleteIcon, Edit, Note, SplitIcon } from "@/components/ui/icons/icons";
 import { isHtmlContent } from "@/components/ui/RichTextEditor/richTextUtils";
 import styles from "./task-card.module.css";
+import { useModalStore } from "@/store/useModalStore";
 
 export const TaskCardStatic = memo(
   ({
@@ -41,7 +41,7 @@ export const TaskCardStatic = memo(
       })),
     );
     const user = useUserDataStore((state) => state.user);
-    const openSplitModal = useSplitTaskModalStore((state) => state.openModal);
+    const openSplitModal = useModalStore((s) => s.open);
     const cardRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLElement>(null);
 
@@ -116,11 +116,14 @@ export const TaskCardStatic = memo(
           : null;
 
       openSplitModal({
-        taskContent: task.task_content,
-        taskId: task.task_id,
-        listId: task.list_id,
-        taskRank: task.rank ?? null,
-        prevTaskRank,
+        type: "splitTask",
+        props: {
+          taskContent: task.task_content,
+          taskId: task.task_id,
+          listId: task.list_id,
+          taskRank: task.rank ?? null,
+          prevTaskRank,
+        },
       });
     }, [task, openSplitModal]);
 

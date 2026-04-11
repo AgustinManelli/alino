@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
-import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
-import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
+import { useModalStore } from "@/store/useModalStore";
 
 interface ButtonConfigProps {
   name: string;
@@ -19,13 +16,16 @@ export function ButtonConfig({
   modalText,
   explainText,
 }: ButtonConfigProps) {
-  const openModal = useConfirmationModalStore((state) => state.openModal);
+  const openConfirmationModal = useModalStore((s) => s.open);
 
   const handleConfirm = () => {
-    openModal({
-      text: modalText,
-      onConfirm: action,
-      additionalText: explainText,
+    openConfirmationModal({
+      type: "confirmation",
+      props: {
+        text: modalText,
+        onConfirm: action,
+        additionalText: explainText,
+      },
     });
   };
 

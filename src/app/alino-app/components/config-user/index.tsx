@@ -6,13 +6,12 @@ import styles from "./ConfigUser.module.css";
 import { Edit, UserIcon } from "@/components/ui/icons/icons";
 import { IAStars } from "@/components/ui/icons/icons";
 import { useUserDataStore } from "@/store/useUserDataStore";
-import { usePremiumModalStore } from "@/store/usePremiumModalStore";
 import { toast } from "sonner";
 import {
   getActiveSubscription,
   cancelSubscriptionAction,
 } from "@/lib/api/user/actions";
-import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
+import { useModalStore } from "@/store/useModalStore";
 // import { AI_CREDIT_COSTS } from "@/lib/ai/creditCosts";
 
 export default function ConfigUser() {
@@ -28,12 +27,7 @@ export default function ConfigUser() {
   );
   const fetchAIUsage = useUserDataStore((state) => state.fetchAIUsage);
   const uploadAvatar = useUserDataStore((state) => state.uploadAvatar);
-  const openPremiumModal = usePremiumModalStore(
-    (state) => state.openPremiumModal,
-  );
-  const openConfirmationModal = useConfirmationModalStore(
-    (state) => state.openModal,
-  );
+  const openModal = useModalStore((s) => s.open);
 
   const isFreeTier = !user?.tier || user.tier === "free";
   const [activeSub, setActiveSub] = useState<any>(null);
@@ -56,31 +50,35 @@ export default function ConfigUser() {
   }, [isFreeTier]);
 
   const handleCancelSub = async () => {
-    openConfirmationModal({
-      text: "¿Estás seguro de que deseas cancelar tu suscripción?",
-      additionalText:
-        "Podrás disfrutar los beneficios hasta el final de tu período actual de facturación.",
-      actionButton: "Cancelar suscripción",
-      onConfirm: async () => {
-        setLoadingCancel(true);
-        const { data, error } = await cancelSubscriptionAction();
-        if (error) {
-          toast.error(error);
-        } else {
-          toast.success(data);
-          setActiveSub((prev: any) =>
-            prev
-              ? { ...prev, cancel_at_period_end: true, status: "canceled" }
-              : null,
-          );
-        }
-        setLoadingCancel(false);
+    openModal({
+      type: "confirmation",
+      props: {
+        text: "¿Estás seguro de que deseas cancelar tu suscripción?",
+        additionalText:
+          "Podrás disfrutar los beneficios hasta el final de tu período actual de facturación.",
+        actionButton: "Cancelar suscripción",
+        onConfirm: async () => {
+          setLoadingCancel(true);
+          const { data, error } = await cancelSubscriptionAction();
+          if (error) {
+            toast.error(error);
+          } else {
+            toast.success(data);
+            setActiveSub((prev: any) =>
+              prev
+                ? { ...prev, cancel_at_period_end: true, status: "canceled" }
+                : null,
+            );
+          }
+          setLoadingCancel(false);
+        },
       },
     });
   };
 
   const closeConfigModal = () => {
-    if (useConfirmationModalStore.getState().isOpen) return;
+    if (useModalStore.getState().stack.length > 0) return;
+
     const confirmationModal = document.getElementById(
       "confirmation-modal-my-account-config-modal",
     );
@@ -117,6 +115,10 @@ export default function ConfigUser() {
       default:
         return styles.tierFree;
     }
+  };
+
+  const handleOpenPremiumModal = () => {
+    openModal({ type: "premium" });
   };
 
   return (
@@ -223,7 +225,7 @@ export default function ConfigUser() {
                 </div>
               </div>
               <button
-                onClick={openPremiumModal}
+                onClick={handleOpenPremiumModal}
                 className={styles.upgradeBannerBtn}
               >
                 Ver planes

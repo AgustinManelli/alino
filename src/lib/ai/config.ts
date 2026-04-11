@@ -6,6 +6,6 @@ interface ProviderConfig {
 }
 
 export const AI_CONFIG: ProviderConfig = {
-  provider: (process.env.NEXT_PUBLIC_AI_PROVIDER as AIProviderName) ?? "gemini",
-  model: process.env.NEXT_PUBLIC_AI_MODEL ?? "gemini-2.5-flash",
+  provider: (process.env.NEXT_PUBLIC_AI_PROVIDER as AIProviderName) ?? "deepseek",
+  model: process.env.NEXT_PUBLIC_AI_MODEL ?? "deespseek-chat",
 };

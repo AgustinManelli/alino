@@ -15,7 +15,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
@@ -38,6 +37,7 @@ import {
   LoadingIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./SortableFolder.module.css";
+import { useModalStore } from "@/store/useModalStore";
 
 interface SortableFolderProps {
   folder: FolderType;
@@ -59,7 +59,7 @@ export const SortableFolder = ({
     folder.folder_color,
   );
 
-  const openModal = useConfirmationModalStore((state) => state.openModal);
+  const openConfirmationModal = useModalStore((s) => s.open);
   const deleteFolder = useTodoDataStore((state) => state.deleteFolder);
   const deleteFolderWithContents = useTodoDataStore(
     (state) => state.deleteFolderWithContents,
@@ -199,18 +199,26 @@ export const SortableFolder = ({
   }, [deleteFolderWithContents, folder.folder_id]);
 
   const handleConfirm = useCallback(() => {
-    openModal({
-      text: `¿Eliminar la carpeta "${folder.folder_name}"?`,
-      additionalText:
-        "Podés eliminar solo la carpeta (las listas quedan sueltas) o eliminarla junto con todas sus listas y tareas.",
-      actionButton: "Solo la carpeta",
-      onConfirm: handleDelete,
-      secondaryAction: {
-        label: "Carpeta y todo su contenido",
-        onConfirm: handleDeleteWithContents,
+    openConfirmationModal({
+      type: "confirmation",
+      props: {
+        text: `¿Eliminar la carpeta "${folder.folder_name}"?`,
+        additionalText:
+          "Podés eliminar solo la carpeta (las listas quedan sueltas) o eliminarla junto con todas sus listas y tareas.",
+        actionButton: "Solo la carpeta",
+        onConfirm: handleDelete,
+        secondaryAction: {
+          label: "Carpeta y todo su contenido",
+          onConfirm: handleDeleteWithContents,
+        },
       },
     });
-  }, [openModal, folder.folder_name, handleDelete, handleDeleteWithContents]);
+  }, [
+    openConfirmationModal,
+    folder.folder_name,
+    handleDelete,
+    handleDeleteWithContents,
+  ]);
 
   const handleInfoEdit = useCallback(() => {
     setIsNameChange(true);

@@ -15,7 +15,6 @@ import Link from "next/link";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
-import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
@@ -33,6 +32,7 @@ import {
   LogOut,
 } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
+import { useModalStore } from "@/store/useModalStore";
 
 interface ListCardProps {
   list: ListsType;
@@ -56,7 +56,7 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
   );
 
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
-  const openModal = useConfirmationModalStore((state) => state.openModal);
+  const openConfirmationModal = useModalStore((s) => s.open);
   const setNavbarStatus = useSidebarStateStore(
     (state) => state.setNavbarStatus,
   );
@@ -82,22 +82,28 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
   }, [list, deleteList]);
 
   const handleConfirm = useCallback(() => {
-    openModal({
-      text: `¿Desea eliminar la lista "${list.list.list_name}"?`,
-      onConfirm: handleDelete,
-      additionalText:
-        "Esta acción es irreversible y eliminará todas las tareas de la lista.",
+    openConfirmationModal({
+      type: "confirmation",
+      props: {
+        text: `¿Desea eliminar la lista "${list.list.list_name}"?`,
+        onConfirm: handleDelete,
+        additionalText:
+          "Esta acción es irreversible y eliminará todas las tareas de la lista.",
+      },
     });
-  }, [openModal, list.list.list_name, handleDelete]);
+  }, [openConfirmationModal, list.list.list_name, handleDelete]);
 
   const handleConfirmLeave = useCallback(() => {
-    openModal({
-      text: `¿Desea salir de la lista "${list.list.list_name}"?`,
-      onConfirm: handleLeave,
-      additionalText: "Puedes regresar a ella con otra invitación.",
-      actionButton: "Salir",
+    openConfirmationModal({
+      type: "confirmation",
+      props: {
+        text: `¿Desea salir de la lista "${list.list.list_name}"?`,
+        onConfirm: handleLeave,
+        additionalText: "Puedes regresar a ella con otra invitación.",
+        actionButton: "Salir",
+      },
     });
-  }, [openModal, list.list.list_name, handleLeave]);
+  }, [openConfirmationModal, list.list.list_name, handleLeave]);
 
   const handleNameChange = useCallback(() => {
     setIsNameChange(true);

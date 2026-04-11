@@ -1,126 +1,95 @@
 "use client";
-
 import { useCallback, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { useShallow } from "zustand/shallow";
-
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-import { useConfirmationModalStore } from "@/store/useConfirmationModalStore";
-
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
-
 import styles from "./ConfirmationModal.module.css";
 
-export const ConfirmationModal = () => {
-  const ref = useRef<HTMLDivElement>(null);
+interface SecondaryAction {
+  label: string;
+  onConfirm: () => void;
+}
 
-  const {
-    isOpen,
-    text,
-    additionalText,
-    actionButton,
-    onConfirm,
-    secondaryAction,
-    closeModal,
-  } = useConfirmationModalStore(
-    useShallow((state) => ({
-      isOpen: state.isOpen,
-      text: state.text,
-      additionalText: state.additionalText,
-      actionButton: state.actionButton,
-      onConfirm: state.onConfirm,
-      secondaryAction: state.secondaryAction,
-      closeModal: state.closeModal,
-    })),
-  );
+interface Props {
+  text: string;
+  additionalText?: string;
+  actionButton?: string;
+  onConfirm: () => void;
+  secondaryAction?: SecondaryAction;
+  onClose: () => void;
+}
+
+export const ConfirmationModal = ({
+  text,
+  additionalText,
+  actionButton = "Eliminar",
+  onConfirm,
+  secondaryAction,
+  onClose,
+}: Props) => {
+  const ref = useRef<HTMLDivElement>(null);
 
   const handleAccept = useCallback(() => {
     onConfirm();
-    closeModal();
-  }, [onConfirm, closeModal]);
+    onClose();
+  }, [onConfirm, onClose]);
 
   const handleSecondaryAccept = useCallback(() => {
     secondaryAction?.onConfirm();
-    closeModal();
-  }, [secondaryAction, closeModal]);
+    onClose();
+  }, [secondaryAction, onClose]);
 
-  const handleCloseModal = () => {
-    closeModal();
-  };
-
-  useOnClickOutside(ref, () => {
-    if (isOpen) {
-      closeModal();
-    }
-  });
+  useOnClickOutside(ref, onClose);
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        closeModal();
-      }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
     };
-
-    if (isOpen) {
-      document.addEventListener("keydown", handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, closeModal]);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <ClientOnlyPortal>
-          <motion.div
-            className={`${styles.confirmationModalBackground} ignore-sidebar-close`}
-            initial={{ opacity: 0 }}
-            animate={{
-              opacity: 1,
-              transition: { duration: 0.2 },
-            }}
-            exit={{ opacity: 0, transition: { duration: 0.15 } }}
-          >
-            <div className={styles.confirmationModalContainer} ref={ref}>
-              <section className={styles.confirmationModalText}>
-                <p className={styles.confirmationModalTitle}>{text}</p>
-                {additionalText && (
-                  <p className={styles.confirmationModalAdditionalText}>
-                    {additionalText}
-                  </p>
-                )}
-              </section>
-
-              <section className={styles.confirmationModalButtons}>
-                <button
-                  className={styles.confirmationModalButton}
-                  onClick={handleCloseModal}
-                >
-                  Cancelar
-                </button>
-
-                <button
-                  className={`${styles.confirmationModalButton} ${styles.delete}`}
-                  onClick={handleAccept}
-                >
-                  {actionButton}
-                </button>
-
-                {secondaryAction && (
-                  <button
-                    className={`${styles.confirmationModalButton} ${styles.delete} ${styles.secondary}`}
-                    onClick={handleSecondaryAccept}
-                  >
-                    {secondaryAction.label}
-                  </button>
-                )}
-              </section>
-            </div>
-          </motion.div>
-        </ClientOnlyPortal>
-      )}
-    </AnimatePresence>
+    <ClientOnlyPortal>
+      <motion.div
+        className={`${styles.confirmationModalBackground} ignore-sidebar-close`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, transition: { duration: 0.2 } }}
+        exit={{ opacity: 0, transition: { duration: 0.15 } }}
+      >
+        <div className={styles.confirmationModalContainer} ref={ref}>
+          <section className={styles.confirmationModalText}>
+            <p className={styles.confirmationModalTitle}>{text}</p>
+            {additionalText && (
+              <p className={styles.confirmationModalAdditionalText}>
+                {additionalText}
+              </p>
+            )}
+          </section>
+          <section className={styles.confirmationModalButtons}>
+            <button
+              className={styles.confirmationModalButton}
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+            <button
+              className={`${styles.confirmationModalButton} ${styles.delete}`}
+              onClick={handleAccept}
+            >
+              {actionButton}
+            </button>
+            {secondaryAction && (
+              <button
+                className={`${styles.confirmationModalButton} ${styles.delete} ${styles.secondary}`}
+                onClick={handleSecondaryAccept}
+              >
+                {secondaryAction.label}
+              </button>
+            )}
+          </section>
+        </div>
+      </motion.div>
+    </ClientOnlyPortal>
   );
 };
