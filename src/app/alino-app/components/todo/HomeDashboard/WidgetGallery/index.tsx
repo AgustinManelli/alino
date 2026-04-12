@@ -5,14 +5,13 @@ import { Crown } from "@/components/ui/icons/icons";
 import { tierSatisfies } from "@/config/widgets.registry";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { UserWidgetRow } from "@/lib/schemas/database.types";
-import { PredefinedWidget } from "@/lib/schemas/dashboard.types";
 import { WindowComponent } from "@/components/ui/window-component";
 import { getUserEmbeddedWidgets } from "@/lib/api/user-widgets/actions";
 
 import { EmbeddedWidgetManager } from "./EmbeddedWidgetManager";
 import styles from "./WidgetGallery.module.css";
 
-type Tab = "catalog" | "community" | "my-widgets";
+type Tab = "catalog" | "my-widgets";
 
 interface Props {
   onClose: () => void;
@@ -40,50 +39,18 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
   const installWidget = useDashboardStore((s) => s.installWidget);
   const uninstallWidget = useDashboardStore((s) => s.uninstallWidget);
 
-  const [communityWidgets, setCommunityWidgets] = useState<UserWidgetRow[]>([]);
   const [myEmbeddedWidgets, setMyEmbeddedWidgets] = useState<UserWidgetRow[]>(
     [],
   );
-  const [loading, setLoading] = useState(false);
 
   const fetchMyWidgets = useCallback(async () => {
     const { data } = await getUserEmbeddedWidgets();
     setMyEmbeddedWidgets(data ?? []);
   }, []);
 
-  const loadCommunity = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { getCommunityWidgets } = await import(
-        "@/lib/api/user-widgets/actions"
-      );
-      const { data } = await getCommunityWidgets();
-      setCommunityWidgets(data ?? []);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    if (tab === "community") loadCommunity();
     if (tab === "my-widgets") fetchMyWidgets();
-  }, [tab, loadCommunity, fetchMyWidgets]);
-
-  const handleInstallPredefined = (def: PredefinedWidget) => {
-    if (activeWidgets.includes(def.id)) {
-      uninstallWidget(def.id);
-    } else {
-      installWidget(def.id);
-    }
-  };
-
-  const handleInstallCommunity = (widget: UserWidgetRow) => {
-    if (activeWidgets.includes(widget.id)) {
-      uninstallWidget(widget.id);
-    } else {
-      useDashboardStore.getState().addEmbeddedWidgetToStore(widget);
-    }
-  };
+  }, [tab, fetchMyWidgets]);
 
   return (
     <WindowComponent
@@ -101,13 +68,6 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
               onClick={() => setTab("catalog")}
             >
               Catálogo
-            </button>
-            <button
-              type="button"
-              className={`${styles.modeBtn} ${tab === "community" ? styles.active : ""}`}
-              onClick={() => setTab("community")}
-            >
-              Comunidad
             </button>
             <button
               type="button"
@@ -176,47 +136,6 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
                   </div>
                 );
               })}
-            </div>
-          )}
-
-          {tab === "community" && (
-            <div>
-              {loading ? (
-                <div className={styles.emptyState}>
-                  <p>Cargando widgets de la comunidad…</p>
-                </div>
-              ) : communityWidgets.length === 0 ? (
-                <div className={styles.emptyState}>
-                  <p>Aún no hay widgets públicos de la comunidad.</p>
-                  <p className={styles.emptySubtext}>
-                    Publica tus propios widgets desde &quot;Mis Widgets&quot;.
-                  </p>
-                </div>
-              ) : (
-                <div className={styles.grid}>
-                  {communityWidgets.map((w) => {
-                    const isInstalled = activeWidgets.includes(w.id);
-                    return (
-                      <div
-                        key={w.id}
-                        className={`${styles.card} ${isInstalled ? styles.cardInstalled : ""}`}
-                      >
-                        <div className={styles.cardHeader}>
-                          <span className={styles.cardCategory}>Embebido</span>
-                        </div>
-                        <h3 className={styles.cardTitle}>{w.title}</h3>
-                        <p className={styles.cardDesc}>{w.url}</p>
-                        <button
-                          className={`${styles.cardAction} ${isInstalled ? styles.cardActionRemove : ""}`}
-                          onClick={() => handleInstallCommunity(w)}
-                        >
-                          {isInstalled ? "Desinstalar" : "Instalar"}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           )}
 

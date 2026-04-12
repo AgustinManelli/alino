@@ -75,19 +75,19 @@ export async function installWidgetAction(params: {
   layoutLg?: WidgetInstance["layoutLg"];
   layoutMd?: WidgetInstance["layoutMd"];
   layoutXs?: WidgetInstance["layoutXs"];
-}): Promise<{ error?: string }> {
+}): Promise<{ error?: string; instanceId?: string }> {
   try {
     const { supabase } = await getAuth();
     const { data, error } = await supabase.rpc("install_widget", {
-  p_predefined_id:  params.predefinedId ?? null,
-  p_user_widget_id: params.userWidgetId ?? null,
-  p_layout_lg:      params.layoutLg ?? null,
-  p_layout_md:      params.layoutMd ?? null,
-  p_layout_xs:      params.layoutXs ?? null,
-});
-console.log("RPC response:", { data, error });
+      p_predefined_id:  params.predefinedId ?? null,
+      p_user_widget_id: params.userWidgetId ?? null,
+      p_layout_lg:      params.layoutLg ?? null,
+      p_layout_md:      params.layoutMd ?? null,
+      p_layout_xs:      params.layoutXs ?? null,
+    });
     if (error) throw new Error(error.message);
-    return {};
+    const raw = data as { status: string; tier: string; instance_id?: string };
+    return { instanceId: raw.instance_id };
   } catch (e) {
     return { error: e instanceof Error ? e.message : UNKNOWN_ERROR };
   }

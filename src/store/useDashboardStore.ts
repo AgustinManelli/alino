@@ -65,64 +65,120 @@ export const buildLayoutsFromInstances = (
   instances: WidgetInstance[],
 ): ResponsiveLayouts => {
   const installed = instances.filter((i) => i.isInstalled);
+
+  const applyMeta = (
+    item: WidgetLayoutItem | null | undefined,
+    pwIsResizable: boolean | null,
+  ): LayoutItem | null => {
+    if (!item) return null;
+    const isResizable =
+      pwIsResizable === false ? false : (item.isResizable ?? true);
+    return { ...item, isResizable };
+  };
+
   return {
-    lg: installed.map((i) => i.layoutLg).filter(Boolean) as LayoutItem[],
-    md: installed.map((i) => i.layoutMd).filter(Boolean) as LayoutItem[],
-    xs: installed.map((i) => i.layoutXs).filter(Boolean) as LayoutItem[],
+    lg: installed
+      .map((i) => applyMeta(i.layoutLg, i.pwIsResizable))
+      .filter(Boolean) as LayoutItem[],
+    md: installed
+      .map((i) => applyMeta(i.layoutMd, i.pwIsResizable))
+      .filter(Boolean) as LayoutItem[],
+    xs: installed
+      .map((i) => applyMeta(i.layoutXs, i.pwIsResizable))
+      .filter(Boolean) as LayoutItem[],
   };
 };
 
-const getDefaultLayoutItem = (
+const packItems = (
+  items: LayoutItem[],
+  cols: number,
+): LayoutItem[] => {
+  const sorted = [...items].sort((a, b) =>
+    a.y !== b.y ? a.y - b.y : a.x - b.x,
+  );
+
+  const colHeights = new Array(cols).fill(0);
+  const result: LayoutItem[] = [];
+
+  for (const item of sorted) {
+    const w = Math.min(item.w || 1, cols);
+    const h = item.h || 1;
+
+    let bestX = 0;
+    let bestY = Infinity;
+
+    for (let x = 0; x <= cols - w; x++) {
+      const landingY = Math.max(...colHeights.slice(x, x + w));
+      if (landingY < bestY) {
+        bestY = landingY;
+        bestX = x;
+      }
+    }
+
+    result.push({ ...item, x: bestX, y: bestY });
+
+    for (let c = bestX; c < bestX + w; c++) {
+      colHeights[c] = bestY + h;
+    }
+  }
+
+  return result;
+};
+
+const getLayoutItemForNewWidget = (
   widgetKey: string,
   breakpoint: "lg" | "md" | "xs",
   predefinedWidgets: PredefinedWidget[],
   existingInstances: WidgetInstance[],
 ): WidgetLayoutItem => {
-  const maxY = Math.max(
-    0,
-    ...existingInstances
-      .filter((i) => i.isInstalled)
-      .map((i) => {
-        const l =
-          breakpoint === "lg"
-            ? i.layoutLg
-            : breakpoint === "md"
-              ? i.layoutMd
-              : i.layoutXs;
-        return l ? l.y + l.h : 0;
-      }),
-  );
+  const cols = breakpoint === "lg" ? 3 : 1;
 
   const def = predefinedWidgets.find((w) => w.id === widgetKey);
-  if (def) {
-    const field =
-      breakpoint === "lg"
-        ? def.defaultLayoutLg
-        : breakpoint === "md"
-          ? def.defaultLayoutMd
-          : def.defaultLayoutXs;
+  const defLayout =
+    breakpoint === "lg"
+      ? def?.defaultLayoutLg
+      : breakpoint === "md"
+        ? def?.defaultLayoutMd
+        : def?.defaultLayoutXs;
 
-    if (field) {
-      return {
-        ...field,
+  const candidate: LayoutItem = defLayout
+    ? { ...defLayout, i: widgetKey }
+    : {
         i: widgetKey,
         x: 0,
-        y: maxY,
+        y: 0,
+        w: 1,
+        h: 1,
+        minW: 1,
+        maxW: cols,
+        minH: 1,
+        isResizable: def?.isResizable ?? true,
       };
-    }
-  }
+
+  const currentItems = existingInstances
+    .filter((i) => i.isInstalled && i.widgetKey !== widgetKey)
+    .map((i) => {
+      const l =
+        breakpoint === "lg"
+          ? i.layoutLg
+          : breakpoint === "md"
+            ? i.layoutMd
+            : i.layoutXs;
+      return l ?? { i: i.widgetKey, x: 0, y: 0, w: 1, h: 1 };
+    });
+
+  const packed = packItems([...currentItems, candidate], cols);
+  const placed = packed.find((l) => l.i === widgetKey);
 
   return {
+    ...(placed ?? candidate),
     i: widgetKey,
-    x: 0,
-    y: maxY,
-    w: 1,
-    h: 1,
-    minW: 1,
-    maxW: breakpoint === "lg" ? 3 : 1,
-    minH: 1,
-    isResizable: true,
-  };
+    minW: candidate.minW,
+    maxW: candidate.maxW,
+    minH: candidate.minH,
+    maxH: candidate.maxH,
+    isResizable: def?.isResizable ?? (candidate.isResizable ?? true),
+  } as WidgetLayoutItem;
 };
 
 const APP_UPDATES_TTL_MS = 60 * 60 * 1000;
@@ -257,27 +313,27 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
   installWidget: async (widgetKey, userWidgetId) => {
     const { widgetInstances, predefinedWidgets } = get();
     const isEmbedded = !!userWidgetId;
-
     const existing = widgetInstances.find((i) => i.widgetKey === widgetKey);
+
     if (existing) {
       const updated = widgetInstances.map((i) =>
         i.widgetKey === widgetKey
           ? {
               ...i,
               isInstalled: true,
-              layoutLg: getDefaultLayoutItem(
+              layoutLg: getLayoutItemForNewWidget(
                 widgetKey,
                 "lg",
                 predefinedWidgets,
                 widgetInstances,
               ),
-              layoutMd: getDefaultLayoutItem(
+              layoutMd: getLayoutItemForNewWidget(
                 widgetKey,
                 "md",
                 predefinedWidgets,
                 widgetInstances,
               ),
-              layoutXs: getDefaultLayoutItem(
+              layoutXs: getLayoutItemForNewWidget(
                 widgetKey,
                 "xs",
                 predefinedWidgets,
@@ -289,9 +345,7 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
       set({
         widgetInstances: updated,
         layout: buildLayoutsFromInstances(updated),
-        activeWidgets: updated
-          .filter((i) => i.isInstalled)
-          .map((i) => i.widgetKey),
+        activeWidgets: updated.filter((i) => i.isInstalled).map((i) => i.widgetKey),
       });
     } else {
       const pw = predefinedWidgets.find((w) => w.id === widgetKey);
@@ -309,45 +363,23 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
         uwConfig: null,
         uwIsPublic: null,
         uwModerationStatus: null,
-        layoutLg: getDefaultLayoutItem(
-          widgetKey,
-          "lg",
-          predefinedWidgets,
-          widgetInstances,
-        ),
-        layoutMd: getDefaultLayoutItem(
-          widgetKey,
-          "md",
-          predefinedWidgets,
-          widgetInstances,
-        ),
-        layoutXs: getDefaultLayoutItem(
-          widgetKey,
-          "xs",
-          predefinedWidgets,
-          widgetInstances,
-        ),
+        layoutLg: getLayoutItemForNewWidget(widgetKey, "lg", predefinedWidgets, widgetInstances),
+        layoutMd: getLayoutItemForNewWidget(widgetKey, "md", predefinedWidgets, widgetInstances),
+        layoutXs: getLayoutItemForNewWidget(widgetKey, "xs", predefinedWidgets, widgetInstances),
         isInstalled: true,
       };
       const updated = [...widgetInstances, newInstance];
       set({
         widgetInstances: updated,
         layout: buildLayoutsFromInstances(updated),
-        activeWidgets: updated
-          .filter((i) => i.isInstalled)
-          .map((i) => i.widgetKey),
+        activeWidgets: updated.filter((i) => i.isInstalled).map((i) => i.widgetKey),
       });
     }
 
-    const instanceForDb = get().widgetInstances.find(
-      (i) => i.widgetKey === widgetKey,
-    );
-
-    const { error } = await installWidgetAction({
+    const instanceForDb = get().widgetInstances.find((i) => i.widgetKey === widgetKey);
+    const { error, instanceId } = await installWidgetAction({
       predefinedId: isEmbedded ? undefined : widgetKey,
-      userWidgetId: isEmbedded
-        ? (userWidgetId as unknown as string)
-        : undefined,
+      userWidgetId: isEmbedded ? (userWidgetId as string) : undefined,
       layoutLg: instanceForDb?.layoutLg,
       layoutMd: instanceForDb?.layoutMd,
       layoutXs: instanceForDb?.layoutXs,
@@ -360,14 +392,62 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
       set({
         widgetInstances: reverted,
         layout: buildLayoutsFromInstances(reverted),
-        activeWidgets: reverted
-          .filter((i) => i.isInstalled)
-          .map((i) => i.widgetKey),
+        activeWidgets: reverted.filter((i) => i.isInstalled).map((i) => i.widgetKey),
       });
       return { error };
     }
+
+    if (instanceId) {
+      set({
+        widgetInstances: get().widgetInstances.map((i) =>
+          i.widgetKey === widgetKey ? { ...i, instanceId } : i,
+        ),
+      });
+    }
     return {};
   },
+
+  autoSortLayout: () => {
+  const { widgetInstances } = get();
+  const newLayouts: ResponsiveLayouts = { lg: [], md: [], xs: [] };
+
+  (["lg", "md", "xs"] as const).forEach((bp) => {
+    const cols = bp === "lg" ? 3 : 1;
+
+    const currentItems = widgetInstances
+      .filter((i) => i.isInstalled)
+      .map((i) => {
+        const l =
+          bp === "lg" ? i.layoutLg : bp === "md" ? i.layoutMd : i.layoutXs;
+        return l ?? { i: i.widgetKey, x: 0, y: 0, w: 1, h: 1 };
+      });
+
+    newLayouts[bp] = packItems(currentItems, cols);
+  });
+
+  const updated = widgetInstances.map((inst) => {
+    if (!inst.isInstalled) return inst;
+    const key = inst.widgetKey;
+    return {
+      ...inst,
+      layoutLg:
+        (newLayouts.lg?.find((l) => l.i === key) as WidgetLayoutItem) ??
+        inst.layoutLg,
+      layoutMd:
+        (newLayouts.md?.find((l) => l.i === key) as WidgetLayoutItem) ??
+        inst.layoutMd,
+      layoutXs:
+        (newLayouts.xs?.find((l) => l.i === key) as WidgetLayoutItem) ??
+        inst.layoutXs,
+    };
+  });
+
+  set({
+    widgetInstances: updated,
+    layout: buildLayoutsFromInstances(updated),
+  });
+  get()._scheduleSave();
+},
 
   uninstallWidget: async (widgetKey) => {
     const { widgetInstances } = get();
@@ -415,48 +495,6 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
       };
     });
     set({ widgetInstances: updated, layout: newLayouts });
-    get()._scheduleSave();
-  },
-
-  autoSortLayout: () => {
-    const { widgetInstances, layout } = get();
-    const newLayouts: ResponsiveLayouts = { lg: [], md: [], xs: [] };
-
-    (["lg", "md", "xs"] as const).forEach((bp) => {
-      const current: Layout = layout[bp] ?? [];
-      const sorted = [...current].sort((a, b) => {
-        if (a.y === b.y) return a.x - b.x;
-        return a.y - b.y;
-      });
-
-      const packed: LayoutItem[] = sorted.map((item, index) => ({
-        ...item,
-        y: index * 100,
-      }));
-      newLayouts[bp] = packed;
-    });
-
-    const updated = widgetInstances.map((inst) => {
-      if (!inst.isInstalled) return inst;
-      const key = inst.widgetKey;
-      return {
-        ...inst,
-        layoutLg:
-          (newLayouts.lg?.find((l: LayoutItem) => l.i === key) as WidgetLayoutItem) ??
-          inst.layoutLg,
-        layoutMd:
-          (newLayouts.md?.find((l: LayoutItem) => l.i === key) as WidgetLayoutItem) ??
-          inst.layoutMd,
-        layoutXs:
-          (newLayouts.xs?.find((l: LayoutItem) => l.i === key) as WidgetLayoutItem) ??
-          inst.layoutXs,
-      };
-    });
-
-    set({
-      widgetInstances: updated,
-      layout: buildLayoutsFromInstances(updated),
-    });
     get()._scheduleSave();
   },
 

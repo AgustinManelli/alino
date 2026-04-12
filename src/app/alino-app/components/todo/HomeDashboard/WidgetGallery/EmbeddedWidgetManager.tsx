@@ -6,7 +6,6 @@ import {
   createEmbeddedWidget,
   updateEmbeddedWidget,
   deleteEmbeddedWidget,
-  toggleWidgetPublic,
 } from "@/lib/api/user-widgets/actions";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { UserWidgetRow } from "@/lib/schemas/database.types";
@@ -21,12 +20,6 @@ interface Props {
   onUninstall: (id: string) => void;
   onChange?: () => void;
 }
-
-const TIER_LIMITS = {
-  free: 1,
-  student: 3,
-  pro: Infinity,
-};
 
 type Mode = "list" | "create" | "edit";
 
@@ -112,20 +105,6 @@ export const EmbeddedWidgetManager = ({
     if (error) return toast.error(error);
     removeEmbedded(widget.id);
     toast.success("Widget eliminado.");
-    onChange?.();
-  };
-
-  const handleTogglePublic = async (widget: UserWidgetRow) => {
-    const next = !widget.is_public;
-    const { data, error } = await toggleWidgetPublic(widget.id, next);
-    if (error || !data)
-      return toast.error(error ?? "Error al cambiar visibilidad.");
-    updateEmbedded(widget.id, { is_public: next });
-    toast.success(
-      next
-        ? "Widget publicado en la comunidad."
-        : "Widget ocultado de la comunidad.",
-    );
     onChange?.();
   };
 
@@ -240,18 +219,6 @@ export const EmbeddedWidgetManager = ({
                         }
                       >
                         {isInstalled ? "Remover" : "Instalar"}
-                      </button>
-                      <button
-                        className={styles.iconBtn}
-                        title={w.is_public ? "Ocultar" : "Publicar"}
-                        onClick={() => handleTogglePublic(w)}
-                      >
-                        <Share
-                          style={{
-                            width: "14px",
-                            opacity: w.is_public ? 1 : 0.4,
-                          }}
-                        />
                       </button>
                       <button
                         className={styles.iconBtn}
