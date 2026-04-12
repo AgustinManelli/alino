@@ -112,7 +112,7 @@ export default function ListInformation({ handleCloseConfig, list }: Props) {
 
   return (
     <WindowComponent
-      windowTitle={`"${list?.list?.list_name}"`}
+      windowTitle={`Información de lista "${list?.list?.list_name}"`}
       id={"list-config-section"}
       crossAction={closeConfigModal}
     >
