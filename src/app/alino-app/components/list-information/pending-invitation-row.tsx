@@ -65,11 +65,22 @@ export function PendingInvitationRow({
       <div className={styles.userInfo}>
         <p className={styles.displayName}>{invitation.invited_display_name}</p>
         <p className={styles.username}>@{invitation.invited_username}</p>
+
+        <div className={styles.invitedByRow}>
+          <img
+            src={invitation.inviter_avatar_url || "/default-avatar.png"}
+            alt={invitation.inviter_display_name}
+            className={styles.inviterAvatar}
+          />
+          <span className={styles.invitedByText}>
+            Invitado por <strong>{invitation.inviter_display_name}</strong> el{" "}
+            {sentDate}
+          </span>
+        </div>
       </div>
 
       <div className={styles.invitationMeta}>
         <span className={styles.pendingBadge}>Pendiente</span>
-        <span className={styles.invitedBy}>{sentDate}</span>
       </div>
 
       <button

@@ -78,8 +78,8 @@
   display: flex;
   flex-direction: column;
   background-color: var(--background-over-container);
-  border-radius: 12px;
-  padding: 6px;
+  border-radius: 20px;
+  padding: 5px;
   overflow: hidden;
 }
 
@@ -102,7 +102,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: 15px;
   min-height: 52px;
   height: 52px;
   transition: background-color 0.15s ease;
@@ -191,7 +191,7 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: 10px;
   border: none;
   background: transparent;
   color: var(--text-not-available);
@@ -225,7 +225,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: 15px;
   min-height: 52px;
   transition: background-color 0.15s ease;
 }
@@ -236,8 +236,6 @@
 
 .invitationMeta {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 
 .pendingBadge {
@@ -252,10 +250,28 @@
   white-space: nowrap;
 }
 
-.invitedBy {
+.invitedByRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+}
+
+.inviterAvatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background-color: var(--background-container);
+}
+
+.invitedByText {
   font-size: 11px;
   color: var(--text-not-available);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cancelBtn {

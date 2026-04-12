@@ -32,13 +32,21 @@ export const AlinoLogo = ({
   );
 };
 
-export const ArrowLeft = ({ style }: { style?: React.CSSProperties }) => {
+export const ArrowLeft = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
       style={style}
+      className={className}
+      {...props}
     >
       <path d="M4 12L20 12" strokeLinecap="round" strokeLinejoin="round" />
       <path

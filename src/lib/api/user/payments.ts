@@ -38,7 +38,6 @@ async function checkTrialEligibilityAdmin(
 
 export async function createMPSubscription(
   userId: string,
-  userEmail: string,
   planId: string
 ): Promise<{ url: string; subscriptionId: string }> {
   const supabaseAdmin = getAdminClient();
@@ -74,8 +73,6 @@ export async function createMPSubscription(
   );
 
   const body: any = {
-    payer_email: userEmail,
-    // payer_email: "test_user_2010509834873916104@testuser.com",
     reason: planData.mp_reason,
     external_reference: `${userId}|${planData.tier}`,
     auto_recurring: {

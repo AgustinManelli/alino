@@ -53,7 +53,7 @@ export const SearchUserSchema = z.object({
     user_id: z.string().uuid(),
     username: z.string(),
     display_name: z.string(),
-    avatar_url: z.string().url().nullable(),
+    avatar_url: z.string().nullable(),
 });
 
 export const SearchTermSchema = z.string()

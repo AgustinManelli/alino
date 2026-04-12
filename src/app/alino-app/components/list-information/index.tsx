@@ -8,6 +8,7 @@ import { WindowComponent } from "@/components/ui/window-component";
 import { Database } from "@/lib/schemas/database.types";
 import type { PendingInvitation } from "@/lib/api/list/actions";
 import styles from "./ListInformation.module.css";
+import { InviteLinkSection } from "./InviteLinkSection";
 
 type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
 type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
@@ -24,7 +25,7 @@ interface Props {
   list: ListsType;
 }
 
-type ActiveTab = "members" | "invitations";
+type ActiveTab = "members" | "invitations" | "links";
 
 export default function ListInformation({ handleCloseConfig, list }: Props) {
   const getUsersMembersList = useTodoDataStore((s) => s.getUsersMembersList);
@@ -149,6 +150,14 @@ export default function ListInformation({ handleCloseConfig, list }: Props) {
               )}
             </button>
           )}
+          {isAdminOrOwner && (
+            <button
+              className={`${styles.tab} ${activeTab === "links" ? styles.tabActive : ""}`}
+              onClick={() => setActiveTab("links")}
+            >
+              Enlace QR
+            </button>
+          )}
         </div>
 
         {activeTab === "members" && (
@@ -220,6 +229,11 @@ export default function ListInformation({ handleCloseConfig, list }: Props) {
                 No hay invitaciones pendientes.
               </p>
             )}
+          </section>
+        )}
+        {activeTab === "links" && isAdminOrOwner && (
+          <section className={styles.listSection}>
+            <InviteLinkSection list_id={list.list_id} />
           </section>
         )}
       </div>

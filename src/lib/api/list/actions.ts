@@ -736,18 +736,20 @@ export const createListInvitation = async (
 };
 
 export type PendingInvitation = {
-  invitation_id: string;
-  invited_user_id: string;
-  inviter_user_id: string;
+  invitation_id:        string;
+  invited_user_id:      string;
+  inviter_user_id:      string;
   inviter_display_name: string;
-  list_id: string;
-  list_name: string;
-  status: string;
-  created_at: string;
-  expires_at: string | null;
-  invited_username: string;
+  inviter_username:     string;
+  inviter_avatar_url:   string | null;
+  list_id:              string;
+  list_name:            string;
+  status:               string;
+  created_at:           string;
+  expires_at:           string | null;
+  invited_username:     string;
   invited_display_name: string;
-  invited_avatar_url: string | null;
+  invited_avatar_url:   string | null;
 };
 
 export const getListPendingInvitations = async (

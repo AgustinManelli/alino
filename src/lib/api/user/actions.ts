@@ -388,7 +388,7 @@ export const createCheckoutSessionAction = async (
 
     if (gateway === "mercadopago") {
       const { createMPSubscription } = await import("./payments");
-      const result = await createMPSubscription(user.id, user.email, planId);
+      const result = await createMPSubscription(user.id, planId);
       return {
         data: { url: result.url, subscriptionId: result.subscriptionId },
       };

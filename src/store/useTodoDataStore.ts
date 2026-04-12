@@ -201,7 +201,7 @@ type TodoStore = {
   createListInvitation: (
     list_id: string,
     invited_user_id: string
-  ) => Promise<void>;
+  ) => Promise<{ error: string | null }>;
   subscriptionAddTask: (task: TaskType) => void;
   subscriptionUpdateTask: (task: TaskType) => void;
   subscriptionDeleteTask: (task: { task_id: string }) => void;
@@ -1458,8 +1458,10 @@ export const useTodoDataStore = create<TodoStore>()((set, get) => ({
         throw new Error(error);
       }
       toast.success(`${invited_user_username} fue invitado correctamente.`);
+      return { error: null };
     } catch (err) {
       handleError(err);
+      return { error: (err as Error).message || "Error desconocido" };
     }
   },
 
