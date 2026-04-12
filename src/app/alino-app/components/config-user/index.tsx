@@ -12,7 +12,9 @@ import {
   cancelSubscriptionAction,
 } from "@/lib/api/user/actions";
 import { useModalStore } from "@/store/useModalStore";
-// import { AI_CREDIT_COSTS } from "@/lib/ai/creditCosts";
+import { WindowModal } from "@/components/ui/WindowModal";
+import Cropper, { Area, Point } from "react-easy-crop";
+import { getCroppedImg } from "@/lib/utils/imageCrop";
 
 export default function ConfigUser() {
   const [isUploading, setIsUploading] = useState(false);
@@ -28,6 +30,11 @@ export default function ConfigUser() {
   const fetchAIUsage = useUserDataStore((state) => state.fetchAIUsage);
   const uploadAvatar = useUserDataStore((state) => state.uploadAvatar);
   const openModal = useModalStore((s) => s.open);
+
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [completedCrop, setCompletedCrop] = useState<Area | null>(null);
 
   const isFreeTier = !user?.tier || user.tier === "free";
   const [activeSub, setActiveSub] = useState<any>(null);
@@ -77,6 +84,7 @@ export default function ConfigUser() {
   };
 
   const closeConfigModal = () => {
+    if (imageToCrop) return;
     if (useModalStore.getState().stack.length > 0) return;
 
     const confirmationModal = document.getElementById(
@@ -91,18 +99,38 @@ export default function ConfigUser() {
   ) => {
     if (!event.target.files || event.target.files.length === 0) return;
     const file = event.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      setImageToCrop(reader.result?.toString() || null);
+    });
+    reader.readAsDataURL(file);
+  };
+
+  const handleConfirmCrop = async () => {
+    if (!imageToCrop || !completedCrop) return;
+
     setIsUploading(true);
     try {
+      const croppedBlob = await getCroppedImg(imageToCrop, completedCrop);
+      if (!croppedBlob) throw new Error("Error al recortar la imagen.");
+
+      const file = new File([croppedBlob], "avatar.jpg", {
+        type: "image/jpeg",
+      });
+
+      const formData = new FormData();
+      formData.append("file", file);
+
       const res = await uploadAvatar(formData);
       if (res.error) throw new Error(res.error);
+
       toast.success("Foto de perfil actualizada correctamente.");
+      setImageToCrop(null);
     } catch (error: any) {
       toast.error(error.message || "Error al subir la imagen.");
     } finally {
       setIsUploading(false);
-      event.target.value = "";
     }
   };
 
@@ -324,6 +352,63 @@ export default function ConfigUser() {
 
         <AICreditsSection aiUsage={aiUsage} userTier={user?.tier} index={3} />
       </motion.div>
+
+      <AnimatePresence mode="wait">
+        {imageToCrop && (
+          <WindowModal
+            title="Recortar imagen"
+            crossButton={false}
+            closeAction={() => setImageToCrop(null)}
+          >
+            <div className={styles.cropperModalWrapper}>
+              <div className={styles.cropperContainer}>
+                <Cropper
+                  image={imageToCrop}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={(_, pixelCrop) => setCompletedCrop(pixelCrop)}
+                />
+              </div>
+
+              <div className={styles.cropperControls}>
+                <div className={styles.controlGroup}>
+                  <label className={styles.controlLabel}>Zoom</label>
+                  <input
+                    type="range"
+                    value={zoom}
+                    min={1}
+                    max={3}
+                    step={0.1}
+                    aria-labelledby="Zoom"
+                    onChange={(e) => setZoom(Number(e.target.value))}
+                    className={styles.slider}
+                  />
+                </div>
+
+                <div className={styles.cropperActions}>
+                  <button
+                    className={styles.btnAction}
+                    onClick={() => setImageToCrop(null)}
+                    disabled={isUploading}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    className={`${styles.btnAction} ${styles.btnPrimary}`}
+                    onClick={handleConfirmCrop}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? "Subiendo..." : "Guardar foto"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </WindowModal>
+        )}
+      </AnimatePresence>
     </WindowComponent>
   );
 }

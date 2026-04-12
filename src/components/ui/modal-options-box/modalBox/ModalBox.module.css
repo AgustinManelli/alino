@@ -1,6 +1,8 @@
 .container {
   position: absolute;
-  background-color: var(--background-container);
+  background-color: var(--background-container-translucent);
+  backdrop-filter: blur(15px) saturate(180%);
+  -webkit-backdrop-filter: blur(15px) saturate(180%);
   border: 1px solid var(--border-container-color);
   width: -moz-fit-content;
   width: fit-content;
