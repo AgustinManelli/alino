@@ -2,11 +2,14 @@
 import { cache } from "react";
 import { createClient as createClientServer } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
+import sizeOf from "image-size";
 import { z } from "zod";
 import {
   SearchTermSchema,
   SearchUserSchema,
 } from "@/lib/schemas/user/validation";
+
+import { fileTypeFromBuffer } from "file-type";
 
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
@@ -179,34 +182,75 @@ export const uploadAvatarAction = async (
     const file = formData.get("file") as File;
     if (!file) throw new Error("No se proporcionó ningún archivo.");
 
-    const fileExt = file.name.split(".").pop();
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    if (file.size > 100 * 1024) {
+      throw new Error("La imagen supera el límite de 100KB.");
+    }
+
+    const detectedType = await fileTypeFromBuffer(buffer);
+
+    if (
+      !detectedType ||
+      !["image/jpeg", "image/png", "image/webp"].includes(detectedType.mime)
+    ) {
+      throw new Error("El archivo no es una imagen válida.");
+    }
+
+    try {
+      const dimensions = sizeOf(buffer);
+
+      if (!dimensions.width || !dimensions.height) {
+        throw new Error("No se pudo analizar la imagen.");
+      }
+
+      if (dimensions.width !== dimensions.height) {
+        throw new Error("La imagen debe ser estrictamente cuadrada (1:1).");
+      }
+
+      if (dimensions.width > 128) {
+        throw new Error("La resolución máxima es 128x128.");
+      }
+    } catch {
+      throw new Error("Archivo de imagen inválido o corrupto.");
+    }
+
+    const fileExt = detectedType.ext;
     const filePath = `${user.id}/${Date.now()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(filePath, file, { upsert: true, contentType: file.type });
+      .upload(filePath, file, {
+        upsert: true,
+        contentType: detectedType.mime,
+      });
+
     if (uploadError) throw uploadError;
 
     const { data: publicUrlData } = supabase.storage
       .from("avatars")
       .getPublicUrl(filePath);
+
     const newAvatarUrl = publicUrlData.publicUrl;
 
     const updateResponse = await updateUserProfile({
       avatar_url: newAvatarUrl,
     });
+
     if (updateResponse.error) {
       await supabase.storage.from("avatars").remove([filePath]);
       throw new Error(updateResponse.error);
     }
 
     const oldAvatarUrl = updateResponse.data?.old_avatar_url;
+
     if (oldAvatarUrl) {
       const oldPath = extractStoragePath(oldAvatarUrl, "avatars");
       if (oldPath && oldPath !== filePath) {
         supabase.storage.from("avatars").remove([oldPath]);
       }
     }
+
     return { data: { avatar_url: newAvatarUrl } };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };

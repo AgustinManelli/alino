@@ -6,10 +6,13 @@ export const createImage = (url: string): Promise<HTMLImageElement> =>
     image.src = url;
   });
 
+export const MAX_AVATAR_RES = 128;
+export const MAX_AVATAR_FILE_SIZE = 100 * 1024;
+
 export async function getCroppedImg(
   imageSrc: string,
   pixelCrop: { x: number; y: number; width: number; height: number },
-  flip = { horizontal: false, vertical: false }
+  flip = { horizontal: false, vertical: false },
 ): Promise<Blob | null> {
   const image = await createImage(imageSrc);
   const canvas = document.createElement("canvas");
@@ -19,12 +22,14 @@ export async function getCroppedImg(
     return null;
   }
 
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  const targetSize = Math.min(pixelCrop.width, MAX_AVATAR_RES);
 
-  ctx.translate(pixelCrop.width / 2, pixelCrop.height / 2);
+  canvas.width = targetSize;
+  canvas.height = targetSize;
+
+  ctx.translate(targetSize / 2, targetSize / 2);
   ctx.scale(flip.horizontal ? -1 : 1, flip.vertical ? -1 : 1);
-  ctx.translate(-pixelCrop.width / 2, -pixelCrop.height / 2);
+  ctx.translate(-targetSize / 2, -targetSize / 2);
 
   ctx.drawImage(
     image,
@@ -34,13 +39,30 @@ export async function getCroppedImg(
     pixelCrop.height,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height
+    targetSize,
+    targetSize,
   );
 
   return new Promise((resolve) => {
-    canvas.toBlob((blob) => {
-      resolve(blob);
-    }, "image/jpeg");
+    let quality = 0.8;
+
+    const tryCompress = () => {
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return resolve(null);
+
+          if (blob.size <= MAX_AVATAR_FILE_SIZE || quality <= 0.4) {
+            resolve(blob);
+          } else {
+            quality -= 0.1;
+            tryCompress();
+          }
+        },
+        "image/webp",
+        quality,
+      );
+    };
+
+    tryCompress();
   });
 }
