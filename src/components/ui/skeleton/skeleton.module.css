@@ -8,18 +8,19 @@
 }
 
 .subjectAddCardSkeleton {
-  width: 100px;
+  width: 30%;
   height: 100%;
   position: absolute;
   background-color: var(--skeleton);
   filter: blur(30px);
   animation: skeleton 1.5s ease-in-out infinite;
 }
+
 @keyframes skeleton {
   0% {
-    left: -200px;
+    left: -30%;
   }
   100% {
-    left: 400px;
+    left: 130%;
   }
 }
