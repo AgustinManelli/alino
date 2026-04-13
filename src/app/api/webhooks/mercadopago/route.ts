@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server";
-import { MercadoPagoConfig, PreApproval, Payment } from "mercadopago";
+import {
+  MercadoPagoConfig,
+  PreApproval,
+  Payment,
+  PreApprovalPlan,
+} from "mercadopago";
 import { createClient } from "@supabase/supabase-js";
 import { createHmac } from "crypto";
 
 const GATEWAY = "mercadopago" as const;
 
 function getMPClients() {
-  const mpClient = new MercadoPagoConfig({
+  const mpConfig = new MercadoPagoConfig({
     accessToken: process.env.MP_ACCESS_TOKEN!,
   });
   return {
-    preapproval: new PreApproval(mpClient),
-    payment: new Payment(mpClient),
+    mpConfig,
+    preapproval: new PreApproval(mpConfig),
+    payment: new Payment(mpConfig),
   };
 }
 
@@ -19,7 +25,7 @@ function getSupabaseAdmin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
+    { auth: { autoRefreshToken: false, persistSession: false } }
   );
 }
 
@@ -37,7 +43,7 @@ function verifyMPSignature(req: Request, rawBody: string): boolean {
 
   if (!secret) {
     if (process.env.NODE_ENV === "development") {
-      console.warn("[MP] ⚠️  MP_WEBHOOK_SECRET no configurado.");
+      console.warn("[MP] ⚠️  MP_WEBHOOK_SECRET no configurado (dev mode).");
       return true;
     }
     console.error("[MP] ❌ MP_WEBHOOK_SECRET no configurado en producción.");
@@ -50,7 +56,7 @@ function verifyMPSignature(req: Request, rawBody: string): boolean {
   if (rawBody) {
     try {
       parsedBody = JSON.parse(rawBody);
-    } catch (e) {}
+    } catch {}
   }
 
   const url = new URL(req.url);
@@ -76,7 +82,7 @@ function verifyMPSignature(req: Request, rawBody: string): boolean {
 
 function mapMPStatus(
   mpStatus?: string | null,
-  hasActiveTrial?: boolean,
+  hasActiveTrial?: boolean
 ): OurSubscriptionStatus {
   switch (mpStatus) {
     case "authorized":
@@ -96,7 +102,7 @@ async function registerEvent(
   supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
   eventId: string,
   eventType: string,
-  payload: object,
+  payload: object
 ): Promise<boolean> {
   const { data, error } = await supabaseAdmin.rpc("register_webhook_event", {
     p_gateway: GATEWAY,
@@ -111,19 +117,41 @@ async function registerEvent(
   return data === true;
 }
 
+async function resolveExternalRef(
+  sub: any,
+  mpConfig: MercadoPagoConfig
+): Promise<string> {
+  if (sub.external_reference) return sub.external_reference;
+  if (sub.preapproval_plan_id) {
+    try {
+      const planClient = new PreApprovalPlan(mpConfig);
+      const plan = (await planClient.get({
+        preApprovalPlanId: String(sub.preapproval_plan_id),
+      })) as any;
+      return plan.external_reference || "";
+    } catch (err) {
+      console.error(
+        `[MP] No se pudo obtener external_reference del plan ${sub.preapproval_plan_id}:`,
+        err
+      );
+      return "";
+    }
+  }
+  return "";
+}
+
 export async function POST(req: Request) {
   const supabaseAdmin = getSupabaseAdmin();
-  const { preapproval, payment } = getMPClients();
+  const { preapproval, payment, mpConfig } = getMPClients();
 
-  let rawBody: string;
+  let rawBody = "";
   let parsedBody: any = {};
-
   try {
     rawBody = await req.text();
     if (rawBody) {
       try {
         parsedBody = JSON.parse(rawBody);
-      } catch (e) {}
+      } catch {}
     }
   } catch {
     return new NextResponse("Bad request", { status: 400 });
@@ -138,6 +166,7 @@ export async function POST(req: Request) {
     url.searchParams.get("type") ??
     url.searchParams.get("topic") ??
     parsedBody.type;
+
   if (!type && parsedBody.action) {
     type = parsedBody.action.split(".")[0];
   }
@@ -151,12 +180,18 @@ export async function POST(req: Request) {
     return new NextResponse("Missing fields", { status: 400 });
   }
 
-  console.log(`[MP] 📬 Procesando evento general: ${type}:${id}`);
+  console.log(`[MP] 📬 Procesando evento: ${type}:${id}`);
 
   try {
     if (type === "subscription_preapproval" || type === "preapproval") {
       const sub = await preapproval.get({ id });
-      const rawRef = sub.external_reference || "";
+
+      if (sub.status === "pending") {
+        console.log(`[MP] Ignorando checkout pendiente: ${sub.id}`);
+        return new NextResponse("OK", { status: 200 });
+      }
+
+      const rawRef = await resolveExternalRef(sub as any, mpConfig);
       const [userId, tierStr] = rawRef.split("|");
       const purchasedTier = tierStr || "pro";
 
@@ -166,14 +201,6 @@ export async function POST(req: Request) {
       }
 
       const eventId = `${type}:${id}:${sub.status}`;
-
-      if (sub.status === "pending") {
-        console.log(
-          `[MP] Ignorando checkout iniciado (pending) para sub: ${sub.id}`,
-        );
-        return new NextResponse("OK", { status: 200 });
-      }
-
       const isNew = await registerEvent(supabaseAdmin, eventId, type, {
         type,
         id,
@@ -185,42 +212,48 @@ export async function POST(req: Request) {
         return new NextResponse("Duplicate", { status: 200 });
       }
 
-      console.log(`[MP] 📬 Evento: ${eventId}`);
-
       const autoRecurring = (sub as any).auto_recurring;
       const startDate = autoRecurring?.start_date
         ? new Date(autoRecurring.start_date)
         : null;
       const hasActiveTrial =
         startDate !== null &&
-        startDate.getTime() - new Date().getTime() > 2 * 24 * 60 * 60 * 1000;
+        startDate.getTime() - Date.now() > 2 * 24 * 60 * 60 * 1000;
 
       const status = mapMPStatus(sub.status, hasActiveTrial);
-      const now = new Date();
 
+      if (status === "canceled") {
+        const { data: existingSub } = await supabaseAdmin
+          .from("subscriptions")
+          .select("id")
+          .eq("subscription_id", String(sub.id))
+          .single();
+
+        if (!existingSub) {
+          console.log(
+            `[MP] Cancelación ignorada: sub ${sub.id} no existe en BD`
+          );
+          return new NextResponse("Ignored", { status: 200 });
+        }
+      }
+
+      const now = new Date();
       const { data: existingSub } = await supabaseAdmin
         .from("subscriptions")
         .select("current_period_end")
         .eq("subscription_id", String(sub.id))
         .single();
 
-      let periodEnd = now;
+      let periodEnd: Date;
       if (existingSub) {
         periodEnd = new Date(existingSub.current_period_end);
       } else {
-        if (status === "canceled") {
-          console.log(
-            `[MP] Ignorando checkout iniciado (cancelled/rejected) para sub: ${sub.id}`,
-          );
-          return new NextResponse("Ignored", { status: 200 });
-        } else {
-          periodEnd =
-            hasActiveTrial && startDate
-              ? startDate
-              : sub.next_payment_date
-                ? new Date(sub.next_payment_date)
-                : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-        }
+        periodEnd =
+          hasActiveTrial && startDate
+            ? startDate
+            : sub.next_payment_date
+            ? new Date(sub.next_payment_date)
+            : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       }
 
       const { error } = await supabaseAdmin.rpc(
@@ -236,9 +269,8 @@ export async function POST(req: Request) {
           p_period_end: periodEnd.toISOString(),
           p_cancel_at_period_end: false,
           p_event_id: eventId,
-        },
+        }
       );
-
       if (error) throw new Error(error.message);
 
       if (status === "active" || status === "trialing") {
@@ -249,8 +281,9 @@ export async function POST(req: Request) {
       }
 
       console.log(
-        `[MP] ✅ sub ${sub.id}: MP="${sub.status}" trial=${hasActiveTrial} → BD="${status}" user=${userId}`,
+        `[MP] ✅ sub ${sub.id}: MP="${sub.status}" trial=${hasActiveTrial} → BD="${status}" user=${userId}`
       );
+
     } else if (type === "subscription_preapproval_deactivated") {
       const sub = await preapproval.get({ id });
       const eventId = `${type}:${id}`;
@@ -261,118 +294,83 @@ export async function POST(req: Request) {
       });
       if (!isNew) return new NextResponse("Duplicate", { status: 200 });
 
-      const { error } = await supabaseAdmin.rpc("cancel_gateway_subscription", {
-        p_subscription_id: String(sub.id),
-        p_gateway: GATEWAY,
-        p_event_id: eventId,
-      });
-
+      const { error } = await supabaseAdmin.rpc(
+        "cancel_gateway_subscription",
+        {
+          p_subscription_id: String(sub.id),
+          p_gateway: GATEWAY,
+          p_event_id: eventId,
+        }
+      );
       if (error) throw new Error(error.message);
+
       console.log(`[MP] ✅ Cancelada: ${sub.id}`);
+
     } else if (
       type === "payment" ||
       type === "subscription_authorized_payment"
     ) {
-      if (type === "subscription_authorized_payment") {
-        const sub = await preapproval.get({ id });
-        const rawRef = sub.external_reference || "";
-        const [userId, tierStr] = rawRef.split("|");
-        const purchasedTier = tierStr || "pro";
+      const pay = await payment.get({ id });
 
-        if (!userId) {
-          return new NextResponse("OK", { status: 200 });
-        }
-
-        const cycleDate = sub.next_payment_date
-          ? new Date(sub.next_payment_date).toISOString().slice(0, 10)
-          : new Date().toISOString().slice(0, 10);
-
-        const eventId = `${type}:${id}:${cycleDate}`;
-
-        const isNew = await registerEvent(supabaseAdmin, eventId, type, {
-          type,
-          id,
-          cycleDate,
-        });
-        if (!isNew) {
-          console.log(`[MP] Duplicado ignorado: ${eventId}`);
-          return new NextResponse("Duplicate", { status: 200 });
-        }
-
-        console.log(`[MP] 📬 Evento: ${eventId}`);
-
-        const periodEnd = sub.next_payment_date
-          ? new Date(sub.next_payment_date)
-          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-        const { error } = await supabaseAdmin.rpc(
-          "process_gateway_subscription",
-          {
-            p_user_id: userId,
-            p_gateway: GATEWAY,
-            p_subscription_id: String(sub.id),
-            p_customer_id: String(sub.payer_id ?? ""),
-            p_tier: purchasedTier as any,
-            p_status: "active",
-            p_period_start: new Date().toISOString(),
-            p_period_end: periodEnd.toISOString(),
-            p_cancel_at_period_end: false,
-            p_event_id: eventId,
-          },
-        );
-
-        if (error) throw new Error(error.message);
-        console.log(
-          `[MP] ✅ Renovación procesada para user ${userId}, ciclo: ${cycleDate}`,
-        );
-      } else {
-        const eventId = `${type}:${id}`;
-
-        const isNew = await registerEvent(supabaseAdmin, eventId, type, {
-          type,
-          id,
-        });
-        if (!isNew) return new NextResponse("Duplicate", { status: 200 });
-
-        const pay = await payment.get({ id });
-        if (pay.status !== "approved") {
-          console.log(`[MP] Pago ${id} ignorado (${pay.status})`);
-          return new NextResponse("OK", { status: 200 });
-        }
-
-        const preapprovalId = (pay as any).preapproval_id;
-        if (!preapprovalId) return new NextResponse("OK", { status: 200 });
-
-        const sub = await preapproval.get({ id: String(preapprovalId) });
-        const rawRef = sub.external_reference || "";
-        const [userId, tierStr] = rawRef.split("|");
-        const purchasedTier = tierStr || "pro";
-
-        if (!userId) return new NextResponse("OK", { status: 200 });
-
-        const periodEnd = sub.next_payment_date
-          ? new Date(sub.next_payment_date)
-          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-        const { error } = await supabaseAdmin.rpc(
-          "process_gateway_subscription",
-          {
-            p_user_id: userId,
-            p_gateway: GATEWAY,
-            p_subscription_id: String(sub.id),
-            p_customer_id: String(sub.payer_id ?? ""),
-            p_tier: purchasedTier as any,
-            p_status: "active",
-            p_period_start: new Date().toISOString(),
-            p_period_end: periodEnd.toISOString(),
-            p_cancel_at_period_end: false,
-            p_event_id: eventId,
-          },
-        );
-
-        if (error) throw new Error(error.message);
-        console.log(`[MP] ✅ Renovación (payment) para user ${userId}`);
+      if (pay.status !== "approved") {
+        console.log(`[MP] Pago ${id} ignorado (estado: ${pay.status})`);
+        return new NextResponse("OK", { status: 200 });
       }
+
+      const preapprovalId = (pay as any).preapproval_id;
+      if (!preapprovalId) {
+        console.log(`[MP] Pago ${id} sin preapproval_id, ignorado`);
+        return new NextResponse("OK", { status: 200 });
+      }
+
+      const sub = await preapproval.get({ id: String(preapprovalId) });
+
+      const rawRef = await resolveExternalRef(sub as any, mpConfig);
+      const [userId, tierStr] = rawRef.split("|");
+      const purchasedTier = tierStr || "pro";
+
+      if (!userId) {
+        console.warn(
+          `[MP] Pago ${id}: suscripción ${preapprovalId} sin external_reference`
+        );
+        return new NextResponse("OK", { status: 200 });
+      }
+
+      const eventId = `${type}:${id}`;
+      const isNew = await registerEvent(supabaseAdmin, eventId, type, {
+        type,
+        id,
+        preapproval_id: preapprovalId,
+      });
+      if (!isNew) {
+        console.log(`[MP] Duplicado ignorado: ${eventId}`);
+        return new NextResponse("Duplicate", { status: 200 });
+      }
+
+      const periodEnd = sub.next_payment_date
+        ? new Date(sub.next_payment_date)
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      const { error } = await supabaseAdmin.rpc(
+        "process_gateway_subscription",
+        {
+          p_user_id: userId,
+          p_gateway: GATEWAY,
+          p_subscription_id: String(sub.id),
+          p_customer_id: String(sub.payer_id ?? ""),
+          p_tier: purchasedTier as any,
+          p_status: "active",
+          p_period_start: new Date().toISOString(),
+          p_period_end: periodEnd.toISOString(),
+          p_cancel_at_period_end: false,
+          p_event_id: eventId,
+        }
+      );
+      if (error) throw new Error(error.message);
+
+      console.log(
+        `[MP] ✅ Pago procesado: ${id} → user ${userId} | sub ${sub.id}`
+      );
     }
 
     return new NextResponse("OK", { status: 200 });

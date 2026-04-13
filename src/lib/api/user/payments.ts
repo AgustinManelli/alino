@@ -1,10 +1,6 @@
 import { MercadoPagoConfig, PreApproval } from "mercadopago";
 import { createClient } from "@supabase/supabase-js";
 
-const mpClient = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN!,
-});
-
 interface TrialEligibility {
   eligible: boolean;
   trial_days: number;
@@ -22,17 +18,14 @@ async function checkTrialEligibilityAdmin(
   userId: string
 ): Promise<TrialEligibility> {
   const supabaseAdmin = getAdminClient();
-
   const { data, error } = await supabaseAdmin.rpc(
     "check_user_trial_eligibility_admin",
     { p_user_id: userId }
   );
-
   if (error) {
     console.error("[payments] Error checking trial eligibility:", error);
     return { eligible: false, trial_days: 30 };
   }
-
   return data as TrialEligibility;
 }
 
@@ -41,80 +34,107 @@ export async function createMPSubscription(
   planId: string
 ): Promise<{ url: string; subscriptionId: string }> {
   const supabaseAdmin = getAdminClient();
+  const mpClient = new MercadoPagoConfig({
+    accessToken: process.env.MP_ACCESS_TOKEN!,
+  });
   const preapprovalClient = new PreApproval(mpClient);
 
-  const { data: userData } = await supabaseAdmin
-    .from("users")
-    .select("user_id")
-    .eq("user_id", userId)
-    .single();
-
-  if (!userData) throw new Error("Usuario no encontrado");
-
-  const { data: planData } = await supabaseAdmin
+  const { data: plan } = await supabaseAdmin
     .from("subscription_plans")
     .select("*")
     .eq("id", planId)
     .single();
 
-  if (!planData || !planData.is_active) {
+  if (!plan || !plan.is_active) {
     throw new Error("El plan seleccionado no es válido o está inactivo.");
   }
+
+  if (!plan.mp_plan_id) {
+    throw new Error(
+      `El plan "${plan.name}" no tiene un PreApprovalPlan de MercadoPago. ` +
+        "Ejecute scripts/setup-mp-plans.ts para generarlo."
+    );
+  }
+
+  const { data: authUser, error: authError } =
+    await supabaseAdmin.auth.admin.getUserById(userId);
+  if (authError || !authUser?.user) throw new Error("Usuario no encontrado.");
+  const payerEmail = authUser.user.email;
+  if (!payerEmail) throw new Error("El usuario no tiene email registrado.");
 
   const { eligible: isTrialEligible, trial_days: trialDays } =
     await checkTrialEligibilityAdmin(userId);
 
-  const rawAmount = Number(planData.price) * (1 - (planData.discount_percentage || 0) / 100);
+  const rawAmount =
+    Number(plan.price) * (1 - (plan.discount_percentage || 0) / 100);
   const amount = Number(rawAmount.toFixed(2));
 
-  const daysOffset = isTrialEligible ? trialDays : 1;
-  const startDate = new Date(
-    Date.now() + daysOffset * 24 * 60 * 60 * 1000
-  );
-
-  const body: any = {
-    reason: planData.mp_reason,
-    external_reference: `${userId}|${planData.tier}`,
-    auto_recurring: {
-      frequency: 1,
-      frequency_type: "months",
-      transaction_amount: amount,
-      currency_id: process.env.MP_CURRENCY_ID || "ARS",
-      start_date: startDate.toISOString(),
-    },
-    back_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/return`,
-    status: "pending",
+  const autoRecurring: Record<string, unknown> = {
+    frequency: 1,
+    frequency_type: "months",
+    transaction_amount: amount,
+    currency_id: process.env.MP_CURRENCY_ID || "ARS",
   };
 
-  const response = await preapprovalClient.create({ body });
-
-  if (!response.init_point || !response.id) {
-    throw new Error("Mercado Pago no devolvió una URL o ID válido.");
+  if (isTrialEligible && trialDays > 0) {
+    autoRecurring.free_trial = {
+      frequency: trialDays,
+      frequency_type: "days",
+    };
+    const trialEnd = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
+    autoRecurring.start_date = trialEnd.toISOString();
   }
+
+  const preapprovalResponse = await preapprovalClient.create({
+    body: {
+      preapproval_plan_id: plan.mp_plan_id,
+      reason: plan.mp_reason,
+      external_reference: `${userId}|${plan.tier}`,
+      payer_email: payerEmail,
+      back_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/return`,
+      auto_recurring: autoRecurring,
+      status: "pending",
+    } as any,
+  });
+
+  if (!preapprovalResponse.init_point || !preapprovalResponse.id) {
+    throw new Error("MercadoPago no devolvió una URL o ID válido.");
+  }
+
+  const preapprovalId = String(preapprovalResponse.id);
 
   await supabaseAdmin.rpc("create_checkout_session", {
     p_user_id: userId,
     p_gateway: "mercadopago",
-    p_external_sub_id: String(response.id),
+    p_external_sub_id: preapprovalId,
   });
 
   await supabaseAdmin
     .from("checkout_sessions")
-    .update({ plan_id: planId, tier: planData.tier })
-    .eq("external_sub_id", String(response.id));
+    .update({ plan_id: planId, tier: plan.tier })
+    .eq("external_sub_id", preapprovalId);
 
   console.log(
-    `[MP] Suscripción creada: ${response.id} para user ${userId}, trial: ${isTrialEligible}`
+    `[MP] PreApproval creado: ${preapprovalId} | user: ${userId} | ` +
+      `mp_plan: ${plan.mp_plan_id} | trial: ${isTrialEligible}`
   );
 
   return {
-    url: response.init_point,
-    subscriptionId: String(response.id),
+    url: preapprovalResponse.init_point,
+    subscriptionId: preapprovalId,
   };
 }
 
 export async function cancelMPSubscription(subscriptionId: string) {
+  const mpClient = new MercadoPagoConfig({
+    accessToken: process.env.MP_ACCESS_TOKEN!,
+  });
   const preapprovalClient = new PreApproval(mpClient);
-  await preapprovalClient.update({ id: subscriptionId, body: { status: "cancelled" } });
-  console.log(`[MP] Suscripción cancelada manualmente: ${subscriptionId}`);
+
+  await preapprovalClient.update({
+    id: subscriptionId,
+    body: { status: "cancelled" },
+  });
+
+  console.log(`[MP] Suscripción cancelada: ${subscriptionId}`);
 }

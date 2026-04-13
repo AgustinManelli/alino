@@ -41,6 +41,8 @@ schema.sql
 supabase
 supabase/.temp/
 
+scripts
+
 # Serwist
 public/sw*
 public/swe-worker*
