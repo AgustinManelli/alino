@@ -87,10 +87,10 @@ export async function createMPSubscription(
 
   const preapprovalResponse = await preapprovalClient.create({
     body: {
-      preapproval_plan_id: plan.mp_plan_id,
       reason: plan.mp_reason,
       external_reference: `${userId}|${plan.tier}`,
       payer_email: payerEmail,
+      // payer_email: "test_user_2010509834873916104@testuser.com",
       back_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/return`,
       auto_recurring: autoRecurring,
       status: "pending",
