@@ -48,14 +48,6 @@ export async function createMPSubscription(
   if (!plan || !plan.is_active) {
     throw new Error("El plan seleccionado no es válido o está inactivo.");
   }
-
-  if (!plan.mp_plan_id) {
-    throw new Error(
-      `El plan "${plan.name}" no tiene un PreApprovalPlan de MercadoPago. ` +
-        "Ejecute scripts/setup-mp-plans.ts para generarlo."
-    );
-  }
-
   const { data: authUser, error: authError } =
     await supabaseAdmin.auth.admin.getUserById(userId);
   if (authError || !authUser?.user) throw new Error("Usuario no encontrado.");
@@ -81,8 +73,6 @@ export async function createMPSubscription(
       frequency: trialDays,
       frequency_type: "days",
     };
-    const trialEnd = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
-    autoRecurring.start_date = trialEnd.toISOString();
   }
 
   const preapprovalResponse = await preapprovalClient.create({
@@ -116,7 +106,7 @@ export async function createMPSubscription(
 
   console.log(
     `[MP] PreApproval creado: ${preapprovalId} | user: ${userId} | ` +
-      `mp_plan: ${plan.mp_plan_id} | trial: ${isTrialEligible}`
+      `plan: ${plan.name} | trial: ${isTrialEligible}`
   );
 
   return {
