@@ -10,6 +10,7 @@ import { getUserEmbeddedWidgets } from "@/lib/api/user-widgets/actions";
 
 import { EmbeddedWidgetManager } from "./EmbeddedWidgetManager";
 import styles from "./WidgetGallery.module.css";
+import { useModalStore } from "@/store/useModalStore";
 
 type Tab = "catalog" | "my-widgets";
 
@@ -33,6 +34,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export const WidgetGallery = ({ onClose, userTier }: Props) => {
   const [tab, setTab] = useState<Tab>("catalog");
+  const openModal = useModalStore((s) => s.open);
 
   const predefinedWidgets = useDashboardStore((s) => s.predefinedWidgets);
   const activeWidgets = useDashboardStore((s) => s.activeWidgets);
@@ -96,7 +98,13 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
                     uninstallWidget(def.id);
                   } else if (canUse) {
                     installWidget(def.id);
+                  } else {
+                    handleOpenPremiumModal();
                   }
+                };
+
+                const handleOpenPremiumModal = () => {
+                  openModal({ type: "premium" });
                 };
                 return (
                   <div
@@ -129,7 +137,7 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
                     <button
                       className={`${styles.cardAction} ${isInstalled ? styles.cardActionRemove : ""}`}
                       onClick={() => handleClick()}
-                      disabled={buttonDisabled}
+                      // disabled={buttonDisabled}
                     >
                       {buttonLabel}
                     </button>

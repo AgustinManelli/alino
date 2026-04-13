@@ -1,11 +1,19 @@
+"use client";
+
 import { Crown } from "@/components/ui/icons/icons";
 import styles from "./UpgradePlaceholder.module.css";
+import { useModalStore } from "@/store/useModalStore";
 
 interface Props {
   widgetName: string;
 }
 
 export const UpgradePlaceholder = ({ widgetName }: Props) => {
+  const openModal = useModalStore((s) => s.open);
+
+  const handleOpenPremiumModal = () => {
+    openModal({ type: "premium" });
+  };
   return (
     <div className={styles.placeholder}>
       <div className={styles.iconWrapper}>
@@ -22,7 +30,9 @@ export const UpgradePlaceholder = ({ widgetName }: Props) => {
       <p className={styles.text}>
         Este widget requiere una suscripción <strong>Pro</strong>.
       </p>
-      <button className={styles.upgradeBtn}>Actualizar a Pro</button>
+      <button className={styles.upgradeBtn} onClick={handleOpenPremiumModal}>
+        Actualizar a Pro
+      </button>
     </div>
   );
 };

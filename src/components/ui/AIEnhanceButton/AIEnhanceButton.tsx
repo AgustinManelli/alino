@@ -20,6 +20,7 @@ import {
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { IAStarsLoader } from "../icons/ia-loader";
 import styles from "./AIEnhanceButton.module.css";
+import { useModalStore } from "@/store/useModalStore";
 
 // ─── Inline icons ─────────────────────────────────────────────────────────────
 
@@ -135,6 +136,8 @@ export function AIEnhanceButton({
   const [taskPrompt, setTaskPrompt] = useState("");
   const [maxTasks, setMaxTasks] = useState<number>(DEFAULT_MAX_TASKS);
 
+  const openModal = useModalStore((s) => s.open);
+
   const user = useUserDataStore((s) => s.user);
   const userTier = (user as any)?.tier || "free";
   const canGenerateTasks = userTier === "pro" || userTier === "student";
@@ -150,6 +153,10 @@ export function AIEnhanceButton({
     setEnhanceFlow({ phase: "idle" });
     setGenerateFlow({ phase: "idle" });
   }, []);
+
+  const handleOpenPremiumModal = () => {
+    openModal({ type: "premium" });
+  };
 
   useModalUbication(triggerRef, containerRef, closePanel, false);
 
@@ -420,7 +427,10 @@ export function AIEnhanceButton({
                             Desbloqueá la generación automática de tareas
                             pasando a Pro o Estudiante.
                           </p>
-                          <button className={styles.upgradeBtn}>
+                          <button
+                            className={styles.upgradeBtn}
+                            onClick={handleOpenPremiumModal}
+                          >
                             Mejorar mi plan
                           </button>
                         </div>
