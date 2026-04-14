@@ -50,9 +50,9 @@ export async function createMPSubscription(
     await checkTrialEligibilityAdmin(userId);
 
   const normalPrice  = Number(plan.price);
-  const offerPrice   = isFirstTimer
-    ? Number((normalPrice * (1 - plan.discount_percentage)).toFixed(2))
-    : normalPrice;
+  const offerPrice = isFirstTimer && plan.discount_percentage > 0
+  ? Number((normalPrice * (1 - plan.discount_percentage / 100)).toFixed(2))
+  : normalPrice;
 
   const autoRecurring: Record<string, unknown> = {
     frequency:          1,
