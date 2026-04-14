@@ -19,6 +19,7 @@
     "@google/genai": "^1.46.0",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.9.1",
+    "@mercadopago/sdk-react": "^1.0.7",
     "@number-flow/react": "^0.4.4",
     "@serwist/next": "^9.2.1",
     "@supabase/ssr": "^0.5.2",

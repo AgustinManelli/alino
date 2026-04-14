@@ -334,14 +334,14 @@ export const cancelSubscriptionAction = async (): Promise<{
 };
 
 export const checkTrialEligibility = async (): Promise<{
-  data?: { eligible: boolean; trial_days: number };
+  data?: { eligible: boolean; trial_days: number; offer_phase_days: number };
   error?: string;
 }> => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
     const { data, error } = await supabase.rpc("check_trial_eligibility");
     if (error) return { error: error.message };
-    return { data: data as { eligible: boolean; trial_days: number } };
+    return { data: data as { eligible: boolean; trial_days: number; offer_phase_days: number } };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
     return { error: "Error desconocido." };
@@ -416,7 +416,8 @@ export const getAvailablePlansAction = async () => {
 
 export const createCheckoutSessionAction = async (
   gateway: "stripe" | "mercadopago",
-  planId: string
+  planId: string,
+  payerEmail: string
 ): Promise<{
   data?: { url: string; subscriptionId?: string };
   error?: string;
@@ -424,15 +425,9 @@ export const createCheckoutSessionAction = async (
   try {
     const { user } = await getAuthenticatedSupabaseClient();
 
-    if (!user.email) {
-      return {
-        error: "Tu cuenta no tiene email asociado. Contacta soporte.",
-      };
-    }
-
     if (gateway === "mercadopago") {
       const { createMPSubscription } = await import("./payments");
-      const result = await createMPSubscription(user.id, planId);
+      const result = await createMPSubscription(user.id, planId, payerEmail);
       return {
         data: { url: result.url, subscriptionId: result.subscriptionId },
       };

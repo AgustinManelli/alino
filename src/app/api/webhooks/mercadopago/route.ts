@@ -25,7 +25,7 @@ function getSupabaseAdmin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
+    { auth: { autoRefreshToken: false, persistSession: false } },
   );
 }
 
@@ -82,7 +82,7 @@ function verifyMPSignature(req: Request, rawBody: string): boolean {
 
 function mapMPStatus(
   mpStatus?: string | null,
-  hasActiveTrial?: boolean
+  hasActiveTrial?: boolean,
 ): OurSubscriptionStatus {
   switch (mpStatus) {
     case "authorized":
@@ -102,7 +102,7 @@ async function registerEvent(
   supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
   eventId: string,
   eventType: string,
-  payload: object
+  payload: object,
 ): Promise<boolean> {
   const { data, error } = await supabaseAdmin.rpc("register_webhook_event", {
     p_gateway: GATEWAY,
@@ -119,7 +119,7 @@ async function registerEvent(
 
 async function resolveExternalRef(
   sub: any,
-  mpConfig: MercadoPagoConfig
+  mpConfig: MercadoPagoConfig,
 ): Promise<string> {
   if (sub.external_reference) return sub.external_reference;
   if (sub.preapproval_plan_id) {
@@ -132,7 +132,7 @@ async function resolveExternalRef(
     } catch (err) {
       console.error(
         `[MP] No se pudo obtener external_reference del plan ${sub.preapproval_plan_id}:`,
-        err
+        err,
       );
       return "";
     }
@@ -231,7 +231,7 @@ export async function POST(req: Request) {
 
         if (!existingSub) {
           console.log(
-            `[MP] Cancelación ignorada: sub ${sub.id} no existe en BD`
+            `[MP] Cancelación ignorada: sub ${sub.id} no existe en BD`,
           );
           return new NextResponse("Ignored", { status: 200 });
         }
@@ -252,8 +252,8 @@ export async function POST(req: Request) {
           hasActiveTrial && startDate
             ? startDate
             : sub.next_payment_date
-            ? new Date(sub.next_payment_date)
-            : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+              ? new Date(sub.next_payment_date)
+              : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       }
 
       const { error } = await supabaseAdmin.rpc(
@@ -269,7 +269,7 @@ export async function POST(req: Request) {
           p_period_end: periodEnd.toISOString(),
           p_cancel_at_period_end: false,
           p_event_id: eventId,
-        }
+        },
       );
       if (error) throw new Error(error.message);
 
@@ -278,12 +278,35 @@ export async function POST(req: Request) {
           p_external_sub_id: String(sub.id),
           p_gateway: GATEWAY,
         });
+
+        const { data: session } = await supabaseAdmin
+          .from("checkout_sessions")
+          .select("offer_applied, normal_price, trial_days_applied")
+          .eq("external_sub_id", String(sub.id))
+          .eq("gateway", GATEWAY)
+          .maybeSingle();
+
+        if (session?.offer_applied && session.normal_price) {
+          const { data: phaseSetting } = await supabaseAdmin
+            .from("settings")
+            .select("value")
+            .eq("setting", "OFFER_PHASE_DAYS")
+            .single();
+          const offerPhaseDays =
+            (phaseSetting?.value ?? 90) + (session.trial_days_applied ?? 0);
+
+          await supabaseAdmin.rpc("activate_offer_phase", {
+            p_subscription_id: String(sub.id),
+            p_gateway: GATEWAY,
+            p_normal_price: session.normal_price,
+            p_phase_days: offerPhaseDays,
+          });
+        }
       }
 
       console.log(
-        `[MP] ✅ sub ${sub.id}: MP="${sub.status}" trial=${hasActiveTrial} → BD="${status}" user=${userId}`
+        `[MP] ✅ sub ${sub.id}: MP="${sub.status}" trial=${hasActiveTrial} → BD="${status}" user=${userId}`,
       );
-
     } else if (type === "subscription_preapproval_deactivated") {
       const sub = await preapproval.get({ id });
       const eventId = `${type}:${id}`;
@@ -294,23 +317,28 @@ export async function POST(req: Request) {
       });
       if (!isNew) return new NextResponse("Duplicate", { status: 200 });
 
-      const { error } = await supabaseAdmin.rpc(
-        "cancel_gateway_subscription",
-        {
-          p_subscription_id: String(sub.id),
-          p_gateway: GATEWAY,
-          p_event_id: eventId,
-        }
-      );
+      const { error } = await supabaseAdmin.rpc("cancel_gateway_subscription", {
+        p_subscription_id: String(sub.id),
+        p_gateway: GATEWAY,
+        p_event_id: eventId,
+      });
       if (error) throw new Error(error.message);
 
       console.log(`[MP] ✅ Cancelada: ${sub.id}`);
-
     } else if (
       type === "payment" ||
       type === "subscription_authorized_payment"
     ) {
-      const pay = await payment.get({ id });
+      let pay;
+      try {
+        pay = await payment.get({ id });
+      } catch (err: any) {
+        if (err?.message?.includes("not found") || err?.status === 404) {
+          console.log(`[MP] Pago ${id} no disponible aún en API, ignorando.`);
+          return new NextResponse("OK", { status: 200 });
+        }
+        throw err;
+      }
 
       if (pay.status !== "approved") {
         console.log(`[MP] Pago ${id} ignorado (estado: ${pay.status})`);
@@ -331,7 +359,7 @@ export async function POST(req: Request) {
 
       if (!userId) {
         console.warn(
-          `[MP] Pago ${id}: suscripción ${preapprovalId} sin external_reference`
+          `[MP] Pago ${id}: suscripción ${preapprovalId} sin external_reference`,
         );
         return new NextResponse("OK", { status: 200 });
       }
@@ -364,12 +392,12 @@ export async function POST(req: Request) {
           p_period_end: periodEnd.toISOString(),
           p_cancel_at_period_end: false,
           p_event_id: eventId,
-        }
+        },
       );
       if (error) throw new Error(error.message);
 
       console.log(
-        `[MP] ✅ Pago procesado: ${id} → user ${userId} | sub ${sub.id}`
+        `[MP] ✅ Pago procesado: ${id} → user ${userId} | sub ${sub.id}`,
       );
     }
 

@@ -31,12 +31,11 @@ async function checkTrialEligibilityAdmin(
 
 export async function createMPSubscription(
   userId: string,
-  planId: string
+  planId: string,
+  payerEmail: string
 ): Promise<{ url: string; subscriptionId: string }> {
   const supabaseAdmin = getAdminClient();
-  const mpClient = new MercadoPagoConfig({
-    accessToken: process.env.MP_ACCESS_TOKEN!,
-  });
+  const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! });
   const preapprovalClient = new PreApproval(mpClient);
 
   const { data: plan } = await supabaseAdmin
@@ -45,74 +44,65 @@ export async function createMPSubscription(
     .eq("id", planId)
     .single();
 
-  if (!plan || !plan.is_active) {
-    throw new Error("El plan seleccionado no es válido o está inactivo.");
-  }
-  const { data: authUser, error: authError } =
-    await supabaseAdmin.auth.admin.getUserById(userId);
-  if (authError || !authUser?.user) throw new Error("Usuario no encontrado.");
-  const payerEmail = authUser.user.email;
-  if (!payerEmail) throw new Error("El usuario no tiene email registrado.");
+  if (!plan || !plan.is_active) throw new Error("Plan inválido o inactivo.");
 
-  const { eligible: isTrialEligible, trial_days: trialDays } =
+  const { eligible: isFirstTimer, trial_days: trialDays } =
     await checkTrialEligibilityAdmin(userId);
 
-  const rawAmount =
-    Number(plan.price) * (1 - (plan.discount_percentage || 0) / 100);
-  const amount = Number(rawAmount.toFixed(2));
+  const normalPrice  = Number(plan.price);
+  const offerPrice   = isFirstTimer
+    ? Number((normalPrice * (1 - plan.discount_percentage)).toFixed(2))
+    : normalPrice;
 
   const autoRecurring: Record<string, unknown> = {
-    frequency: 1,
-    frequency_type: "months",
-    transaction_amount: amount,
-    currency_id: process.env.MP_CURRENCY_ID || "ARS",
+    frequency:          1,
+    frequency_type:     "months",
+    transaction_amount: offerPrice,
+    currency_id:        process.env.MP_CURRENCY_ID || "ARS",
   };
 
-  if (isTrialEligible && trialDays > 0) {
+  if (isFirstTimer && trialDays > 0) {
     autoRecurring.free_trial = {
-      frequency: trialDays,
+      frequency:      trialDays,
       frequency_type: "days",
     };
   }
 
   const preapprovalResponse = await preapprovalClient.create({
     body: {
-      reason: plan.mp_reason,
+      reason:             plan.mp_reason,
       external_reference: `${userId}|${plan.tier}`,
-      payer_email: payerEmail,
-      // payer_email: "test_user_2010509834873916104@testuser.com",
-      back_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/return`,
-      auto_recurring: autoRecurring,
-      status: "pending",
+      payer_email:        payerEmail,
+      back_url:           `${process.env.NEXT_PUBLIC_APP_URL}/payment/return`,
+      auto_recurring:     autoRecurring,
+      status:             "pending",
     } as any,
   });
 
   if (!preapprovalResponse.init_point || !preapprovalResponse.id) {
-    throw new Error("MercadoPago no devolvió una URL o ID válido.");
+    throw new Error("MercadoPago no devolvió URL o ID válido.");
   }
 
   const preapprovalId = String(preapprovalResponse.id);
 
   await supabaseAdmin.rpc("create_checkout_session", {
-    p_user_id: userId,
-    p_gateway: "mercadopago",
+    p_user_id:        userId,
+    p_gateway:        "mercadopago",
     p_external_sub_id: preapprovalId,
   });
 
   await supabaseAdmin
     .from("checkout_sessions")
-    .update({ plan_id: planId, tier: plan.tier })
+    .update({
+      plan_id:            planId,
+      tier:               plan.tier,
+      offer_applied:      isFirstTimer,
+      normal_price:       isFirstTimer ? normalPrice : null,
+      trial_days_applied: isFirstTimer ? trialDays   : 0,
+    })
     .eq("external_sub_id", preapprovalId);
 
-  console.log(
-    `[MP] PreApproval creado: ${preapprovalId} | user: ${userId} | ` +
-      `plan: ${plan.name} | trial: ${isTrialEligible}`
-  );
-
-  return {
-    url: preapprovalResponse.init_point,
-    subscriptionId: preapprovalId,
-  };
+  return { url: preapprovalResponse.init_point, subscriptionId: preapprovalId };
 }
 
 export async function cancelMPSubscription(subscriptionId: string) {
@@ -127,4 +117,20 @@ export async function cancelMPSubscription(subscriptionId: string) {
   });
 
   console.log(`[MP] Suscripción cancelada: ${subscriptionId}`);
+}
+
+export async function updateMPSubscriptionPrice(subscriptionId: string, newAmount: number) {
+  const mpClient = new MercadoPagoConfig({
+    accessToken: process.env.MP_ACCESS_TOKEN!,
+  });
+  const preapprovalClient = new PreApproval(mpClient);
+
+  await preapprovalClient.update({
+    id: subscriptionId,
+    body: {
+      auto_recurring: {
+        transaction_amount: newAmount,
+      }
+    } as any,
+  });
 }
