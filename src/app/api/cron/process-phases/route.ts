@@ -14,11 +14,10 @@ function getSupabaseAdmin() {
 
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
-  const isVercelCron = req.headers.get("x-vercel-cron") === "1";
+
   const isAuthorized =
-    isVercelCron ||
-    (process.env.CRON_SECRET &&
-      authHeader === `Bearer ${process.env.CRON_SECRET}`);
+    process.env.CRON_SECRET &&
+    authHeader === `Bearer ${process.env.CRON_SECRET}`;
 
   if (!isAuthorized) {
     return new NextResponse("Unauthorized", { status: 401 });

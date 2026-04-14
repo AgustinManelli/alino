@@ -4,7 +4,11 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PATHS = ["/sign-in", "/api/auth/callback", "/api/push/trigger", "/api/webhooks", "/api/cron/process-phases"];
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+  let supabaseResponse = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,10 +19,10 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          supabaseResponse = NextResponse.next({
+            request,
+          });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -27,11 +31,12 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
-
   const { pathname } = request.nextUrl;
   const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
   const isApiPath = pathname.startsWith("/api");
+
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
 
   if (!user && !isPublicPath) {
     if (isApiPath) {
