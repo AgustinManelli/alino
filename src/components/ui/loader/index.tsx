@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 
-import { useLoaderStore } from "@/store/useLoaderStore";
+import { useUIStore } from "@/store/useUIStore";
 
 import { LoadingIcon } from "@/components/ui/icons/icons";
 import styles from "./loader.module.css";
@@ -76,7 +76,7 @@ function LoaderOverlay() {
 }
 
 export function Loader() {
-  const { isLoading, setLoading } = useLoaderStore();
+  const { isLoading, setLoading } = useUIStore();
   const pathname = usePathname();
 
   useEffect(() => {

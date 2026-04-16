@@ -4,20 +4,7 @@ import { createClient as createClientServer } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { SupabaseClient, User } from "@supabase/supabase-js";
 
-// Tipos para notificaciones
-export type Notification = {
-  notification_id: string;
-  type: string;
-  title: string;
-  content: string;
-  metadata: any;
-  is_global: boolean;
-  created_at: string;
-  read: boolean;
-  deleted: boolean;
-  read_at: string | null;
-  deleted_at: string | null;
-};
+import { Notification } from "@/lib/schemas/notification.types";
 
 // Helper para obtener cliente autenticado
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
@@ -46,7 +33,7 @@ export async function getMyNotifications() {
 
   if (error) {
     console.error("Error fetching notifications:", error);
-    return { notifications: [] as Notification[], error };
+    return { notifications: [] as Notification[], error: error.message };
   }
 
   return { notifications: data as Notification[], error: null };
@@ -62,7 +49,7 @@ export async function markNotificationRead(notificationId: string) {
 
   if (error) {
     console.error("Error marking notification read:", error);
-    return { error };
+    return { error: error.message };
   }
 
   revalidatePath("/");
@@ -79,7 +66,7 @@ export async function deleteNotification(notificationId: string) {
 
   if (error) {
     console.error("Error deleting notification:", error);
-    return { error };
+    return { error: error.message };
   }
 
   revalidatePath("/");

@@ -2,20 +2,18 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  createEmbeddedWidget,
-  updateEmbeddedWidget,
-  deleteEmbeddedWidget,
-} from "@/lib/api/user-widgets/actions";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { UserWidgetRow } from "@/lib/schemas/database.types";
+import { useCreateEmbeddedWidget } from "@/hooks/dashboard/useCreateEmbeddedWidget";
+import { useUpdateEmbeddedWidget } from "@/hooks/dashboard/useUpdateEmbeddedWidget";
+import { useDeleteEmbeddedWidget } from "@/hooks/dashboard/useDeleteEmbeddedWidget";
 import { Cross, Edit, Share } from "@/components/ui/icons/icons";
 import styles from "./EmbeddedWidgetManager.module.css";
 
 interface Props {
   widgets: UserWidgetRow[];
   activeWidgets: string[];
-  userTier: "free" | "student" | "pro";
+  userTier: "free" | "student" | "pro" | "ultra";
   onInstall: (id: string) => void;
   onUninstall: (id: string) => void;
   onChange?: () => void;
@@ -31,13 +29,9 @@ export const EmbeddedWidgetManager = ({
   onUninstall,
   onChange,
 }: Props) => {
-  const addEmbedded = useDashboardStore((s) => s.addEmbeddedWidgetToStore);
-  const updateEmbedded = useDashboardStore(
-    (s) => s.updateEmbeddedWidgetInStore,
-  );
-  const removeEmbedded = useDashboardStore(
-    (s) => s.removeEmbeddedWidgetFromStore,
-  );
+  const { createWidget } = useCreateEmbeddedWidget();
+  const { updateWidget } = useUpdateEmbeddedWidget();
+  const { deleteWidget } = useDeleteEmbeddedWidget();
 
   const [mode, setMode] = useState<Mode>("list");
   const [editing, setEditing] = useState<UserWidgetRow | null>(null);
@@ -77,33 +71,28 @@ export const EmbeddedWidgetManager = ({
     setSaving(true);
     try {
       if (mode === "create") {
-        const { data, error } = await createEmbeddedWidget({ title, url });
-        if (error || !data) throw new Error(error ?? "Error desconocido");
-        addEmbedded(data);
+        const { error } = await createWidget({ title, url });
+        if (error) return;
         toast.success("Widget creado correctamente.");
         onChange?.();
       } else if (mode === "edit" && editing) {
-        const { data, error } = await updateEmbeddedWidget(editing.id, {
+        const { error } = await updateWidget(editing.id, {
           title,
           url,
         });
-        if (error || !data) throw new Error(error ?? "Error desconocido");
-        updateEmbedded(editing.id, { title, url });
+        if (error) return;
         toast.success("Widget actualizado.");
         onChange?.();
       }
       setMode("list");
-    } catch (err) {
-      toast.error((err as Error).message);
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (widget: UserWidgetRow) => {
-    const { error } = await deleteEmbeddedWidget(widget.id);
-    if (error) return toast.error(error);
-    removeEmbedded(widget.id);
+    const { error } = await deleteWidget(widget.id);
+    if (error) return;
     toast.success("Widget eliminado.");
     onChange?.();
   };

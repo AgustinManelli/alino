@@ -1,8 +1,5 @@
 "use client";
 
-import { animations, MotionGlobalConfig } from "motion/react";
-//store para almacenar preferencias de configuración del usuario
-
 import { create } from "zustand";
 
 interface UserPreferences {

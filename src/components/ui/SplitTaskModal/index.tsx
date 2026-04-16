@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { getBatchInjectedState } from "@/store/todoUtils";
 import { useAITaskSplit } from "@/hooks/useAITaskSplit";
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
 import { SquircleIcon } from "../icons/icons";
@@ -37,7 +38,9 @@ export const SplitTaskModal = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
 
-  const batchInjectTasks = useTodoDataStore((s) => s.batchInjectTasks);
+  const updateState = useTodoDataStore((s) => s.updateState);
+  const tasks = useTodoDataStore((s) => s.tasks);
+  const lists = useTodoDataStore((s) => s.lists);
 
   // Carga inicial
   useEffect(() => {
@@ -85,7 +88,12 @@ export const SplitTaskModal = ({
       setPhase("error");
       return;
     }
-    batchInjectTasks(result.tasks);
+    const { tasks: updatedTasks, lists: updatedLists } = getBatchInjectedState(
+      result.tasks,
+      tasks,
+      lists
+    );
+    updateState({ tasks: updatedTasks, lists: updatedLists });
     onClose();
     toast.success(
       `✦ ${result.tasks.length} subtarea${result.tasks.length !== 1 ? "s" : ""} creada${result.tasks.length !== 1 ? "s" : ""}`,
@@ -103,7 +111,9 @@ export const SplitTaskModal = ({
     taskRank,
     prevTaskRank,
     split,
-    batchInjectTasks,
+    updateState,
+    tasks,
+    lists,
     onClose,
     credits,
   ]);

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState, useCallback } from "react";
 
 import { useDashboardStore } from "@/store/useDashboardStore";
-
+import { useFetchAppUpdates } from "@/hooks/dashboard/useFetchAppUpdates";
 import styles from "./NewFeatures.module.css";
 import { LoadingIcon } from "@/components/ui/icons/icons";
 import { WindowModal } from "@/components/ui/WindowModal";
@@ -14,7 +14,8 @@ export const NewFeature = () => {
   const hasFetchedAppUpdates = useDashboardStore(
     (state) => state.hasFetchedAppUpdates,
   );
-  const fetchAppUpdates = useDashboardStore((state) => state.fetchAppUpdates);
+  const { fetchAppUpdates, isPending: isFetchingAppUpdates } =
+    useFetchAppUpdates();
 
   useEffect(() => {
     if (!hasFetchedAppUpdates) {

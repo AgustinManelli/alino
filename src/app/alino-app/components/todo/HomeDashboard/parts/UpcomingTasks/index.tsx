@@ -7,13 +7,12 @@ import { TaskCard } from "./TaskCard";
 import styles from "./UpcomingTasks.module.css";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFetchDashboardData } from "@/hooks/dashboard/useFetchDashboardData";
 
 export const UpcomingTask = () => {
   const upcoming_tasks = useDashboardStore((state) => state.upcoming_tasks);
   const hasFetchedData = useDashboardStore((state) => state.hasFetchedData);
-  const fetchDashboardData = useDashboardStore(
-    (state) => state.fetchDashboardData,
-  );
+  const { fetchDashboardData } = useFetchDashboardData();
 
   useEffect(() => {
     if (!hasFetchedData) {

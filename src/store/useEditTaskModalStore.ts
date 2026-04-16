@@ -1,3 +1,5 @@
+"use client"
+
 import { create } from "zustand";
 import { TaskType } from "@/lib/schemas/database.types";
 

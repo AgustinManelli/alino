@@ -1,3 +1,5 @@
+"use client"
+
 import { toast } from 'sonner';
 import { create } from 'zustand';
 import { subscribeWithSelector, persist } from 'zustand/middleware';

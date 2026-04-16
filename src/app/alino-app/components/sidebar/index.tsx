@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useGetLists } from "@/hooks/todo/useGetLists";
 
 import { Navbar } from "./Navbar";
 
@@ -14,14 +14,14 @@ init({ data });
 export const Sidebar = () => {
   const executedRef = useRef(false);
 
-  const getLists = useTodoDataStore((state) => state.getLists);
+  const { fetchLists } = useGetLists();
 
   useEffect(() => {
     if (executedRef.current) return;
     executedRef.current = true;
 
     const fetchInitialData = async () => {
-      await getLists();
+      await fetchLists();
     };
     fetchInitialData();
   }, []);

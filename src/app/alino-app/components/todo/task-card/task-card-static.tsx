@@ -8,6 +8,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useDeleteTask } from "@/hooks/todo/tasks/useDeleteTask";
+import { useUpdateTaskCompleted } from "@/hooks/todo/tasks/useUpdateTaskCompleted";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
 import type { TaskType } from "@/lib/schemas/database.types";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
@@ -87,13 +89,13 @@ export const TaskCardStatic = memo(
         taskEditing: state.task,
       })),
     );
-    const { list, deleteTask, updateTaskCompleted } = useTodoDataStore(
+    const { list } = useTodoDataStore(
       useShallow((state) => ({
-        list: state.getListById(task.list_id),
-        deleteTask: state.deleteTask,
-        updateTaskCompleted: state.updateTaskCompleted,
+        list: state.lists.find((l) => l.list_id === task.list_id),
       })),
     );
+    const { deleteTask } = useDeleteTask();
+    const { updateTaskCompleted } = useUpdateTaskCompleted();
     const taskSort = useTodoDataStore((state) => state.taskSort);
     const user = useUserDataStore((state) => state.user);
     const animations = useUserPreferencesStore((state) => state.animations);

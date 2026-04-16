@@ -7,18 +7,17 @@ import { animate } from "motion";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
+import { useUpdateTaskCompleted } from "@/hooks/todo/tasks/useUpdateTaskCompleted";
+import { useDeleteTask } from "@/hooks/todo/tasks/useDeleteTask";
 import type { TaskType } from "@/lib/schemas/database.types";
 
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
-import {
-  isHtmlContent,
-  parseRichTextContent,
-} from "@/components/ui/RichTextEditor/richTextUtils";
+import { isHtmlContent } from "@/components/ui/RichTextEditor/richTextUtils";
 
-import { DeleteIcon, Edit, Note } from "@/components/ui/icons/icons";
+import { DeleteIcon, Edit } from "@/components/ui/icons/icons";
 import styles from "./TaskCard.module.css";
 
 export const TaskCard = memo(({ task }: { task: TaskType }) => {
@@ -30,13 +29,14 @@ export const TaskCard = memo(({ task }: { task: TaskType }) => {
       taskEditing: state.task,
     })),
   );
-  const { list, deleteTask, updateTaskCompleted } = useTodoDataStore(
+  const { list } = useTodoDataStore(
     useShallow((state) => ({
-      list: state.getListById(task.list_id),
-      deleteTask: state.deleteTask,
-      updateTaskCompleted: state.updateTaskCompleted,
+      list: state.lists.find((l) => l.list_id === task.list_id),
     })),
   );
+
+  const { deleteTask } = useDeleteTask();
+  const { updateTaskCompleted } = useUpdateTaskCompleted();
 
   const user = useUserDataStore((state) => state.user);
 

@@ -1,52 +1,21 @@
-import { searchUsers } from "@/lib/api/user/actions";
-import { toast } from "sonner";
-import { create } from "zustand";
+"use client"
 
-type UserSearchResult = {
-  user_id: string;
-  username: string;
-  display_name: string;
-  avatar_url: string | null;
-};
+import { create } from "zustand";
+import { UserSearchResult } from "@/lib/schemas/user.types";
 
 type SearchUserStore = {
   searchResults: UserSearchResult[];
   loadingSearch: boolean;
-  searchUsers: (searchTerm: string) => void;
+  setSearchResults: (results: UserSearchResult[]) => void;
+  setLoadingSearch: (loading: boolean) => void;
   clearSearchResults: () => void;
 };
 
-function handleError(err: unknown) {
-  toast.error((err as Error).message || "Error desconocido");
-}
-
-export const useSearchUserStore = create<SearchUserStore>()((set, get) => ({
+export const useSearchUserStore = create<SearchUserStore>()((set) => ({
   searchResults: [],
   loadingSearch: false,
 
-  searchUsers: async (searchTerm: string) => {
-    if (searchTerm.length < 2) {
-      set({ searchResults: [], loadingSearch: false });
-      return;
-    }
-
-    set({ loadingSearch: true });
-
-    try {
-      const { data, error } = await searchUsers(searchTerm);
-
-      if (error) {
-        set({ searchResults: [], loadingSearch: false });
-        throw new Error(error);
-      }
-      if (data) {
-        set({ searchResults: data, loadingSearch: false });
-      }
-    } catch (err) {
-      handleError(err);
-    }
-  },
-  clearSearchResults: () => {
-    set({ searchResults: [] });
-  },
+  setSearchResults: (results) => set({ searchResults: results }),
+  setLoadingSearch: (loading) => set({ loadingSearch: loading }),
+  clearSearchResults: () => set({ searchResults: [] }),
 }));

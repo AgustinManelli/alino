@@ -8,7 +8,7 @@ import { ListsType } from "@/lib/schemas/database.types";
 import { TextTitlesAnimation } from "@/components/ui/text-titles-animation";
 
 import { hexColorSchema } from "@/lib/schemas/list/validation";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useUpdateDataList } from "@/hooks/todo/lists/useUpdateDataList";
 
 import { Check } from "@/components/ui/icons/icons";
 import styles from "./ListInfoEdit.module.css";
@@ -52,7 +52,7 @@ export const ListInfoEdit = memo(function ListInfoEdit({
   big = false,
   inFolder = false,
 }: Props) {
-  const updateDataList = useTodoDataStore((state) => state.updateDataList);
+  const { updateDataList } = useUpdateDataList();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleSetColor = useCallback(

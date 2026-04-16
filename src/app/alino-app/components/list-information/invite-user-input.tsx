@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import styles from "./InviteUserInput.module.css";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useSearchUserStore } from "@/store/useSearchUserStore";
+import { useCreateListInvitation } from "@/hooks/todo/members/useCreateListInvitation";
+import { useSearchUsers } from "@/hooks/todo/members/useSearchUsers";
+import { UserSearchResult } from "@/lib/schemas/user.types";
 import {
   Check,
   ChevronDown,
@@ -16,19 +18,12 @@ interface Props {
   onInviteSuccess?: () => void;
 }
 
-type SearchUser = {
-  user_id: string;
-  username: string;
-  display_name: string;
-  avatar_url: string | null;
-};
-
 type InviteStatus = "idle" | "loading" | "success" | "error";
 
 export function InviteUserInput({ list_id, onInviteSuccess }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
-  const [selectedUsers, setSelectedUsers] = useState<SearchUser[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<UserSearchResult[]>([]);
   const [isFocused, setIsFocused] = useState(false);
   const [inviteStatus, setInviteStatus] = useState<InviteStatus>("idle");
   const [failedNames, setFailedNames] = useState<string[]>([]);
@@ -36,10 +31,10 @@ export function InviteUserInput({ list_id, onInviteSuccess }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const createListInvitation = useTodoDataStore((s) => s.createListInvitation);
-  const searchUsers = useSearchUserStore((s) => s.searchUsers);
+  const { createListInvitation } = useCreateListInvitation();
+  const { searchUsers, clearSearchResults } = useSearchUsers();
+  
   const searchResults = useSearchUserStore((s) => s.searchResults);
-  const clearSearchResults = useSearchUserStore((s) => s.clearSearchResults);
   const loadingSearch = useSearchUserStore((s) => s.loadingSearch);
 
   const filteredResults = searchResults.filter(
@@ -75,7 +70,7 @@ export function InviteUserInput({ list_id, onInviteSuccess }: Props) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleSelectUser = (user: SearchUser) => {
+  const handleSelectUser = (user: UserSearchResult) => {
     if (selectedUsers.some((u) => u.user_id === user.user_id)) return;
     setSelectedUsers((prev) => [...prev, user]);
     setInputValue("");

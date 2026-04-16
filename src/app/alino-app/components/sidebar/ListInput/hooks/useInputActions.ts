@@ -1,7 +1,8 @@
 // useInputActions.ts
 import { RefObject, useCallback, useState } from "react";
 import { toast } from "sonner";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useInsertList } from "@/hooks/todo/lists/useInsertList";
+import { useInsertFolder } from "@/hooks/todo/folders/useInsertFolder";
 import { hexColorSchema, shortcodeEmojiSchema } from "@/lib/schemas/list/validation";
 
 interface Props {
@@ -22,8 +23,8 @@ export const useInputActions = ({
   const [isList, setIsList] = useState<boolean>(true);
   const [inputValue, setInputValue] = useState<string>("");
 
-  const insertList = useTodoDataStore((state) => state.insertList);
-  const insertFolder = useTodoDataStore((state) => state.insertFolder);
+  const { insertList } = useInsertList();
+  const { insertFolder } = useInsertFolder();
 
   const resetForm = useCallback(() => {
     setActiveInput(false);

@@ -6,6 +6,10 @@ import styles from "./ConfigUser.module.css";
 import { Edit, UserIcon } from "@/components/ui/icons/icons";
 import { IAStars } from "@/components/ui/icons/icons";
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { useFetchProfileStats } from "@/hooks/user/useFetchProfileStats";
+import { useFetchAIUsage } from "@/hooks/user/useFetchAIUsage";
+import { useUploadAvatar } from "@/hooks/user/useUploadAvatar";
+import { useUpdateProfile } from "@/hooks/user/useUpdateProfile";
 import { toast } from "sonner";
 import {
   getActiveSubscription,
@@ -24,11 +28,9 @@ export default function ConfigUser() {
   const setConfigUserActive = useUserDataStore(
     (state) => state.setConfigUserActive,
   );
-  const fetchProfileStats = useUserDataStore(
-    (state) => state.fetchProfileStats,
-  );
-  const fetchAIUsage = useUserDataStore((state) => state.fetchAIUsage);
-  const uploadAvatar = useUserDataStore((state) => state.uploadAvatar);
+  const { fetchProfileStats } = useFetchProfileStats();
+  const { fetchAIUsage } = useFetchAIUsage();
+  const { uploadAvatar } = useUploadAvatar();
   const openModal = useModalStore((s) => s.open);
 
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
@@ -581,7 +583,7 @@ const EditionSection = ({
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(currentValue);
   const [isLoading, setIsLoading] = useState(false);
-  const updateProfile = useUserDataStore((state) => state.updateProfile);
+  const { updateProfile } = useUpdateProfile();
 
   useEffect(() => {
     if (!isEditing) setValue(currentValue);

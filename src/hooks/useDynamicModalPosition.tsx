@@ -1,3 +1,5 @@
+"use client";
+
 import { useLayoutEffect } from "react";
 import type { RefObject } from "react";
 
@@ -67,7 +69,7 @@ export function useDynamicModalPosition({
         top = anchorRect.top + anchorRect.height / 2 - contentRect.height / 2;
         top = Math.max(
           gap,
-          Math.min(top, viewHeight - contentRect.height - gap)
+          Math.min(top, viewHeight - contentRect.height - gap),
         );
 
         if (align === "left") {
@@ -86,7 +88,7 @@ export function useDynamicModalPosition({
 
         left = Math.max(
           gap,
-          Math.min(left, viewWidth - contentRect.width - gap)
+          Math.min(left, viewWidth - contentRect.width - gap),
         );
       }
 

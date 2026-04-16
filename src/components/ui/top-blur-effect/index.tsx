@@ -1,11 +1,11 @@
 "use client";
 
-import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
+import { useUIStore } from "@/store/useUIStore";
 
 import styles from "./TopBlurEffect.module.css";
 
 export const TopBlurEffect = () => {
-  const colorSelectedList = useTopBlurEffectStore((state) => state.color);
+  const colorSelectedList = useUIStore((state) => state.color);
 
   return (
     <div

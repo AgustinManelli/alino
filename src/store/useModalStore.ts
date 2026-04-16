@@ -1,3 +1,5 @@
+"use client"
+
 import { create } from "zustand";
 
 //Prop types de cada modal

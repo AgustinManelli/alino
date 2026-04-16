@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { UserWidgetRow } from "@/lib/schemas/database.types";
+import { UserWidgetRow, Json } from "@/lib/schemas/database.types";
 
 const getAuth = async () => {
   const supabase = createClient();
@@ -54,7 +54,7 @@ export async function getCommunityWidgets(): Promise<{
 export async function createEmbeddedWidget(payload: {
   title: string;
   url: string;
-  config?: Record<string, unknown>;
+  config?: Json;
 }): Promise<{ data?: UserWidgetRow; error?: string }> {
   try {
     const { supabase } = await getAuth();
@@ -80,7 +80,7 @@ export async function createEmbeddedWidget(payload: {
 
 export async function updateEmbeddedWidget(
   id: string,
-  payload: { title?: string; url?: string; config?: Record<string, unknown> }
+  payload: { title?: string; url?: string; config?: Json }
 ): Promise<{ data?: UserWidgetRow; error?: string }> {
   try {
     const { supabase, user } = await getAuth();

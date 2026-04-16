@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
-import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useSyncStore } from "@/store/useSyncStore";
 
 export function CloudIndicator() {
   const [isVisible, setIsVisible] = useState(false);
 
-  const loadingQueue = useTodoDataStore((state) => state.loadingQueue);
+  const loadingQueue = useSyncStore((state) => state.loadingQueue);
 
   useEffect(() => {
     if (loadingQueue !== undefined) {

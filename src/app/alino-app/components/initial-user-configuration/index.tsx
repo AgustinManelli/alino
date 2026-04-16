@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useShallow } from "zustand/shallow";
 
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { useSetUsernameFirstTime } from "@/hooks/user/useSetUsernameFirstTime";
 
 import { UsernameInput } from "./username-input";
 import { WindowComponent } from "@/components/ui/window-component";
@@ -18,17 +19,17 @@ interface Props {
 
 export const InitialUserConfiguration = ({ onComplete }: Props) => {
   const [finish, setFinish] = useState<boolean>(false);
+  const { setUsernameFirstTime } = useSetUsernameFirstTime();
 
-  const { user, setUsernameFirstTime } = useUserDataStore(
+  const { user } = useUserDataStore(
     useShallow((state) => ({
       user: state.user,
-      setUsernameFirstTime: state.setUsernameFirstTime,
     })),
   );
 
   const onSubmit = async (username: string) => {
-    const { error } = await setUsernameFirstTime(username);
-    if (error || error === "") return error;
+    const result = await setUsernameFirstTime(username);
+    if (result?.error) return result.error;
 
     setFinish(true);
 

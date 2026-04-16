@@ -11,8 +11,8 @@ import FontFamily from "@tiptap/extension-font-family";
 import TextAlign from "@tiptap/extension-text-align";
 import CharacterCount from "@tiptap/extension-character-count";
 import Link from "@tiptap/extension-link";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
+import { useUpdateTaskName } from "@/hooks/todo/tasks/useUpdateTaskName";
 import type { TaskType } from "@/lib/schemas/database.types";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
@@ -152,7 +152,7 @@ export const TaskCard = memo(
       textContainerRef,
     );
 
-    const updateTaskName = useTodoDataStore((state) => state.updateTaskName);
+    const { updateTaskName } = useUpdateTaskName();
     const user = useUserDataStore((state) => state.user);
 
     const handleSaveRef = useRef<() => Promise<void>>(async () => {});

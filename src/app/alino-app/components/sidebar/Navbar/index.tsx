@@ -29,6 +29,7 @@ import { useShallow } from "zustand/shallow";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useFetchListsPage } from "@/hooks/todo/lists/useFetchListsPage";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
 import { DraggableBoard } from "../draggable-board";
@@ -58,10 +59,9 @@ export const Navbar = () => {
   const initialFetch = useTodoDataStore(
     useShallow((state) => state.initialFetch),
   );
+  const folders = useTodoDataStore((state) => state.folders);
+  const { fetchListsPage } = useFetchListsPage();
 
-  const fetchListsPage = useTodoDataStore(
-    useShallow((state) => state.fetchListsPage),
-  );
   const listsPagination = useTodoDataStore(
     useShallow((state) => state.listsPagination),
   );

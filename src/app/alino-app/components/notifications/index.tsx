@@ -6,9 +6,11 @@ import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 
 import { useNotificationsStore } from "@/store/useNotificationsStore";
+import { useNotifications } from "@/hooks/notifications/useNotifications";
 import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
 import { WindowModal } from "@/components/ui/WindowModal";
-import { Alert, LoadingIcon, UserIcon } from "@/components/ui/icons/icons";
+import { LoadingIcon, UserIcon, Alert } from "@/components/ui/icons/icons";
+import { Notification } from "@/lib/schemas/notification.types";
 import styles from "./NotificationsSection.module.css";
 
 export const NotificationsSection = () => {
@@ -21,26 +23,27 @@ export const NotificationsSection = () => {
 
   const {
     notifications,
-    getNotifications,
+    fetchNotifications,
     markAsRead,
     deleteNotification,
-    addNotification,
     updateInvitation,
-  } = useNotificationsStore();
+  } = useNotifications();
+  
+  const initialFetch = useNotificationsStore((s) => s.initialFetch);
 
   useEffect(() => {
-    const fetch = async () => {
+    if (!initialFetch) {
       setIsLoading(true);
-      await getNotifications();
+      fetchNotifications().then(() => setIsLoading(false));
+    } else {
       setIsLoading(false);
-    };
-    fetch();
-  }, [getNotifications]);
+    }
+  }, [fetchNotifications, initialFetch]);
 
   const handleToggle = () => setIsOpen((prev) => !prev);
   const handleClose = () => setIsOpen(false);
 
-  const handleAcceptInvitation = async (notification: any) => {
+  const handleAcceptInvitation = async (notification: Notification) => {
     await updateInvitation(
       notification.notification_id,
       notification.metadata.invitation_id,
@@ -49,7 +52,7 @@ export const NotificationsSection = () => {
     toast.success("Invitación aceptada");
   };
 
-  const handleDeclineInvitation = async (notification: any) => {
+  const handleDeclineInvitation = async (notification: Notification) => {
     await updateInvitation(
       notification.notification_id,
       notification.metadata.invitation_id,
@@ -58,15 +61,15 @@ export const NotificationsSection = () => {
     toast.success("Invitación rechazada");
   };
 
-  const handleMarkRead = async (notification: any) => {
+  const handleMarkRead = async (notification: Notification) => {
     await markAsRead(notification.notification_id);
   };
 
-  const handleDelete = async (notification: any) => {
+  const handleDelete = async (notification: Notification) => {
     await deleteNotification(notification.notification_id);
   };
 
-  const handleOpenAppUpdateModal = (notification: any) => {
+  const handleOpenAppUpdateModal = (notification: Notification) => {
     setSelectedAppUpdate(notification);
   };
 

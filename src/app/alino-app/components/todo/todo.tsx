@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
+import { useVerifyAndFetchList } from "@/hooks/todo/lists/useVerifyAndFetchList";
 import { Manager } from "./manager";
 
 import styles from "./todo.module.css";
@@ -22,14 +23,15 @@ export const Todo = ({ list }: { list: string }) => {
     () => pendingListId !== list,
   );
 
-  const verifyAndFetchList = useTodoDataStore(
-    (state) => state.verifyAndFetchList,
-  );
+  const executedRef = useRef(false);
+  const { verifyAndFetchList } = useVerifyAndFetchList();
 
-  const setList = useMemo(
+  const verifyListId = useCallback(
     () => lists.find((elemento) => elemento.list_id === list),
     [lists, list],
   );
+
+  const setList = verifyListId();
 
   useEffect(() => {
     if (pendingListId === list) {

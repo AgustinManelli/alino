@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Crown } from "@/components/ui/icons/icons";
 import { tierSatisfies } from "@/config/widgets.registry";
+import { useInstallWidget } from "@/hooks/dashboard/useInstallWidget";
+import { useUninstallWidget } from "@/hooks/dashboard/useUninstallWidget";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { UserWidgetRow } from "@/lib/schemas/database.types";
 import { WindowComponent } from "@/components/ui/window-component";
@@ -16,13 +18,14 @@ type Tab = "catalog" | "my-widgets";
 
 interface Props {
   onClose: () => void;
-  userTier: "free" | "student" | "pro";
+  userTier: "free" | "student" | "pro" | "ultra";
 }
 
 const TIER_LABELS: Record<string, string> = {
   free: "Gratis",
   student: "Estudiante",
   pro: "Pro",
+  ultra: "Ultra",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -38,8 +41,8 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
 
   const predefinedWidgets = useDashboardStore((s) => s.predefinedWidgets);
   const activeWidgets = useDashboardStore((s) => s.activeWidgets);
-  const installWidget = useDashboardStore((s) => s.installWidget);
-  const uninstallWidget = useDashboardStore((s) => s.uninstallWidget);
+  const { installWidget, isPending: isInstalling } = useInstallWidget();
+  const { uninstallWidget, isPending: isUninstalling } = useUninstallWidget();
 
   const [myEmbeddedWidgets, setMyEmbeddedWidgets] = useState<UserWidgetRow[]>(
     [],

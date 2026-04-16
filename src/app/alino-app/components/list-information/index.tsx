@@ -1,6 +1,10 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useGetUsersMembersList } from "@/hooks/todo/members/useGetUsersMembersList";
+import { useGetListPendingInvitations } from "@/hooks/todo/members/useGetListPendingInvitations";
+import { useUpdateMemberRole } from "@/hooks/todo/members/useUpdateMemberRole";
+import { useRemoveMember } from "@/hooks/todo/members/useRemoveMember";
+import { useCancelListInvitation } from "@/hooks/todo/members/useCancelListInvitation";
 import { InviteUserInput } from "./invite-user-input";
 import { MemberRow } from "./member-row";
 import { PendingInvitationRow } from "./pending-invitation-row";
@@ -28,13 +32,11 @@ interface Props {
 type ActiveTab = "members" | "invitations" | "links";
 
 export default function ListInformation({ handleCloseConfig, list }: Props) {
-  const getUsersMembersList = useTodoDataStore((s) => s.getUsersMembersList);
-  const getListPendingInvitations = useTodoDataStore(
-    (s) => s.getListPendingInvitations,
-  );
-  const updateMemberRole = useTodoDataStore((s) => s.updateMemberRole);
-  const removeMember = useTodoDataStore((s) => s.removeMember);
-  const cancelListInvitation = useTodoDataStore((s) => s.cancelListInvitation);
+  const { getUsersMembersList } = useGetUsersMembersList();
+  const { getListPendingInvitations } = useGetListPendingInvitations();
+  const { updateMemberRole } = useUpdateMemberRole();
+  const { removeMember } = useRemoveMember();
+  const { cancelListInvitation } = useCancelListInvitation();
 
   const [users, setUsers] = useState<UserWithMembershipRole[]>([]);
   const [invitations, setInvitations] = useState<PendingInvitation[]>([]);

@@ -64,6 +64,7 @@ export interface WidgetLimits {
   free: number;
   student: number;
   pro: number;
+  ultra: number;
 }
 
 export interface DashboardFullPayload {

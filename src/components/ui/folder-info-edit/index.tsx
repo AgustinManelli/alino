@@ -7,7 +7,7 @@ import { FolderType } from "@/lib/schemas/database.types";
 import { TextTitlesAnimation } from "@/components/ui/text-titles-animation";
 
 import { hexColorSchema } from "@/lib/schemas/list/validation";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useUpdateDataFolder } from "@/hooks/todo/folders/useUpdateDataFolder";
 
 import { Check } from "@/components/ui/icons/icons";
 import styles from "./FolderInfoEdit.module.css";
@@ -30,7 +30,7 @@ export const FolderInfoEdit = memo(function ListInfoEdit({
   setColorTemp,
   folderOpen = false,
 }: Props) {
-  const updateDataFolder = useTodoDataStore((state) => state.updateDataFolder);
+  const { updateDataFolder } = useUpdateDataFolder();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 

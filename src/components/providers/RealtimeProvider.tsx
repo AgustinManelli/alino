@@ -3,32 +3,34 @@
 import { useEffect } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
+import { useTodoRealtime } from "@/hooks/todo/useTodoRealtime";
 import { createClient } from "@/utils/supabase/client";
 import {
   ListsRow,
   MembershipRow,
   TaskType,
 } from "@/lib/schemas/database.types";
+import { Notification } from "@/lib/schemas/notification.types";
 import { toast } from "sonner";
 
 export const RealtimeProvider = () => {
   const supabase = createClient();
 
   const {
-    subscriptionAddList,
-    subscriptionDeleteList,
-    subscriptionUpdateList,
-    subscriptionUpdateMembership,
-    subscriptionAddTask,
-    subscriptionUpdateTask,
-    subscriptionDeleteTask,
-  } = useTodoDataStore();
-
-  const { addNotification } = useNotificationsStore();
+    onAddList,
+    onDeleteList,
+    onUpdateList,
+    onUpdateMembership,
+    onAddTask,
+    onUpdateTask,
+    onDeleteTask,
+  } = useTodoRealtime();
+  const lists = useTodoDataStore((s) => s.lists);
+  const addNotificationToStore = useNotificationsStore(
+    (s) => s.addNotificationToStore,
+  );
 
   useEffect(() => {
-    const store = useTodoDataStore.getState();
-
     const channel = supabase
       .channel("app-realtime")
       .on(
@@ -40,11 +42,11 @@ export const RealtimeProvider = () => {
         },
         (payload) => {
           const newMembership = payload.new as MembershipRow;
-          const exists = store.lists.some(
-            (list) => list.list_id === newMembership.list_id
+          const exists = lists.some(
+            (list) => list.list_id === newMembership.list_id,
           );
-          if (!exists) subscriptionAddList(newMembership);
-        }
+          if (!exists) onAddList(newMembership);
+        },
       )
       .on(
         "postgres_changes",
@@ -56,9 +58,9 @@ export const RealtimeProvider = () => {
         (payload) => {
           const oldMembership = payload.old as MembershipRow;
           if (oldMembership) {
-            subscriptionDeleteList(oldMembership);
+            onDeleteList(oldMembership);
           }
-        }
+        },
       )
       .on(
         "postgres_changes",
@@ -69,8 +71,8 @@ export const RealtimeProvider = () => {
         },
         (payload) => {
           const updatedMembership = payload.new as MembershipRow;
-          subscriptionUpdateMembership(updatedMembership);
-        }
+          onUpdateMembership(updatedMembership);
+        },
       )
       .on(
         "postgres_changes",
@@ -81,8 +83,8 @@ export const RealtimeProvider = () => {
         },
         (payload) => {
           const updatedList = payload.new as ListsRow;
-          subscriptionUpdateList(updatedList);
-        }
+          onUpdateList(updatedList);
+        },
       )
       .on(
         "postgres_changes",
@@ -92,14 +94,14 @@ export const RealtimeProvider = () => {
           table: "notifications",
         },
         (payload) => {
-          const newNotification = payload.new as any;
-          addNotification({
+          const newNotification = payload.new as Notification;
+          addNotificationToStore({
             ...newNotification,
             read: false,
             deleted: false,
           });
           toast.info(newNotification.title);
-        }
+        },
       )
       .on(
         "postgres_changes",
@@ -109,8 +111,8 @@ export const RealtimeProvider = () => {
           table: "tasks",
         },
         (payload) => {
-          subscriptionAddTask(payload.new as TaskType);
-        }
+          onAddTask(payload.new as TaskType);
+        },
       )
       .on(
         "postgres_changes",
@@ -120,8 +122,8 @@ export const RealtimeProvider = () => {
           table: "tasks",
         },
         (payload) => {
-          subscriptionUpdateTask(payload.new as TaskType);
-        }
+          onUpdateTask(payload.new as TaskType);
+        },
       )
       .on(
         "postgres_changes",
@@ -131,8 +133,8 @@ export const RealtimeProvider = () => {
           table: "tasks",
         },
         (payload) => {
-          subscriptionDeleteTask(payload.old as { task_id: string });
-        }
+          onDeleteTask(payload.old as { task_id: string });
+        },
       )
       .subscribe();
 
@@ -141,14 +143,15 @@ export const RealtimeProvider = () => {
     };
   }, [
     supabase,
-    subscriptionAddList,
-    subscriptionUpdateMembership,
-    subscriptionDeleteList,
-    subscriptionUpdateList,
-    subscriptionAddTask,
-    subscriptionUpdateTask,
-    subscriptionDeleteTask,
-    addNotification,
+    onAddList,
+    onUpdateMembership,
+    onDeleteList,
+    onUpdateList,
+    onAddTask,
+    onUpdateTask,
+    onDeleteTask,
+    addNotificationToStore,
+    lists,
   ]);
 
   return null;

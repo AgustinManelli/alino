@@ -3,6 +3,8 @@
 import { MAX_TASKS_PER_REQUEST, TASK_CHAR_LIMIT } from "@/config/app-config";
 import { createClient as createClientServer } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
+import { TaskSortOption } from "@/lib/schemas/todo.types";
+export type { TaskSortOption };
 
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
@@ -284,12 +286,7 @@ export const getUpcomingTasks = async () => {
   }
 };
 
-export type TaskSortOption =
-  | "default"
-  | "due_asc"
-  | "due_desc"
-  | "alpha_asc"
-  | "alpha_desc";
+
 
 export const getPaginatedTasks = async (
   listIds: string[],

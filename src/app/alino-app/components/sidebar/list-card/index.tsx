@@ -14,6 +14,10 @@ import { useSortable } from "@dnd-kit/sortable";
 import Link from "next/link";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { readTaskCount } from "@/store/todoUtils";
+import { useDeleteList } from "@/hooks/todo/lists/useDeleteList";
+import { useLeaveList } from "@/hooks/todo/lists/useLeaveList";
+import { useUpdatePinnedList } from "@/hooks/todo/lists/useUpdatePinnedList";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
@@ -47,13 +51,15 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
   );
   const [emoji, setEmoji] = useState<string | null>(list?.list?.icon ?? null);
 
-  const deleteList = useTodoDataStore((state) => state.deleteList);
-  const leaveList = useTodoDataStore((state) => state.leaveList);
-  const updatePinnedList = useTodoDataStore((state) => state.updatePinnedList);
+  const { deleteList } = useDeleteList();
+  const { leaveList } = useLeaveList();
+  const { updatePinnedList } = useUpdatePinnedList();
 
-  const taskCount = useTodoDataStore((state) =>
-    state.getTaskCountByListId(list.list_id),
-  );
+  const taskCount = useTodoDataStore((state) => {
+    const lists = state.lists;
+    const tasks = state.tasks;
+    return readTaskCount(list, tasks);
+  });
 
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const openConfirmationModal = useModalStore((s) => s.open);

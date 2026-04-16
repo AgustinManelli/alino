@@ -11,6 +11,8 @@ import TextAlign from "@tiptap/extension-text-align";
 import CharacterCount from "@tiptap/extension-character-count";
 import Link from "@tiptap/extension-link";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useAddTask } from "@/hooks/todo/tasks/useAddTask";
+import { useAddTasks } from "@/hooks/todo/tasks/useAddTasks";
 import styles from "./task-input.module.css";
 import { ListsType } from "@/lib/schemas/database.types";
 import { Calendar } from "@/components/ui/Calendar";
@@ -76,8 +78,8 @@ function combineDateAndTime(d?: Date, h?: string): string | null {
 
 export default function TaskInput({ setList }: { setList?: ListsType }) {
   const lists = useTodoDataStore((state) => state.lists);
-  const addTask = useTodoDataStore((state) => state.addTask);
-  const addTasks = useTodoDataStore((state) => state.addTasks);
+  const { addTask } = useAddTask();
+  const { addTasks } = useAddTasks();
   const [focus, setFocus] = useState(false);
   const [selected, setSelected] = useState<Date | undefined>(undefined);
   const [hour, setHour] = useState<string | undefined>(undefined);

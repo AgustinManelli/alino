@@ -53,6 +53,106 @@ export type Database = {
         }
         Relationships: []
       }
+      checkout_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          external_sub_id: string | null
+          gateway: string
+          id: string
+          normal_price: number | null
+          offer_applied: boolean | null
+          plan_id: string | null
+          status: string
+          tier: Database["public"]["Enums"]["subscription_tier"] | null
+          trial_days_applied: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          external_sub_id?: string | null
+          gateway: string
+          id?: string
+          normal_price?: number | null
+          offer_applied?: boolean | null
+          plan_id?: string | null
+          status?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"] | null
+          trial_days_applied?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          external_sub_id?: string | null
+          gateway?: string
+          id?: string
+          normal_price?: number | null
+          offer_applied?: boolean | null
+          plan_id?: string | null
+          status?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"] | null
+          trial_days_applied?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_sessions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkout_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_dashboard_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "checkout_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      feature_limits: {
+        Row: {
+          created_at: string
+          description: string | null
+          feature_key: string
+          id: string
+          monthly_limit: number
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          feature_key: string
+          id?: string
+          monthly_limit?: number
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          feature_key?: string
+          id?: string
+          monthly_limit?: number
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       list_folders: {
         Row: {
           created_at: string
@@ -110,12 +210,8 @@ export type Database = {
           expires_at: string | null
           invitation_id: string
           invited_user_id: string
-          inviter_avatar_url: string | null
-          inviter_display_name: string
           inviter_user_id: string
-          inviter_username: string
           list_id: string
-          list_name: string
           responded_at: string | null
           status: Database["public"]["Enums"]["status_shared_types"]
           updated_at: string | null
@@ -125,12 +221,8 @@ export type Database = {
           expires_at?: string | null
           invitation_id?: string
           invited_user_id: string
-          inviter_avatar_url?: string | null
-          inviter_display_name: string
           inviter_user_id: string
-          inviter_username: string
           list_id: string
-          list_name: string
           responded_at?: string | null
           status?: Database["public"]["Enums"]["status_shared_types"]
           updated_at?: string | null
@@ -140,12 +232,8 @@ export type Database = {
           expires_at?: string | null
           invitation_id?: string
           invited_user_id?: string
-          inviter_avatar_url?: string | null
-          inviter_display_name?: string
           inviter_user_id?: string
-          inviter_username?: string
           list_id?: string
-          list_name?: string
           responded_at?: string | null
           status?: Database["public"]["Enums"]["status_shared_types"]
           updated_at?: string | null
@@ -185,6 +273,70 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "lists"
             referencedColumns: ["list_id"]
+          },
+        ]
+      }
+      list_invite_links: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          list_id: string
+          max_uses: number | null
+          role: Database["public"]["Enums"]["roles_types"]
+          token: string
+          updated_at: string
+          used_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          list_id: string
+          max_uses?: number | null
+          role?: Database["public"]["Enums"]["roles_types"]
+          token: string
+          updated_at?: string
+          used_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          list_id?: string
+          max_uses?: number | null
+          role?: Database["public"]["Enums"]["roles_types"]
+          token?: string
+          updated_at?: string
+          used_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "list_invite_links_list_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["list_id"]
+          },
+          {
+            foreignKeyName: "list_invite_links_user_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_dashboard_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "list_invite_links_user_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -388,6 +540,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          is_default: boolean
           is_resizable: boolean
           name: string
           sort_order: number
@@ -403,6 +556,7 @@ export type Database = {
           description?: string | null
           id: string
           is_active?: boolean
+          is_default?: boolean
           is_resizable?: boolean
           name: string
           sort_order?: number
@@ -418,11 +572,51 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          is_default?: boolean
           is_resizable?: boolean
           name?: string
           sort_order?: number
           tier_required?: Database["public"]["Enums"]["subscription_tier"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          duration_months: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          used_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          duration_months: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          used_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          duration_months?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          used_count?: number
         }
         Relationships: []
       }
@@ -489,6 +683,48 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          currency: string
+          discount_percentage: number | null
+          features: string[] | null
+          id: string
+          is_active: boolean
+          mp_plan_id: string | null
+          mp_reason: string
+          name: string
+          price: number
+          tier: Database["public"]["Enums"]["subscription_tier"]
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          discount_percentage?: number | null
+          features?: string[] | null
+          id?: string
+          is_active?: boolean
+          mp_plan_id?: string | null
+          mp_reason: string
+          name: string
+          price: number
+          tier: Database["public"]["Enums"]["subscription_tier"]
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          discount_percentage?: number | null
+          features?: string[] | null
+          id?: string
+          is_active?: boolean
+          mp_plan_id?: string | null
+          mp_reason?: string
+          name?: string
+          price?: number
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
@@ -496,7 +732,11 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           customer_id: string | null
+          gateway: string
           id: string
+          idempotency_key: string | null
+          next_billing_amount: number | null
+          phase_ends_at: string | null
           status: Database["public"]["Enums"]["subscription_status"]
           subscription_id: string | null
           tier: Database["public"]["Enums"]["subscription_tier"]
@@ -509,7 +749,11 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           customer_id?: string | null
+          gateway?: string
           id?: string
+          idempotency_key?: string | null
+          next_billing_amount?: number | null
+          phase_ends_at?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
           subscription_id?: string | null
           tier?: Database["public"]["Enums"]["subscription_tier"]
@@ -522,7 +766,11 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           customer_id?: string | null
+          gateway?: string
           id?: string
+          idempotency_key?: string | null
+          next_billing_amount?: number | null
+          phase_ends_at?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
           subscription_id?: string | null
           tier?: Database["public"]["Enums"]["subscription_tier"]
@@ -533,14 +781,14 @@ export type Database = {
           {
             foreignKeyName: "subscriptions_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "user_dashboard_view"
             referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "subscriptions_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["user_id"]
           },
@@ -607,6 +855,54 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "lists"
             referencedColumns: ["list_id"]
+          },
+        ]
+      }
+      user_feature_usage: {
+        Row: {
+          created_at: string
+          feature_key: string
+          id: string
+          period_end: string
+          period_start: string
+          updated_at: string
+          used: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feature_key: string
+          id?: string
+          period_end: string
+          period_start?: string
+          updated_at?: string
+          used?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feature_key?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          updated_at?: string
+          used?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_feature_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_dashboard_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_feature_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -705,6 +1001,49 @@ export type Database = {
             foreignKeyName: "user_private_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      user_promo_codes: {
+        Row: {
+          id: string
+          promo_code_id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          promo_code_id: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          promo_code_id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_promo_codes_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_promo_codes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_dashboard_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_promo_codes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["user_id"]
           },
@@ -927,6 +1266,42 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_events: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          event_id: string
+          event_type: string
+          gateway: string
+          id: string
+          payload: Json | null
+          processed: boolean
+          processed_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          event_id: string
+          event_type: string
+          gateway: string
+          id?: string
+          payload?: Json | null
+          processed?: boolean
+          processed_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          event_id?: string
+          event_type?: string
+          gateway?: string
+          id?: string
+          payload?: Json | null
+          processed?: boolean
+          processed_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       user_dashboard_view: {
@@ -943,7 +1318,24 @@ export type Database = {
       }
     }
     Functions: {
+      activate_offer_phase: {
+        Args: {
+          p_gateway: string
+          p_normal_price: number
+          p_phase_days: number
+          p_subscription_id: string
+        }
+        Returns: undefined
+      }
       calculate_new_rank: { Args: { owner_id_param: string }; Returns: string }
+      cancel_gateway_subscription: {
+        Args: {
+          p_event_id?: string
+          p_gateway: string
+          p_subscription_id: string
+        }
+        Returns: Json
+      }
       cancel_list_invitation: {
         Args: { p_invitation_id: string }
         Returns: undefined
@@ -952,7 +1344,28 @@ export type Database = {
       ch_is_list_admin: { Args: { p_list_id: string }; Returns: boolean }
       ch_is_list_member: { Args: { p_list_id: string }; Returns: boolean }
       ch_is_list_owner: { Args: { p_list_id: string }; Returns: boolean }
+      check_trial_eligibility: { Args: never; Returns: Json }
+      check_user_trial_eligibility_admin: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       compare_ranks: { Args: { rank1: string; rank2: string }; Returns: string }
+      complete_checkout_session: {
+        Args: { p_external_sub_id: string; p_gateway: string }
+        Returns: undefined
+      }
+      consume_feature_limit: {
+        Args: { p_cost?: number; p_feature_key: string }
+        Returns: Json
+      }
+      create_checkout_session: {
+        Args: {
+          p_external_sub_id?: string
+          p_gateway: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       create_embedded_widget: {
         Args: { p_config?: Json; p_title: string; p_url: string }
         Returns: Json
@@ -972,11 +1385,21 @@ export type Database = {
         Args: { p_invited_username: string; p_list_id: string }
         Returns: Json
       }
+      create_list_invite_link: {
+        Args: {
+          p_expires_at?: string
+          p_list_id: string
+          p_max_uses?: number
+          p_role?: Database["public"]["Enums"]["roles_types"]
+        }
+        Returns: Json
+      }
       delete_folder_with_lists: { Args: { p_folder_id: string }; Returns: Json }
       delete_notification: {
         Args: { p_notification_id: string }
         Returns: undefined
       }
+      get_active_subscription: { Args: never; Returns: Json }
       get_dashboard_widgets: {
         Args: never
         Returns: {
@@ -999,7 +1422,22 @@ export type Database = {
           widget_source: string
         }[]
       }
+      get_feature_usage: { Args: { p_feature_key: string }; Returns: Json }
       get_initial_data: { Args: { p_user_id: string }; Returns: Json }
+      get_invite_link_info: { Args: { p_token: string }; Returns: Json }
+      get_list_invite_links: {
+        Args: { p_list_id: string }
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          max_uses: number
+          role: string
+          token: string
+          used_count: number
+        }[]
+      }
       get_list_members_users: {
         Args: { p_list_id: string }
         Returns: {
@@ -1021,8 +1459,10 @@ export type Database = {
           invited_display_name: string
           invited_user_id: string
           invited_username: string
+          inviter_avatar_url: string
           inviter_display_name: string
           inviter_user_id: string
+          inviter_username: string
           list_id: string
           list_name: string
           status: string
@@ -1079,6 +1519,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          is_default: boolean
           is_resizable: boolean
           name: string
           sort_order: number
@@ -1093,6 +1534,10 @@ export type Database = {
         }
       }
       get_setting_int: { Args: { p_setting: string }; Returns: number }
+      get_subscription_by_external_id: {
+        Args: { p_gateway: string; p_subscription_id: string }
+        Returns: Json
+      }
       get_upcoming_tasks: {
         Args: { p_limit?: number; p_user_id: string }
         Returns: {
@@ -1114,6 +1559,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_user_profile_stats: { Args: never; Returns: Json }
       get_user_stats: {
         Args: { p_user_id: string }
         Returns: {
@@ -1146,8 +1592,37 @@ export type Database = {
         Args: { p_notification_id: string }
         Returns: undefined
       }
+      process_gateway_subscription: {
+        Args: {
+          p_cancel_at_period_end?: boolean
+          p_customer_id: string
+          p_event_id?: string
+          p_gateway: string
+          p_period_end: string
+          p_period_start: string
+          p_status: Database["public"]["Enums"]["subscription_status"]
+          p_subscription_id: string
+          p_tier: Database["public"]["Enums"]["subscription_tier"]
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      redeem_promo_code: { Args: { p_code: string }; Returns: Json }
+      register_webhook_event: {
+        Args: {
+          p_event_id: string
+          p_event_type: string
+          p_gateway: string
+          p_payload: Json
+        }
+        Returns: boolean
+      }
       remove_list_member: {
         Args: { p_list_id: string; p_target_user_id: string }
+        Returns: undefined
+      }
+      revoke_list_invite_link: {
+        Args: { p_link_id: string }
         Returns: undefined
       }
       save_widget_layouts: { Args: { p_layouts: Json }; Returns: undefined }
@@ -1164,6 +1639,10 @@ export type Database = {
         Args: { p_username: string }
         Returns: undefined
       }
+      start_premium_trial: {
+        Args: { p_tier?: Database["public"]["Enums"]["subscription_tier"] }
+        Returns: Json
+      }
       uninstall_widget: {
         Args: { p_predefined_id?: string; p_user_widget_id?: string }
         Returns: undefined
@@ -1176,10 +1655,20 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_user_profile: {
+        Args: {
+          p_avatar_url?: string
+          p_biography?: string
+          p_display_name?: string
+          p_username?: string
+        }
+        Returns: Json
+      }
       upsert_widget_instances: {
         Args: { p_instances: Json }
         Returns: undefined
       }
+      use_list_invite_link: { Args: { p_token: string }; Returns: Json }
     }
     Enums: {
       app_update_category:
@@ -1196,7 +1685,7 @@ export type Database = {
         | "past_due"
         | "trialing"
         | "incomplete"
-      subscription_tier: "free" | "student" | "pro"
+      subscription_tier: "free" | "student" | "pro" | "ultra"
       widget_moderation_status:
         | "pending"
         | "approved"
@@ -1346,7 +1835,7 @@ export const Constants = {
         "trialing",
         "incomplete",
       ],
-      subscription_tier: ["free", "student", "pro"],
+      subscription_tier: ["free", "student", "pro", "ultra"],
       widget_moderation_status: [
         "pending",
         "approved",
@@ -1357,7 +1846,6 @@ export const Constants = {
     },
   },
 } as const
-
 
 export type MembershipRow =
   Database["public"]["Tables"]["list_memberships"]["Row"];

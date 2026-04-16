@@ -4,23 +4,23 @@ import { SummaryCircle } from "@/components/ui/SummaryCircle";
 
 import styles from "./Summary.module.css";
 import { useDashboardStore } from "@/store/useDashboardStore";
+import { useFetchDashboardData } from "@/hooks/dashboard/useFetchDashboardData";
 import { useShallow } from "zustand/shallow";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Summary = () => {
+  const { fetchDashboardData } = useFetchDashboardData();
   const {
     total_tasks,
     pending_tasks,
     completed_tasks,
     hasFetchedData,
-    fetchDashboardData,
   } = useDashboardStore(
     useShallow((state) => ({
       total_tasks: state.total_tasks,
       pending_tasks: state.pending_tasks,
       completed_tasks: state.completed_tasks,
       hasFetchedData: state.hasFetchedData,
-      fetchDashboardData: state.fetchDashboardData,
     })),
   );
 

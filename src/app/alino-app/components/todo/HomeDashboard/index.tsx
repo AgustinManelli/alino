@@ -5,8 +5,12 @@ import { ResponsiveLayouts } from "react-grid-layout";
 import dynamic from "next/dynamic";
 
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
+import { useUIStore } from "@/store/useUIStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { useLoadDashboard } from "@/hooks/dashboard/useLoadDashboard";
+import { useFetchDashboardData } from "@/hooks/dashboard/useFetchDashboardData";
+import { useFetchAppUpdates } from "@/hooks/dashboard/useFetchAppUpdates";
+import { useDashboardLayoutActions } from "@/hooks/dashboard/useDashboardLayoutActions";
 
 import { tierSatisfies } from "@/config/widgets.registry";
 import { UpgradePlaceholder } from "./parts/UpgradePlaceholder";
@@ -97,20 +101,17 @@ const useDateAndGreeting = () => {
 };
 
 export const HomeDashboard = () => {
-  const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
+  const setBlurredFx = useUIStore((state) => state.setColor);
   const user = useUserDataStore((state) => state.user);
 
-  const {
-    layout,
-    isConfigLoaded,
-    setLayout,
-    autoSortLayout,
-    loadDashboard,
-    fetchDashboardData,
-    fetchAppUpdates,
-    widgetInstances,
-    activeWidgets,
-  } = useDashboardStore();
+  const { layout, isConfigLoaded, setLayout, widgetInstances } =
+    useDashboardStore();
+
+  const { autoSortLayout } = useDashboardLayoutActions();
+
+  const { loadDashboard } = useLoadDashboard();
+  const { fetchDashboardData } = useFetchDashboardData();
+  const { fetchAppUpdates } = useFetchAppUpdates();
 
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [tempLayout, setTempLayout] = useState<ResponsiveLayouts>({});

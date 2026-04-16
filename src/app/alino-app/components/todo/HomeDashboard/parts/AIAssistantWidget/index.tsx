@@ -1,21 +1,22 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { useAITaskGeneration } from "@/hooks/useAITaskGeneration";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { IAStars } from "@/components/ui/icons/icons";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import styles from "./AIAssistantWidget.module.css";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { IAStarsLoader } from "@/components/ui/icons/ia-loader";
+import { useInsertList } from "@/hooks/todo/lists/useInsertList";
+import { useAddTasks } from "@/hooks/todo/tasks/useAddTasks";
 
 export default function AIAssistantWidget() {
   const [prompt, setPrompt] = useState("");
   const [loadingLocal, setLoadingLocal] = useState(false);
   const [success, setSuccess] = useState(false);
   const { generate, error: aiError } = useAITaskGeneration();
-  const insertList = useTodoDataStore((state) => state.insertList);
-  const addTasks = useTodoDataStore((state) => state.addTasks);
+  const { insertList } = useInsertList();
+  const { addTasks } = useAddTasks();
   const user = useUserDataStore((state) => state.user);
   const canGenerateTasks = user?.tier === "pro" || user?.tier === "student";
 

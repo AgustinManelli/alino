@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useLoaderStore } from "@/store/useLoaderStore";
+import { useUIStore } from "@/store/useUIStore";
 import styles from "./ButtonLink.module.css";
 
 interface Props {
@@ -24,7 +24,7 @@ export function ButtonLink({
   hoverColor = "var(--background-over-container-hover)",
   ariaLabel,
 }: Props) {
-  const setLoading = useLoaderStore((state) => state.setLoading);
+  const setLoading = useUIStore((state) => state.setLoading);
 
   const handleClick = () => {
     if (withLoader) setLoading(true);

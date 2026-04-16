@@ -8,6 +8,7 @@ import {
   SearchTermSchema,
   SearchUserSchema,
 } from "@/lib/schemas/user/validation";
+import { ProfileStats, FeatureUsage, ActiveSubscription } from "@/lib/schemas/user.types";
 
 import { fileTypeFromBuffer } from "file-type";
 
@@ -149,12 +150,7 @@ export const updateUserProfile = async (updates: {
   }
 };
 
-export interface ProfileStats {
-  changes_this_month: number;
-  last_username_change: string | null;
-  max_changes_per_month: number;
-  remaining_changes: number;
-}
+
 
 export const getUserProfileStats = async (): Promise<{
   data?: ProfileStats;
@@ -258,22 +254,7 @@ export const uploadAvatarAction = async (
   }
 };
 
-export type SubscriptionTier = "free" | "student" | "pro";
 
-export interface ActiveSubscription {
-  id?: string;
-  tier: SubscriptionTier;
-  status:
-    | "free"
-    | "active"
-    | "trialing"
-    | "canceled"
-    | "past_due"
-    | "incomplete";
-  gateway?: string;
-  current_period_end?: string;
-  cancel_at_period_end?: boolean;
-}
 
 export const getActiveSubscription = async (): Promise<{
   data?: ActiveSubscription;
@@ -441,13 +422,7 @@ export const createCheckoutSessionAction = async (
   }
 };
 
-export interface FeatureUsage {
-  used: number;
-  limit: number;
-  remaining: number;
-  period_end: string;
-  tier: string;
-}
+
 
 export const getFeatureUsageAction = async (
   featureKey: string,

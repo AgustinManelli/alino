@@ -17,6 +17,9 @@ import {
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+import { useDeleteFolder } from "@/hooks/todo/folders/useDeleteFolder";
+import { useDeleteFolderWithContents } from "@/hooks/todo/folders/useDeleteFolderWithContents";
+import { useFetchListsPage } from "@/hooks/todo/lists/useFetchListsPage";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
@@ -60,14 +63,12 @@ export const SortableFolder = ({
   );
 
   const openConfirmationModal = useModalStore((s) => s.open);
-  const deleteFolder = useTodoDataStore((state) => state.deleteFolder);
-  const deleteFolderWithContents = useTodoDataStore(
-    (state) => state.deleteFolderWithContents,
-  );
+  const { deleteFolder } = useDeleteFolder();
+  const { deleteFolderWithContents } = useDeleteFolderWithContents();
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const animations = useUserPreferencesStore((state) => state.animations);
 
-  const fetchListsPage = useTodoDataStore((state) => state.fetchListsPage);
+  const { fetchListsPage } = useFetchListsPage();
   const folderPagination = useTodoDataStore(
     (state) => state.listsPagination[folder.folder_id],
   );

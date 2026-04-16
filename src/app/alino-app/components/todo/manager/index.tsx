@@ -11,8 +11,15 @@ import {
 } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-import { useTopBlurEffectStore } from "@/store/useTopBlurEffectStore";
+import { useUIStore } from "@/store/useUIStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useDeleteList } from "@/hooks/todo/lists/useDeleteList";
+import { useLeaveList } from "@/hooks/todo/lists/useLeaveList";
+import { useFetchTasksPage } from "@/hooks/todo/tasks/useFetchTasksPage";
+import { useUpdateTaskRank } from "@/hooks/todo/tasks/useUpdateTaskRank";
+import { useFetchCompletedTasksPage } from "@/hooks/todo/tasks/useFetchCompletedTasksPage";
+import { useSetTaskSort } from "@/hooks/todo/tasks/useSetTaskSort";
+import { useSyncStore } from "@/store/useSyncStore";
 import {
   DndContext,
   DragOverlay,
@@ -80,19 +87,21 @@ export const Manager = memo(function Manager({
   const [showCompleted, setShowCompleted] = useState<boolean>(false);
   const {
     tasks,
-    deleteList,
-    leaveList,
-    fetchTasksPage,
     hasMoreTasks,
-    loadingQueue,
     taskSort,
-    setTaskSort,
-    updateTaskRank,
     completedTasks,
     hasMoreCompletedTasks,
-    loadingCompleted,
-    fetchCompletedTasksPage,
   } = useTodoDataStore();
+
+  const { setTaskSort, isPending: isSorting } = useSetTaskSort();
+
+  const loadingQueue = useSyncStore((state) => state.loadingQueue);
+
+  const { deleteList } = useDeleteList();
+  const { leaveList } = useLeaveList();
+  const { fetchTasksPage } = useFetchTasksPage();
+  const { updateTaskRank } = useUpdateTaskRank();
+  const { fetchCompletedTasksPage, isPending: loadingCompleted } = useFetchCompletedTasksPage();
   const user = useUserDataStore((state) => state.user);
   const openConfirmationModal = useModalStore((s) => s.open);
 
@@ -153,7 +162,7 @@ export const Manager = memo(function Manager({
   );
 
   const handleDragCancel = useCallback(() => setDraggedTask(null), []);
-  const setBlurredFx = useTopBlurEffectStore((state) => state.setColor);
+  const setBlurredFx = useUIStore((state) => state.setColor);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const section1Ref = useRef<HTMLDivElement>(null);
   const divRef = useRef<HTMLDivElement>(null);

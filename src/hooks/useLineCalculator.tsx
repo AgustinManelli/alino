@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useState } from "react";
 
 export function useLineCalculator(textRef: React.RefObject<HTMLElement>) {
@@ -73,10 +75,10 @@ export function useLineCalculator(textRef: React.RefObject<HTMLElement>) {
           const pOffsetLeftInParent = Math.round(pRect.left - parentRect.left);
 
           const topRelativeToParent = Math.round(
-            pOffsetTopInParent + (avgCenterYP - SVG_CENTER + VERTICAL_ADJUST)
+            pOffsetTopInParent + (avgCenterYP - SVG_CENTER + VERTICAL_ADJUST),
           );
           const leftRelativeToParent = Math.round(
-            pOffsetLeftInParent + minLeftP
+            pOffsetLeftInParent + minLeftP,
           );
 
           return {

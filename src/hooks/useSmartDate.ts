@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import * as chrono from "chrono-node";
 

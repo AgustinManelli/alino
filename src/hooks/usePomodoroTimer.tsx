@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from "react";
 
 // Hook simplificado - ya no maneja el timer, solo limpieza opcional

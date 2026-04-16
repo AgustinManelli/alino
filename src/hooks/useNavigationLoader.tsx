@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { useLoaderStore } from "@/store/useLoaderStore";
+import { useUIStore } from "@/store/useUIStore";
 
 export const useNavigationLoader = () => {
-  const setLoading = useLoaderStore((state) => state.setLoading);
+  const setLoading = useUIStore((state) => state.setLoading);
   const pathname = usePathname();
 
   useEffect(() => {

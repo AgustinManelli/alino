@@ -10,6 +10,8 @@ import { useShallow } from "zustand/shallow";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { useUpdateIndexList } from "@/hooks/todo/lists/useUpdateIndexList";
+import { useUpdateIndexFolders } from "@/hooks/todo/folders/useUpdateIndexFolders";
 
 import { useCombinedItems } from "./hooks/useCombinedItems";
 import { useDndSensors } from "./hooks/useDndSensors";
@@ -27,18 +29,16 @@ export const DraggableBoard = () => {
     folders,
     setLists,
     setFolders,
-    updateIndexList,
-    updateIndexFolders,
   } = useTodoDataStore(
     useShallow((state) => ({
       lists: state.lists,
       folders: state.folders,
       setLists: state.setLists,
       setFolders: state.setFolders,
-      updateIndexList: state.updateIndexList,
-      updateIndexFolders: state.updateIndexFolders,
     })),
   );
+  const { updateIndexList } = useUpdateIndexList();
+  const { updateIndexFolders } = useUpdateIndexFolders();
   const animations = useUserPreferencesStore(useShallow((s) => s.animations));
 
   // Derivados
