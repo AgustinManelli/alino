@@ -1,6 +1,6 @@
 "use client";
 
-import React, { CSSProperties, useMemo } from "react";
+import React, { CSSProperties } from "react";
 import { motion } from "motion/react";
 import { Variants } from "motion";
 
@@ -9,11 +9,7 @@ import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 import { FolderType } from "@/lib/schemas/database.types";
 
-import {
-  ArrowThin,
-  FolderClosed,
-  MoreVertical,
-} from "@/components/ui/icons/icons";
+import { FolderClosed, MoreVertical } from "@/components/ui/icons/icons";
 import styles from "./SortableFolder.module.css";
 
 const variants: Variants = {
@@ -39,20 +35,10 @@ export const DragSortableFolder = ({ folder }: Props) => {
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const animations = useUserPreferencesStore((state) => state.animations);
 
-  const dragStyles = useMemo(
-    () => ({
-      border: "solid 1px #3ebb00",
-      zIndex: 1,
-    }),
-    [],
-  );
-
-  const arrowStyle = useMemo(
-    () => ({
-      stroke: folder.folder_color ?? "var(--text-not-available)",
-    }),
-    [folder.folder_color],
-  );
+  const dragStyles = {
+    border: "solid 1px #3ebb00",
+    zIndex: 1,
+  };
 
   const listsCount =
     Array.isArray(folder.memberships) && folder.memberships.length > 0
@@ -68,9 +54,6 @@ export const DragSortableFolder = ({ folder }: Props) => {
       style={dragStyles}
     >
       <div className={styles.folderHeader}>
-        <div className={styles.button}>
-          <ArrowThin className={styles.arrowIconClosed} style={arrowStyle} />
-        </div>
         <div className={styles.infoEditContainer}>
           <div className={styles.dragInfoWrapper}>
             <FolderClosed

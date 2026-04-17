@@ -1,15 +1,14 @@
 "use client";
 
-import { useCallback, useRef, memo } from "react";
-import { motion } from "motion/react";
+import { useCallback, useRef, memo, CSSProperties } from "react";
+import { AnimatePresence, motion } from "motion/react";
 
 import { FolderType } from "@/lib/schemas/database.types";
-import { TextTitlesAnimation } from "@/components/ui/text-titles-animation";
 
 import { hexColorSchema } from "@/lib/schemas/list/validation";
 import { useUpdateDataFolder } from "@/hooks/todo/folders/useUpdateDataFolder";
 
-import { Check } from "@/components/ui/icons/icons";
+import { Check, FolderClosed, FolderOpen } from "@/components/ui/icons/icons";
 import styles from "./FolderInfoEdit.module.css";
 import { FolderColorPicker } from "../ColorPicker/FolderColorPicker";
 
@@ -21,6 +20,20 @@ interface Props {
   setColorTemp: (value: string | null) => void;
   folderOpen?: boolean;
 }
+
+const motionInputInitialState = {
+  backgroundColor: "transparent",
+  paddingLeft: "0px",
+};
+
+const motionInputFinalState = {
+  backgroundColor: "var(--background-over-container)",
+  paddingLeft: "10px",
+};
+
+const motionTransition = {
+  duration: 0.3,
+};
 
 export const FolderInfoEdit = memo(function ListInfoEdit({
   folder,
@@ -52,7 +65,7 @@ export const FolderInfoEdit = memo(function ListInfoEdit({
       setColorTemp(color);
       inputRef.current?.focus();
     },
-    [isValidHex, setColorTemp, folder]
+    [isValidHex, setColorTemp, folder],
   );
 
   const setOriginalColor = useCallback(() => {
@@ -85,7 +98,7 @@ export const FolderInfoEdit = memo(function ListInfoEdit({
     const { error } = await updateDataFolder(
       folder.folder_id,
       formatText,
-      colorTemp
+      colorTemp,
     );
 
     if (error) {
@@ -104,76 +117,96 @@ export const FolderInfoEdit = memo(function ListInfoEdit({
         setIsNameChange(false);
       }
     },
-    [handleSaveName, setIsNameChange]
+    [handleSaveName, setIsNameChange],
+  );
+
+  const handleSaveClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleSaveName();
+    },
+    [handleSaveName],
   );
 
   return (
     <>
       <div className={styles.colorPickerContainer}>
-        <FolderColorPicker
-          color={colorTemp}
-          setColor={handleSetColor}
-          active={isNameChange ? true : false}
-          setOriginalColor={setOriginalColor}
-          folderOpen={folderOpen}
-        />
+        <AnimatePresence mode="wait">
+          {isNameChange ? (
+            <motion.div key="picker-view" style={{ height: "100%" }}>
+              <FolderColorPicker
+                color={colorTemp}
+                setColor={handleSetColor}
+                active={isNameChange}
+                setOriginalColor={setOriginalColor}
+                folderOpen={folderOpen}
+              />
+            </motion.div>
+          ) : folderOpen ? (
+            <motion.div
+              key="emoji-view"
+              transition={motionTransition}
+              className={styles.emojiContainer}
+            >
+              <FolderOpen
+                className={styles.folderIcon}
+                style={
+                  {
+                    "--color":
+                      folder.folder_color ?? "var(--text-not-available)",
+                  } as CSSProperties
+                }
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="emoji-view"
+              transition={motionTransition}
+              className={styles.emojiContainer}
+            >
+              <FolderClosed
+                className={styles.folderIcon}
+                style={
+                  {
+                    "--color":
+                      folder.folder_color ?? "var(--text-not-available)",
+                  } as CSSProperties
+                }
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       <div className={styles.textContainer}>
-        {isNameChange ? (
-          <motion.input
-            style={{
-              fontSize: "14px",
-              fontWeight: "initial",
-            }}
-            maxLength={30}
-            initial={{
-              backgroundColor: "var(--background-over-container)",
-            }}
-            animate={{
-              backgroundColor: "var(--background-over-container)",
-            }}
-            transition={{
-              backgroundColor: {
-                duration: 0.3,
-              },
-            }}
-            className={styles.nameChangerInput}
-            type="text"
-            defaultValue={folder.folder_name}
-            ref={inputRef}
-            onKeyDown={handleKeyDown}
-            id={`folder-info-edit-container`}
-          />
-        ) : (
-          <TextTitlesAnimation
-            text={folder.folder_name}
-            delay={0.3}
-            duration={0.1}
-            stagger={0.03}
-            color={"var(--text)"}
-            colorEffect={folder.folder_color ?? "var(--text-not-available)"}
-            charSize={"14px"}
-            fontWeight={"initial"}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {isNameChange ? (
+            <motion.input
+              key="input"
+              style={{
+                fontSize: "14px",
+                fontWeight: "initial",
+              }}
+              maxLength={30}
+              initial={motionInputInitialState}
+              animate={motionInputFinalState}
+              exit={motionInputInitialState}
+              transition={motionTransition}
+              className={styles.nameChangerInput}
+              type="text"
+              defaultValue={folder.folder_name}
+              ref={inputRef}
+              onKeyDown={handleKeyDown}
+              id={`folder-info-edit-container`}
+            />
+          ) : (
+            <span className={styles.listName}>{folder.folder_name}</span>
+          )}
+        </AnimatePresence>
       </div>
       {isNameChange && (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleSaveName();
-          }}
-          className={styles.checkButton}
-        >
-          <Check
-            style={{
-              width: "23px",
-              height: "auto",
-              stroke: "var(--icon-color)",
-              strokeWidth: 2,
-            }}
-          />
+        <button onClick={handleSaveClick} className={styles.checkButton}>
+          <Check className={styles.checkIconStyle} />
         </button>
       )}
     </>

@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  memo,
 } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useDndMonitor, useDroppable } from "@dnd-kit/core";
@@ -29,18 +30,14 @@ import { CounterAnimation } from "@/components/ui/CounterAnimation";
 import { FolderInfoEdit } from "@/components/ui/folder-info-edit";
 
 import { FolderType, ListsType } from "@/lib/schemas/database.types";
-
 import { variants } from "../draggable-board/animations/variants";
-import {
-  ArrowThin,
-  DeleteIcon,
-  Edit,
-  Pin,
-  Unpin,
-  LoadingIcon,
-} from "@/components/ui/icons/icons";
-import styles from "./SortableFolder.module.css";
 import { useModalStore } from "@/store/useModalStore";
+
+import { DeleteIcon, Edit, LoadingIcon } from "@/components/ui/icons/icons";
+import styles from "./SortableFolder.module.css";
+
+const EDIT_ICON = <Edit className={styles.iconAction} />;
+const DELETE_ICON = <DeleteIcon className={styles.iconAction} />;
 
 interface SortableFolderProps {
   folder: FolderType;
@@ -49,18 +46,23 @@ interface SortableFolderProps {
   dropAllowed?: boolean;
 }
 
-export const SortableFolder = ({
+export const SortableFolder = memo(function SortableFolder({
   folder,
   lists,
   isDragging,
   dropAllowed = true,
-}: SortableFolderProps) => {
+}: SortableFolderProps) {
   const [open, setOpen] = useState<boolean>(false);
   const [containsOver, setContainsOver] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string | null>(
     folder.folder_color,
   );
+
+  const isHoveringRef = useRef<boolean>(false);
+  const divRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const openConfirmationModal = useModalStore((s) => s.open);
   const { deleteFolder } = useDeleteFolder();
@@ -76,17 +78,20 @@ export const SortableFolder = ({
     (state) => state.fetchingListsQueue[folder.folder_id],
   );
 
-  const listIds = useMemo(() => lists?.map((list) => list.list_id), [lists]);
+  const listIdsSet = useMemo(
+    () => new Set(lists?.map((list) => list.list_id) || []),
+    [lists],
+  );
+
+  const listIds = useMemo(() => Array.from(listIdsSet), [listIdsSet]);
+
   const hasFetched = !!folderPagination;
 
-  const listsCount =
-    Array.isArray(folder.memberships) && folder.memberships.length > 0
+  const listsCount = useMemo(() => {
+    return Array.isArray(folder.memberships) && folder.memberships.length > 0
       ? folder.memberships[0].count
       : 0;
-
-  const divRef = useRef<HTMLDivElement | null>(null);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  }, [folder.memberships]);
 
   useEffect(() => {
     if (open && !folderPagination) {
@@ -113,21 +118,24 @@ export const SortableFolder = ({
     onDragOver: (event) => {
       const overId = event.over?.id as string | undefined;
 
-      if (!overId) {
-        setContainsOver(false);
-        return;
-      }
-      if (
-        listIds?.includes(overId) ||
-        overId === `folder-${folder.folder_id}-dropzone`
-      ) {
-        setContainsOver(true);
-      } else {
-        setContainsOver(false);
+      const isOver =
+        !!overId &&
+        (listIdsSet.has(overId) ||
+          overId === `folder-${folder.folder_id}-dropzone`);
+
+      if (isHoveringRef.current !== isOver) {
+        isHoveringRef.current = isOver;
+        setContainsOver(isOver);
       }
     },
-    onDragEnd: () => setContainsOver(false),
-    onDragCancel: () => setContainsOver(false),
+    onDragEnd: () => {
+      isHoveringRef.current = false;
+      setContainsOver(false);
+    },
+    onDragCancel: () => {
+      isHoveringRef.current = false;
+      setContainsOver(false);
+    },
   });
 
   const {
@@ -155,13 +163,10 @@ export const SortableFolder = ({
   });
 
   const dynamicStyle = useMemo(() => {
-    const borderStyle = dropAllowed
-      ? containsOver && !isCurrentlyDraggingThis
-        ? "1px solid #3ebb00"
-        : "1px solid var(--border-container-color)"
-      : containsOver && !isCurrentlyDraggingThis
-        ? "1px solid #ef4444"
-        : "1px solid var(--border-container-color)";
+    let borderColor = "var(--border-container-color)";
+    if (containsOver && !isCurrentlyDraggingThis) {
+      borderColor = dropAllowed ? "#3ebb00" : "#ef4444";
+    }
 
     return {
       transform: `translate3d(${transform?.x || 0}px, ${transform?.y || 0}px, 0)`,
@@ -169,7 +174,7 @@ export const SortableFolder = ({
       pointerEvents: isCurrentlyDraggingThis ? "none" : ("auto" as any),
       zIndex: isCurrentlyDraggingThis ? 99 : 1,
       opacity: isCurrentlyDraggingThis ? 0.3 : 1,
-      border: borderStyle,
+      border: `1px solid ${borderColor}`,
       "--bgColor": colorTemp ?? "transparent",
     };
   }, [
@@ -182,12 +187,12 @@ export const SortableFolder = ({
   ]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (containsOver && !isCurrentlyDraggingThis) {
-      timer = setTimeout(() => {
-        setOpen(true);
-      }, 1000);
-    }
+    if (!containsOver || isCurrentlyDraggingThis) return;
+
+    const timer = setTimeout(() => {
+      setOpen(true);
+    }, 1000);
+
     return () => clearTimeout(timer);
   }, [containsOver, isCurrentlyDraggingThis]);
 
@@ -226,37 +231,25 @@ export const SortableFolder = ({
   }, []);
 
   const configOptions = useMemo(() => {
-    const baseOptions = [
+    return [
       {
         name: "Editar",
-        icon: <Edit className={styles.iconAction} />,
+        icon: EDIT_ICON,
         action: handleInfoEdit,
         enabled: true,
       },
       {
-        name: "Fijar",
-        icon: false ? (
-          <Unpin className={styles.iconAction} />
-        ) : (
-          <Pin className={styles.iconAction} />
-        ),
-        action: () => {},
-        enabled: false,
-      },
-      {
         name: "Eliminar",
-        icon: <DeleteIcon className={styles.iconAction} />,
+        icon: DELETE_ICON,
         action: handleConfirm,
         enabled: true,
       },
-    ];
-    return baseOptions.filter((bs) => bs.enabled);
+    ].filter((bs) => bs.enabled);
   }, [handleInfoEdit, handleConfirm]);
 
   useEffect(() => {
     if (isNameChange) {
-      const input = document.getElementById("folder-info-edit-container");
-      if (input) input.focus();
+      document.getElementById("folder-info-edit-container")?.focus();
     }
   }, [isNameChange]);
 
@@ -275,8 +268,9 @@ export const SortableFolder = ({
   const toggleOpen = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      if (isNameChange) return;
-      setOpen((prev) => !prev);
+      if (!isNameChange) {
+        setOpen((prev) => !prev);
+      }
     },
     [isNameChange],
   );
@@ -295,20 +289,14 @@ export const SortableFolder = ({
         className={styles.folderDropOverlay}
         style={{ pointerEvents: isDragging ? "auto" : "none" }}
       />
+
       <motion.div
         className={styles.folderHeader}
         {...listeners}
         {...attributes}
         ref={divRef}
         onClick={toggleOpen}
-        // layout
       >
-        <div className={styles.button}>
-          <ArrowThin
-            className={open ? styles.arrowIconOpen : styles.arrowIconClosed}
-            style={{ stroke: colorTemp ?? "var(--text-not-available)" }}
-          />
-        </div>
         <div className={styles.infoEditContainer}>
           <FolderInfoEdit
             folder={folder}
@@ -353,6 +341,7 @@ export const SortableFolder = ({
           </section>
         )}
       </motion.div>
+
       {open && (
         <motion.div
           key={`folder-lists-${folder.folder_id}`}
@@ -397,7 +386,7 @@ export const SortableFolder = ({
                         layout={!isDragging}
                         className={styles.motionListWrapper}
                       >
-                        <ListCard list={list} inFolder />
+                        <ListCard list={list} />
                       </motion.div>
                     ))
                   ) : !isFetchingFolderLists ? (
@@ -423,4 +412,4 @@ export const SortableFolder = ({
       )}
     </div>
   );
-};
+});

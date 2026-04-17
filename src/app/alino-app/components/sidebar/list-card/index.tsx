@@ -34,16 +34,23 @@ import {
   Unpin,
   Colaborate,
   LogOut,
+  Information,
 } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 import { useModalStore } from "@/store/useModalStore";
 
 interface ListCardProps {
   list: ListsType;
-  inFolder?: boolean;
 }
 
-export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
+const EDIT_ICON = <Edit className={styles.iconStyle} />;
+const PIN_ICON = <Pin className={styles.iconStyle} />;
+const UNPIN_ICON = <Unpin className={styles.iconStyle} />;
+const DELETE_ICON = <DeleteIcon className={styles.iconStyle} />;
+const LOGOUT_ICON = <LogOut className={styles.iconStyle} />;
+// const INFORMATION_ICON = <Information className={styles.iconStyle} />;
+
+export const ListCard = memo(({ list }: ListCardProps) => {
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(
@@ -55,11 +62,12 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
   const { leaveList } = useLeaveList();
   const { updatePinnedList } = useUpdatePinnedList();
 
-  const taskCount = useTodoDataStore((state) => {
-    const lists = state.lists;
-    const tasks = state.tasks;
-    return readTaskCount(list, tasks);
-  });
+  const taskCount = useTodoDataStore(
+    useCallback(
+      (state) => readTaskCount(list, state.tasks),
+      [list.list_id, list.list.tasks],
+    ),
+  );
 
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const openConfirmationModal = useModalStore((s) => s.open);
@@ -77,10 +85,10 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
   const editContainerId = `list-info-edit-container-${uniqueEditId}`;
   const configMenuId = `config-menu-${uniqueEditId}`;
 
-  const handleLeave = useCallback(() => {
-    if (!list) return;
-    leaveList(list.list_id);
-  }, [list, leaveList]);
+  const listId = list.list_id;
+  const listName = list.list.list_name;
+
+  const handleLeave = useCallback(() => leaveList(listId), [listId, leaveList]);
 
   const handleDelete = useCallback(() => {
     if (!list) return;
@@ -91,13 +99,13 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
     openConfirmationModal({
       type: "confirmation",
       props: {
-        text: `¿Desea eliminar la lista "${list.list.list_name}"?`,
+        text: `¿Desea eliminar la lista "${listName}"?`,
         onConfirm: handleDelete,
         additionalText:
           "Esta acción es irreversible y eliminará todas las tareas de la lista.",
       },
     });
-  }, [openConfirmationModal, list.list.list_name, handleDelete]);
+  }, [openConfirmationModal, listName, handleDelete]);
 
   const handleConfirmLeave = useCallback(() => {
     openConfirmationModal({
@@ -133,16 +141,14 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
     setEmoji((prev) => (prev !== list.list.icon ? list.list.icon : prev));
   }, [list.list.color, list.list.icon]);
 
-  useOnClickOutside(divRef, (e) => {
+  const noopRef = useRef<HTMLElement | null>(null);
+  useOnClickOutside(isNameChange ? divRef : noopRef, (e) => {
     const target = e.target as HTMLElement;
-
     if (
       target.closest(".color-picker-portal") ||
       target.closest(".config-menu-portal")
-    ) {
+    )
       return;
-    }
-
     setIsNameChange(false);
     setColorTemp(list.list.color);
     setEmoji(list.list.icon);
@@ -171,52 +177,58 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
       pointerEvents: isDragging ? "none" : "auto",
       zIndex: isDragging ? 99 : 1,
       opacity: isDragging ? 0.3 : 1,
-      backgroundColor: isActive
-        ? "var(--background-over-container)"
-        : "transparent",
+      backgroundColor:
+        isActive || isMoreOptions || isNameChange
+          ? "var(--background-over-container)"
+          : "transparent",
     }),
-    [transform, transition, isDragging, isActive],
+    [transform, transition, isDragging, isActive, isMoreOptions, isNameChange],
   );
 
   if (!list?.list) return null;
 
-  const role = list?.role;
-  const canDelete = role === "owner" || role === "admin";
-  const canEdit = role === "owner" || role === "admin";
-  const isNotOwner = role !== "owner";
+  const { canDelete, canEdit, isNotOwner } = useMemo(() => {
+    const role = list.role;
+    return {
+      canDelete: role === "owner" || role === "admin",
+      canEdit: role === "owner" || role === "admin",
+      isNotOwner: role !== "owner",
+    };
+  }, [list.role]);
 
   const configOptions = useMemo(() => {
-    const baseOptions = [
+    return [
       {
         name: "Editar",
-        icon: <Edit className={styles.iconStyle} />,
+        icon: EDIT_ICON,
         action: handleNameChange,
         enabled: canEdit,
       },
       {
         name: "Fijar",
-        icon: list.pinned ? (
-          <Unpin className={styles.iconStyle} />
-        ) : (
-          <Pin className={styles.iconStyle} />
-        ),
+        icon: list.pinned ? UNPIN_ICON : PIN_ICON,
         action: handlePin,
         enabled: true,
       },
       {
         name: "Salir",
-        icon: <LogOut className={styles.iconStyle} />,
+        icon: LOGOUT_ICON,
         action: handleConfirmLeave,
         enabled: isNotOwner,
       },
       {
         name: "Eliminar",
-        icon: <DeleteIcon className={styles.iconStyle} />,
+        icon: DELETE_ICON,
         action: handleConfirm,
         enabled: canDelete,
       },
-    ];
-    return baseOptions.filter((option) => option.enabled);
+      // {
+      //   name: "Información",
+      //   icon: INFORMATION_ICON,
+      //   action: handleInfo,
+      //   enabled: true,
+      // },
+    ].filter((o) => o.enabled);
   }, [
     canEdit,
     canDelete,
@@ -259,23 +271,21 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
             emoji={emoji}
             setEmoji={setEmoji}
             uniqueId={uniqueEditId}
-            inFolder={inFolder}
           />
 
-          <div className={styles.listManagerContainer}>
-            {list.list.is_shared && (
-              <div className={styles.pinContainer}>
-                <Colaborate className={styles.colaborateIcon} />
-              </div>
-            )}
+          {!isNameChange && (
+            <div className={styles.listManagerContainer}>
+              {list.list.is_shared && (
+                <div className={styles.pinContainer}>
+                  <Colaborate className={styles.colaborateIcon} />
+                </div>
+              )}
 
-            {!isNameChange && list.pinned && (
-              <div className={styles.pinContainer}>
-                <Pin className={styles.pinIcon} />
-              </div>
-            )}
-
-            {!isNameChange && (
+              {list.pinned && (
+                <div className={styles.pinContainer}>
+                  <Pin className={styles.pinIcon} />
+                </div>
+              )}
               <div
                 className={`${isMobile ? styles.configsContainerMobile : styles.configsContainer}`}
               >
@@ -314,8 +324,8 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
                   <CounterAnimation tasksLength={taskCount} />
                 </p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </Link>
       </div>
     </div>

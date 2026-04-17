@@ -7,7 +7,7 @@ import React, {
   memo,
   CSSProperties,
 } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { toast } from "sonner";
 import colorsData from "../colors.json";
 
@@ -61,7 +61,6 @@ interface Props {
 export const FolderColorPicker = memo(function FolderColorPicker({
   color = "#1c1c1c",
   setColor,
-  active = true,
   setOriginalColor,
   folderOpen = false,
 }: Props) {
@@ -79,15 +78,11 @@ export const FolderColorPicker = memo(function FolderColorPicker({
     setIsOpenPicker(false);
   });
 
-  const togglePicker = useCallback(
-    (e: React.MouseEvent) => {
-      if (!active) return;
-      e.preventDefault();
-      e.stopPropagation();
-      setIsOpenPicker((prev) => !prev);
-    },
-    [active],
-  );
+  const togglePicker = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpenPicker((prev) => !prev);
+  };
 
   const copyToClipboard = useCallback(() => {
     if (color) {
@@ -100,78 +95,82 @@ export const FolderColorPicker = memo(function FolderColorPicker({
 
   return (
     <>
-      <div className={styles.pickerContainer} ref={pickerRef}>
-        <AnimatePresence>
-          <motion.button
-            key="color-picker-selector"
-            className={`${styles.mainButton} ${!active ? styles.inactive : ""}`}
-            animate={
-              animations ? { paddingLeft: active ? "10px" : "0px" } : undefined
+      <motion.div className={styles.pickerContainer} ref={pickerRef}>
+        <motion.button
+          key="color-picker-selector"
+          className={styles.mainButton}
+          animate={
+            animations
+              ? {
+                  paddingLeft: "10px",
+                  backgroundColor: "var(--background-over-container)",
+                }
+              : undefined
+          }
+          transition={
+            animations ? { paddingLeft: { duration: 0.2 } } : undefined
+          }
+          exit={
+            animations
+              ? {
+                  paddingLeft: "0px",
+                  backgroundColor: "transparent",
+                }
+              : undefined
+          }
+          style={{
+            backgroundColor: "var(--background-over-container)",
+            paddingLeft: animations ? undefined : "10px",
+            cursor: "pointer",
+          }}
+          onClick={togglePicker}
+        >
+          <div
+            className={styles.renderIconContainer}
+            style={
+              {
+                "--color": color ?? "var(--text-not-available)",
+              } as React.CSSProperties
             }
-            transition={
-              animations ? { paddingLeft: { duration: 0.2 } } : undefined
-            }
-            style={{
-              backgroundColor: active
-                ? "var(--background-over-container)"
-                : "transparent",
-              paddingLeft: animations ? undefined : active ? "10px" : "5px",
-            }}
-            onClick={togglePicker}
-            aria-disabled={!active}
-            tabIndex={active ? 0 : -1}
           >
-            <div
-              className={styles.renderIconContainer}
-              style={
-                {
-                  "--color": color ?? "var(--text-not-available)",
-                } as React.CSSProperties
-              }
-            >
-              {folderOpen ? (
-                <FolderOpen className={styles.folderIcon} />
-              ) : (
-                <FolderClosed className={styles.folderIcon} />
-              )}
-            </div>
-            <AnimatePresence>
-              {active && (
-                <motion.div
-                  layout
-                  key="color-picker-arrow"
-                  className={styles.arrowContainer}
-                  initial={animations ? arrowInitial : undefined}
-                  animate={animations ? arrowAnimate : undefined}
-                  exit={animations ? arrowInitial : undefined}
-                >
-                  <motion.div
-                    animate={{ rotate: isOpenPicker ? 180 : 0 }}
-                    transition={
-                      animations
-                        ? {
-                            rotate: {
-                              type: "spring",
-                              stiffness: 300,
-                              damping: 20,
-                            },
-                          }
-                        : { rotate: { duration: 0.2 } }
+            {folderOpen ? (
+              <FolderOpen className={styles.folderIcon} />
+            ) : (
+              <FolderClosed className={styles.folderIcon} />
+            )}
+          </div>
+          <motion.div
+            layout
+            key="color-picker-arrow"
+            className={styles.arrowContainer}
+            initial={animations ? arrowInitial : undefined}
+            animate={animations ? arrowAnimate : undefined}
+            exit={animations ? arrowInitial : undefined}
+          >
+            <motion.div
+              animate={{ rotate: isOpenPicker ? 180 : 0 }}
+              transition={
+                animations
+                  ? {
+                      rotate: {
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 20,
+                      },
                     }
-                    style={{
-                      width: "fit-content",
-                      height: "fit-content",
-                      display: "flex",
-                    }}
-                  >
-                    <ArrowThin className={styles.arrowIcon} />
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.button>
-        </AnimatePresence>
-      </div>
+                  : { rotate: { duration: 0.2 } }
+              }
+              style={{
+                width: "fit-content",
+                height: "fit-content",
+                display: "flex",
+              }}
+            >
+              <ArrowThin className={styles.arrowIcon} />
+            </motion.div>
+          </motion.div>
+        </motion.button>
+      </motion.div>
       <ClientOnlyPortal>
         {isOpenPicker && (
           <motion.section

@@ -1,19 +1,20 @@
 import type { Variants } from "motion/react";
 
 export const variants: Variants = {
-  initial: { scale: 0, opacity: 0, zIndex: 1 },
+  initial: { opacity: 0, y: 10},
   visible: (index = 0) => ({
     opacity: 1,
-    scale: 1,
-    rotate: 0,
-    transition: { type: "spring" as const, stiffness: 50, delay: index * 0.05 },
+    y: 0,
+    transition: {
+      type: "tween",
+      ease: "easeOut",
+      duration: 0.18,
+      delay: Math.min(index * 0.04, 0.2),
+    },
   }),
   exit: {
-    scale: 1.3,
     opacity: 0,
-    filter: "blur(30px) grayscale(100%)",
-    y: -30,
-    transition: { duration: 1 },
-    zIndex: "0",
+    y: -10,
+    transition: { duration: 0.15 },
   },
 };

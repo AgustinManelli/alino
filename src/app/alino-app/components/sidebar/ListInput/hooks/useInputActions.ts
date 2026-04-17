@@ -1,4 +1,5 @@
-// useInputActions.ts
+"use client";
+
 import { RefObject, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useInsertList } from "@/hooks/todo/lists/useInsertList";
@@ -34,19 +35,31 @@ export const useInputActions = ({
     setIsList(true);
   }, [setActiveInput, DEFAULT_COLOR]);
 
+  const handleToggleType = useCallback((newListType: boolean) => {
+    setIsList(newListType);
+    
+    if (newListType && color === null) {
+      setColor(DEFAULT_COLOR);
+    } else if (!newListType) {
+      setColor(DEFAULT_FOLDER_COLOR);
+    }
+
+    setTimeout(() => inputRef.current?.focus(), 10);
+  }, [color, DEFAULT_COLOR, DEFAULT_FOLDER_COLOR, inputRef]);
+
   const handleSetColor = useCallback(
     (newColor: string | null, isTyping?: boolean) => {
       setColor(newColor);
 
       if (isTyping) {
-        setEmoji((prev) => (prev ? null : prev));
+        setEmoji((prev) => (prev !== null ? null : prev));
         return;
       }
 
       const validation = hexColorSchema.safeParse(newColor);
       if (!validation.success) {
         setColor(isList ? DEFAULT_COLOR : DEFAULT_FOLDER_COLOR);
-        setEmoji((prev) => (prev ? null : prev));
+        setEmoji((prev) => (prev !== null ? null : prev));
         toast.error(validation.error.issues[0].message);
       }
       inputRef.current?.focus();
@@ -76,21 +89,25 @@ export const useInputActions = ({
       return;
     }
 
-    isList && color
-      ? insertList(formatText, color, emoji as string)
-      : insertFolder(formatText, color);
+    if (isList) {
+      insertList(formatText, color ?? DEFAULT_COLOR, emoji as string);
+    } else {
+      insertFolder(formatText, color);
+    }
 
     const scrollElement = document.getElementById("list-container");
     if (scrollElement) {
-      setTimeout(() => {
-        scrollElement.scrollTo({
-          top: scrollElement.scrollHeight,
-          behavior: "smooth",
-        });
-      }, 50);
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          scrollElement.scrollTo({
+            top: scrollElement.scrollHeight,
+            behavior: "smooth",
+          });
+        }, 50);
+      });
     }
     resetForm();
-  }, [inputValue, color, emoji, insertList, insertFolder, resetForm, isList]);
+  }, [inputValue, color, emoji, insertList, insertFolder, resetForm, isList, DEFAULT_COLOR]);
 
   return {
     color,
@@ -99,7 +116,7 @@ export const useInputActions = ({
     inputValue,
     handleSetColor,
     handleSetEmoji,
-    setIsList,
+    handleToggleType,
     setInputValue,
     resetForm,
     handleSubmit,

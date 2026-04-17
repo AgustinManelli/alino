@@ -13,32 +13,39 @@ export function PinnedLists({
   animations: boolean;
 }) {
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="popLayout">
       {pinned.map((list) => (
         <motion.div
+          layoutId={`list-card-transition-${list.list_id}`}
           layout
           variants={animations ? variants : undefined}
           initial="initial"
           animate="visible"
           exit="exit"
-          key={`pinned-${list.list_id}`}
+          key={`list-${list.list_id}`}
           id={`pinned-${list.list_id}`}
+          style={{ zIndex: 10 }}
         >
           <ListCard list={list} />
         </motion.div>
       ))}
+
       {pinned.length > 0 && (
         <motion.div
           layout
-          animate={{ backgroundPosition: ["200% center", "0% center"] }}
-          transition={{ duration: 1, ease: "linear", delay: 0.2 }}
+          initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+          animate={{
+            opacity: 1,
+            height: 2,
+            backgroundPosition: ["200% center", "0% center"],
+          }}
+          exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+          transition={{ duration: 0.3 }}
           id="separator"
           style={{
             width: "100%",
-            height: 2,
             background: `linear-gradient(to right,var(--hover-over-container) 80%, var(--border-container-color) 100%) 0% center / 200% no-repeat`,
             backgroundSize: "200% auto",
-            backgroundRepeat: "no-repeat",
           }}
         />
       )}

@@ -1,17 +1,17 @@
 "use client";
 
 import { useCallback, useRef, memo } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 
-import { ColorPicker } from "@/components/ui/ColorPicker";
+import { ColorPicker } from "@/components/ui/ColorPicker/ListColorPicker";
 import { ListsType } from "@/lib/schemas/database.types";
-import { TextTitlesAnimation } from "@/components/ui/text-titles-animation";
 
 import { hexColorSchema } from "@/lib/schemas/list/validation";
 import { useUpdateDataList } from "@/hooks/todo/lists/useUpdateDataList";
 
-import { Check } from "@/components/ui/icons/icons";
+import { Check, SquircleIcon } from "@/components/ui/icons/icons";
 import styles from "./ListInfoEdit.module.css";
+import { EmojiMartComponent } from "../EmojiMart/emoji-mart-component";
 
 interface Props {
   list: ListsType;
@@ -23,21 +23,24 @@ interface Props {
   setEmoji: (value: string | null) => void;
   uniqueId?: string;
   big?: boolean;
-  inFolder?: boolean;
 }
 
 const isValidHex = (value: string) => {
   return hexColorSchema.safeParse(value).success;
 };
 
-const motionBgState = {
+const motionInputInitialState = {
+  backgroundColor: "transparent",
+  paddingLeft: "0px",
+};
+
+const motionInputFinalState = {
   backgroundColor: "var(--background-over-container)",
+  paddingLeft: "10px",
 };
 
 const motionTransition = {
-  backgroundColor: {
-    duration: 0.3,
-  },
+  duration: 0.3,
 };
 
 export const ListInfoEdit = memo(function ListInfoEdit({
@@ -50,7 +53,6 @@ export const ListInfoEdit = memo(function ListInfoEdit({
   setEmoji,
   uniqueId = "default",
   big = false,
-  inFolder = false,
 }: Props) {
   const { updateDataList } = useUpdateDataList();
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -168,44 +170,63 @@ export const ListInfoEdit = memo(function ListInfoEdit({
   return (
     <>
       <div className={styles.colorPickerContainer}>
-        <ColorPicker
-          color={colorTemp}
-          setColor={handleSetColor}
-          emoji={emoji}
-          setEmoji={handleSetEmoji}
-          active={isNameChange}
-          setOriginalColor={setOriginalColor}
-          uniqueId={uniqueId}
-          big={big}
-        />
+        <AnimatePresence mode="wait">
+          {isNameChange ? (
+            <motion.div key="picker-view" style={{ height: "100%" }}>
+              <ColorPicker
+                key={uniqueId}
+                color={colorTemp}
+                setColor={handleSetColor}
+                emoji={emoji}
+                setEmoji={handleSetEmoji}
+                setOriginalColor={setOriginalColor}
+                uniqueId={uniqueId}
+                big={big}
+              />
+            </motion.div>
+          ) : emoji ? (
+            <motion.div key="emoji-view" className={styles.emojiContainer}>
+              <EmojiMartComponent
+                shortcodes={emoji}
+                size={big ? "20px" : "16px"}
+              />
+            </motion.div>
+          ) : (
+            <motion.div key="squircle-view" className={styles.emojiContainer}>
+              <SquircleIcon
+                style={{
+                  fill: colorTemp,
+                  width: big ? "16px" : "12px",
+                  height: big ? "16px" : "12px",
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       <div className={styles.textContainer}>
-        {isNameChange ? (
-          <motion.input
-            style={inputStyle}
-            maxLength={30}
-            initial={motionBgState}
-            animate={motionBgState}
-            transition={motionTransition}
-            className={styles.nameChangerInput}
-            type="text"
-            defaultValue={list.list.list_name}
-            ref={inputRef}
-            onKeyDown={handleKeyDown}
-            id={`list-info-edit-container-${uniqueId}`}
-          />
-        ) : (
-          <TextTitlesAnimation
-            text={list.list.list_name}
-            delay={inFolder ? 0 : 0.3}
-            duration={inFolder ? 0 : 0.1}
-            stagger={inFolder ? 0 : 0.03}
-            color={"var(--text)"}
-            colorEffect={list.list.color}
-            charSize={big ? "18px" : "14px"}
-            fontWeight={big ? "600" : "initial"}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {isNameChange ? (
+            <motion.input
+              style={inputStyle}
+              maxLength={30}
+              initial={motionInputInitialState}
+              animate={motionInputFinalState}
+              exit={motionInputInitialState}
+              transition={motionTransition}
+              className={styles.nameChangerInput}
+              type="text"
+              defaultValue={list.list.list_name}
+              ref={inputRef}
+              onKeyDown={handleKeyDown}
+              id={`list-info-edit-container-${uniqueId}`}
+            />
+          ) : (
+            <span className={styles.listName} style={inputStyle}>
+              {list.list.list_name}
+            </span>
+          )}
+        </AnimatePresence>
       </div>
       {isNameChange && (
         <button onClick={handleSaveClick} className={styles.checkButton}>

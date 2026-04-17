@@ -9,12 +9,10 @@ import { variants } from "../animations/variants";
 
 export function RootItems({
   items,
-  lists,
   draggedItem,
   animations,
 }: {
   items: NormalizedItem[];
-  lists: ListsType[];
   draggedItem: NormalizedItem | null;
   animations: boolean;
 }) {
@@ -25,8 +23,8 @@ export function RootItems({
           const folder = item.data as FolderType;
           return (
             <motion.div
-              custom={index}
-              layout={draggedItem ? false : true}
+              custom={index < 10 ? index : 0}
+              layout={draggedItem ? false : items.length < 15}
               variants={animations ? variants : undefined}
               initial="initial"
               animate="visible"
@@ -46,8 +44,12 @@ export function RootItems({
         const list = item.data as ListsType;
         return (
           <motion.div
-            custom={index}
-            layout={draggedItem ? false : true}
+            // layoutId={`list-card-transition-${list.list_id}`}
+            layoutId={
+              draggedItem ? undefined : `list-card-transition-${list.list_id}`
+            }
+            custom={index < 10 ? index : 0}
+            layout={draggedItem ? false : items.length < 15}
             variants={animations ? variants : undefined}
             initial="initial"
             animate="visible"

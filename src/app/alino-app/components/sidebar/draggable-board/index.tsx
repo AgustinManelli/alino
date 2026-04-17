@@ -24,12 +24,7 @@ import { ListsType } from "@/lib/schemas/database.types";
 
 export const DraggableBoard = () => {
   // Zustand selectors
-  const {
-    lists,
-    folders,
-    setLists,
-    setFolders,
-  } = useTodoDataStore(
+  const { lists, folders, setLists, setFolders } = useTodoDataStore(
     useShallow((state) => ({
       lists: state.lists,
       folders: state.folders,
@@ -49,21 +44,16 @@ export const DraggableBoard = () => {
   const { sensors, measuring, adjustForLayoutPadding } = useDndSensors();
 
   // Handlers
-  const {
-    draggedItem,
-    handleDragStart,
-    handleDragEnd,
-    onDragCancel,
-    handleDragOver,
-  } = useDragHandlers({
-    combinedItems,
-    lists,
-    folders,
-    setLists,
-    setFolders,
-    updateIndexList,
-    updateIndexFolders,
-  });
+  const { draggedItem, handleDragStart, handleDragEnd, onDragCancel } =
+    useDragHandlers({
+      combinedItems,
+      lists,
+      folders,
+      setLists,
+      setFolders,
+      updateIndexList,
+      updateIndexFolders,
+    });
 
   const scrollContainerRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
@@ -95,7 +85,6 @@ export const DraggableBoard = () => {
               (item) =>
                 item.kind !== "list" || !(item.data as ListsType).pinned,
             )}
-            lists={lists}
             draggedItem={draggedItem}
             animations={animations}
           />

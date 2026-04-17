@@ -1,11 +1,12 @@
 "use client";
-import { useCallback, useRef, useState } from "react";
+
+import { useCallback, useRef, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useShallow } from "zustand/shallow";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useInputActions } from "./hooks/useInputActions";
-import { ColorPicker } from "@/components/ui/ColorPicker";
+import { ColorPicker } from "@/components/ui/ColorPicker/ListColorPicker";
 import { FolderColorPicker } from "@/components/ui/ColorPicker/FolderColorPicker";
 import { DropdownListInput } from "./parts/DropdownListInput";
 import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
@@ -27,13 +28,17 @@ export const ListInput = () => {
     useShallow((state) => state.animations),
   );
 
-  const motionProps = animations
-    ? {
-        initial: { scale: 0, opacity: 0 },
-        animate: { scale: 1, opacity: 1 },
-        exit: { scale: 0, opacity: 0 },
-      }
-    : {};
+  const motionProps = useMemo(
+    () =>
+      animations
+        ? {
+            initial: { scale: 0, opacity: 0 },
+            animate: { scale: 1, opacity: 1 },
+            exit: { scale: 0, opacity: 0 },
+          }
+        : {},
+    [animations],
+  );
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -45,7 +50,7 @@ export const ListInput = () => {
     inputValue,
     handleSetColor,
     handleSetEmoji,
-    setIsList,
+    handleToggleType,
     setInputValue,
     resetForm,
     handleSubmit,
@@ -133,10 +138,7 @@ export const ListInput = () => {
 
             <DropdownListInput
               isList={isList}
-              color={color}
-              setIsList={setIsList}
-              setColor={handleSetColor}
-              DEFAULT_COLOR={DEFAULT_COLOR}
+              onToggleType={handleToggleType}
             />
 
             <button className={styles.sendButton} onClick={handleSend}>

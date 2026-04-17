@@ -2,13 +2,13 @@
 
 import React, { useRef, useState, useCallback, memo } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { toast } from "sonner";
 import { generatePalette } from "emoji-palette";
 
 import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
 import { EmojiMartPicker } from "@/components/ui/EmojiMart/emoji-mart-picker";
-import colorsData from "./colors.json";
+import colorsData from "../colors.json";
 
 import { useModalUbication } from "@/hooks/useModalUbication";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
@@ -70,7 +70,6 @@ export function ColorPicker({
   setColor,
   emoji,
   setEmoji,
-  active = true,
   setOriginalColor,
   uniqueId = "",
   big = false,
@@ -102,15 +101,12 @@ export function ColorPicker({
     setType("color");
   });
 
-  const togglePicker = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (active) setIsOpenPicker((prev) => !prev);
-      setType("color");
-    },
-    [active],
-  );
+  const togglePicker = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpenPicker((prev) => !prev);
+    setType("color");
+  };
 
   const copyToClipboard = useCallback(() => {
     if (color) {
@@ -123,95 +119,105 @@ export function ColorPicker({
 
   return (
     <>
-      <div className={styles.pickerContainer} ref={pickerRef}>
-        <AnimatePresence>
-          <motion.button
-            key="color-picker-selector"
-            className={styles.mainButton}
-            animate={
-              animations ? { paddingLeft: active ? "10px" : "5px" } : undefined
-            }
-            transition={
-              animations ? { paddingLeft: { duration: 0.2 } } : undefined
-            }
+      <motion.div className={styles.pickerContainer} ref={pickerRef}>
+        <motion.button
+          key="color-picker-selector"
+          className={styles.mainButton}
+          animate={
+            animations
+              ? {
+                  paddingLeft: "10px",
+                  backgroundColor: "var(--background-over-container)",
+                }
+              : undefined
+          }
+          transition={
+            animations ? { paddingLeft: { duration: 0.2 } } : undefined
+          }
+          exit={
+            animations
+              ? {
+                  paddingLeft: "0px",
+                  backgroundColor: "transparent",
+                }
+              : undefined
+          }
+          style={{
+            backgroundColor: "var(--background-over-container)",
+            paddingLeft: animations ? undefined : "10px",
+            cursor: "pointer",
+          }}
+          onClick={togglePicker}
+        >
+          <div
+            className={styles.renderIconContainer}
             style={{
-              backgroundColor: active
-                ? "var(--background-over-container)"
-                : "transparent",
-              paddingLeft: animations ? undefined : active ? "10px" : "5px",
-              cursor: active ? "pointer" : "default",
+              width: big ? "20px" : "16px",
+              height: big ? "20px" : "16px",
             }}
-            onClick={togglePicker}
-            disabled={!active}
           >
-            <div className={styles.renderIconContainer}>
-              {!emoji ? (
-                <SquircleIcon
-                  style={{
-                    fill: color ?? "var(--text-not-available)",
-                    transition: "fill 0.3s ease-in-out",
-                    width: big ? "16px" : "12px",
-                  }}
+            {!emoji ? (
+              <SquircleIcon
+                style={{
+                  fill: color ?? "var(--text-not-available)",
+                  transition: "fill 0.3s ease-in-out",
+                  width: big ? "16px" : "12px",
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: big ? "20px" : "16px",
+                  height: big ? "20px" : "16px",
+                }}
+              >
+                <EmojiMartComponent
+                  shortcodes={emoji}
+                  size={big ? "20px" : "16px"}
                 />
-              ) : (
-                <div
-                  style={{
-                    width: big ? "20px" : "16px",
-                    height: big ? "20px" : "16px",
-                  }}
-                >
-                  <EmojiMartComponent
-                    shortcodes={emoji}
-                    size={big ? "20px" : "16px"}
-                  />
-                </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
 
-            <AnimatePresence>
-              {active && (
-                <motion.div
-                  layout
-                  key="color-picker-arrow"
-                  className={styles.arrowContainer}
-                  initial={animations ? arrowInitial : undefined}
-                  animate={animations ? arrowAnimate : undefined}
-                  exit={animations ? arrowInitial : undefined}
-                >
-                  <motion.div
-                    animate={{ rotate: isOpenPicker ? 180 : 0 }}
-                    transition={
-                      animations
-                        ? {
-                            rotate: {
-                              type: "spring" as const,
-                              stiffness: 300,
-                              damping: 20,
-                            },
-                          }
-                        : { rotate: { duration: 0.2 } }
+          <motion.div
+            layout
+            key="color-picker-arrow"
+            className={styles.arrowContainer}
+            initial={animations ? arrowInitial : undefined}
+            animate={animations ? arrowAnimate : undefined}
+            exit={animations ? arrowInitial : undefined}
+          >
+            <motion.div
+              animate={{ rotate: isOpenPicker ? 180 : 0 }}
+              transition={
+                animations
+                  ? {
+                      rotate: {
+                        type: "spring" as const,
+                        stiffness: 300,
+                        damping: 20,
+                      },
                     }
-                    style={{
-                      width: "fit-content",
-                      height: "fit-content",
-                      display: "flex",
-                    }}
-                  >
-                    <ArrowThin
-                      style={{
-                        stroke: "var(--icon-color)",
-                        strokeWidth: "1.5",
-                        width: "18px",
-                        height: "auto",
-                      }}
-                    />
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.button>
-        </AnimatePresence>
-      </div>
+                  : { rotate: { duration: 0.2 } }
+              }
+              style={{
+                width: "fit-content",
+                height: "fit-content",
+                display: "flex",
+              }}
+            >
+              <ArrowThin
+                style={{
+                  stroke: "var(--icon-color)",
+                  strokeWidth: "1.5",
+                  width: "18px",
+                  height: "auto",
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        </motion.button>
+      </motion.div>
 
       {createPortal(
         <>
