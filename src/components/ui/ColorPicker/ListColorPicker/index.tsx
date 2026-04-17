@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useCallback, memo } from "react";
+import React, { useRef, useState, useCallback, memo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import { generatePalette } from "emoji-palette";
@@ -11,17 +11,12 @@ import colorsData from "../colors.json";
 
 import { useModalUbication } from "@/hooks/useModalUbication";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import CopyButton from "@/components/ui/CopyToClipboard";
 
 import { hexColorSchema } from "@/lib/schemas/list/validation";
 
-import {
-  ArrowThin,
-  CopyToClipboardIcon,
-  Cross,
-  SquircleIcon,
-} from "@/components/ui/icons/icons";
+import { ArrowThin, Cross, SquircleIcon } from "@/components/ui/icons/icons";
 import styles from "./ColorPicker.module.css";
-import { customToast } from "@/lib/toasts";
 
 const modalInitial = { scale: 0, opacity: 0, filter: "blur(30px)" };
 const modalAnimate = {
@@ -107,13 +102,6 @@ export function ColorPicker({
     setIsOpenPicker((prev) => !prev);
     setType("color");
   };
-
-  const copyToClipboard = useCallback(() => {
-    if (color) {
-      navigator.clipboard.writeText(color);
-      customToast.success("Color copiado al portapapeles");
-    }
-  }, [color]);
 
   const isColorValid = hexColorSchema.safeParse(color).success && color;
 
@@ -351,23 +339,7 @@ export function ColorPicker({
                         }}
                         onBlur={(e) => setColor(e.target.value)}
                       />
-                      <button
-                        disabled={!color}
-                        onClick={copyToClipboard}
-                        className={styles.copyButton}
-                        style={{
-                          opacity: !color ? 0.3 : 1,
-                          cursor: !color ? "initial" : "pointer",
-                        }}
-                      >
-                        <CopyToClipboardIcon
-                          style={{
-                            strokeWidth: "1.5",
-                            stroke: "var(--icon-color)",
-                            width: "20px",
-                          }}
-                        />
-                      </button>
+                      <CopyButton color={color} />
                     </div>
                   </footer>
                 </div>

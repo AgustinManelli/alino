@@ -237,13 +237,6 @@
   padding: 5px 10px;
 }
 
-.copyButton {
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
 .pickerEmojiContainer {
   width: 100%;
   overflow: hidden;

@@ -1,0 +1,12 @@
+.copyButton {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  border-radius: 7px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}

@@ -19,14 +19,13 @@ import { hexColorSchema } from "@/lib/schemas/list/validation";
 
 import {
   ArrowThin,
-  CopyToClipboardIcon,
   Cross,
   FolderClosed,
   FolderOpen,
   SquircleIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./FolderColorPicker.module.css";
-import { customToast } from "@/lib/toasts";
+import CopyButton from "@/components/ui/CopyToClipboard";
 
 const modalInitial = { scale: 0, opacity: 0, filter: "blur(30px)" };
 const modalAnimate = {
@@ -83,13 +82,6 @@ export const FolderColorPicker = memo(function FolderColorPicker({
     e.stopPropagation();
     setIsOpenPicker((prev) => !prev);
   };
-
-  const copyToClipboard = useCallback(() => {
-    if (color) {
-      navigator.clipboard.writeText(color);
-      customToast.success("color copiado al portapapeles");
-    }
-  }, [color]);
 
   const isColorValid = hexColorSchema.safeParse(color).success && color;
 
@@ -249,23 +241,7 @@ export const FolderColorPicker = memo(function FolderColorPicker({
                     }}
                     onBlur={(e) => setColor(e.target.value)}
                   />
-                  <button
-                    disabled={!color}
-                    onClick={copyToClipboard}
-                    className={styles.copyButton}
-                    style={{
-                      opacity: !color ? 0.3 : 1,
-                      cursor: !color ? "initial" : "pointer",
-                    }}
-                  >
-                    <CopyToClipboardIcon
-                      style={{
-                        strokeWidth: "1.5",
-                        stroke: "var(--icon-color)",
-                        width: "20px",
-                      }}
-                    />
-                  </button>
+                  <CopyButton color={color} />
                 </div>
               </footer>
             </div>

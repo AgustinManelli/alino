@@ -128,7 +128,7 @@ export const ListInput = () => {
               autoFocus
               maxLength={30}
               type="text"
-              placeholder={`Cree una ${isList ? "lista" : "carpeta"} nueva`}
+              placeholder={`Nombre de la ${isList ? "lista" : "carpeta"}`}
               value={inputValue}
               ref={inputRef}
               onChange={(e) => setInputValue(e.target.value)}
