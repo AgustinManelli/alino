@@ -11,18 +11,16 @@
     0 30px 80px #0c144214,
     inset 0 0 #e6e9ed;
   z-index: 999;
-  padding: 15px 20px;
+  padding: 10px 15px;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
 }
 
 .iconSection {
   height: 100%;
-  width: 42px;
-  min-height: 42px;
-  min-width: 42px;
+  width: fit-content;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -33,13 +31,13 @@
 }
 
 .title {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--text);
 }
 
 .text {
-  font-size: 16px;
+  font-size: 12px;
   color: var(--text);
 }
 
