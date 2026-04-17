@@ -2,8 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { updateListMemberRole } from "@/lib/api/list/actions";
-import { toast } from "sonner";
 import { handleError } from "@/store/todoUtils";
+import { customToast } from "@/lib/toasts";
 
 export function useUpdateMemberRole() {
   const [isPending, setIsPending] = useState(false);
@@ -17,7 +17,7 @@ export function useUpdateMemberRole() {
     try {
       const { error } = await updateListMemberRole(listId, targetUserId, newRole);
       if (error) throw new Error(error);
-      toast.success("Rol actualizado correctamente.");
+      customToast.success("Rol actualizado correctamente.");
       setIsPending(false);
       return {};
     } catch (err) {

@@ -2,8 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { createListInvitation } from "@/lib/api/list/actions";
-import { toast } from "sonner";
 import { handleError } from "@/store/todoUtils";
+import { customToast } from "@/lib/toasts";
 
 export function useCreateListInvitation() {
   const [isPending, setIsPending] = useState(false);
@@ -21,7 +21,7 @@ export function useCreateListInvitation() {
       if (error) {
         throw new Error(error);
       }
-      toast.success(`${invited_user_username} fue invitado correctamente.`);
+      customToast.success(`${invited_user_username} fue invitado correctamente.`);
       setIsPending(false);
       return { error: null };
     } catch (err) {

@@ -3,7 +3,6 @@
 import React, { useRef, useState, useCallback, memo } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "motion/react";
-import { toast } from "sonner";
 import { generatePalette } from "emoji-palette";
 
 import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
@@ -22,6 +21,7 @@ import {
   SquircleIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./ColorPicker.module.css";
+import { customToast } from "@/lib/toasts";
 
 const modalInitial = { scale: 0, opacity: 0, filter: "blur(30px)" };
 const modalAnimate = {
@@ -111,7 +111,7 @@ export function ColorPicker({
   const copyToClipboard = useCallback(() => {
     if (color) {
       navigator.clipboard.writeText(color);
-      toast("Color copiado al portapapeles");
+      customToast.success("Color copiado al portapapeles");
     }
   }, [color]);
 

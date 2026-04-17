@@ -3,12 +3,12 @@ import React, { useState } from "react";
 import { useAITaskGeneration } from "@/hooks/useAITaskGeneration";
 import { IAStars } from "@/components/ui/icons/icons";
 import { motion, AnimatePresence } from "motion/react";
-import { toast } from "sonner";
 import styles from "./AIAssistantWidget.module.css";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { IAStarsLoader } from "@/components/ui/icons/ia-loader";
 import { useInsertList } from "@/hooks/todo/lists/useInsertList";
 import { useAddTasks } from "@/hooks/todo/tasks/useAddTasks";
+import { customToast } from "@/lib/toasts";
 
 export default function AIAssistantWidget() {
   const [prompt, setPrompt] = useState("");
@@ -51,9 +51,9 @@ export default function AIAssistantWidget() {
       }
       setSuccess(true);
       setPrompt("");
-      toast.success("¡Lista y tareas generadas exitosamente!");
+      customToast.success("¡Lista y tareas generadas exitosamente!");
     } catch (err) {
-      toast.error((err as Error).message);
+      customToast.error((err as Error).message);
     } finally {
       setLoadingLocal(false);
     }

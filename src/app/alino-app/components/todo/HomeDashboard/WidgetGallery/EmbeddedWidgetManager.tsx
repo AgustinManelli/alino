@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { UserWidgetRow } from "@/lib/schemas/database.types";
 import { useCreateEmbeddedWidget } from "@/hooks/dashboard/useCreateEmbeddedWidget";
@@ -9,6 +8,7 @@ import { useUpdateEmbeddedWidget } from "@/hooks/dashboard/useUpdateEmbeddedWidg
 import { useDeleteEmbeddedWidget } from "@/hooks/dashboard/useDeleteEmbeddedWidget";
 import { Cross, Edit, Share } from "@/components/ui/icons/icons";
 import styles from "./EmbeddedWidgetManager.module.css";
+import { customToast } from "@/lib/toasts";
 
 interface Props {
   widgets: UserWidgetRow[];
@@ -63,17 +63,17 @@ export const EmbeddedWidgetManager = ({
     const title = formTitle.trim();
     const url = formUrl.trim();
 
-    if (!title) return toast.error("El título es requerido.");
-    if (!url) return toast.error("La URL es requerida.");
+    if (!title) return customToast.error("El título es requerido.");
+    if (!url) return customToast.error("La URL es requerida.");
     if (!/^https?:\/\/.+/.test(url))
-      return toast.error("La URL debe empezar con http:// o https://");
+      return customToast.error("La URL debe empezar con http:// o https://");
 
     setSaving(true);
     try {
       if (mode === "create") {
         const { error } = await createWidget({ title, url });
         if (error) return;
-        toast.success("Widget creado correctamente.");
+        customToast.success("Widget creado correctamente.");
         onChange?.();
       } else if (mode === "edit" && editing) {
         const { error } = await updateWidget(editing.id, {
@@ -81,7 +81,7 @@ export const EmbeddedWidgetManager = ({
           url,
         });
         if (error) return;
-        toast.success("Widget actualizado.");
+        customToast.success("Widget actualizado.");
         onChange?.();
       }
       setMode("list");
@@ -93,7 +93,7 @@ export const EmbeddedWidgetManager = ({
   const handleDelete = async (widget: UserWidgetRow) => {
     const { error } = await deleteWidget(widget.id);
     if (error) return;
-    toast.success("Widget eliminado.");
+    customToast.success("Widget eliminado.");
     onChange?.();
   };
 

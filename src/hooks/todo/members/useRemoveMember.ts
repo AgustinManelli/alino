@@ -2,8 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { removeListMember } from "@/lib/api/list/actions";
-import { toast } from "sonner";
 import { handleError } from "@/store/todoUtils";
+import { customToast } from "@/lib/toasts";
 
 export function useRemoveMember() {
   const [isPending, setIsPending] = useState(false);
@@ -13,7 +13,7 @@ export function useRemoveMember() {
     try {
       const { error } = await removeListMember(listId, targetUserId);
       if (error) throw new Error(error);
-      toast.success("Miembro eliminado de la lista.");
+      customToast.success("Miembro eliminado de la lista.");
       setIsPending(false);
       return {};
     } catch (err) {

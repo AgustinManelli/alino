@@ -6,7 +6,7 @@ import { useDashboardStore } from "@/store/useDashboardStore";
 import { buildLayoutsFromInstances, getLayoutItemForNewWidget } from "@/store/dashboardUtils";
 import { useSyncStore } from "@/store/useSyncStore";
 import { Json } from "@/lib/schemas/database.types";
-import { toast } from "sonner";
+import { customToast } from "@/lib/toasts";
 
 export function useCreateEmbeddedWidget() {
   const [isPending, setIsPending] = useState(false);
@@ -74,7 +74,7 @@ export function useCreateEmbeddedWidget() {
         return { data };
       } catch (err) {
         const msg = (err as Error).message;
-        toast.error(msg);
+        customToast.error(msg);
         return { error: msg };
       } finally {
         setIsPending(false);

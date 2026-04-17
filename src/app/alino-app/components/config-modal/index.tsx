@@ -8,7 +8,7 @@ import { WindowComponent } from "@/components/ui/window-component";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 import styles from "./AccountConfigSection.module.css";
-import { toast } from "sonner";
+import { customToast } from "@/lib/toasts";
 
 interface props {
   handleCloseConfig: () => void;
@@ -42,7 +42,7 @@ export function ConfigModal({ handleCloseConfig }: props) {
 
   const closeConfigModal = useCallback(() => {
     const confirmationModal = document.getElementById(
-      "confirmation-modal-config-modal"
+      "confirmation-modal-config-modal",
     );
     if (confirmationModal) return;
     handleCloseConfig();
@@ -53,7 +53,7 @@ export function ConfigModal({ handleCloseConfig }: props) {
     try {
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
-        toast.error("Permiso para notificaciones denegado.");
+        customToast.error("Permiso para notificaciones denegado.");
         return;
       }
       const swRegistration = await navigator.serviceWorker.ready;
@@ -67,10 +67,10 @@ export function ConfigModal({ handleCloseConfig }: props) {
         body: JSON.stringify(subscription),
       });
       setIsSubscribed(true);
-      toast.success("¡Te has suscrito a las notificaciones!");
+      customToast.success("¡Te has suscrito a las notificaciones!");
     } catch (error) {
       console.error("Failed to subscribe the user: ", error);
-      toast.error("No se pudo activar la suscripción.");
+      customToast.error("No se pudo activar la suscripción.");
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +93,7 @@ export function ConfigModal({ handleCloseConfig }: props) {
           });
 
           setIsSubscribed(false);
-          toast.info("Suscripción a notificaciones desactivada.");
+          customToast.info("Suscripción a notificaciones desactivada.");
         }
       }
     } catch (error) {

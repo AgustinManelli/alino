@@ -1,7 +1,7 @@
 "use client"
 
-import { toast } from "sonner";
 import { FolderType, ListsType, TaskCountPayload, MembershipCountPayload, TaskType } from "@/lib/schemas/database.types";
+import { customToast } from "@/lib/toasts";
 
 export const POS_INDEX = 16384;
 export const PAGE_SIZE = 40;
@@ -85,10 +85,10 @@ export const calculateNewIndex = (
 
 export function handleError(err: unknown) {
   if (err instanceof Error) {
-    toast.error(err.message || "Error desconocido");
+    customToast.error(err.message || "Error desconocido");
   } else if (typeof err === "string") {
-    toast.error(err || "Error desconocido");
+    customToast.error(err || "Error desconocido");
   } else {
-    toast.error("Error desconocido");
+    customToast.error("Error desconocido");
   }
 }

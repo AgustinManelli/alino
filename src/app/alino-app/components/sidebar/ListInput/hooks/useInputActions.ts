@@ -1,10 +1,10 @@
 "use client";
 
 import { RefObject, useCallback, useState } from "react";
-import { toast } from "sonner";
 import { useInsertList } from "@/hooks/todo/lists/useInsertList";
 import { useInsertFolder } from "@/hooks/todo/folders/useInsertFolder";
 import { hexColorSchema, shortcodeEmojiSchema } from "@/lib/schemas/list/validation";
+import { customToast } from "@/lib/toasts";
 
 interface Props {
   inputRef: RefObject<HTMLInputElement | null>;
@@ -60,7 +60,7 @@ export const useInputActions = ({
       if (!validation.success) {
         setColor(isList ? DEFAULT_COLOR : DEFAULT_FOLDER_COLOR);
         setEmoji((prev) => (prev !== null ? null : prev));
-        toast.error(validation.error.issues[0].message);
+        customToast.error(validation.error.issues[0].message);
       }
       inputRef.current?.focus();
     },
@@ -72,7 +72,7 @@ export const useInputActions = ({
       const validation = shortcodeEmojiSchema.safeParse(newEmoji);
       if (!validation.success) {
         setEmoji(null);
-        toast.error(validation.error.issues[0].message);
+        customToast.error(validation.error.issues[0].message);
       } else {
         setEmoji(newEmoji);
       }

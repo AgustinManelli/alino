@@ -8,7 +8,7 @@ import {
   updateInvitationList,
 } from "@/lib/api/notification/actions";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
-import { toast } from "sonner";
+import { customToast } from "@/lib/toasts";
 
 export function useNotifications() {
   const setNotifications = useNotificationsStore((s) => s.setNotifications);
@@ -19,7 +19,7 @@ export function useNotifications() {
   const fetchNotifications = useCallback(async () => {
     const { notifications, error } = await getMyNotifications();
     if (error) {
-      toast.error(error || "Error al obtener notificaciones");
+      customToast.error(error || "Error al obtener notificaciones");
       return;
     }
     setNotifications(notifications);
@@ -31,7 +31,7 @@ export function useNotifications() {
 
     const { error } = await markNotificationRead(notificationId);
     if (error) {
-      toast.error(error || "Error al marcar como leída");
+      customToast.error(error || "Error al marcar como leída");
       setNotifications(original);
     }
   }, [markReadInStore, setNotifications]);
@@ -42,7 +42,7 @@ export function useNotifications() {
 
     const { error } = await deleteNotificationAction(notificationId);
     if (error) {
-      toast.error(error || "Error al eliminar notificación");
+      customToast.error(error || "Error al eliminar notificación");
       setNotifications(original);
     }
   }, [removeNotificationFromStore, setNotifications]);
@@ -53,7 +53,7 @@ export function useNotifications() {
 
     const { error } = await updateInvitationList(invitationId, status);
     if (error) {
-      toast.error(error || "Error al actualizar invitación");
+      customToast.error(error || "Error al actualizar invitación");
       setNotifications(original);
       return;
     }

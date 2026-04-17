@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { getAppUpdates } from "@/lib/api/dashboard/actions";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { toast } from "sonner";
+import { customToast } from "@/lib/toasts";
 
 const APP_UPDATES_TTL_MS = 60 * 60 * 1000;
 let appUpdatesFetchedAt = 0;
@@ -34,7 +34,7 @@ export function useFetchAppUpdates() {
       });
       appUpdatesFetchedAt = Date.now();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error desconocido");
+      customToast.error(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       useDashboardStore.setState({ isFetchingAppUpdates: false });
       setIsPending(false);

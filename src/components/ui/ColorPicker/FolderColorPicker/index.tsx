@@ -8,7 +8,6 @@ import React, {
   CSSProperties,
 } from "react";
 import { motion } from "motion/react";
-import { toast } from "sonner";
 import colorsData from "../colors.json";
 
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
@@ -27,6 +26,7 @@ import {
   SquircleIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./FolderColorPicker.module.css";
+import { customToast } from "@/lib/toasts";
 
 const modalInitial = { scale: 0, opacity: 0, filter: "blur(30px)" };
 const modalAnimate = {
@@ -87,7 +87,7 @@ export const FolderColorPicker = memo(function FolderColorPicker({
   const copyToClipboard = useCallback(() => {
     if (color) {
       navigator.clipboard.writeText(color);
-      toast("color copiado al portapapeles");
+      customToast.success("color copiado al portapapeles");
     }
   }, [color]);
 

@@ -1,8 +1,8 @@
 "use client"
 
-import { toast } from 'sonner';
 import { create } from 'zustand';
 import { subscribeWithSelector, persist } from 'zustand/middleware';
+import { customToast } from '@/lib/toasts';
 
 type PomodoroMode = 'work' | 'shortBreak' | 'longBreak';
 
@@ -164,12 +164,14 @@ export const usePomodoroStore = create<PomodoroState>()(
               timeLeft: modes.longBreak.time,
               cycles: newCycles
             });
-            toast('Pomodoro terminado, ¿Vamos por el break de ' + settings.longBreakTime + ' minutos?', {
-              action: {
-                label: 'Alla vamos',
-                onClick: () => toggleTimer()
-              },
-            });
+            customToast.action(
+              "Pomodoro terminado",
+              `¿Vamos por el break de ${settings.longBreakTime} minutos?`,
+              {
+                label: "Allá vamos",
+                onClick: () => toggleTimer(),
+              }
+            );
             
             // Auto iniciar si está activado
             if (settings.autoStartBreaks) {
@@ -182,12 +184,14 @@ export const usePomodoroStore = create<PomodoroState>()(
               timeLeft: modes.shortBreak.time,
               cycles: newCycles
             });
-            toast('Pomodoro terminado, ¿Vamos por el break de ' + settings.shortBreakTime + ' minutos?', {
-              action: {
-                label: 'Iniciar',
-                onClick: () => toggleTimer()
-              },
-            });
+            customToast.action(
+              "Pomodoro terminado",
+              `¿Vamos por el break de ${settings.shortBreakTime} minutos?`,
+              {
+                label: "Iniciar",
+                onClick: () => toggleTimer(),
+              }
+            );
             
             // Auto iniciar si está activado
             if (settings.autoStartBreaks) {
@@ -201,12 +205,14 @@ export const usePomodoroStore = create<PomodoroState>()(
             mode: 'work',
             timeLeft: modes.work.time
           });
-          toast('El break terminó, ¿Volvemos al pomodoro de ' + settings.workTime + ' minutos?', {
-            action: {
-              label: 'Iniciar',
-              onClick: () => toggleTimer()
-            },
-          });
+          customToast.action(
+            "El break terminó",
+            `¿Volvemos al pomodoro de ${settings.workTime} minutos?`,
+            {
+              label: "Iniciar",
+              onClick: () => toggleTimer(),
+            }
+          );
           
           // Auto iniciar si está activado
           if (settings.autoStartPomodoros) {

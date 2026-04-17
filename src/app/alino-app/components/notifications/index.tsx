@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import React from "react";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
 
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 import { useNotifications } from "@/hooks/notifications/useNotifications";
@@ -12,6 +11,7 @@ import { WindowModal } from "@/components/ui/WindowModal";
 import { LoadingIcon, UserIcon, Alert } from "@/components/ui/icons/icons";
 import { Notification } from "@/lib/schemas/notification.types";
 import styles from "./NotificationsSection.module.css";
+import { customToast } from "@/lib/toasts";
 
 export const NotificationsSection = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,7 +28,7 @@ export const NotificationsSection = () => {
     deleteNotification,
     updateInvitation,
   } = useNotifications();
-  
+
   const initialFetch = useNotificationsStore((s) => s.initialFetch);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export const NotificationsSection = () => {
       notification.metadata.invitation_id,
       "accepted",
     );
-    toast.success("Invitación aceptada");
+    customToast.success("Invitación aceptada");
   };
 
   const handleDeclineInvitation = async (notification: Notification) => {
@@ -58,7 +58,7 @@ export const NotificationsSection = () => {
       notification.metadata.invitation_id,
       "rejected",
     );
-    toast.success("Invitación rechazada");
+    customToast.success("Invitación rechazada");
   };
 
   const handleMarkRead = async (notification: Notification) => {

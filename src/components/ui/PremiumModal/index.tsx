@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { toast } from "sonner";
 import { useShallow } from "zustand/shallow";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useUserDataStore } from "@/store/useUserDataStore";
@@ -15,6 +14,7 @@ import { ClientOnlyPortal } from "../ClientOnlyPortal";
 import styles from "./PremiumModal.module.css";
 import { AlinoLogo } from "../icons/icons";
 import { createClient } from "@/utils/supabase/client";
+import { customToast } from "@/lib/toasts";
 
 const XIcon = () => (
   <svg
@@ -167,9 +167,9 @@ export const PremiumModal = ({ onClose }: Props) => {
     );
     setLoadingCode(false);
     if (error) {
-      toast.error(error);
+      customToast.error(error);
     } else {
-      toast.success(data?.message || "Código canjeado con éxito.");
+      customToast.success(data?.message || "Código canjeado con éxito.");
       setPromoCode("");
       updateUser({ tier: (data?.granted_tier as any) ?? "pro" });
       onClose();
@@ -178,7 +178,7 @@ export const PremiumModal = ({ onClose }: Props) => {
 
   const handleNextStep = () => {
     if (!selectedPlanId) {
-      toast.error("Por favor, seleccioná un plan primero.");
+      customToast.error("Por favor, seleccioná un plan primero.");
       return;
     }
     setStep("email");
@@ -186,7 +186,7 @@ export const PremiumModal = ({ onClose }: Props) => {
 
   const handlePaymentSubmit = async () => {
     if (!payerEmail.trim() || !payerEmail.includes("@")) {
-      toast.error("Por favor ingresa un email válido.");
+      customToast.error("Por favor ingresa un email válido.");
       return;
     }
     setLoadingPrimary(true);
@@ -196,7 +196,7 @@ export const PremiumModal = ({ onClose }: Props) => {
       payerEmail.trim(),
     );
     if (error) {
-      toast.error(error);
+      customToast.error(error);
       setLoadingPrimary(false);
       return;
     }

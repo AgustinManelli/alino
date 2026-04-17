@@ -7,7 +7,7 @@ import { loginWithOAuth } from "@/lib/api/auth/client-actions";
 import { LoadingIcon } from "@/components/ui/icons/icons";
 
 import styles from "./OauthButton.module.css";
-import { toast } from "sonner";
+import { customToast } from "@/lib/toasts";
 
 interface Props {
   providerName: string;
@@ -44,7 +44,7 @@ export const OauthButton = ({
     if (error) {
       setIsLocalPending(false);
       setOauthPending(false);
-      toast.error(error);
+      customToast.error(error);
     }
   };
 

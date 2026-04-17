@@ -5,7 +5,7 @@ import { deleteEmbeddedWidget } from "@/lib/api/user-widgets/actions";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { buildLayoutsFromInstances } from "@/store/dashboardUtils";
 import { useSyncStore } from "@/store/useSyncStore";
-import { toast } from "sonner";
+import { customToast } from "@/lib/toasts";
 
 export function useDeleteEmbeddedWidget() {
   const [isPending, setIsPending] = useState(false);
@@ -38,7 +38,7 @@ export function useDeleteEmbeddedWidget() {
         return { success: true };
       } catch (err) {
         const msg = (err as Error).message;
-        toast.error(msg);
+        customToast.error(msg);
         return { error: msg };
       } finally {
         setIsPending(false);

@@ -1,7 +1,6 @@
 "use client";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion } from "motion/react";
-import { toast } from "sonner";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { getBatchInjectedState } from "@/store/todoUtils";
@@ -11,6 +10,7 @@ import { SquircleIcon } from "../icons/icons";
 import { IAStarsLoader } from "../icons/ia-loader";
 import styles from "./SplitTaskModal.module.css";
 import type { AIGeneratedTask } from "@/lib/ai/aiProvider";
+import { customToast } from "@/lib/toasts";
 
 type SplitPhase = "loading" | "preview" | "confirming" | "error";
 
@@ -91,18 +91,15 @@ export const SplitTaskModal = ({
     const { tasks: updatedTasks, lists: updatedLists } = getBatchInjectedState(
       result.tasks,
       tasks,
-      lists
+      lists,
     );
     updateState({ tasks: updatedTasks, lists: updatedLists });
     onClose();
-    toast.success(
+    customToast.success(
       `✦ ${result.tasks.length} subtarea${result.tasks.length !== 1 ? "s" : ""} creada${result.tasks.length !== 1 ? "s" : ""}`,
-      {
-        description:
-          credits !== null
-            ? `Te quedan ${credits} crédito${credits !== 1 ? "s" : ""} IA`
-            : undefined,
-      },
+      credits !== null
+        ? `Te quedan ${credits} crédito${credits !== 1 ? "s" : ""} IA`
+        : undefined,
     );
   }, [
     phase,

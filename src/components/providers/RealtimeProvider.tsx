@@ -11,7 +11,7 @@ import {
   TaskType,
 } from "@/lib/schemas/database.types";
 import { Notification } from "@/lib/schemas/notification.types";
-import { toast } from "sonner";
+import { customToast } from "@/lib/toasts";
 
 export const RealtimeProvider = () => {
   const supabase = createClient();
@@ -100,7 +100,7 @@ export const RealtimeProvider = () => {
             read: false,
             deleted: false,
           });
-          toast.info(newNotification.title);
+          customToast.info(newNotification.title);
         },
       )
       .on(

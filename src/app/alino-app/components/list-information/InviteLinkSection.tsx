@@ -7,8 +7,8 @@ import {
   revokeInviteLink,
   type InviteLink,
 } from "@/lib/api/list/invite-link-actions";
-import { toast } from "sonner";
 import { RoleDropdown } from "./parts/RoleDropdown";
+import { customToast } from "@/lib/toasts";
 
 interface Props {
   list_id: string;
@@ -49,7 +49,7 @@ export function InviteLinkSection({ list_id }: Props) {
   const fetchLinks = useCallback(async () => {
     setLoading(true);
     const { data, error } = await getInviteLinks(list_id);
-    if (error) toast.error(error);
+    if (error) customToast.error(error);
     else setLinks((data ?? []).filter((l) => l.is_active));
     setLoading(false);
   }, [list_id]);
@@ -62,9 +62,9 @@ export function InviteLinkSection({ list_id }: Props) {
     setCreating(true);
     const { data, error } = await createInviteLink(list_id, selectedRole);
     if (error) {
-      toast.error(error);
+      customToast.error(error);
     } else if (data) {
-      toast.success("Enlace creado");
+      customToast.success("Enlace creado");
       await fetchLinks();
     }
     setCreating(false);
@@ -74,7 +74,7 @@ export function InviteLinkSection({ list_id }: Props) {
     const url = getInviteUrl(link.token);
     await navigator.clipboard.writeText(url);
     setCopiedId(link.id);
-    toast.success("Enlace copiado");
+    customToast.success("Enlace copiado");
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -82,10 +82,10 @@ export function InviteLinkSection({ list_id }: Props) {
     setRevokingId(link.id);
     const { error } = await revokeInviteLink(link.id);
     if (error) {
-      toast.error(error);
+      customToast.error(error);
     } else {
       setLinks((prev) => prev.filter((l) => l.id !== link.id));
-      toast.success("Enlace revocado");
+      customToast.success("Enlace revocado");
     }
     setRevokingId(null);
   };

@@ -2,8 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { cancelListInvitation } from "@/lib/api/list/actions";
-import { toast } from "sonner";
 import { handleError } from "@/store/todoUtils";
+import { customToast } from "@/lib/toasts";
 
 export function useCancelListInvitation() {
   const [isPending, setIsPending] = useState(false);
@@ -13,7 +13,7 @@ export function useCancelListInvitation() {
     try {
       const { error } = await cancelListInvitation(invitationId);
       if (error) throw new Error(error);
-      toast.success("Invitación cancelada.");
+      customToast.success("Invitación cancelada.");
       setIsPending(false);
       return {};
     } catch (err) {

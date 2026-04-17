@@ -27,6 +27,7 @@
   z-index: 100;
   transform: translateX(0%);
   transition: transform 0.2s ease-in-out;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 15px);
 }
 
 .navbarContainer.open {

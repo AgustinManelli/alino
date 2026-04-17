@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { setUsernameFirstTime as setUsernameFirstTimeAction } from "@/lib/api/user/actions";
 import { globalUserStore } from "@/store/useUserDataStore";
 import { useSyncStore } from "@/store/useSyncStore";
-import { toast } from "sonner";
+import { customToast } from "@/lib/toasts";
 
 export function useSetUsernameFirstTime() {
   const [isPending, setIsPending] = useState(false);
@@ -38,7 +38,7 @@ export function useSetUsernameFirstTime() {
         }
         return { error: null };
       } catch (err) {
-        toast.error((err as Error).message || "Error desconocido");
+        customToast.error((err as Error).message || "Error desconocido");
         return { error: "Error desconocido." };
       } finally {
         setIsPending(false);

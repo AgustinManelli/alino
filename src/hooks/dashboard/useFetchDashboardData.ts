@@ -4,8 +4,8 @@ import { useState, useCallback } from "react";
 import { getDashboardBatch } from "@/lib/api/dashboard/actions";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { DashboardData } from "@/lib/schemas/database.types";
-import { toast } from "sonner";
 import { useSyncStore } from "@/store/useSyncStore";
+import { customToast } from "@/lib/toasts";
 
 export function useFetchDashboardData() {
   const [isPending, setIsPending] = useState(false);
@@ -37,7 +37,7 @@ export function useFetchDashboardData() {
         hasFetchedData: true,
       });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error desconocido");
+      customToast.error(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       useDashboardStore.setState({ isFetchingData: false });
       setIsPending(false);

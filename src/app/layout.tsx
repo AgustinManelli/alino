@@ -111,7 +111,15 @@ export default function RootLayout({
       <body className={`${inter.className}`}>
         <ThemeProvider>
           <MobileSizeListener />
-          <Toaster />
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              unstyled: true,
+              classNames: {
+                toast: "!p-0 !bg-transparent !border-none !shadow-none",
+              },
+            }}
+          />
           <Loader />
 
           <div id="modal-root">

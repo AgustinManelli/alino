@@ -10,7 +10,6 @@ import { useFetchProfileStats } from "@/hooks/user/useFetchProfileStats";
 import { useFetchAIUsage } from "@/hooks/user/useFetchAIUsage";
 import { useUploadAvatar } from "@/hooks/user/useUploadAvatar";
 import { useUpdateProfile } from "@/hooks/user/useUpdateProfile";
-import { toast } from "sonner";
 import {
   getActiveSubscription,
   cancelSubscriptionAction,
@@ -19,6 +18,7 @@ import { useModalStore } from "@/store/useModalStore";
 import { WindowModal } from "@/components/ui/WindowModal";
 import Cropper, { Area, Point } from "react-easy-crop";
 import { getCroppedImg } from "@/lib/utils/imageCrop";
+import { customToast } from "@/lib/toasts";
 
 export default function ConfigUser() {
   const [isUploading, setIsUploading] = useState(false);
@@ -70,9 +70,9 @@ export default function ConfigUser() {
           setLoadingCancel(true);
           const { data, error } = await cancelSubscriptionAction();
           if (error) {
-            toast.error(error);
+            customToast.error(error);
           } else {
-            toast.success(data);
+            data && customToast.success(data);
             setActiveSub((prev: any) =>
               prev
                 ? { ...prev, cancel_at_period_end: true, status: "canceled" }
@@ -127,10 +127,10 @@ export default function ConfigUser() {
       const res = await uploadAvatar(formData);
       if (res.error) throw new Error(res.error);
 
-      toast.success("Foto de perfil actualizada correctamente.");
+      customToast.success("Foto de perfil actualizada correctamente.");
       setImageToCrop(null);
     } catch (error: any) {
-      toast.error(error.message || "Error al subir la imagen.");
+      customToast.error(error.message || "Error al subir la imagen.");
     } finally {
       setIsUploading(false);
     }
@@ -600,16 +600,16 @@ const EditionSection = ({
       dataKey !== "website_url" &&
       trimmed.length < 3
     ) {
-      toast.error("El valor debe tener al menos 3 caracteres.");
+      customToast.error("El valor debe tener al menos 3 caracteres.");
       return;
     }
     setIsLoading(true);
     const res = await updateProfile({ [dataKey]: trimmed });
     if (res.error) {
-      toast.error(res.error);
+      customToast.error(res.error);
       setValue(currentValue);
     } else {
-      toast.success(`${title} actualizado con éxito.`);
+      customToast.success(`${title} actualizado con éxito.`);
       setIsEditing(false);
     }
     setIsLoading(false);
