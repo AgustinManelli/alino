@@ -52,10 +52,10 @@
   position: relative;
   display: flex;
   gap: 5px;
-  justify-content: center;
   align-items: center;
   height: 100%;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   max-height: 31px;
 }
 
@@ -120,6 +120,8 @@
   justify-content: center;
   align-items: center;
   gap: 5px;
+  flex-shrink: 0;
+  min-width: 23px;
 }
 
 .button {
