@@ -70,6 +70,7 @@ export const ListInfoEdit = memo(function ListInfoEdit({
         if (emoji) {
           setEmoji(list.list.icon);
         }
+        return;
       }
 
       setColorTemp(color);
@@ -108,6 +109,13 @@ export const ListInfoEdit = memo(function ListInfoEdit({
       list.list.color === colorTemp &&
       list.list.icon === emoji
     ) {
+      setIsNameChange(false);
+      return;
+    }
+
+    if (!isValidHex(colorTemp)) {
+      setColorTemp(list.list.color);
+      setEmoji(list.list.icon);
       setIsNameChange(false);
       return;
     }

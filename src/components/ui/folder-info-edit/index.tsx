@@ -60,6 +60,7 @@ export const FolderInfoEdit = memo(function ListInfoEdit({
 
       if (!isValidHex(color)) {
         setColorTemp(folder.folder_color);
+        return;
       }
 
       setColorTemp(color);
@@ -88,6 +89,12 @@ export const FolderInfoEdit = memo(function ListInfoEdit({
       folder.folder_name === formatText &&
       folder.folder_color === colorTemp
     ) {
+      setIsNameChange(false);
+      return;
+    }
+
+    if (colorTemp && !isValidHex(colorTemp)) {
+      setColorTemp(folder.folder_color);
       setIsNameChange(false);
       return;
     }

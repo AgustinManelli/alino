@@ -49,9 +49,8 @@ export const useInputActions = ({
 
   const handleSetColor = useCallback(
     (newColor: string | null, isTyping?: boolean) => {
-      setColor(newColor);
-
       if (isTyping) {
+        setColor(newColor);
         setEmoji((prev) => (prev !== null ? null : prev));
         return;
       }
@@ -61,7 +60,10 @@ export const useInputActions = ({
         setColor(isList ? DEFAULT_COLOR : DEFAULT_FOLDER_COLOR);
         setEmoji((prev) => (prev !== null ? null : prev));
         customToast.error(validation.error.issues[0].message);
+        return;
       }
+      
+      setColor(newColor);
       inputRef.current?.focus();
     },
     [isList, DEFAULT_COLOR, DEFAULT_FOLDER_COLOR, inputRef]
@@ -89,10 +91,13 @@ export const useInputActions = ({
       return;
     }
 
+    const colorValidation = hexColorSchema.safeParse(color);
+    const finalColor = colorValidation.success ? color : (isList ? DEFAULT_COLOR : DEFAULT_FOLDER_COLOR);
+
     if (isList) {
-      insertList(formatText, color ?? DEFAULT_COLOR, emoji as string);
+      insertList(formatText, finalColor ?? DEFAULT_COLOR, emoji as string);
     } else {
-      insertFolder(formatText, color);
+      insertFolder(formatText, finalColor);
     }
 
     const scrollElement = document.getElementById("list-container");

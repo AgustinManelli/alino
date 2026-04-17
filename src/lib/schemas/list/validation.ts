@@ -7,7 +7,7 @@ export const hexColorSchema = z
       return /^#([A-Fa-f0-9]{3,4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/.test(value);
     },
     {
-      message: "No no, tu color debe ser un formato hex válido.",
+      message: "Tu color debe ser un formato hex válido.",
     }
   )
   .nullable();
@@ -19,7 +19,7 @@ export const shortcodeEmojiSchema = z
       return /^:[a-z0-9_]+(?:(?:-[a-z0-9_]+)+)?:$/.test(value);
     },
     {
-      message: "No no, el formato del emoji no es correcto.",
+      message: "El formato del emoji no es correcto.",
     }
   )
   .nullable();
