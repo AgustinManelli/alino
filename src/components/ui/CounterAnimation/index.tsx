@@ -1,34 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, memo } from "react";
 import NumberFlow from "@number-flow/react";
 
-export function CounterAnimation({
+type CounterAnimationProps = {
+  tasksLength?: number;
+  format?: boolean;
+  isAnimationEnabled?: boolean;
+};
+
+export const CounterAnimation = memo(function CounterAnimation({
   tasksLength = 0,
   format = false,
   isAnimationEnabled = true,
-}: {
-  tasksLength: number | undefined;
-  format?: boolean | undefined;
-  isAnimationEnabled?: boolean;
-}) {
-  const [animationKey, setAnimationKey] = useState(0);
-
-  useEffect(() => {
-    if (!isAnimationEnabled) {
-      setAnimationKey((prevKey) => prevKey + 1);
-    }
-  }, [tasksLength, isAnimationEnabled]);
+}: CounterAnimationProps) {
+  const formatOptions = useMemo(
+    () => ({
+      notation: "compact" as const,
+      minimumIntegerDigits: format ? 2 : 1,
+      useGrouping: false,
+    }),
+    [format],
+  );
 
   return (
     <NumberFlow
       value={tasksLength}
-      key={animationKey}
-      format={{
-        notation: "compact",
-        minimumIntegerDigits: format ? 2 : 1,
-        useGrouping: false,
-      }}
+      format={formatOptions}
+      animated={isAnimationEnabled}
     />
   );
-}
+});
