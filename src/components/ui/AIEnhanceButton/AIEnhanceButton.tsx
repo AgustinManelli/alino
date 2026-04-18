@@ -2,61 +2,32 @@
 import { useRef, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Editor } from "@tiptap/react";
+
 import { EnhanceAction, AIGeneratedTask } from "@/lib/ai/aiProvider";
 import { useAIEnhance } from "@/hooks/useAIEnhance";
 import { useAITaskGeneration } from "@/hooks/useAITaskGeneration";
 import { useModalUbication } from "@/hooks/useModalUbication";
 import { ClientOnlyPortal } from "@/components/ui/ClientOnlyPortal";
+
+import { useUserDataStore } from "@/store/useUserDataStore";
+import { useModalStore } from "@/store/useModalStore";
+import { Tabs, TabOption } from "@/components/ui/Tabs/Tabs";
+import { AIShadowEffect } from "@/components/ui/AIShadowEffect/AIShadowEffect";
+
 import {
   Check,
   CompressIcon,
   Cross,
+  Crown,
   ExpandIcon,
   FixIcon,
   IAStars,
   Note,
   SquircleIcon,
 } from "@/components/ui/icons/icons";
-import { useUserDataStore } from "@/store/useUserDataStore";
 import { IAStarsLoader } from "../icons/ia-loader";
 import styles from "./AIEnhanceButton.module.css";
-import { useModalStore } from "@/store/useModalStore";
 
-// ─── Inline icons ─────────────────────────────────────────────────────────────
-
-const CloseIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2.5}
-    strokeLinecap="round"
-    style={{ width: "11px", height: "11px", flexShrink: 0 }}
-  >
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
-
-const SpinnerIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    strokeLinecap="round"
-    style={{
-      width: "12px",
-      height: "12px",
-      flexShrink: 0,
-      animation: "ai-spin 0.7s linear infinite",
-    }}
-  >
-    <path d="M12 2a10 10 0 0 1 10 10" />
-  </svg>
-);
-
-// ─── Config ──────────────────────────────────────────────────────────────────
 const ENHANCE_ACTIONS: {
   id: EnhanceAction;
   label: string;
@@ -88,7 +59,6 @@ const ENHANCE_ACTIONS: {
 const MAX_TASKS_OPTIONS = [3, 5, 7] as const;
 const DEFAULT_MAX_TASKS = 5;
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 type Tab = "enhance" | "generate";
 
 type EnhanceFlow =
@@ -101,24 +71,19 @@ type GenerateFlow =
   | { phase: "idle" }
   | { phase: "loading" }
   | { phase: "result"; tasks: AIGeneratedTask[]; listSubject: string }
-  | { phase: "creating" } // batch insert in progress
+  | { phase: "creating" }
   | { phase: "success"; count: number }
   | { phase: "error"; message: string };
 
 export interface AIEnhanceButtonProps {
   editor: Editor | null;
   visible: boolean;
-  /**
-   * Called when the user confirms task creation.
-   * Must return { error?: string } — use the store's addTasks batch method here.
-   */
   onCreateTasks?: (
     tasks: AIGeneratedTask[],
   ) => Promise<{ error: string | null }>;
   showGenerateTasks?: boolean;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export function AIEnhanceButton({
   editor,
   visible,
@@ -135,6 +100,11 @@ export function AIEnhanceButton({
   });
   const [taskPrompt, setTaskPrompt] = useState("");
   const [maxTasks, setMaxTasks] = useState<number>(DEFAULT_MAX_TASKS);
+
+  const tabOptions: TabOption[] = [
+    { id: "enhance", label: "Mejorar texto" },
+    { id: "generate", label: "Generar tareas" },
+  ];
 
   const openModal = useModalStore((s) => s.open);
 
@@ -160,7 +130,6 @@ export function AIEnhanceButton({
 
   useModalUbication(triggerRef, containerRef, closePanel, false);
 
-  // ── Enhance handlers ────────────────────────────────────────────────────────
   const handleEnhance = async (action: EnhanceAction) => {
     if (!editor) return;
     const plainText = editor.getText().trim();
@@ -188,7 +157,6 @@ export function AIEnhanceButton({
     closePanel();
   };
 
-  // ── Generate handlers ───────────────────────────────────────────────────────
   const handleGenerate = async () => {
     if (!taskPrompt.trim() || !canGenerateTasks) return;
     setGenerateFlow({ phase: "loading" });
@@ -210,11 +178,6 @@ export function AIEnhanceButton({
     });
   };
 
-  /**
-   * Batch-creates all AI tasks in a single store call.
-   * Shows a "creating…" state while the request is in-flight, then
-   * either a success confirmation or an error message.
-   */
   const handleCreateTasks = async () => {
     if (generateFlow.phase !== "result" || !onCreateTasks) return;
 
@@ -232,11 +195,9 @@ export function AIEnhanceButton({
     setGenerateFlow({ phase: "success", count: tasks.length });
     setTaskPrompt("");
 
-    // Auto-close after brief success feedback
     setTimeout(() => closePanel(), 1_800);
   };
 
-  // ── Derived ─────────────────────────────────────────────────────────────────
   const isEnhanceLoading = enhanceFlow.phase === "loading";
   const isGenerating = generateFlow.phase === "loading" || genLoading;
   const isCreating = generateFlow.phase === "creating";
@@ -255,7 +216,6 @@ export function AIEnhanceButton({
     }
   };
 
-  // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <AnimatePresence>
       {visible && (
@@ -266,17 +226,7 @@ export function AIEnhanceButton({
           exit={{ opacity: 0, scale: 0.7 }}
           transition={{ duration: 0.16, ease: "easeOut" }}
         >
-          {/* Trigger button */}
           <div className={styles.btnWrapper}>
-            <motion.div
-              className={styles.glow}
-              animate={{ rotate: 360, scale: isAnyLoading ? 1 : 0 }}
-              transition={{
-                rotate: { duration: 5, repeat: Infinity, ease: "linear" },
-                scale: { delay: 0.1, duration: 0.35, ease: [0.22, 1, 0.36, 1] },
-              }}
-              initial={{ scale: 0, rotate: 0 }}
-            />
             <button
               ref={triggerRef}
               className={`${styles.mainBtn} ${isAnyLoading ? styles.loading : ""}`}
@@ -287,26 +237,18 @@ export function AIEnhanceButton({
               title="Asistente IA"
               aria-label="Abrir asistente IA"
               disabled={isAnyLoading}
-              style={{
-                backgroundColor: isAnyLoading
-                  ? "var(--background-container)"
-                  : "var(--background-over-container)",
-              }}
             >
-              <IAStarsLoader
-                size={20}
-                color={
-                  isAnyLoading || isOpen ? "var(--text)" : "var(--icon-color)"
+              <IAStars
+                style={
+                  {
+                    "--ai-color": isOpen ? "var(--text)" : "var(--icon-color)",
+                  } as React.CSSProperties
                 }
-                duration={2}
-                title="Asistente IA"
-                animated={isAnyLoading || isOpen}
-                strokeWidth={1.2}
+                className={styles.aiIcon}
               />
             </button>
           </div>
 
-          {/* Floating panel */}
           <ClientOnlyPortal>
             <AnimatePresence mode="wait">
               {isOpen && (
@@ -317,8 +259,20 @@ export function AIEnhanceButton({
                   initial={{ opacity: 0, scale: 0.95, y: -4 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                  transition={{ duration: 0.14, ease: "easeOut" }}
+                  transition={{
+                    opacity: { duration: 0.14 },
+                    scale: { duration: 0.14 },
+                    y: { duration: 0.14 },
+                  }}
                 >
+                  <AIShadowEffect
+                    visible={
+                      enhanceFlow.phase === "loading" ||
+                      generateFlow.phase === "loading" ||
+                      generateFlow.phase === "creating"
+                    }
+                  />
+
                   {/* Header */}
                   <div className={styles.panelHeader}>
                     <IAStars
@@ -334,25 +288,18 @@ export function AIEnhanceButton({
 
                   {/* Tabs */}
                   {showGenerateTasks && (
-                    <div className={styles.tabs}>
-                      <button
-                        className={`${styles.tab} ${activeTab === "enhance" ? styles.tabActive : ""}`}
-                        onClick={() => setActiveTab("enhance")}
-                      >
-                        Mejorar texto
-                      </button>
-                      <button
-                        className={`${styles.tab} ${activeTab === "generate" ? styles.tabActive : ""}`}
-                        onClick={() => setActiveTab("generate")}
-                      >
-                        Generar tareas
-                      </button>
-                    </div>
+                    <Tabs
+                      options={tabOptions}
+                      activeTab={activeTab}
+                      onChange={(id) => setActiveTab(id as Tab)}
+                      className={styles.tabs}
+                      disabled={isAnyLoading}
+                    />
                   )}
 
                   <div className={styles.divisor} />
 
-                  {/* ── Enhance tab ─────────────────────────────────────── */}
+                  {/*Enhance tab*/}
                   {activeTab === "enhance" && (
                     <div className={styles.tabContent}>
                       {enhanceFlow.phase === "idle" && (
@@ -401,7 +348,7 @@ export function AIEnhanceButton({
                               className={styles.cancelBtn}
                               onClick={() => setEnhanceFlow({ phase: "idle" })}
                             >
-                              <CloseIcon /> Descartar
+                              <Cross className={styles.crossIcon} /> Descartar
                             </button>
                           </div>
                         </div>
@@ -415,17 +362,17 @@ export function AIEnhanceButton({
                     </div>
                   )}
 
-                  {/* ── Generate tab ─────────────────────────────────────── */}
                   {activeTab === "generate" && (
                     <div className={styles.tabContent}>
                       {!canGenerateTasks ? (
                         <div className={styles.upgradeContainer}>
-                          <p className={styles.upgradeTitle}>
-                            Función Exclusiva
-                          </p>
+                          <div className={styles.upgradeCrown}>
+                            <Crown className={styles.crownIcon} />
+                            Función Premium
+                          </div>
                           <p className={styles.upgradeDesc}>
-                            Desbloqueá la generación automática de tareas
-                            pasando a Pro o Estudiante.
+                            Desbloqueá la generación automática de tareas y
+                            mucho más.
                           </p>
                           <button
                             className={styles.upgradeBtn}
@@ -436,13 +383,12 @@ export function AIEnhanceButton({
                         </div>
                       ) : (
                         <>
-                          {/* ── idle / error ─── */}
                           {(generateFlow.phase === "idle" ||
                             generateFlow.phase === "error") && (
                             <>
                               <textarea
                                 className={styles.promptTextarea}
-                                placeholder="Ej: Tengo un examen de álgebra el viernes, ayudame a organizar el estudio..."
+                                placeholder="Genera las tareas que necesites para esta lista."
                                 value={taskPrompt}
                                 onChange={(e) => setTaskPrompt(e.target.value)}
                                 rows={4}
@@ -465,7 +411,7 @@ export function AIEnhanceButton({
                                 </div>
                               </div>
                               {generateFlow.phase === "error" && (
-                                <p className={styles.errorText}>
+                                <p className={styles.errorTextInline}>
                                   {generateFlow.message}
                                 </p>
                               )}
@@ -486,14 +432,12 @@ export function AIEnhanceButton({
                             </>
                           )}
 
-                          {/* ── generating ─── */}
                           {generateFlow.phase === "loading" && (
                             <div className={styles.loadingState}>
                               <IAStarsLoader size={32} />
                             </div>
                           )}
 
-                          {/* ── result: preview & confirm ─── */}
                           {generateFlow.phase === "result" && (
                             <div className={styles.tasksResult}>
                               <div className={styles.tasksList}>
@@ -550,20 +494,13 @@ export function AIEnhanceButton({
                             </div>
                           )}
 
-                          {/* ── creating: batch insert in-flight ─── */}
                           {generateFlow.phase === "creating" && (
                             <div className={styles.loadingState}>
-                              <motion.div
-                                className={styles.loadingDots}
-                                animate={{ opacity: [0.4, 1, 0.4] }}
-                                transition={{ duration: 1.2, repeat: Infinity }}
-                              >
-                                <SpinnerIcon /> Creando tareas...
-                              </motion.div>
+                              <IAStarsLoader size={32} />
+                              <p>Creando tareas...</p>
                             </div>
                           )}
 
-                          {/* ── success ─── */}
                           {generateFlow.phase === "success" && (
                             <div className={styles.successState}>
                               <motion.div

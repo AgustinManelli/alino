@@ -1,0 +1,24 @@
+.bgContainer {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.panelBgOne,
+.panelBgTwo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 50px;
+  will-change: transform, opacity;
+}
+
+.panelBgOne {
+  box-shadow: var(--ia-inset-shadow);
+}
+
+.panelBgTwo {
+  box-shadow: inset 0 -20px 20px -6px rgba(255, 255, 255, 0.4);
+  mix-blend-mode: plus-lighter;
+}
