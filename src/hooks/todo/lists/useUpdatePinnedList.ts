@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { updatePinnedList } from "@/lib/api/list/actions";
+import { getNextRankForUser, updatePinnedList } from "@/lib/api/list/actions";
 import { readFolderMembershipCount, makeMembershipCountPayload, calculateNewIndex, handleError } from "@/store/todoUtils";
 
 export function useUpdatePinnedList() {
@@ -18,6 +18,7 @@ export function useUpdatePinnedList() {
     }
     const previousPinned = originalList.pinned;
     const previousFolder = originalList.folder;
+    const previousRank = originalList.rank;
     let errorResult: string | undefined;
 
     try {
@@ -54,14 +55,19 @@ export function useUpdatePinnedList() {
         const lists = store.lists;
         const folders = store.folders;
         const index = calculateNewIndex(lists, folders);
+
+        const { rank: serverRank } = await getNextRankForUser();
+        const newRank = serverRank ?? previousRank ?? undefined;
+
         useTodoDataStore.setState((state) => ({
           lists: state.lists.map((currentItem) =>
             currentItem.list_id === list_id
-              ? { ...currentItem, pinned, index }
+              ? { ...currentItem, pinned, index, rank: newRank ?? currentItem.rank }
               : currentItem
           ),
         }));
-        const result = await updatePinnedList(list_id, pinned, index);
+
+        const result = await updatePinnedList(list_id, pinned, index, newRank);
         errorResult = result?.error;
       }
 
@@ -72,7 +78,7 @@ export function useUpdatePinnedList() {
       useTodoDataStore.setState((state) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === list_id
-            ? { ...currentItem, pinned: previousPinned, folder: previousFolder }
+            ? { ...currentItem, pinned: previousPinned, folder: previousFolder, rank: previousRank }
             : currentItem
         ),
       }));

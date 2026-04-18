@@ -103,12 +103,12 @@ export const useInputActions = ({
     const scrollElement = document.getElementById("list-container");
     if (scrollElement) {
       requestAnimationFrame(() => {
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           scrollElement.scrollTo({
             top: scrollElement.scrollHeight,
             behavior: "smooth",
           });
-        }, 50);
+        });
       });
     }
     resetForm();

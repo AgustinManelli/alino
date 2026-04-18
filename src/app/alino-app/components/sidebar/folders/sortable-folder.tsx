@@ -61,7 +61,6 @@ export const SortableFolder = memo(function SortableFolder({
 
   const isHoveringRef = useRef<boolean>(false);
   const divRef = useRef<HTMLDivElement | null>(null);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const openConfirmationModal = useModalStore((s) => s.open);
@@ -71,6 +70,11 @@ export const SortableFolder = memo(function SortableFolder({
   const animations = useUserPreferencesStore((state) => state.animations);
 
   const { fetchListsPage } = useFetchListsPage();
+  const fetchListsPageRef = useRef(fetchListsPage);
+  useEffect(() => {
+    fetchListsPageRef.current = fetchListsPage;
+  }, [fetchListsPage]);
+
   const folderPagination = useTodoDataStore(
     (state) => state.listsPagination[folder.folder_id],
   );
@@ -100,19 +104,36 @@ export const SortableFolder = memo(function SortableFolder({
   }, [open, folder.folder_id, folderPagination, fetchListsPage]);
 
   useEffect(() => {
-    if (!open || !sentinelRef.current || !scrollContainerRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && folderPagination?.hasMore) {
-          fetchListsPage(folder.folder_id);
-        }
-      },
-      { root: scrollContainerRef.current, rootMargin: "100px", threshold: 0.1 },
-    );
+    if (!open || !hasFetched || !scrollContainerRef.current) return;
 
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [open, folderPagination, folder.folder_id, fetchListsPage]);
+    const container = scrollContainerRef.current;
+    const folderId = folder.folder_id;
+
+    const tryFetch = () => {
+      const { listsPagination, fetchingListsQueue } =
+        useTodoDataStore.getState();
+      const hasMore = listsPagination[folderId]?.hasMore ?? false;
+      const isFetching = fetchingListsQueue[folderId] ?? false;
+      if (!hasMore || isFetching) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      if (distanceFromBottom < 60) {
+        fetchListsPageRef.current(folderId);
+      }
+    };
+    tryFetch();
+
+    container.addEventListener("scroll", tryFetch, { passive: true });
+
+    const ro = new ResizeObserver(tryFetch);
+    ro.observe(container);
+
+    return () => {
+      container.removeEventListener("scroll", tryFetch);
+      ro.disconnect();
+    };
+  }, [open, hasFetched, folder.folder_id]);
 
   useDndMonitor({
     onDragOver: (event) => {
@@ -399,10 +420,6 @@ export const SortableFolder = memo(function SortableFolder({
                     <div className={styles.loadingContainer}>
                       <LoadingIcon className={styles.loadingIcon} />
                     </div>
-                  )}
-
-                  {folderPagination?.hasMore && (
-                    <div ref={sentinelRef} className={styles.sentinel} />
                   )}
                 </motion.div>
               )}

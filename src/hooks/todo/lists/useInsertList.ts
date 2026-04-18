@@ -23,8 +23,10 @@ export function useInsertList() {
     const folders = store.folders;
 
     const index = calculateNewIndex(lists, folders);
-    const rank = calculateNewRank(lists, folders);
     const now = new Date().toISOString();
+
+    // const { rank: serverRank } = await getNextRankForUser(); lcomentado porque por el momento en 100 items no es un problema real este
+    const rank = calculateNewRank(lists, folders);
 
     const optimistic: ListsType = {
       folder: null,

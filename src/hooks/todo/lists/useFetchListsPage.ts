@@ -5,6 +5,8 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { FolderType, ListsType } from "@/lib/schemas/database.types";
 import { handleError } from "@/store/todoUtils";
 
+const SIDEBAR_PAGE_SIZE = 100;
+
 type TaggedAsList = ListsType & { _item_type: "list" };
 type TaggedAsFolder = FolderType & { _item_type: "folder" };
 type TaggedSidebarItem = TaggedAsList | TaggedAsFolder;
@@ -16,6 +18,7 @@ export function useFetchListsPage() {
     setIsPending(true);
     try {
       const state = useTodoDataStore.getState();
+
       if (state.fetchingListsQueue[folderId]) {
         setIsPending(false);
         return;
@@ -39,7 +42,7 @@ export function useFetchListsPage() {
 
       const { getPaginatedLists } = await import("@/lib/api/list/actions");
       const targetFolderId = folderId === "root" ? null : folderId;
-      const { data } = await getPaginatedLists(targetFolderId, newPage, 200);
+      const { data } = await getPaginatedLists(targetFolderId, newPage, SIDEBAR_PAGE_SIZE);
 
       if (!data) return;
 
@@ -52,7 +55,8 @@ export function useFetchListsPage() {
         (i): i is TaggedAsFolder => i._item_type === "folder"
       ) as FolderType[];
 
-      const hasMoreFetched = data.length >= 200;
+
+      const hasMore = data.length >= SIDEBAR_PAGE_SIZE;
 
       useTodoDataStore.setState((s) => {
         const existingListIds = new Set(s.lists.map((l) => l.list_id));
@@ -70,7 +74,7 @@ export function useFetchListsPage() {
           folders: [...s.folders, ...filteredNewFolders],
           listsPagination: {
             ...s.listsPagination,
-            [folderId]: { page: newPage, hasMore: hasMoreFetched },
+            [folderId]: { page: newPage, hasMore },
           },
         };
       });

@@ -133,6 +133,8 @@ export async function getSingleLists(list_id: string) {
   }
 }
 
+const SIDEBAR_PAGE_SIZE = 100;
+
 export async function getLists(): Promise<{
   data?: {
     lists: ListsType[];
@@ -159,7 +161,7 @@ export async function getLists(): Promise<{
     const { data: mixedData, error: mixedError } = await supabase
       .rpc("get_paginated_sidebar", {
         p_user_id: user.id,
-        p_page_limit: 200,
+        p_page_limit: SIDEBAR_PAGE_SIZE,
         p_offset: 0,
       });
 
@@ -194,14 +196,12 @@ export async function getLists(): Promise<{
       }
     });
 
-    const LIMIT = 200;
-
     return {
       data: {
         lists: [...(pinnedData as ListsType[] ?? []), ...unpinnedLists],
         tasks: [],
         folders,
-        hasMoreRoot: rows.length >= LIMIT,
+        hasMoreRoot: rows.length >= SIDEBAR_PAGE_SIZE,
       },
     };
   } catch (error: unknown) {
@@ -213,10 +213,29 @@ export async function getLists(): Promise<{
   }
 }
 
+export async function getNextRankForUser(): Promise<{ rank?: string; error?: string }> {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase.rpc("calculate_new_rank", {
+      owner_id_param: user.id,
+    });
+
+    if (error) {
+      throw new Error("No se pudo calcular el rank.");
+    }
+
+    return { rank: data as string };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+}
+
 export const getPaginatedLists = async (
   folderId: string | null = null,
   page: number = 0,
-  limit: number = 200
+  limit: number = 10
 ): Promise<{ data?: (ListsType | FolderType)[]; error?: string }> => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
@@ -228,9 +247,10 @@ export const getPaginatedLists = async (
         .from("list_memberships")
         .select(`*, list: lists (*, tasks(count))`)
         .eq("user_id", user.id)
-        .order("rank", { ascending: true })
-        .range(from, from + limit - 1)
-        .eq("folder", folderId);
+        .eq("folder", folderId)
+        .order("rank", { ascending: true, nullsFirst: false })
+        .order("list_id", { ascending: true })
+        .range(from, from + limit - 1);
 
       if (error) throw new Error("No se pudieron cargar las listas.");
       return { data: (qData as ListsType[]) ?? [] };
@@ -580,14 +600,15 @@ export const updateDataFolder = async (
 export const updatePinnedList = async (
   list_id: string,
   pinned: boolean,
-  index: number | null
+  index: number | null,
+  rank?: string
 ) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const updatePayload = pinned
       ? { pinned, folder: null as string | null }
-      : { pinned, index: index ?? undefined };
+      : { pinned, index: index ?? undefined, ...(rank ? { rank } : {}) };
 
     const { data, error } = await supabase
       .from("list_memberships")

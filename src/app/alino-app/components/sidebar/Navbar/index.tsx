@@ -42,6 +42,9 @@ import { IconAlinoMotion } from "@/components/ui/icons/icon-alino-motion";
 import { LoadingIcon } from "@/components/ui/icons/icons";
 import styles from "./Navbar.module.css";
 
+/** Píxeles desde el fondo del scroll a partir de los cuales se dispara el fetch. */
+const SCROLL_THRESHOLD_PX = 120;
+
 export const Navbar = () => {
   //Estado global del sidebar (cerrado / abierto) manejado de manera global con zustand
   const { navbarStatus, setNavbarStatus, toggleNavbar } = useSidebarStateStore(
@@ -59,39 +62,49 @@ export const Navbar = () => {
   const initialFetch = useTodoDataStore(
     useShallow((state) => state.initialFetch),
   );
-  const folders = useTodoDataStore((state) => state.folders);
-  const { fetchListsPage } = useFetchListsPage();
-
-  const listsPagination = useTodoDataStore(
-    useShallow((state) => state.listsPagination),
-  );
   const fetchingListsQueue = useTodoDataStore(
     useShallow((state) => state.fetchingListsQueue),
   );
+  const { fetchListsPage } = useFetchListsPage();
 
   const navbarContainerRef = useRef<HTMLDivElement | null>(null);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const fetchListsPageRef = useRef(fetchListsPage);
+  useEffect(() => {
+    fetchListsPageRef.current = fetchListsPage;
+  }, [fetchListsPage]);
 
   useEffect(() => {
-    if (!sentinelRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          if (listsPagination["root"]?.hasMore) {
-            fetchListsPage("root");
-          }
-        }
-      },
-      {
-        root: document.getElementById("list-container"),
-        rootMargin: "100px",
-        threshold: 0.1,
-      },
-    );
+    if (!initialFetch) return;
 
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [listsPagination, fetchListsPage]);
+    const container = document.getElementById("list-container");
+    if (!container) return;
+
+    const tryFetch = () => {
+      const { listsPagination, fetchingListsQueue: queue } =
+        useTodoDataStore.getState();
+      const hasMore = listsPagination["root"]?.hasMore ?? false;
+      const isFetching = queue["root"] ?? false;
+      if (!hasMore || isFetching) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      if (distanceFromBottom < SCROLL_THRESHOLD_PX) {
+        fetchListsPageRef.current("root");
+      }
+    };
+
+    tryFetch();
+
+    container.addEventListener("scroll", tryFetch, { passive: true });
+
+    const ro = new ResizeObserver(tryFetch);
+    ro.observe(container);
+
+    return () => {
+      container.removeEventListener("scroll", tryFetch);
+      ro.disconnect();
+    };
+  }, [initialFetch]);
 
   const handleToggleNavbar = useCallback(() => {
     toggleNavbar();
@@ -180,12 +193,6 @@ export const Navbar = () => {
                         }}
                       />
                     </div>
-                  )}
-                  {listsPagination["root"]?.hasMore && (
-                    <div
-                      ref={sentinelRef}
-                      style={{ height: "1px", width: "100%" }}
-                    />
                   )}
                 </>
               )}
