@@ -36,3 +36,17 @@
   opacity: 0.45;
   margin-left: auto;
 }
+
+/* ── Critical / danger variant ────────────────────────────────── */
+.critical p {
+  color: #e8453c;
+}
+
+.critical svg {
+  stroke: #e8453c !important;
+}
+
+.critical:hover,
+.critical.active {
+  background-color: rgba(232, 69, 60, 0.1) !important;
+}

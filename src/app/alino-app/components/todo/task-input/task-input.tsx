@@ -1,70 +1,24 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useEditor, EditorContent, Editor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import { TextStyle } from "@tiptap/extension-text-style";
-import Color from "@tiptap/extension-color";
-import Highlight from "@tiptap/extension-highlight";
-import FontFamily from "@tiptap/extension-font-family";
-import TextAlign from "@tiptap/extension-text-align";
-import CharacterCount from "@tiptap/extension-character-count";
-import Link from "@tiptap/extension-link";
-import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { motion } from "motion/react";
+
 import { useAddTask } from "@/hooks/todo/tasks/useAddTask";
 import { useAddTasks } from "@/hooks/todo/tasks/useAddTasks";
-import styles from "./task-input.module.css";
-import { ListsType } from "@/lib/schemas/database.types";
-import { Calendar } from "@/components/ui/Calendar";
-import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
-import { SendIcon } from "@/components/ui/icons/icons";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-import { TextAnimation } from "@/components/ui/text-animation";
+
+import { ListsType } from "@/lib/schemas/database.types";
+
+import { useTaskEditorSetup } from "./parts/useTaskEditorSetup";
+import { useSmartDateManager } from "./parts/useSmartDateManager";
+import { TaskEditor } from "./parts/TaskEditor";
+import { PlaceholderText } from "./parts/PlaceholderText";
+import { ActionBar } from "./parts/ActionBar";
+import { ToolbarAnimated } from "./parts/ToolbarAnimated";
+import { CharLimitIndicator } from "./parts/CharLimitIndicator";
+import { SmartDateBubbleLayer } from "./parts/SmartDateBubbleLayer";
 import { ItemTypeDropdown } from "./parts/ItemTypeDropdown";
-import { ListSelectorDropdown } from "./parts/ListSelectorDropdown";
-import { FontSizeExtension } from "@/components/ui/RichTextEditor/fontSizeExtension";
-import { RichTextToolbar } from "@/components/ui/RichTextEditor/RichTextToolbar";
-import { useSmartDate } from "@/hooks/useSmartDate";
-import { useSmartDateInteraction } from "@/hooks/useSmartDateInteraction";
-import { SmartDateBubble } from "@/components/ui/SmartDateBubble/SmartDateBubble";
-import { SmartDateHighlighter } from "@/components/ui/RichTextEditor/SmartDateHighlighter";
-import { AIEnhanceButton } from "@/components/ui/AIEnhanceButton/AIEnhanceButton";
-import { TASK_CHAR_LIMIT } from "@/config/app-config";
 
-const MAX_HEIGHT = 200;
-
-const RICH_TEXT_EXTENSIONS = [
-  StarterKit.configure({
-    heading: false,
-    codeBlock: false,
-    blockquote: false,
-    horizontalRule: false,
-  }),
-  Underline,
-  TextStyle,
-  Color,
-  Highlight.configure({ multicolor: true }),
-  FontFamily,
-  FontSizeExtension,
-  TextAlign.configure({ types: ["paragraph"] }),
-  CharacterCount.configure({ limit: TASK_CHAR_LIMIT }),
-  Link.configure({ openOnClick: false, autolink: true }),
-  SmartDateHighlighter,
-];
-
-const PLACEHOLDER_TEXTS = [
-  "Planificar las vacaciones 🏖️",
-  "Sacar a pasear al perro 🐶❣️",
-  "Estudiar para el examen",
-  "Ponerme al día con los estudios",
-  "Pagar las facturas de servicios 💸",
-  "Lavar la ropa 🫧",
-  "Hacer la compra semanal",
-  "Regar las plantas 🪴",
-  "Organizar mi semana escolar",
-  "Entregar trabajo",
-];
+import styles from "./task-input.module.css";
 
 const ITEM_SPRING = { type: "spring", stiffness: 500, damping: 28 } as const;
 
@@ -77,228 +31,113 @@ function combineDateAndTime(d?: Date, h?: string): string | null {
 }
 
 export default function TaskInput({ setList }: { setList?: ListsType }) {
-  const lists = useTodoDataStore((state) => state.lists);
   const { addTask } = useAddTask();
   const { addTasks } = useAddTasks();
+
   const [focus, setFocus] = useState(false);
   const [selected, setSelected] = useState<Date | undefined>(undefined);
   const [hour, setHour] = useState<string | undefined>(undefined);
   const [isNote, setIsNote] = useState(false);
-  const [selectedListHome, setSelectedListHome] = useState<
-    ListsType | undefined
-  >(lists[0]);
   const [editorText, setEditorText] = useState("");
   const [cursorPos, setCursorPos] = useState(-1);
-  const [dismissedText, setDismissedText] = useState<string | null>(null);
 
-  const detectedDate = useSmartDate(editorText);
-  const activeDetected =
-    detectedDate && detectedDate.text !== dismissedText ? detectedDate : null;
-  const [bubbleCoords, setBubbleCoords] = useState<{
-    top: number;
-    left: number;
-  } | null>(null);
-
-  const formContainerRef = useRef<HTMLDivElement>(null);
-  const inputContainerRef = useRef<HTMLDivElement>(null);
+  // Refs for stable callbacks
   const containerRef = useRef<HTMLDivElement>(null);
+  const formContainerRef = useRef<HTMLDivElement>(null);
   const handleAddRef = useRef<() => void>(() => {});
-  const setFocusRef = useRef(setFocus);
-  const editorRef = useRef<Editor | null>(null);
 
-  const { showBubble, setIsHoveringBubble } = useSmartDateInteraction(
-    activeDetected,
-    cursorPos,
-    formContainerRef,
-  );
-
-  const [currentText, setCurrentText] = useState(
-    () =>
-      PLACEHOLDER_TEXTS[Math.floor(Math.random() * PLACEHOLDER_TEXTS.length)],
-  );
-
-  useEffect(() => {
-    if (focus) return;
-    setCurrentText(
-      PLACEHOLDER_TEXTS[Math.floor(Math.random() * PLACEHOLDER_TEXTS.length)],
-    );
-    const interval = setInterval(() => {
-      setCurrentText((prev) => {
-        const idx = PLACEHOLDER_TEXTS.indexOf(prev);
-        return PLACEHOLDER_TEXTS[(idx + 1) % PLACEHOLDER_TEXTS.length];
-      });
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [focus]);
-
-  useEffect(() => {
-    if (lists.length === 0) return;
-    if (
-      !selectedListHome ||
-      !lists.some((l) => l.list_id === selectedListHome.list_id)
-    ) {
-      setSelectedListHome(lists[0]);
-    } else {
-      const updatedList = lists.find(
-        (l) => l.list_id === selectedListHome.list_id,
-      );
-      if (updatedList && updatedList !== selectedListHome)
-        setSelectedListHome(updatedList);
-    }
-  }, [lists, selectedListHome]);
-
-  const editor = useEditor({
-    extensions: RICH_TEXT_EXTENSIONS,
-    content: "",
-    immediatelyRender: false,
-    editorProps: {
-      attributes: { class: styles.proseMirror },
-      handleKeyDown: (_view, event) => {
-        if (event.key === "Enter") {
-          if (event.shiftKey) {
-            event.preventDefault();
-            editorRef.current?.commands.splitBlock();
-            return true;
-          } else {
-            event.preventDefault();
-            handleAddRef.current();
-            return true;
-          }
-        }
-        if (event.key === "Escape") {
-          event.preventDefault();
-          editorRef.current?.commands.clearContent();
-          setFocusRef.current(false);
-          return true;
-        }
-        return false;
-      },
-    },
-    onUpdate: ({ editor }) => {
-      setEditorText(editor.getText());
-      setCursorPos(editor.state.selection.from);
-    },
-    onSelectionUpdate: ({ editor }) => {
-      setCursorPos(editor.state.selection.from);
+  // ── Editor setup ─────────────────────────────────────────────
+  const { editor, clearEditor, focusEditor, blurEditor } = useTaskEditorSetup({
+    setFocus,
+    onSubmit: () => handleAddRef.current(),
+    onEditorUpdate: (text, pos) => {
+      setEditorText(text);
+      setCursorPos(pos);
     },
   });
 
-  useEffect(() => {
-    editorRef.current = editor;
-  }, [editor]);
+  // ── Smart date management ─────────────────────────────────────
+  const {
+    activeDetected,
+    showBubble,
+    bubbleCoords,
+    setIsHoveringBubble,
+    setDismissedText,
+  } = useSmartDateManager({
+    editorText,
+    cursorPos,
+    editor,
+    focus,
+    formContainerRef,
+  });
 
-  useEffect(() => {
-    const container = inputContainerRef.current;
-    if (!container || !editor) return;
-
-    if (!focus) {
-      container.style.height = "0px";
-      container.style.marginTop = "0px";
-      container.style.overflowY = "hidden";
-      return;
-    }
-
-    container.style.marginTop = "17px";
-
-    const el = editor.view.dom as HTMLElement;
-
-    const update = () => {
-      const rawH = el.scrollHeight;
-      const clamped = Math.min(rawH + 13, MAX_HEIGHT);
-      container.style.height = `${clamped}px`;
-      container.style.overflowY = rawH + 13 > MAX_HEIGHT ? "auto" : "hidden";
-    };
-
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [editor, focus]);
-
-  useEffect(() => {
-    if (!editor) return;
-    editor.view.dispatch(
-      editor.state.tr.setMeta(
-        "smartDateHighlight",
-        activeDetected?.text || null,
-      ),
-    );
-    if (activeDetected) {
-      const timer = setTimeout(() => {
-        const el = editor.view.dom.querySelector(".smart-date-highlight");
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          const containerRect =
-            formContainerRef.current?.getBoundingClientRect();
-          if (containerRect) {
-            setBubbleCoords({
-              top: rect.top - containerRect.top - 45,
-              left: rect.left - containerRect.left + rect.width / 2,
-            });
-          }
-        } else {
-          setBubbleCoords(null);
-        }
-      }, 50);
-      return () => clearTimeout(timer);
-    } else {
-      setBubbleCoords(null);
-    }
-  }, [activeDetected, editorText, editor]);
-
+  // ── Focus editor after state sets focus ──────────────────────
   useEffect(() => {
     if (focus && editor) {
-      const t = setTimeout(() => editor.commands.focus(), 20);
+      const t = setTimeout(() => focusEditor(), 20);
       return () => clearTimeout(t);
     }
-  }, [focus, editor]);
+  }, [focus, editor, focusEditor]);
 
+  // ── Submit logic ─────────────────────────────────────────────
   const handleAdd = useCallback(() => {
-    const ed = editorRef.current;
-    if (!ed || ed.isEmpty) {
-      ed?.commands.clearContent();
+    if (!editor || editor.isEmpty) {
+      clearEditor();
+      blurEditor();
       setSelected(undefined);
       setHour(undefined);
       setFocus(false);
       return;
     }
-    const html = ed.getHTML();
+    const html = editor.getHTML();
     const combinedDate = combineDateAndTime(selected, hour);
-    ed.commands.clearContent();
+    clearEditor();
+    blurEditor();
     setSelected(undefined);
     setHour(undefined);
     setFocus(false);
     setEditorText("");
     setDismissedText(null);
-    if (setList) {
-      addTask(setList.list_id, html, combinedDate, isNote);
-    } else {
-      if (!selectedListHome) return;
-      addTask(selectedListHome.list_id, html, combinedDate, isNote);
-    }
-  }, [selected, hour, isNote, setList, selectedListHome, addTask]);
 
+    const listId = setList?.list_id;
+    if (!listId) return;
+    addTask(listId, html, combinedDate, isNote);
+  }, [
+    selected,
+    hour,
+    isNote,
+    setList,
+    addTask,
+    editor,
+    clearEditor,
+    blurEditor,
+    setDismissedText,
+  ]);
+
+  // Keep handleAddRef current
   useEffect(() => {
     handleAddRef.current = handleAdd;
   }, [handleAdd]);
 
+  // ── Click outside ─────────────────────────────────────────────
   useOnClickOutside(containerRef, (e: MouseEvent | TouchEvent) => {
     const target = e.target as Element | null;
-    const isInsideClickablePortal = target?.closest(
-      "#calendar-component, #dropdown-component, #ai-enhance-panel, .smart-date-bubble-container, [data-tippy-root], .tippy-box, [data-radix-popper-content-wrapper]",
-    );
-    if (isInsideClickablePortal) return;
+    if (
+      target?.closest(
+        "#calendar-component, #dropdown-component, #ai-enhance-panel, .smart-date-bubble-container, [data-tippy-root], .tippy-box, [data-radix-popper-content-wrapper]",
+      )
+    )
+      return;
     if (editor && !editor.isEmpty) return;
     setFocus(false);
-    editor?.commands.clearContent();
+    clearEditor();
+    blurEditor();
     setHour(undefined);
     setSelected(undefined);
     setEditorText("");
     setDismissedText(null);
   });
 
-  const pathname = usePathname();
-  const isHome = pathname === "/alino-app";
   const charCount = editor?.storage?.characterCount?.characters?.() ?? 0;
 
   return (
@@ -313,42 +152,33 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
         style={{ position: "relative" }}
         ref={formContainerRef}
       >
-        {activeDetected && showBubble && focus && bubbleCoords && (
-          <div
-            onMouseEnter={() => setIsHoveringBubble(true)}
-            onMouseLeave={() => setIsHoveringBubble(false)}
-            style={{
-              position: "absolute",
-              top: `${bubbleCoords.top}px`,
-              left: `${bubbleCoords.left}px`,
-              transform: "translateX(-50%)",
-              zIndex: 27,
-            }}
-          >
-            <SmartDateBubble
-              detected={activeDetected}
-              onAssign={(d, h, txt) => {
-                setSelected(d);
-                if (h) setHour(h);
-                editor?.commands.focus();
-                setDismissedText(txt ?? null);
-              }}
-              onDismiss={() => {
-                if (activeDetected) setDismissedText(activeDetected.text);
-              }}
-            />
-          </div>
-        )}
+        {/* Smart date bubble */}
+        <SmartDateBubbleLayer
+          activeDetected={activeDetected}
+          showBubble={showBubble}
+          focus={focus}
+          bubbleCoords={bubbleCoords}
+          setIsHoveringBubble={setIsHoveringBubble}
+          onAssign={(d, h, txt) => {
+            setSelected(d);
+            if (h) setHour(h);
+            focusEditor();
+            setDismissedText(txt ?? null);
+          }}
+          onDismiss={() => {
+            if (activeDetected) setDismissedText(activeDetected.text);
+          }}
+        />
 
         <div className={styles.form}>
+          {/* Item type toggle (task / note) */}
           <div
             className={styles.inputManagerContainer}
-            style={{ marginTop: "12.5px" }}
+            style={{ marginTop: "10px" }}
           >
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: focus ? 1 : 0, opacity: focus ? 1 : 0 }}
-              transition={ITEM_SPRING}
             >
               <ItemTypeDropdown
                 isNote={isNote}
@@ -358,199 +188,31 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             </motion.div>
           </div>
 
-          <div ref={inputContainerRef} className={styles.inputContainer}>
-            <div
-              className={styles.editorWrapper}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <EditorContent editor={editor} className={styles.editorContent} />
-            </div>
-          </div>
+          {/* Editor with resize observer */}
+          <TaskEditor editor={editor} focus={focus} />
 
-          <AnimatePresence>
-            {!focus && (
-              <motion.div
-                className={styles.placeholder}
-                initial={{ opacity: 0, y: 6, filter: "blur(4px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
-                transition={{
-                  type: "spring",
-                  stiffness: 400,
-                  damping: 28,
-                  mass: 0.6,
-                  opacity: { duration: 0.18 },
-                  filter: { duration: 0.2 },
-                }}
-              >
-                <TextAnimation
-                  style={{
-                    fontSize: "14px",
-                    height: "17px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                  text={currentText}
-                  textColor="var(--placeholder-text-color)"
-                  opacity={0.3}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Animated placeholder */}
+          <PlaceholderText focus={focus} />
 
-          <div className={styles.inputManagerContainer}>
-            <AnimatePresence>
-              {isHome && (
-                <motion.div
-                  key="list-selector"
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: focus ? 1 : 0.6, opacity: focus ? 1 : 0 }}
-                  exit={{ scale: 0.6, opacity: 0 }}
-                  transition={ITEM_SPRING}
-                  layout
-                >
-                  <ListSelectorDropdown
-                    lists={lists}
-                    selectedList={selectedListHome}
-                    setSelectedList={setSelectedListHome}
-                    inputRef={{ current: null } as any}
-                  />
-                </motion.div>
-              )}
-              {focus && (
-                <motion.div
-                  key="calendar"
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: focus ? 1 : 0.6, opacity: focus ? 1 : 0 }}
-                  exit={{ scale: 0.6, opacity: 0 }}
-                  transition={{ ...ITEM_SPRING, delay: 0.04 }}
-                  layout
-                >
-                  <Calendar
-                    selected={selected}
-                    setSelected={setSelected}
-                    hour={hour}
-                    setHour={setHour}
-                    focusToParentInput={() => editor?.commands.focus()}
-                  />
-                </motion.div>
-              )}
-              <AnimatePresence>
-                {focus && (
-                  <motion.div
-                    key="ai-btn"
-                    initial={{ scale: 0.6, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.6, opacity: 0 }}
-                    transition={{ ...ITEM_SPRING, delay: 0.08 }}
-                    layout
-                  >
-                    <AIEnhanceButton
-                      editor={editor}
-                      visible
-                      onCreateTasks={async (tasks) => {
-                        const listId = setList
-                          ? setList.list_id
-                          : selectedListHome?.list_id;
-
-                        if (!listId)
-                          return { error: "No se seleccionó ninguna lista." };
-
-                        try {
-                          await addTasks(
-                            tasks.map((t) => ({
-                              list_id: listId,
-                              task_content: `<p>${t.text}</p>`,
-                              target_date: t.target_date,
-                              note: t.type === "note",
-                            })),
-                          );
-
-                          return { error: null };
-                        } catch (err: any) {
-                          return {
-                            error:
-                              err.message ||
-                              "Ocurrió un error al crear las tareas.",
-                          };
-                        }
-                      }}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <motion.div
-                key="sep"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: focus ? 30 : 0, opacity: focus ? 0.2 : 0 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.18 }}
-                style={{
-                  width: "1px",
-                  backgroundColor: "var(--icon-color)",
-                  flexShrink: 0,
-                }}
-              />
-              {focus && (
-                <motion.button
-                  key="send"
-                  className={styles.taskSendButton}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleAdd();
-                  }}
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.6, opacity: 0 }}
-                  transition={{ ...ITEM_SPRING, delay: 0.12 }}
-                >
-                  <SendIcon className={styles.sendIcon} />
-                </motion.button>
-              )}
-            </AnimatePresence>
-          </div>
+          {/* Bottom action bar */}
+          <ActionBar
+            focus={focus}
+            selected={selected}
+            setSelected={setSelected}
+            hour={hour}
+            setHour={setHour}
+            editor={editor}
+            setList={setList}
+            onAddTasks={addTasks}
+            onSend={handleAdd}
+          />
         </div>
 
-        <AnimatePresence>
-          {focus && (
-            <motion.div
-              className={styles.toolbarWrapper}
-              initial={{ scale: 0.9, opacity: 0, y: 10, height: 0 }}
-              animate={{ scale: 1, opacity: 1, y: 0, height: "auto" }}
-              exit={{ scale: 0.9, opacity: 0, y: 10, height: 0 }}
-              transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 25,
-                height: { duration: 0.1, ease: "linear" },
-              }}
-              style={{ overflow: "visible" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <RichTextToolbar editor={editor} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* RichText toolbar with cinematic animation */}
+        <ToolbarAnimated editor={editor} focus={focus} />
 
-        {charCount > 0 && (
-          <p
-            className={styles.limitIndicator}
-            style={{
-              color:
-                charCount > TASK_CHAR_LIMIT * 0.9
-                  ? "#fc0303"
-                  : charCount > TASK_CHAR_LIMIT * 0.8
-                    ? "#fc8003"
-                    : charCount > TASK_CHAR_LIMIT * 0.7
-                      ? "#ffb300"
-                      : "#8a8a8a",
-            }}
-          >
-            {charCount}/{TASK_CHAR_LIMIT}
-          </p>
-        )}
+        {/* Character limit indicator */}
+        <CharLimitIndicator charCount={charCount} />
       </div>
     </section>
   );

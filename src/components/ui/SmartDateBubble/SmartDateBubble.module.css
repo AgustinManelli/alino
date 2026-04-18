@@ -2,7 +2,9 @@
   position: relative;
   display: flex;
   align-items: center;
-  background-color: var(--background-container);
+  background-color: var(--background-container-translucent);
+  backdrop-filter: blur(15px) saturate(180%);
+  -webkit-backdrop-filter: blur(15px) saturate(180%);
   border: 1px solid var(--border-container-color);
   border-radius: 15px;
   padding: 5px;

@@ -79,12 +79,11 @@ export const Manager = memo(function Manager({
       if (sectionEl && scrollEl) {
         const currentHeight = sectionEl.offsetHeight;
         if (currentHeight < prevHeight) {
-          scrollEl.style.transition = "none";
-          scrollEl.style.paddingTop = `${currentHeight}px`;
+          scrollEl.style.transition = "padding-top 0.18s ease-in";
         } else {
-          scrollEl.style.transition = "padding-top 0.1s ease-in-out";
-          scrollEl.style.paddingTop = `${currentHeight}px`;
+          scrollEl.style.transition = "padding-top 0.18s ease-out";
         }
+        scrollEl.style.paddingTop = `${currentHeight}px`;
         prevHeight = currentHeight;
       }
     };

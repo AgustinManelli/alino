@@ -115,42 +115,42 @@ export const ManagerConfig = memo(function ManagerConfig({
         action: () => setIsReordering((prev) => !prev),
         enabled: canEdit && taskSort === "default" && !showCompleted,
       },
-      {
-        name: "Eliminar lista",
-        icon: DELETE_ICON,
-        action: handleConfirmDelete,
-        enabled: canDelete,
-      },
-      {
-        name: "Avanzado",
-        icon: "",
-        children: [
-          {
-            name: "Duplicar lista",
-            icon: "",
-            action: () => {},
-            enabled: canDelete,
-          },
-          {
-            name: "Desmarcar todas",
-            icon: "",
-            action: () => {},
-            enabled: canDelete,
-          },
-          {
-            name: "Limpiar completadas",
-            icon: "",
-            action: () => {},
-            enabled: canDelete,
-          },
-          {
-            name: "Vaciar lista",
-            icon: "",
-            action: () => {},
-            enabled: canDelete,
-          },
-        ],
-      },
+      // {
+      //   name: "Gestionar tareas",
+      //   icon: "",
+      //   children: [
+      //     {
+      //       name: "Desmarcar todas",
+      //       icon: "",
+      //       action: () => {},
+      //       enabled: canDelete,
+      //     },
+      //     {
+      //       name: "Limpiar completadas",
+      //       icon: "",
+      //       action: () => {},
+      //       enabled: canDelete,
+      //     },
+      //     {
+      //       name: "Vaciar lista",
+      //       icon: "",
+      //       action: () => {},
+      //       enabled: canDelete,
+      //     },
+      //   ],
+      // },
+      // {
+      //   name: "Gestionar lista",
+      //   icon: "",
+      //   children: [
+      //     {
+      //       name: "Duplicar lista",
+      //       icon: "",
+      //       action: () => {},
+      //       enabled: canDelete,
+      //     },
+      //   ],
+      // },
       {
         name: "Salir de la lista",
         icon: LOGOUT_ICON,
@@ -164,6 +164,13 @@ export const ManagerConfig = memo(function ManagerConfig({
           setList &&
           openModal({ type: "listInformation", props: { list: setList } }),
         enabled: true,
+      },
+      {
+        name: "Eliminar lista",
+        icon: DELETE_ICON,
+        action: handleConfirmDelete,
+        enabled: canDelete,
+        variant: "critical" as const,
       },
     ].filter(Boolean) as ConfigOption[];
   }, [

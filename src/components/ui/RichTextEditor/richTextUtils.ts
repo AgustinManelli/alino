@@ -1,3 +1,5 @@
+import type { Extensions } from "@tiptap/core";
+
 export const isHtmlContent = (content: string): boolean =>
   !!content && /^<[a-z][\s\S]*>/i.test(content.trim());
 
@@ -12,11 +14,17 @@ export const parseRichTextContent = (content: string): string => {
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")}</p>`
-        : "<p><br /></p>"
+        : "<p><br /></p>",
     )
     .join("");
 };
 
-export const getRichTextExtensions = () => {
-  return null;
+/**
+ * Devuelve las extensiones personalizadas para el editor.
+ * Añade aquí FontSizeExtension, SmartDateHighlighter, etc.
+ */
+export const getRichTextExtensions = (): Extensions => {
+  // Ejemplo — importa e incluye tus extensiones aquí:
+  // return [FontSizeExtension, SmartDateHighlighter];
+  return [];
 };

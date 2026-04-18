@@ -47,21 +47,30 @@ const cardWrapperVariants: Variants = {
   initial: {
     opacity: 0,
     scale: 0.98,
+    height: 0,
+    marginBottom: 0,
+    overflow: "hidden",
   },
   animate: {
     opacity: 1,
     scale: 1,
+    height: "auto",
+    overflow: "hidden",
     transition: {
-      duration: 0.2,
-      ease: [0.4, 0, 0.2, 1],
+      height: { duration: 0.22, ease: [0.4, 0, 0.2, 1] },
+      opacity: { duration: 0.18, delay: 0.12, ease: [0.4, 0, 0.2, 1] },
+      scale: { duration: 0.18, delay: 0.12, ease: [0.4, 0, 0.2, 1] },
     },
   },
   exit: {
     opacity: 0,
     scale: 0.97,
+    height: 0,
+    overflow: "hidden",
     transition: {
-      duration: 0.16,
-      ease: "easeIn",
+      height: { duration: 0.18, ease: "easeIn", delay: 0.04 },
+      opacity: { duration: 0.14, ease: "easeIn" },
+      scale: { duration: 0.14, ease: "easeIn" },
     },
   },
 };
@@ -300,7 +309,6 @@ export const TaskCardStatic = memo(
           initial={!isOverlay ? "initial" : undefined}
           animate={!isOverlay ? "animate" : undefined}
           exit={!isOverlay ? "exit" : undefined}
-          layout
         >
           <motion.div
             className={styles.cardContainer}

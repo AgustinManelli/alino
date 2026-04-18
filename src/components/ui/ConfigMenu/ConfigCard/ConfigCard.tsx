@@ -9,6 +9,7 @@ interface Props {
   action?: () => void;
   hasChildren?: boolean;
   isActive?: boolean;
+  variant?: "default" | "critical";
 }
 
 export const ConfigCard = memo(function ConfigCard({
@@ -17,11 +18,15 @@ export const ConfigCard = memo(function ConfigCard({
   action,
   hasChildren = false,
   isActive = false,
+  variant = "default",
 }: Props) {
+  const isCritical = variant === "critical";
   return (
     <button
       type="button"
-      className={`${styles.options} ${isActive ? styles.active : ""}`}
+      className={`${styles.options} ${isActive ? styles.active : ""} ${
+        isCritical ? styles.critical : ""
+      }`}
       style={{ cursor: hasChildren ? "default" : "pointer" }}
       onClick={(e) => {
         e.preventDefault();

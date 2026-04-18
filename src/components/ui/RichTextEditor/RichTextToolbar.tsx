@@ -1,10 +1,10 @@
 "use client";
-
-import { useEffect, useRef, useState, useCallback, useMemo, memo } from "react";
-import { Editor } from "@tiptap/react";
+import { useCallback, useEffect, useMemo, memo, useRef, useState } from "react";
+import { Editor, useEditorState } from "@tiptap/react";
 import { AnimatePresence, motion } from "motion/react";
 import styles from "./RichTextToolbar.module.css";
 
+// ─── Icons ────────────────────────────────────────────────────────────────────
 const BulletListIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -21,7 +21,6 @@ const BulletListIcon = () => (
     <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none" />
   </svg>
 );
-
 const OrderedListIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -38,7 +37,6 @@ const OrderedListIcon = () => (
     <path d="M3.5 17h2l-2 3h2" strokeWidth={1.8} />
   </svg>
 );
-
 const AlignLeftIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -52,7 +50,6 @@ const AlignLeftIcon = () => (
     <line x1="3" y1="18" x2="18" y2="18" />
   </svg>
 );
-
 const AlignCenterIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -66,7 +63,6 @@ const AlignCenterIcon = () => (
     <line x1="4" y1="18" x2="20" y2="18" />
   </svg>
 );
-
 const AlignRightIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -80,7 +76,6 @@ const AlignRightIcon = () => (
     <line x1="6" y1="18" x2="21" y2="18" />
   </svg>
 );
-
 const AlignJustifyIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -94,7 +89,6 @@ const AlignJustifyIcon = () => (
     <line x1="3" y1="18" x2="21" y2="18" />
   </svg>
 );
-
 const HighlightIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -108,7 +102,6 @@ const HighlightIcon = () => (
     <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4" />
   </svg>
 );
-
 const LinkIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -122,7 +115,6 @@ const LinkIcon = () => (
     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
   </svg>
 );
-
 const UnlinkIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -141,7 +133,18 @@ const UnlinkIcon = () => (
   </svg>
 );
 
-const FONT_SIZES = ["10", "12", "14", "16", "18", "20", "24", "28", "32"];
+// ─── Constants ────────────────────────────────────────────────────────────────
+const FONT_SIZES = [
+  "10",
+  "12",
+  "14",
+  "16",
+  "18",
+  "20",
+  "24",
+  "28",
+  "32",
+] as const;
 
 const FONT_FAMILIES = [
   { label: "Predeter.", value: "inherit" },
@@ -158,7 +161,7 @@ const FONT_FAMILIES = [
   { label: "Poppins", value: "'Poppins', sans-serif" },
   { label: "JetBrains Mono", value: "'JetBrains Mono', monospace" },
   { label: "Georgia", value: "Georgia, serif" },
-];
+] as const;
 
 const TEXT_COLORS = [
   { label: "Default", value: null },
@@ -170,7 +173,7 @@ const TEXT_COLORS = [
   { label: "Violeta", value: "#7c3aed" },
   { label: "Rosa", value: "#db2777" },
   { label: "Gris", value: "#6b7280" },
-];
+] as const;
 
 const HIGHLIGHT_COLORS = [
   { label: "Ninguno", value: null },
@@ -180,7 +183,7 @@ const HIGHLIGHT_COLORS = [
   { label: "Violeta", value: "#ddd6fe" },
   { label: "Rosa", value: "#fecaca" },
   { label: "Naranja", value: "#fed7aa" },
-];
+] as const;
 
 const ALIGNMENTS = [
   { value: "left", label: "Izquierda", Icon: AlignLeftIcon },
@@ -189,16 +192,19 @@ const ALIGNMENTS = [
   { value: "justify", label: "Justificado", Icon: AlignJustifyIcon },
 ] as const;
 
-const popoverMotion = {
+type AlignValue = (typeof ALIGNMENTS)[number]["value"];
+
+const POPOVER_MOTION = {
   initial: { opacity: 0, scale: 0.9, y: -4 },
   animate: { opacity: 1, scale: 1, y: 0 },
   exit: { opacity: 0, scale: 0.9, y: -4 },
   transition: { duration: 0.13 },
 } as const;
 
-const fontFamilyStyle = { maxWidth: "82px" };
-const fontSizeStyle = { maxWidth: "52px" };
+const FONT_FAMILY_STYLE = { maxWidth: "82px" } as const;
+const FONT_SIZE_STYLE = { maxWidth: "52px" } as const;
 
+// ─── ColorSwatch ──────────────────────────────────────────────────────────────
 interface SwatchProps {
   label: string;
   value: string | null;
@@ -210,6 +216,7 @@ const ColorSwatch = memo(function ColorSwatch({
   value,
   onSelect,
 }: SwatchProps) {
+  // useCallback with a stable dependency — avoids creating a new fn per swatch render
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -237,6 +244,7 @@ const ColorSwatch = memo(function ColorSwatch({
   );
 });
 
+// ─── RichTextToolbar ──────────────────────────────────────────────────────────
 interface RichTextToolbarProps {
   editor: Editor | null;
 }
@@ -245,21 +253,47 @@ export const RichTextToolbar = memo(function RichTextToolbar({
   editor,
 }: RichTextToolbarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [, setRerender] = useState(0);
   const [colorOpen, setColorOpen] = useState(false);
   const [highlightOpen, setHighlightOpen] = useState(false);
 
-  useEffect(() => {
-    if (!editor) return;
-    const forceUpdate = () => setRerender((v) => v + 1);
-    editor.on("transaction", forceUpdate);
-    editor.on("selectionUpdate", forceUpdate);
-    return () => {
-      editor.off("transaction", forceUpdate);
-      editor.off("selectionUpdate", forceUpdate);
-    };
-  }, [editor]);
+  // ── useEditorState: re-renders ONLY when any of these values change ──────
+  // Replaces the fragile `editor.on("transaction") + useState(0)` force-update
+  // pattern which re-rendered on every keystroke/cursor move.
+  const editorState = useEditorState({
+    editor,
+    selector: ({ editor: e }) => {
+      if (!e) return null;
+      return {
+        isBold: e.isActive("bold"),
+        isItalic: e.isActive("italic"),
+        isUnderline: e.isActive("underline"),
+        isStrike: e.isActive("strike"),
+        isLink: e.isActive("link"),
+        isBulletList: e.isActive("bulletList"),
+        isOrderedList: e.isActive("orderedList"),
+        isHighlight: e.isActive("highlight"),
+        textAlign: {
+          left: e.isActive({ textAlign: "left" }),
+          center: e.isActive({ textAlign: "center" }),
+          right: e.isActive({ textAlign: "right" }),
+          justify: e.isActive({ textAlign: "justify" }),
+        },
+        activeColor: e.getAttributes("textStyle").color as string | undefined,
+        activeHighlight: e.isActive("highlight")
+          ? (e.getAttributes("highlight").color as string | undefined)
+          : undefined,
+        currentFontSize:
+          (
+            e.getAttributes("textStyle").fontSize as string | undefined
+          )?.replace("px", "") ?? "14",
+        currentFontFamily:
+          (e.getAttributes("textStyle").fontFamily as string | undefined) ??
+          "inherit",
+      };
+    },
+  });
 
+  // ── Close popovers on outside click ───────────────────────────────────────
   useEffect(() => {
     if (!colorOpen && !highlightOpen) return;
     const handler = (e: MouseEvent) => {
@@ -275,6 +309,7 @@ export const RichTextToolbar = memo(function RichTextToolbar({
     return () => document.removeEventListener("mousedown", handler);
   }, [colorOpen, highlightOpen]);
 
+  // ── Formatting command handlers ────────────────────────────────────────────
   const toggleBold = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -323,6 +358,29 @@ export const RichTextToolbar = memo(function RichTextToolbar({
     [editor],
   );
 
+  const setLink = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!editor) return;
+      const previousUrl = editor.getAttributes("link").href as
+        | string
+        | undefined;
+      const url = window.prompt("Ingresa la URL del enlace:", previousUrl);
+      if (url === null) return;
+      if (url === "") {
+        editor.chain().focus().extendMarkRange("link").unsetLink().run();
+        return;
+      }
+      editor
+        .chain()
+        .focus()
+        .extendMarkRange("link")
+        .setLink({ href: url })
+        .run();
+    },
+    [editor],
+  );
+
   const unsetLink = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -331,14 +389,25 @@ export const RichTextToolbar = memo(function RichTextToolbar({
     [editor],
   );
 
-  const handleAlign = useCallback(
-    (align: string) => (e: React.MouseEvent) => {
-      e.preventDefault();
-      editor?.chain().focus().setTextAlign(align).run();
-    },
+  // ── Alignment handlers — pre-built map, stable while editor doesn't change ─
+  // Avoids creating a new closure per button on every render.
+  const alignHandlers = useMemo<
+    Record<AlignValue, (e: React.MouseEvent) => void>
+  >(
+    () =>
+      Object.fromEntries(
+        ALIGNMENTS.map(({ value }) => [
+          value,
+          (e: React.MouseEvent) => {
+            e.preventDefault();
+            editor?.chain().focus().setTextAlign(value).run();
+          },
+        ]),
+      ) as Record<AlignValue, (e: React.MouseEvent) => void>,
     [editor],
   );
 
+  // ── Font handlers ──────────────────────────────────────────────────────────
   const handleFontFamily = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       if (e.target.value === "inherit") {
@@ -357,30 +426,7 @@ export const RichTextToolbar = memo(function RichTextToolbar({
     [editor],
   );
 
-  const setLink = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      if (!editor) return;
-      const previousUrl = editor.getAttributes("link").href;
-      const url = window.prompt("Ingresa la URL del enlace:", previousUrl);
-
-      if (url === null) return;
-
-      if (url === "") {
-        editor.chain().focus().extendMarkRange("link").unsetLink().run();
-        return;
-      }
-
-      editor
-        .chain()
-        .focus()
-        .extendMarkRange("link")
-        .setLink({ href: url })
-        .run();
-    },
-    [editor],
-  );
-
+  // ── Color / Highlight handlers ─────────────────────────────────────────────
   const toggleColorOpen = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -420,25 +466,24 @@ export const RichTextToolbar = memo(function RichTextToolbar({
     [],
   );
 
-  if (!editor) return null;
+  // ─────────────────────────────────────────────────────────────────────────
+  if (!editor || !editorState) return null;
 
-  const activeColor = editor.getAttributes("textStyle").color as
-    | string
-    | undefined;
-
-  const activeHighlight = editor.isActive("highlight")
-    ? (editor.getAttributes("highlight").color as string | undefined)
-    : undefined;
-
-  const currentFontSize =
-    (editor.getAttributes("textStyle").fontSize as string | undefined)?.replace(
-      "px",
-      "",
-    ) ?? "14";
-
-  const currentFontFamily =
-    (editor.getAttributes("textStyle").fontFamily as string | undefined) ??
-    "inherit";
+  const {
+    isBold,
+    isItalic,
+    isUnderline,
+    isStrike,
+    isLink,
+    isBulletList,
+    isOrderedList,
+    isHighlight,
+    textAlign,
+    activeColor,
+    activeHighlight,
+    currentFontSize,
+    currentFontFamily,
+  } = editorState;
 
   return (
     <div
@@ -446,44 +491,45 @@ export const RichTextToolbar = memo(function RichTextToolbar({
       onMouseDown={stopPropagation}
       ref={containerRef}
     >
+      {/* ── Formatting ─────────────────────────────────────────────────── */}
       <button
-        className={`${styles.btn} ${editor.isActive("bold") ? styles.active : ""}`}
+        className={`${styles.btn} ${isBold ? styles.active : ""}`}
         onMouseDown={toggleBold}
         title="Negrita (Ctrl+B)"
       >
         <strong>B</strong>
       </button>
       <button
-        className={`${styles.btn} ${editor.isActive("italic") ? styles.active : ""}`}
+        className={`${styles.btn} ${isItalic ? styles.active : ""}`}
         onMouseDown={toggleItalic}
         title="Cursiva (Ctrl+I)"
       >
         <em>I</em>
       </button>
       <button
-        className={`${styles.btn} ${editor.isActive("underline") ? styles.active : ""}`}
+        className={`${styles.btn} ${isUnderline ? styles.active : ""}`}
         onMouseDown={toggleUnderline}
         title="Subrayado (Ctrl+U)"
       >
         <u>U</u>
       </button>
       <button
-        className={`${styles.btn} ${editor.isActive("strike") ? styles.active : ""}`}
+        className={`${styles.btn} ${isStrike ? styles.active : ""}`}
         onMouseDown={toggleStrike}
         title="Tachado"
       >
         <s>S</s>
       </button>
 
+      {/* ── Link ───────────────────────────────────────────────────────── */}
       <button
-        className={`${styles.btn} ${editor.isActive("link") ? styles.active : ""}`}
+        className={`${styles.btn} ${isLink ? styles.active : ""}`}
         onMouseDown={setLink}
         title="Añadir/Editar Enlace"
       >
         <LinkIcon />
       </button>
-
-      {editor.isActive("link") && (
+      {isLink && (
         <button
           className={styles.btn}
           onMouseDown={unsetLink}
@@ -495,9 +541,10 @@ export const RichTextToolbar = memo(function RichTextToolbar({
 
       <div className={styles.sep} />
 
+      {/* ── Font family & size ─────────────────────────────────────────── */}
       <select
         className={styles.select}
-        style={fontFamilyStyle}
+        style={FONT_FAMILY_STYLE}
         value={currentFontFamily}
         onMouseDown={stopPropagation}
         onChange={handleFontFamily}
@@ -509,10 +556,9 @@ export const RichTextToolbar = memo(function RichTextToolbar({
           </option>
         ))}
       </select>
-
       <select
         className={styles.select}
-        style={fontSizeStyle}
+        style={FONT_SIZE_STYLE}
         value={currentFontSize}
         onMouseDown={stopPropagation}
         onChange={handleFontSize}
@@ -527,6 +573,7 @@ export const RichTextToolbar = memo(function RichTextToolbar({
 
       <div className={styles.sep} />
 
+      {/* ── Text color ─────────────────────────────────────────────────── */}
       <div className={styles.popoverWrapper}>
         <button
           className={`${styles.colorTriggerBtn} ${activeColor ? styles.active : ""}`}
@@ -539,15 +586,11 @@ export const RichTextToolbar = memo(function RichTextToolbar({
             style={{ backgroundColor: activeColor ?? "var(--text)" }}
           />
         </button>
-
         <AnimatePresence>
           {colorOpen && (
             <motion.div
               className={styles.popover}
-              initial={popoverMotion.initial}
-              animate={popoverMotion.animate}
-              exit={popoverMotion.exit}
-              transition={popoverMotion.transition}
+              {...POPOVER_MOTION}
               onMouseDown={stopPropagation}
             >
               {TEXT_COLORS.map((c) => (
@@ -563,9 +606,10 @@ export const RichTextToolbar = memo(function RichTextToolbar({
         </AnimatePresence>
       </div>
 
+      {/* ── Highlight ──────────────────────────────────────────────────── */}
       <div className={styles.popoverWrapper}>
         <button
-          className={`${styles.colorTriggerBtn} ${editor.isActive("highlight") ? styles.active : ""}`}
+          className={`${styles.colorTriggerBtn} ${isHighlight ? styles.active : ""}`}
           onMouseDown={toggleHighlightOpen}
           title="Resaltar texto"
         >
@@ -581,15 +625,11 @@ export const RichTextToolbar = memo(function RichTextToolbar({
             }}
           />
         </button>
-
         <AnimatePresence>
           {highlightOpen && (
             <motion.div
               className={styles.popover}
-              initial={popoverMotion.initial}
-              animate={popoverMotion.animate}
-              exit={popoverMotion.exit}
-              transition={popoverMotion.transition}
+              {...POPOVER_MOTION}
               onMouseDown={stopPropagation}
             >
               {HIGHLIGHT_COLORS.map((h) => (
@@ -607,15 +647,16 @@ export const RichTextToolbar = memo(function RichTextToolbar({
 
       <div className={styles.sep} />
 
+      {/* ── Lists ──────────────────────────────────────────────────────── */}
       <button
-        className={`${styles.btn} ${editor.isActive("bulletList") ? styles.active : ""}`}
+        className={`${styles.btn} ${isBulletList ? styles.active : ""}`}
         onMouseDown={toggleBulletList}
         title="Lista de viñetas"
       >
         <BulletListIcon />
       </button>
       <button
-        className={`${styles.btn} ${editor.isActive("orderedList") ? styles.active : ""}`}
+        className={`${styles.btn} ${isOrderedList ? styles.active : ""}`}
         onMouseDown={toggleOrderedList}
         title="Lista numerada"
       >
@@ -624,11 +665,12 @@ export const RichTextToolbar = memo(function RichTextToolbar({
 
       <div className={styles.sep} />
 
+      {/* ── Alignment ──────────────────────────────────────────────────── */}
       {ALIGNMENTS.map(({ value, label, Icon }) => (
         <button
           key={value}
-          className={`${styles.btn} ${editor.isActive({ textAlign: value }) ? styles.active : ""}`}
-          onMouseDown={handleAlign(value)}
+          className={`${styles.btn} ${textAlign[value] ? styles.active : ""}`}
+          onMouseDown={alignHandlers[value]}
           title={label}
         >
           <Icon />

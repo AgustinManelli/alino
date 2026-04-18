@@ -141,7 +141,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   margin-top: 10px;
 }
 
@@ -191,9 +191,4 @@
   transition:
     stroke 0.2s ease-in-out,
     transform 0.2s ease-in-out;
-}
-
-.sendIcon:hover {
-  stroke: var(--alino-primary-color);
-  transform: scale(1.1);
 }

@@ -129,6 +129,7 @@ export const SubMenuPanel = memo(function SubMenuPanel({
           <ConfigCard
             name={option.name}
             icon={option.icon}
+            variant={option.variant}
             action={
               option.action
                 ? () => {

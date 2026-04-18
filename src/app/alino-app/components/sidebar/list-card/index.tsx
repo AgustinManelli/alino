@@ -217,16 +217,17 @@ export const ListCard = memo(({ list }: ListCardProps) => {
         enabled: isNotOwner,
       },
       {
-        name: "Eliminar",
-        icon: DELETE_ICON,
-        action: handleConfirm,
-        enabled: canDelete,
-      },
-      {
         name: "Información",
         icon: INFO_ICON,
         action: () => openModal({ type: "listInformation", props: { list } }),
         enabled: true,
+      },
+      {
+        name: "Eliminar",
+        icon: DELETE_ICON,
+        action: handleConfirm,
+        enabled: canDelete,
+        variant: "critical" as const,
       },
     ].filter((o) => o.enabled);
   }, [
