@@ -1,18 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback, memo } from "react";
-
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
-import { ConfigCard } from "./ConfigCard";
-
+import { SubMenuPanel } from "./SubMenuOptionPanel";
 import { MoreVertical } from "@/components/ui/icons/icons";
+import { ConfigOption } from "./types";
 import styles from "./ConfigMenu.module.css";
 
-interface ConfigOption {
-  name: string;
-  icon: React.ReactNode;
-  action: () => void;
-}
+export type {
+  ConfigOption,
+  ConfigActionOption,
+  ConfigSubmenuOption,
+} from "./types";
 
 interface Props {
   iconWidth: string;
@@ -21,6 +20,7 @@ interface Props {
   idScrollArea?: string;
   uniqueId?: string;
   withoutBg?: boolean;
+  debugTriangle?: boolean;
 }
 
 export const ConfigMenu = memo(function ConfigMenu({
@@ -30,9 +30,9 @@ export const ConfigMenu = memo(function ConfigMenu({
   idScrollArea,
   uniqueId = "",
   withoutBg = false,
+  debugTriangle = false,
 }: Props) {
-  const [open, setOpen] = useState<boolean>(false);
-
+  const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -43,38 +43,34 @@ export const ConfigMenu = memo(function ConfigMenu({
 
   useEffect(() => {
     if (!open) return;
-
-    const triggerElement = triggerRef.current;
-    const menuElement = menuRef.current;
+    const triggerEl = triggerRef.current;
+    const menuEl = menuRef.current;
     const scrollContainer = idScrollArea
       ? document.getElementById(idScrollArea)
       : null;
-
-    if (!triggerElement || !menuElement) return;
+    if (!triggerEl || !menuEl) return;
 
     const updatePosition = () => {
-      const parentRect = triggerElement.getBoundingClientRect();
-      const menuRect = menuElement.getBoundingClientRect();
-
-      let top = parentRect.top + parentRect.height + 5;
+      const parentRect = triggerEl.getBoundingClientRect();
+      const menuRect = menuEl.getBoundingClientRect();
       const left = parentRect.right - menuRect.width;
-
-      menuElement.style.left = `${left}px`;
-
-      if (parentRect.top > window.innerHeight / 2) {
-        top = parentRect.top - menuRect.height - 10;
-      }
-      menuElement.style.top = `${top}px`;
+      const top =
+        parentRect.top > window.innerHeight / 2
+          ? parentRect.top - menuRect.height - 10
+          : parentRect.top + parentRect.height + 5;
+      menuEl.style.right = "auto";
+      menuEl.style.left = `${left}px`;
+      menuEl.style.top = `${top}px`;
     };
 
     updatePosition();
 
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Element;
       if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(event.target as Node)
+        !menuRef.current?.contains(target) &&
+        !triggerRef.current?.contains(target) &&
+        !target?.closest?.(".config-menu-portal")
       ) {
         handleClose();
       }
@@ -83,7 +79,6 @@ export const ConfigMenu = memo(function ConfigMenu({
     document.addEventListener("mousedown", handleClickOutside);
     window.addEventListener("resize", handleClose);
     scrollContainer?.addEventListener("scroll", handleClose);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("resize", handleClose);
@@ -95,21 +90,13 @@ export const ConfigMenu = memo(function ConfigMenu({
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      setOpen((prevOpen) => {
-        const newState = !prevOpen;
-        optionalState?.(newState);
-        return newState;
+      setOpen((prev) => {
+        const next = !prev;
+        optionalState?.(next);
+        return next;
       });
     },
     [optionalState],
-  );
-
-  const handleOptionClick = useCallback(
-    (action: () => void) => {
-      action();
-      handleClose();
-    },
-    [handleClose],
   );
 
   return (
@@ -132,26 +119,21 @@ export const ConfigMenu = memo(function ConfigMenu({
           <MoreVertical className={styles.moreVerticalIcon} />
         </button>
       </div>
+
       <ClientOnlyPortal>
         {open && (
           <section
             ref={menuRef}
             className={`${styles.container} ignore-sidebar-close config-menu-portal`}
             id={`config-menu-container-${uniqueId}`}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <section className={styles.optionsContainer}>
-              {configOptions.map((option, index) => (
-                <ConfigCard
-                  key={`${option.name}-${index}`}
-                  name={option.name}
-                  icon={option.icon}
-                  action={() => handleOptionClick(option.action)}
-                />
-              ))}
-            </section>
+            <SubMenuPanel
+              options={configOptions}
+              depth={0}
+              onRootClose={handleClose}
+              debugTriangle={debugTriangle}
+            />
           </section>
         )}
       </ClientOnlyPortal>

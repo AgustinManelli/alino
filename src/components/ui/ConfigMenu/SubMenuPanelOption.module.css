@@ -1,0 +1,24 @@
+.optionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.itemWrapper {
+  width: 100%;
+}
+
+.childPanel {
+  background-color: var(--background-container-translucent);
+  backdrop-filter: blur(15px) saturate(180%);
+  -webkit-backdrop-filter: blur(15px) saturate(180%);
+  border: 1px solid var(--border-container-color);
+  border-radius: 20px;
+  padding: 10px;
+  min-width: fit-content;
+  width: fit-content;
+  box-shadow:
+    rgba(12, 20, 66, 0.02) 0px 4px 12px,
+    rgba(12, 20, 66, 0.08) 0px 30px 80px;
+}

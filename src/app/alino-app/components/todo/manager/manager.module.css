@@ -45,7 +45,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 15px 0 0;
 }
 
 /* ///////HOME////// */
@@ -108,10 +107,20 @@
   display: flex;
   justify-content: center;
   align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+  padding-right: 10px;
+}
+
+.options {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .listContainer {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -142,6 +151,10 @@
   user-select: none;
   text-align: start;
   padding-left: 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .inputSection {
@@ -213,16 +226,13 @@
   cursor: pointer;
   color: var(--text);
   border-radius: 7px;
-  transition:
-    background-color 0.2s ease,
-    opacity 0.2s ease;
-  opacity: 0.4;
+  transition: background-color 0.2s ease-in-out;
   flex-shrink: 0;
+  background-color: var(--background-over-container);
 }
 
 .trashButton:hover {
-  background-color: var(--background-over-container);
-  opacity: 0.7;
+  background-color: var(--background-over-container-hover);
 }
 
 .trashButton.trashButtonActive {
@@ -330,4 +340,35 @@
 .emptyTrashText {
   font-size: 14px;
   opacity: 0.6;
+}
+
+.iconStyle {
+  width: 14px;
+  height: auto;
+  stroke: var(--text);
+  stroke-width: 2;
+}
+
+.checkButton {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text);
+  background-color: var(--background-over-container);
+  padding: 0px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.checkButton:hover {
+  background-color: var(--background-over-container-hover);
 }

@@ -32,8 +32,8 @@
 }
 
 .container {
-  right: -150px;
-  position: absolute;
+  /* right: -150px; */
+  position: fixed;
   background-color: var(--background-container-translucent);
   backdrop-filter: blur(15px) saturate(180%);
   -webkit-backdrop-filter: blur(15px) saturate(180%);
@@ -53,6 +53,13 @@
     rgba(12, 20, 66, 0.08) 0px 30px 80px,
     rgb(230, 233, 237) 0px 0px 0px 0px inset;
 }
+
+/* @supports (corner-shape: squircle) {
+  .container {
+    border-radius: 50px;
+    corner-shape: squircle;
+  }
+} */
 
 .titleSection {
   color: rgb(200, 200, 200);

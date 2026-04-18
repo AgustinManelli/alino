@@ -1,6 +1,8 @@
 "use client"
 
 import { create } from "zustand";
+import { ListsType } from "@/lib/schemas/database.types";
+
 
 //Prop types de cada modal
 
@@ -24,13 +26,20 @@ export interface EditTaskModalProps {
   taskId: string;
 }
 
+export interface ListInformationModalProps {
+  list: ListsType;
+}
+
+
 //Discriminated union
 
 export type ModalEntry =
   | { type: "confirmation"; props: ConfirmationModalProps }
   | { type: "splitTask";    props: SplitTaskModalProps }
   | { type: "editTask";     props: EditTaskModalProps }
+  | { type: "listInformation"; props: ListInformationModalProps }
   | { type: "premium";      props?: Record<string, never> };
+
 
 export type ModalType = ModalEntry["type"];
 

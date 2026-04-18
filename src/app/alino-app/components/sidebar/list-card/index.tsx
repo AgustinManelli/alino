@@ -37,7 +37,7 @@ import {
   Information,
 } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
-import { useModalStore } from "@/store/useModalStore";
+import { openModal, useModalStore } from "@/store/useModalStore";
 
 interface ListCardProps {
   list: ListsType;
@@ -48,7 +48,7 @@ const PIN_ICON = <Pin className={styles.iconStyle} />;
 const UNPIN_ICON = <Unpin className={styles.iconStyle} />;
 const DELETE_ICON = <DeleteIcon className={styles.iconStyle} />;
 const LOGOUT_ICON = <LogOut className={styles.iconStyle} />;
-// const INFORMATION_ICON = <Information className={styles.iconStyle} />;
+const INFO_ICON = <Information className={styles.iconStyle} />;
 
 export const ListCard = memo(({ list }: ListCardProps) => {
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
@@ -222,12 +222,12 @@ export const ListCard = memo(({ list }: ListCardProps) => {
         action: handleConfirm,
         enabled: canDelete,
       },
-      // {
-      //   name: "Información",
-      //   icon: INFORMATION_ICON,
-      //   action: handleInfo,
-      //   enabled: true,
-      // },
+      {
+        name: "Información",
+        icon: INFO_ICON,
+        action: () => openModal({ type: "listInformation", props: { list } }),
+        enabled: true,
+      },
     ].filter((o) => o.enabled);
   }, [
     canEdit,

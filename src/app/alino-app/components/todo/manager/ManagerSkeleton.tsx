@@ -59,6 +59,7 @@ export const ManagerSkeleton = () => {
                     width: "100%",
                     height: "100%",
                     borderRadius: "10px",
+                    backgroundColor: "var(--background-container)",
                   }}
                 />
               </div>
@@ -70,6 +71,7 @@ export const ManagerSkeleton = () => {
                       height: "17px",
                       borderRadius: "10px",
                       maxWidth: "100px",
+                      backgroundColor: "var(--background-container)",
                     }}
                   />
                 </span>
@@ -84,6 +86,7 @@ export const ManagerSkeleton = () => {
                     width: "25px",
                     height: "25px",
                     borderRadius: "7px",
+                    backgroundColor: "var(--background-container)",
                   }}
                 />
                 <Skeleton
@@ -91,6 +94,7 @@ export const ManagerSkeleton = () => {
                     width: "25px",
                     height: "25px",
                     borderRadius: "7px",
+                    backgroundColor: "var(--background-container)",
                   }}
                 />
               </div>
@@ -98,7 +102,12 @@ export const ManagerSkeleton = () => {
           </div>
           <div className={styles.inputSection}>
             <Skeleton
-              style={{ width: "100%", height: "50px", borderRadius: "15px" }}
+              style={{
+                width: "100%",
+                height: "50px",
+                borderRadius: "15px",
+                backgroundColor: "var(--background-container)",
+              }}
             />
           </div>
         </section>
