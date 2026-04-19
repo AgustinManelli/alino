@@ -8,6 +8,14 @@
   width: 100%;
   height: fit-content;
   transition: opacity 0.2s ease;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tabsContainer::-webkit-scrollbar {
+  display: none;
 }
 
 .disabled {
@@ -17,7 +25,8 @@
 }
 
 .tab {
-  flex: 1;
+  flex: 1 0 auto;
+
   position: relative;
   padding: 7px 10px;
   font-size: 12px;
@@ -64,5 +73,6 @@
   .tab {
     padding: 6px 8px;
     font-size: 12px;
+    flex-shrink: 0;
   }
 }

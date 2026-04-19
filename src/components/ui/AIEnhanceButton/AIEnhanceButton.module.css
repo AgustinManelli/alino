@@ -27,7 +27,7 @@
     background-color 0.2s ease,
     transform 0.12s ease;
   -webkit-tap-highlight-color: transparent;
-  background-color: var(--background-over-container-hover);
+  background-color: var(--background-over-container);
 }
 
 .mainBtn:hover {
