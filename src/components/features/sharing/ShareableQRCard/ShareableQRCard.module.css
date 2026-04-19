@@ -1,0 +1,111 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.panelBgOne,
+.panelBgTwo {
+  position: absolute;
+  inset: -15px;
+  pointer-events: none;
+  border-radius: 50px;
+  z-index: -1;
+  opacity: 0.5;
+}
+
+.panelBgOne {
+  box-shadow:
+    inset 0 -40px 30px -8px rgba(194, 102, 255, 0.25),
+    inset 0 6px 6px -2px rgba(60, 34, 102, 0.075),
+    inset 0 -80px 60px -30px rgb(106, 20, 204, 0.5);
+}
+
+.panelBgTwo {
+  box-shadow: inset 0 -20px 20px -6px rgba(255, 255, 255, 0.4);
+  mix-blend-mode: plus-lighter;
+}
+
+.card {
+  position: relative;
+  width: 270px;
+  height: 270px;
+  background-color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  z-index: 5;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: rgb(28, 28, 28);
+  margin: 0;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.description {
+  font-size: 12px;
+  color: #bbbbbb;
+  margin: 0;
+  line-height: 1;
+}
+
+.qrWrapper {
+  background-color: #ffffff;
+  padding: 10px;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.qrWrapper img {
+  width: 120px;
+  height: auto;
+  aspect-ratio: 1/1;
+  display: block;
+}
+
+.qrPlaceholder {
+  width: 120px;
+  height: auto;
+  aspect-ratio: 1/1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.roleBadge {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgb(28, 28, 28);
+  background: rgba(0, 0, 0, 0.05);
+  padding: 7px 10px;
+  border-radius: 10px;
+}
+
+.generatingPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.finalImage {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: auto;
+  border-radius: 15px;
+}

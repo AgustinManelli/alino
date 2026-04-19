@@ -13,6 +13,7 @@ import { customToast } from "@/lib/toasts";
 import CopyToClipboard from "@/components/ui/CopyToClipboard";
 import { WindowModal } from "@/components/ui/WindowModal";
 import { RoleDropdown } from "../RoleDropdown";
+import { generateQrDataUrl } from "@/utils/generateQr";
 
 import {
   AddIcon,
@@ -20,8 +21,10 @@ import {
   Link,
   LoadingIcon,
   QrIcon,
+  ShareIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./InviteLinkSection.module.css";
+import { ShareableQrCard } from "@/components/features/sharing/ShareableQRCard/ShareableQRCard";
 
 interface Props {
   list_id: string;
@@ -39,10 +42,6 @@ const ROLE_COLORS: Record<string, string> = {
   reader: "var(--role-reader, #9ca3af)",
 };
 
-function qrUrl(data: string) {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(data)}&bgcolor=ffffff&color=1a1a1a&margin=10`;
-}
-
 function getInviteUrl(token: string) {
   if (typeof window === "undefined") return "";
   return `${window.location.origin}/invite/${token}`;
@@ -57,6 +56,18 @@ export function InviteLinkSection({ list_id }: Props) {
   >("editor");
   const [qrModal, setQrModal] = useState<InviteLink | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [generatedBlob, setGeneratedBlob] = useState<Blob | null>(null);
+
+  useEffect(() => {
+    if (!qrModal) {
+      setQrDataUrl("");
+      setGeneratedBlob(null);
+      return;
+    }
+    setGeneratedBlob(null);
+    generateQrDataUrl(getInviteUrl(qrModal.token)).then(setQrDataUrl);
+  }, [qrModal]);
 
   const fetchLinks = useCallback(async () => {
     setLoading(true);
@@ -95,6 +106,33 @@ export function InviteLinkSection({ list_id }: Props) {
   };
 
   const activeLinks = links.filter((l) => l.is_active);
+
+  const handleShare = async () => {
+    if (!qrModal) return;
+    const url = getInviteUrl(qrModal.token);
+
+    try {
+      const shareData: ShareData = {
+        title: "Invitación a espacio en Alino",
+        text: `¡Únete a mi lista en Alino como ${ROLE_LABELS[qrModal.role]?.toLowerCase()}! Aquí tienes el enlace:\n${url}`,
+      };
+
+      if (generatedBlob) {
+        const file = new File([generatedBlob], "invitacion-alino.png", {
+          type: generatedBlob.type,
+        });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          shareData.files = [file];
+        }
+      }
+
+      await navigator.share(shareData);
+    } catch (err: any) {
+      if (err.name !== "AbortError") {
+        console.error("Error al compartir:", err);
+      }
+    }
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -218,20 +256,34 @@ export function InviteLinkSection({ list_id }: Props) {
           closeAction={() => setQrModal(null)}
         >
           <div className={styles.qrBody}>
-            <p className={styles.qrSubtitle}>
+            {/* <p className={styles.qrSubtitle}>
               Rol:{" "}
               <span style={{ color: ROLE_COLORS[qrModal.role] }}>
                 {ROLE_LABELS[qrModal.role]}
               </span>
-            </p>
+            </p> */}
 
             <div className={styles.qrImageWrap}>
-              <img
-                src={qrUrl(getInviteUrl(qrModal.token))}
-                alt="QR de invitación"
-                className={styles.qrImage}
-              />
+              {qrDataUrl ? (
+                <ShareableQrCard
+                  qrDataUrl={qrDataUrl}
+                  roleLabel={ROLE_LABELS[qrModal.role] ?? qrModal.role}
+                  roleColor={ROLE_COLORS[qrModal.role] ?? "#ffffff"}
+                  onImageGenerated={(url, blob) => {
+                    setGeneratedBlob(blob);
+                  }}
+                />
+              ) : (
+                <div className={styles.qrPlaceholder}>
+                  <LoadingIcon className={styles.loadingIcon} />
+                </div>
+              )}
             </div>
+
+            <p className={styles.qrHint}>
+              Cualquier persona con este enlace se unirá como{" "}
+              <strong>{ROLE_LABELS[qrModal.role]?.toLowerCase()}</strong>.
+            </p>
 
             <div className={styles.qrUrlRow}>
               <span className={styles.qrUrl}>
@@ -243,12 +295,15 @@ export function InviteLinkSection({ list_id }: Props) {
                 size={28}
                 initialBorderStroke="transparent"
               />
+              <button
+                type="button"
+                className={styles.shareBtn}
+                onClick={handleShare}
+                title="Compartir enlace e imagen"
+              >
+                <ShareIcon className={styles.iconShareBtn} />
+              </button>
             </div>
-
-            <p className={styles.qrHint}>
-              Cualquier persona con este enlace se unirá como{" "}
-              <strong>{ROLE_LABELS[qrModal.role]?.toLowerCase()}</strong>.
-            </p>
           </div>
         </WindowModal>
       )}
