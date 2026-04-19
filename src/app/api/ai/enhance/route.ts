@@ -94,11 +94,7 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json(
         {
-          error: `Alcanzaste tu límite de créditos IA para este período. Te renuevan el ${
-            creditResult?.remaining !== undefined
-              ? ""
-              : ""
-          }. Podés ver tu uso en Mi cuenta.`,
+          error: `Alcanzaste tu límite de créditos IA para este período. Podés ver tu uso en Mi cuenta.`,
           code: "AI_LIMIT_EXCEEDED",
           used: creditResult?.used ?? 0,
           limit: creditResult?.limit ?? 0,

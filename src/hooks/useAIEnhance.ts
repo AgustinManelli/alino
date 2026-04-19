@@ -3,7 +3,10 @@ import { useState } from "react";
 import { EnhanceAction } from "@/lib/ai/aiProvider";
 
 interface UseAIEnhanceReturn {
-  enhance: (text: string, action: EnhanceAction) => Promise<string | null>;
+  enhance: (
+    text: string,
+    action: EnhanceAction,
+  ) => Promise<{ result: string | null; error: string | null }>;
   loading: boolean;
   error: string | null;
 }
@@ -15,7 +18,7 @@ export function useAIEnhance(): UseAIEnhanceReturn {
   const enhance = async (
     text: string,
     action: EnhanceAction,
-  ): Promise<string | null> => {
+  ): Promise<{ result: string | null; error: string | null }> => {
     setLoading(true);
     setError(null);
     try {
@@ -27,14 +30,16 @@ export function useAIEnhance(): UseAIEnhanceReturn {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Error desconocido.");
-        return null;
+        const errMsg = data.error ?? "Error desconocido.";
+        setError(errMsg);
+        return { result: null, error: errMsg };
       }
 
-      return data.result as string;
+      return { result: data.result as string, error: null };
     } catch {
-      setError("No se pudo conectar con el servidor.");
-      return null;
+      const errMsg = "No se pudo conectar con el servidor.";
+      setError(errMsg);
+      return { result: null, error: errMsg };
     } finally {
       setLoading(false);
     }

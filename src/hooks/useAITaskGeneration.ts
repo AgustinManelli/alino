@@ -3,7 +3,13 @@ import { useState } from "react";
 import { AIGeneratedTask } from "@/lib/ai/aiProvider";
 
 interface UseAITaskGenerationReturn {
-  generate: (prompt: string, maxTasks: number | null) => Promise<{ listSubject: string; tasks: AIGeneratedTask[] } | null>;
+  generate: (
+    prompt: string,
+    maxTasks: number | null,
+  ) => Promise<{
+    data: { listSubject: string; tasks: AIGeneratedTask[] } | null;
+    error: string | null;
+  }>;
   loading: boolean;
   error: string | null;
 }
@@ -15,7 +21,10 @@ export function useAITaskGeneration(): UseAITaskGenerationReturn {
   const generate = async (
     prompt: string,
     maxTasks: number | null,
-  ): Promise<{ listSubject: string; tasks: AIGeneratedTask[] } | null> => {
+  ): Promise<{
+    data: { listSubject: string; tasks: AIGeneratedTask[] } | null;
+    error: string | null;
+  }> => {
     setLoading(true);
     setError(null);
     try {
@@ -27,17 +36,22 @@ export function useAITaskGeneration(): UseAITaskGenerationReturn {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Error desconocido.");
-        return null;
+        const errMsg = data.error ?? "Error desconocido.";
+        setError(errMsg);
+        return { data: null, error: errMsg };
       }
 
       return {
-        listSubject: data.listSubject as string,
-        tasks: data.tasks as AIGeneratedTask[],
+        data: {
+          listSubject: data.listSubject as string,
+          tasks: data.tasks as AIGeneratedTask[],
+        },
+        error: null,
       };
     } catch {
-      setError("No se pudo conectar con el servidor.");
-      return null;
+      const errMsg = "No se pudo conectar con el servidor.";
+      setError(errMsg);
+      return { data: null, error: errMsg };
     } finally {
       setLoading(false);
     }

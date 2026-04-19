@@ -138,14 +138,14 @@ export function AIEnhanceButton({
     if (!plainText) return;
 
     setEnhanceFlow({ phase: "loading", action });
-    const result = await enhance(plainText, action);
+    const { result, error } = await enhance(plainText, action);
 
-    if (!result) {
+    if (error || !result) {
       setEnhanceFlow({
         phase: "error",
-        message: "No se pudo obtener respuesta.",
+        message: error ?? "No se pudo obtener respuesta.",
       });
-      setTimeout(() => setEnhanceFlow({ phase: "idle" }), 3_000);
+      setTimeout(() => setEnhanceFlow({ phase: "idle" }), 4_000);
       return;
     }
     setEnhanceFlow({ phase: "result", result });
@@ -163,14 +163,14 @@ export function AIEnhanceButton({
     if (!taskPrompt.trim() || !canGenerateTasks) return;
     setGenerateFlow({ phase: "loading" });
 
-    const data = await generate(taskPrompt.trim(), maxTasks);
+    const { data, error } = await generate(taskPrompt.trim(), maxTasks);
 
-    if (!data || !data.tasks.length) {
+    if (error || !data || !data.tasks.length) {
       setGenerateFlow({
         phase: "error",
-        message: "No se pudieron generar tareas.",
+        message: error ?? "No se pudieron generar tareas.",
       });
-      setTimeout(() => setGenerateFlow({ phase: "idle" }), 3_000);
+      setTimeout(() => setGenerateFlow({ phase: "idle" }), 4_000);
       return;
     }
     setGenerateFlow({
