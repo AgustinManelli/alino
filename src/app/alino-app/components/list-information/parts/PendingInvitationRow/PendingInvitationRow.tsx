@@ -1,7 +1,10 @@
 "use client";
+
 import { useState } from "react";
 import type { PendingInvitation } from "@/lib/api/list/actions";
-import styles from "./ListInformation.module.css";
+
+import styles from "./PendingInvitationRow.module.css";
+import { Cross, LoadingIcon, TickIcon } from "@/components/ui/icons/icons";
 
 interface PendingInvitationRowProps {
   invitation: PendingInvitation | null;
@@ -81,76 +84,24 @@ export function PendingInvitationRow({
 
       <div className={styles.invitationMeta}>
         <span className={styles.pendingBadge}>Pendiente</span>
+        <button
+          className={styles.cancelBtn}
+          onClick={handleCancelClick}
+          disabled={loading}
+          title={
+            confirmCancel ? "Confirmar cancelación" : "Cancelar invitación"
+          }
+          aria-label="Cancelar invitación"
+        >
+          {loading ? (
+            <LoadingIcon className={styles.loadingIcon} />
+          ) : confirmCancel ? (
+            <TickIcon className={styles.removeBtnIcon} />
+          ) : (
+            <Cross className={styles.removeBtnIcon} />
+          )}
+        </button>
       </div>
-
-      <button
-        className={styles.cancelBtn}
-        onClick={handleCancelClick}
-        disabled={loading}
-        title={confirmCancel ? "Confirmar cancelación" : "Cancelar invitación"}
-        aria-label="Cancelar invitación"
-      >
-        {loading ? (
-          <SpinnerIcon />
-        ) : confirmCancel ? (
-          <ConfirmIcon />
-        ) : (
-          <XIcon />
-        )}
-      </button>
     </div>
-  );
-}
-
-function XIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  );
-}
-
-function ConfirmIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function SpinnerIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      style={{ animation: "spin 0.7s linear infinite" }}
-    >
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <path d="M12 2a10 10 0 0 1 10 10" />
-    </svg>
   );
 }

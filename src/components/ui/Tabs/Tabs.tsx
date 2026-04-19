@@ -6,9 +6,10 @@ import styles from "./Tabs.module.css";
 
 export interface TabOption {
   id: string;
-  label: string;
+  label: React.ReactNode;
   icon?: React.ReactNode;
 }
+
 
 interface TabsProps {
   options: TabOption[];

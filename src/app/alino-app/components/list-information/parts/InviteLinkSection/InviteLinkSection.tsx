@@ -1,14 +1,27 @@
 "use client";
+
 import { useCallback, useEffect, useState } from "react";
-import styles from "./InviteLinkSection.module.css";
+
 import {
   createInviteLink,
   getInviteLinks,
   revokeInviteLink,
   type InviteLink,
 } from "@/lib/api/list/invite-link-actions";
-import { RoleDropdown } from "./parts/RoleDropdown";
+
 import { customToast } from "@/lib/toasts";
+import CopyToClipboard from "@/components/ui/CopyToClipboard";
+import { WindowModal } from "@/components/ui/WindowModal";
+import { RoleDropdown } from "../RoleDropdown";
+
+import {
+  AddIcon,
+  DeleteIcon,
+  Link,
+  LoadingIcon,
+  QrIcon,
+} from "@/components/ui/icons/icons";
+import styles from "./InviteLinkSection.module.css";
 
 interface Props {
   list_id: string;
@@ -43,7 +56,6 @@ export function InviteLinkSection({ list_id }: Props) {
     "admin" | "editor" | "reader"
   >("editor");
   const [qrModal, setQrModal] = useState<InviteLink | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
   const fetchLinks = useCallback(async () => {
@@ -68,14 +80,6 @@ export function InviteLinkSection({ list_id }: Props) {
       await fetchLinks();
     }
     setCreating(false);
-  };
-
-  const handleCopy = async (link: InviteLink) => {
-    const url = getInviteUrl(link.token);
-    await navigator.clipboard.writeText(url);
-    setCopiedId(link.id);
-    customToast.success("Enlace copiado");
-    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleRevoke = async (link: InviteLink) => {
@@ -103,7 +107,11 @@ export function InviteLinkSection({ list_id }: Props) {
             disabled={creating}
             type="button"
           >
-            {creating ? <SpinnerIcon /> : <PlusIcon />}
+            {creating ? (
+              <LoadingIcon className={styles.loadingIcon} />
+            ) : (
+              <AddIcon className={styles.icon} />
+            )}
             {creating ? "Creando..." : "Generar enlace"}
           </button>
           <RoleDropdown
@@ -134,7 +142,7 @@ export function InviteLinkSection({ list_id }: Props) {
           </div>
         ) : activeLinks.length === 0 ? (
           <div className={styles.emptyState}>
-            <LinkIcon />
+            <Link className={styles.linkIcon} />
             <p>Sin enlaces activos</p>
             <span>Crea uno arriba para compartir la lista</span>
           </div>
@@ -158,7 +166,7 @@ export function InviteLinkSection({ list_id }: Props) {
                 </span>
 
                 <span className={styles.tokenPreview}>
-                  /invite/{link.token.slice(0, 8)}…
+                  /invite/{link.token.slice(0, 20)}…
                 </span>
 
                 <span className={styles.usesLabel}>
@@ -167,14 +175,13 @@ export function InviteLinkSection({ list_id }: Props) {
                 </span>
 
                 <div className={styles.linkActions}>
-                  <button
-                    className={`${styles.actionBtn} ${copiedId === link.id ? styles.actionBtnSuccess : ""}`}
-                    onClick={() => handleCopy(link)}
-                    type="button"
-                    title="Copiar enlace"
-                  >
-                    {copiedId === link.id ? <CheckIcon /> : <CopyIcon />}
-                  </button>
+                  <CopyToClipboard
+                    text={getInviteUrl(link.token)}
+                    successMessage="Enlace copiado"
+                    size={30}
+                    className={styles.copyToClipboardIcon}
+                    initialBorderStroke="transparent"
+                  />
 
                   <button
                     className={styles.actionBtn}
@@ -182,7 +189,7 @@ export function InviteLinkSection({ list_id }: Props) {
                     type="button"
                     title="Ver QR"
                   >
-                    <QrIcon />
+                    <QrIcon className={styles.iconActionBtn} />
                   </button>
 
                   <button
@@ -193,9 +200,9 @@ export function InviteLinkSection({ list_id }: Props) {
                     title="Revocar enlace"
                   >
                     {revokingId === link.id ? (
-                      <SpinnerIcon size={13} />
+                      <LoadingIcon className={styles.loadingIcon} />
                     ) : (
-                      <TrashIcon />
+                      <DeleteIcon className={styles.iconActionBtn} />
                     )}
                   </button>
                 </div>
@@ -206,26 +213,17 @@ export function InviteLinkSection({ list_id }: Props) {
       </div>
 
       {qrModal && (
-        <div className={styles.qrOverlay} onClick={() => setQrModal(null)}>
-          <div className={styles.qrCard} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.qrHeader}>
-              <div>
-                <p className={styles.qrTitle}>Código QR de invitación</p>
-                <p className={styles.qrSubtitle}>
-                  Rol:{" "}
-                  <span style={{ color: ROLE_COLORS[qrModal.role] }}>
-                    {ROLE_LABELS[qrModal.role]}
-                  </span>
-                </p>
-              </div>
-              <button
-                className={styles.qrClose}
-                onClick={() => setQrModal(null)}
-                type="button"
-              >
-                <CrossIcon />
-              </button>
-            </div>
+        <WindowModal
+          title="Código QR de invitación"
+          closeAction={() => setQrModal(null)}
+        >
+          <div className={styles.qrBody}>
+            <p className={styles.qrSubtitle}>
+              Rol:{" "}
+              <span style={{ color: ROLE_COLORS[qrModal.role] }}>
+                {ROLE_LABELS[qrModal.role]}
+              </span>
+            </p>
 
             <div className={styles.qrImageWrap}>
               <img
@@ -239,14 +237,12 @@ export function InviteLinkSection({ list_id }: Props) {
               <span className={styles.qrUrl}>
                 {getInviteUrl(qrModal.token)}
               </span>
-              <button
-                className={`${styles.actionBtn} ${copiedId === qrModal.id ? styles.actionBtnSuccess : ""}`}
-                onClick={() => handleCopy(qrModal)}
-                type="button"
-                title="Copiar"
-              >
-                {copiedId === qrModal.id ? <CheckIcon /> : <CopyIcon />}
-              </button>
+              <CopyToClipboard
+                text={getInviteUrl(qrModal.token)}
+                successMessage="Enlace copiado"
+                size={28}
+                initialBorderStroke="transparent"
+              />
             </div>
 
             <p className={styles.qrHint}>
@@ -254,149 +250,8 @@ export function InviteLinkSection({ list_id }: Props) {
               <strong>{ROLE_LABELS[qrModal.role]?.toLowerCase()}</strong>.
             </p>
           </div>
-        </div>
+        </WindowModal>
       )}
     </div>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-    >
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-function CopyIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="9" y="9" width="13" height="13" rx="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-function CheckIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-function QrIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="3" width="7" height="7" />
-      <rect x="14" y="3" width="7" height="7" />
-      <rect x="3" y="14" width="7" height="7" />
-      <line x1="14" y1="14" x2="14" y2="14" />
-      <line x1="17" y1="14" x2="17" y2="14" />
-      <line x1="21" y1="14" x2="21" y2="14" />
-      <line x1="14" y1="17" x2="14" y2="17" />
-      <line x1="17" y1="17" x2="17" y2="21" />
-      <line x1="21" y1="17" x2="21" y2="21" />
-    </svg>
-  );
-}
-function TrashIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-      <path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-    </svg>
-  );
-}
-function CrossIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-    >
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  );
-}
-function LinkIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-    </svg>
-  );
-}
-function SpinnerIcon({ size = 14 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      style={{ animation: "spin .7s linear infinite" }}
-    >
-      <path d="M12 2a10 10 0 0 1 10 10" />
-    </svg>
   );
 }

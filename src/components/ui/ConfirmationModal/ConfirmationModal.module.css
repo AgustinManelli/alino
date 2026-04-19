@@ -21,12 +21,12 @@
   align-items: center;
   background-color: var(--background-container);
   border: 1px solid var(--border-container-color);
-  border-radius: 20px;
+  border-radius: 30px;
   box-shadow:
     rgba(12, 20, 66, 0.02) 0px 4px 12px,
     rgba(12, 20, 66, 0.08) 0px 30px 80px,
     rgb(230, 233, 237) 0px 0px 0px 0px inset;
-  padding: 30px;
+  padding: 20px;
   gap: 20px;
 }
 
@@ -63,7 +63,7 @@
   height: 40px;
   border: none;
   background-color: var(--background-over-container);
-  border-radius: 10px;
+  border-radius: 15px;
   cursor: pointer;
   color: var(--text);
   border: 1px solid var(--border-container-color);

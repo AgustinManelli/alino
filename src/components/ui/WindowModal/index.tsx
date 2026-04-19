@@ -1,16 +1,12 @@
+"use client";
+
+import { useRef } from "react";
+
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
 
 import { Cross } from "../icons/icons";
 import styles from "./WindowModal.module.css";
-import { useRef } from "react";
-
-const crossIconStyle = {
-  width: "20px",
-  height: "20px",
-  strokeWidth: "1.5",
-  stroke: "var(--text-not-available)",
-} as React.CSSProperties;
 
 interface Props {
   children?: React.ReactNode;
@@ -33,16 +29,21 @@ export const WindowModal = ({
   useOnClickOutside(modalRef, closeAction);
   return (
     <ClientOnlyPortal>
-      <section className={styles.container}>
+      <section className={`${styles.container} ignore-sidebar-close`}>
         <main className={styles.main} ref={modalRef}>
           <header
             className={`${styles.header} ${title ? styles.headrel : styles.headabs}`}
           >
             <h1 className={styles.title}>{title}</h1>
             {crossButton && (
-              <button className={styles.close} onClick={handleCrossAction}>
-                <Cross style={crossIconStyle} />
-              </button>
+              <div className={styles.windowCrossContainer}>
+                <button
+                  className={styles.windowCrossButton}
+                  onClick={handleCrossAction}
+                >
+                  <Cross className={styles.windowCrossIcon} />
+                </button>
+              </div>
             )}
           </header>
           <div className={styles.body}>{children}</div>

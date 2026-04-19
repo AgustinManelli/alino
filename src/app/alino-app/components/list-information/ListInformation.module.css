@@ -1,58 +1,31 @@
 .container {
   width: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .inviteSection {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  padding-bottom: 10px;
 }
 
 .sectionLabel {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
   color: var(--text-not-available);
-  padding: 0 4px;
+  padding-left: 15px;
 }
 
-.tabBar {
-  display: flex;
-  border-bottom: 1px solid var(--border-container-color);
-  padding-bottom: 0;
-}
-
-.tab {
+.tabLabelWithBadge {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 8px 10px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-not-available);
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  border-radius: 6px 6px 0 0;
-  transition:
-    color 0.15s ease,
-    background-color 0.15s ease;
-  white-space: nowrap;
-}
-
-.tab:hover {
-  color: var(--text);
-  background-color: var(--background-over-container);
-}
-
-.tabActive {
-  color: var(--text);
-  border-bottom-color: var(--text);
+  gap: 6px;
 }
 
 .tabBadge {
@@ -77,17 +50,37 @@
 .listSection {
   display: flex;
   flex-direction: column;
-  background-color: var(--background-over-container);
-  border-radius: 20px;
-  padding: 5px;
   overflow: hidden;
+  overflow-y: auto;
+  height: 100%;
+  flex: 1;
+  gap: 5px;
 }
 
-.separator {
-  width: 100%;
-  height: 1px;
-  background-color: var(--border-container-color);
-  margin: 2px 0;
+.listSection::-webkit-scrollbar {
+  width: 6px;
+}
+
+.listSection::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.listSection::-webkit-scrollbar-thumb {
+  background: var(--border-container-color);
+  border-radius: 10px;
+}
+
+.listSection::-webkit-scrollbar-thumb:hover {
+  background: var(--text-not-available);
+}
+
+.linkSection {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  flex: 1;
+  gap: 5px;
 }
 
 .emptyState {
@@ -95,255 +88,4 @@
   color: var(--text-not-available);
   text-align: center;
   padding: 20px 16px;
-}
-
-.memberRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 15px;
-  min-height: 52px;
-  height: 52px;
-  transition: background-color 0.15s ease;
-  position: relative;
-}
-
-.memberRow:hover {
-  background-color: var(--background-over-container-hover);
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-  background-color: var(--background-container);
-}
-
-.userInfo {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-}
-
-.displayName {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.username {
-  font-size: 12px;
-  color: var(--text-not-available);
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.memberMeta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  height: 100%;
-}
-
-.roleBadge {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  padding: 3px 8px;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-
-.roleOwner {
-  background-color: rgba(139, 92, 246, 0.15);
-  color: rgb(139, 92, 246);
-}
-
-.roleAdmin {
-  background-color: rgba(59, 130, 246, 0.15);
-  color: rgb(59, 130, 246);
-}
-
-.roleEditor {
-  background-color: rgba(34, 197, 94, 0.12);
-  color: rgb(22, 163, 74);
-}
-
-.roleReader {
-  background-color: rgba(156, 163, 175, 0.15);
-  color: var(--text-not-available);
-}
-
-.removeBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 10px;
-  border: none;
-  background: transparent;
-  color: var(--text-not-available);
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
-  flex-shrink: 0;
-}
-
-.removeBtn:hover {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: rgb(239, 68, 68);
-}
-
-.removeBtn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.selfTag {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-not-available);
-  opacity: 0.6;
-  white-space: nowrap;
-}
-
-.invitationRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 15px;
-  min-height: 52px;
-  transition: background-color 0.15s ease;
-}
-
-.invitationRow:hover {
-  background-color: var(--background-over-container-hover);
-}
-
-.invitationMeta {
-  display: flex;
-}
-
-.pendingBadge {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background-color: rgba(234, 179, 8, 0.12);
-  color: rgb(202, 138, 4);
-  white-space: nowrap;
-}
-
-.invitedByRow {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 3px;
-}
-
-.inviterAvatar {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-  background-color: var(--background-container);
-}
-
-.invitedByText {
-  font-size: 11px;
-  color: var(--text-not-available);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.cancelBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--text-not-available);
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
-  flex-shrink: 0;
-}
-
-.cancelBtn:hover {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: rgb(239, 68, 68);
-}
-
-.cancelBtn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-@keyframes shimmer {
-  0% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.5;
-  }
-}
-
-.skeletonAvatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: var(--background-container);
-  flex-shrink: 0;
-  animation: shimmer 1.4s ease-in-out infinite;
-}
-
-.skeletonLine {
-  border-radius: 5px;
-  background-color: var(--background-container);
-  animation: shimmer 1.4s ease-in-out infinite;
-}
-
-@media only screen and (max-width: 850px) {
-  .tabBar {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .memberRow,
-  .invitationRow {
-    padding: 8px 6px;
-  }
-
-  .displayName {
-    font-size: 13px;
-  }
-
-  .username {
-    font-size: 11px;
-  }
 }

@@ -5,14 +5,15 @@ import { useGetListPendingInvitations } from "@/hooks/todo/members/useGetListPen
 import { useUpdateMemberRole } from "@/hooks/todo/members/useUpdateMemberRole";
 import { useRemoveMember } from "@/hooks/todo/members/useRemoveMember";
 import { useCancelListInvitation } from "@/hooks/todo/members/useCancelListInvitation";
-import { InviteUserInput } from "./invite-user-input";
-import { MemberRow } from "./member-row";
-import { PendingInvitationRow } from "./pending-invitation-row";
-import { WindowComponent } from "@/components/ui/window-component";
+import { InviteUserInput } from "./parts/InviteUserInput/InviteUserInput";
+import { MemberRow } from "./parts/MemberRow/MemberRow";
+import { PendingInvitationRow } from "./parts/PendingInvitationRow/PendingInvitationRow";
+import { WindowComponent } from "@/components/ui/WindowComponent";
 import { Database } from "@/lib/schemas/database.types";
 import type { PendingInvitation } from "@/lib/api/list/actions";
 import styles from "./ListInformation.module.css";
-import { InviteLinkSection } from "./InviteLinkSection";
+import { InviteLinkSection } from "./parts/InviteLinkSection/InviteLinkSection";
+import { Tabs } from "@/components/ui/Tabs/Tabs";
 
 type MembershipRow = Database["public"]["Tables"]["list_memberships"]["Row"];
 type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
@@ -129,38 +130,44 @@ export default function ListInformation({ handleCloseConfig, list }: Props) {
           </section>
         )}
 
-        <div className={styles.tabBar}>
-          <button
-            className={`${styles.tab} ${activeTab === "members" ? styles.tabActive : ""}`}
-            onClick={() => setActiveTab("members")}
-          >
-            Miembros
-            <span className={styles.tabBadge}>{users.length || ""}</span>
-          </button>
-          {isAdminOrOwner && (
-            <button
-              className={`${styles.tab} ${activeTab === "invitations" ? styles.tabActive : ""}`}
-              onClick={() => setActiveTab("invitations")}
-            >
-              Invitaciones pendientes
-              {invitations.length > 0 && (
-                <span
-                  className={`${styles.tabBadge} ${styles.tabBadgePending}`}
-                >
-                  {invitations.length}
-                </span>
-              )}
-            </button>
-          )}
-          {isAdminOrOwner && (
-            <button
-              className={`${styles.tab} ${activeTab === "links" ? styles.tabActive : ""}`}
-              onClick={() => setActiveTab("links")}
-            >
-              Enlace QR
-            </button>
-          )}
-        </div>
+        <Tabs
+          options={[
+            {
+              id: "members",
+              label: (
+                <div className={styles.tabLabelWithBadge}>
+                  Miembros
+                  <span className={styles.tabBadge}>{users.length || ""}</span>
+                </div>
+              ),
+            },
+            ...(isAdminOrOwner
+              ? [
+                  {
+                    id: "invitations",
+                    label: (
+                      <div className={styles.tabLabelWithBadge}>
+                        Invitaciones
+                        {invitations.length > 0 && (
+                          <span
+                            className={`${styles.tabBadge} ${styles.tabBadgePending}`}
+                          >
+                            {invitations.length}
+                          </span>
+                        )}
+                      </div>
+                    ),
+                  },
+                  {
+                    id: "links",
+                    label: "Enlace QR",
+                  },
+                ]
+              : []),
+          ]}
+          activeTab={activeTab}
+          onChange={(id) => setActiveTab(id as ActiveTab)}
+        />
 
         {activeTab === "members" && (
           <section className={styles.listSection}>
@@ -174,9 +181,6 @@ export default function ListInformation({ handleCloseConfig, list }: Props) {
                       onRoleChange={handleRoleChange}
                       onRemove={handleRemoveMember}
                     />
-                    {i < skeletonRows.length - 1 && (
-                      <div className={styles.separator} />
-                    )}
                   </React.Fragment>
                 ))
               : users.map((user, i) => (
@@ -188,9 +192,6 @@ export default function ListInformation({ handleCloseConfig, list }: Props) {
                       onRoleChange={handleRoleChange}
                       onRemove={handleRemoveMember}
                     />
-                    {i < users.length - 1 && (
-                      <div className={styles.separator} />
-                    )}
                   </React.Fragment>
                 ))}
             {!isLoadingMembers && users.length === 0 && (
@@ -210,9 +211,6 @@ export default function ListInformation({ handleCloseConfig, list }: Props) {
                       invitation={null}
                       onCancel={handleCancelInvitation}
                     />
-                    {i < skeletonRows.length - 1 && (
-                      <div className={styles.separator} />
-                    )}
                   </React.Fragment>
                 ))
               : invitations.map((inv, i) => (
@@ -221,9 +219,6 @@ export default function ListInformation({ handleCloseConfig, list }: Props) {
                       invitation={inv}
                       onCancel={handleCancelInvitation}
                     />
-                    {i < invitations.length - 1 && (
-                      <div className={styles.separator} />
-                    )}
                   </React.Fragment>
                 ))}
             {!isLoadingInvitations && invitations.length === 0 && (
@@ -234,7 +229,7 @@ export default function ListInformation({ handleCloseConfig, list }: Props) {
           </section>
         )}
         {activeTab === "links" && isAdminOrOwner && (
-          <section className={styles.listSection}>
+          <section className={styles.linkSection}>
             <InviteLinkSection list_id={list.list_id} />
           </section>
         )}

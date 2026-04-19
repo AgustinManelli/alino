@@ -25,7 +25,7 @@ import {
   SquircleIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./FolderColorPicker.module.css";
-import CopyButton from "@/components/ui/CopyToClipboard";
+import CopyToClipboard from "@/components/ui/CopyToClipboard";
 
 const modalInitial = { scale: 0, opacity: 0, filter: "blur(30px)" };
 const modalAnimate = {
@@ -241,7 +241,10 @@ export const FolderColorPicker = memo(function FolderColorPicker({
                     }}
                     onBlur={(e) => setColor(e.target.value)}
                   />
-                  <CopyButton color={color} />
+                  <CopyToClipboard
+                    text={color}
+                    successMessage="Color copiado al portapapeles"
+                  />
                 </div>
               </footer>
             </div>

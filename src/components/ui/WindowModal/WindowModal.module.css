@@ -16,7 +16,7 @@
   min-width: 300px;
   background-color: var(--background-container);
   border: 1px solid var(--border-container-color);
-  border-radius: 20px;
+  border-radius: 30px;
   overflow: hidden;
   box-shadow:
     rgba(12, 20, 66, 0.02) 0px 4px 12px,
@@ -29,7 +29,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
+  padding: 15px 15px 10px 15px;
   gap: 20px;
   z-index: 1;
 }
@@ -45,15 +45,38 @@
 }
 
 .title {
-  color: var(--text-not-available);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
+  color: var(--text-not-available);
 }
 
-.close {
-  background: none;
+.windowCrossContainer {
+  width: fit-content;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.windowCrossContainer:hover .windowCrossIcon {
+  stroke: var(--text) !important;
+}
+
+.windowCrossIcon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.5;
+  stroke: var(--text-not-available) !important;
+  transition: stroke 0.2s ease-in-out;
+}
+
+.windowCrossButton {
   border: none;
+  background-color: transparent;
   cursor: pointer;
+  width: fit-content;
+  height: fit-content;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .body {

@@ -7,7 +7,7 @@ import { useInstallWidget } from "@/hooks/dashboard/useInstallWidget";
 import { useUninstallWidget } from "@/hooks/dashboard/useUninstallWidget";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { UserWidgetRow } from "@/lib/schemas/database.types";
-import { WindowComponent } from "@/components/ui/window-component";
+import { WindowComponent } from "@/components/ui/WindowComponent";
 import { getUserEmbeddedWidgets } from "@/lib/api/user-widgets/actions";
 
 import { EmbeddedWidgetManager } from "./EmbeddedWidgetManager";

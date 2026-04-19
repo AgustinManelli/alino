@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { WindowComponent } from "@/components/ui/window-component";
+import { WindowComponent } from "@/components/ui/WindowComponent";
 import styles from "./ConfigUser.module.css";
 import { Edit, UserIcon } from "@/components/ui/icons/icons";
 import { IAStars } from "@/components/ui/icons/icons";

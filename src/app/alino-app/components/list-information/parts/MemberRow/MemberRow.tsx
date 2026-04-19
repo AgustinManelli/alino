@@ -1,8 +1,12 @@
 "use client";
+
 import { useState } from "react";
-import styles from "./ListInformation.module.css";
-import { UserWithMembershipRole } from "./index";
-import { RoleDropdown } from "./parts/RoleDropdown";
+
+import { UserWithMembershipRole } from "../../index";
+import { RoleDropdown } from "../RoleDropdown";
+
+import styles from "./MemberRow.module.css";
+import { Cross, LoadingIcon, TickIcon } from "@/components/ui/icons/icons";
 
 interface MemberRowProps {
   user: UserWithMembershipRole | null;
@@ -150,70 +154,15 @@ export function MemberRow({
             aria-label="Eliminar miembro"
           >
             {loadingRemove ? (
-              <SpinnerIcon />
+              <LoadingIcon className={styles.loadingIcon} />
             ) : confirmRemove ? (
-              <ConfirmIcon />
+              <TickIcon className={styles.removeBtnIcon} />
             ) : (
-              <TrashIcon />
+              <Cross className={styles.removeBtnIcon} />
             )}
           </button>
         )}
       </div>
     </div>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-      <path d="M10 11v6M14 11v6" />
-      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-    </svg>
-  );
-}
-
-function ConfirmIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function SpinnerIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      style={{ animation: "spin 0.7s linear infinite" }}
-    >
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <path d="M12 2a10 10 0 0 1 10 10" />
-    </svg>
   );
 }

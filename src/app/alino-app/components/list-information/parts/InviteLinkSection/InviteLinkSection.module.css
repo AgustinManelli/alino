@@ -1,8 +1,3 @@
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 @keyframes itemIn {
   from {
     opacity: 0;
@@ -13,77 +8,61 @@
     transform: translateY(0);
   }
 }
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
+
 @keyframes shimmer {
   0%,
   100% {
-    opacity: 0.4;
+    opacity: 0.45;
   }
   50% {
-    opacity: 0.8;
+    opacity: 0.9;
   }
 }
 
 .wrapper {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
   padding-top: 10px;
+  flex: 1;
+  min-height: 0;
 }
 
 .createRow {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 
 .createLabel {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
   color: var(--text-not-available);
-  padding: 0 10px;
+  padding-left: 15px;
 }
 
 .controlGroup {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 
 .createBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 5px;
   padding: 0 15px;
-  border-radius: 15px;
+  border-radius: 10px;
   border: none;
   background-color: var(--background-over-container);
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  height: 35px;
+  height: 30px;
   transition: background-color 0.15s ease;
 }
 
@@ -99,21 +78,27 @@
 .linksSection {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background-color: var(--background-over-container);
+  border-radius: 15px;
+  overflow: hidden;
 }
 
 .emptyState {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   padding: 24px 16px;
   color: var(--text-not-available);
-  background-color: var(--background-over-container);
-  border-radius: 15px;
 }
 
-.emptyState svg {
-  opacity: 0.4;
+.linkIcon {
+  stroke: var(--text-not-available);
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.5;
 }
 
 .emptyState p {
@@ -135,54 +120,68 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding: 5px;
+}
+
+.linkList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.linkList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.linkList::-webkit-scrollbar-thumb {
+  background: var(--border-container-color);
+  border-radius: 10px;
+}
+
+.linkList::-webkit-scrollbar-thumb:hover {
+  background: var(--text-not-available);
 }
 
 .linkItem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 5px;
+  padding: 0 15px;
+  height: 50px;
   background-color: var(--background-over-container);
-  border-radius: 15px;
-  animation: itemIn 0.2s ease forwards;
+  border-radius: 10px;
   opacity: 0;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
   flex-wrap: wrap;
-}
-
-.linkItem:hover {
-  background-color: var(--background-over-container-hover);
-  border-color: #87189d30;
+  animation: itemIn 0.2s ease forwards;
+  transition: background-color 0.2s ease-in-out;
+  flex-shrink: 0;
 }
 
 .rolePill {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  padding: 3px 8px;
-  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 10px;
   border: 1.5px solid;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .tokenPreview {
-  font-size: 11px;
-  font-family: "Courier New", monospace;
+  font-size: 12px;
   color: var(--text-not-available);
   opacity: 0.8;
   flex: 1;
-  min-width: 80px;
+  min-width: 100px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .usesLabel {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-not-available);
   white-space: nowrap;
   flex-shrink: 0;
@@ -190,7 +189,7 @@
 
 .linkActions {
   display: flex;
-  gap: 4px;
+  gap: 5px;
   flex-shrink: 0;
   margin-left: auto;
 }
@@ -201,10 +200,32 @@
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: none;
-  background-color: transparent;
-  stroke: var(--text-not-available);
+  background-color: var(--background-over-container);
+  color: var(--text-not-available);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.iconActionBtn {
+  width: 18px;
+  height: 18px;
+}
+
+.copyToClipboardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px !important;
+  border: none;
+  background-color: var(--background-over-container) !important;
+  stroke: var(--text-not-available) !important;
   cursor: pointer;
   transition:
     background-color 0.15s ease,
@@ -212,19 +233,19 @@
   flex-shrink: 0;
 }
 
-.actionBtn:hover:not(:disabled) {
-  background-color: var(--background-container);
-  stroke: var(--text);
+.copyToClipboardIcon:hover:not(:disabled) {
+  background-color: var(--background-over-container-hover) !important;
+  stroke: var(--text) !important;
 }
 
-.actionBtnSuccess {
-  background-color: rgba(34, 197, 94, 0.12) !important;
-  stroke: rgb(34, 197, 94) !important;
+.actionBtn:hover:not(:disabled) {
+  background-color: var(--background-over-container-hover);
+  color: var(--text);
 }
 
 .actionBtnDanger:hover:not(:disabled) {
   background-color: rgba(239, 68, 68, 0.1) !important;
-  stroke: rgb(239, 68, 68) !important;
+  color: rgb(239, 68, 68) !important;
 }
 
 .actionBtn:disabled {
@@ -235,7 +256,8 @@
 .skeleton {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  padding: 5px;
 }
 
 .skeletonRow {
@@ -244,7 +266,7 @@
   gap: 8px;
   padding: 10px 12px;
   background-color: var(--background-over-container);
-  border-radius: 15px;
+  border-radius: 10px;
 }
 
 .skeletonBlock {
@@ -254,101 +276,64 @@
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
-.qrOverlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  animation: fadeIn 0.15s ease;
-}
-
-.qrCard {
-  background-color: var(--background-container);
-  border: 1.5px solid var(--border-container-color);
-  border-radius: 20px;
-  width: 100%;
-  max-width: 320px;
-  overflow: hidden;
-  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.qrBody {
   display: flex;
   flex-direction: column;
-}
-
-.qrHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 16px 16px 12px;
-  gap: 12px;
-}
-
-.qrTitle {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0 0 2px;
+  padding: 0 15px 15px;
+  gap: 10px;
+  width: 300px;
 }
 
 .qrSubtitle {
   font-size: 12px;
   color: var(--text-not-available);
-  margin: 0;
-}
-
-.qrClose {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  border: none;
-  background: var(--background-over-container);
-  stroke: var(--text-not-available);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background-color 0.15s ease;
-}
-
-.qrClose:hover {
-  background-color: var(--background-over-container-hover);
 }
 
 .qrImageWrap {
   display: flex;
   justify-content: center;
-  padding: 8px 16px;
+  align-items: center;
+  background-color: var(--background-over-container);
+  border-radius: 15px;
+  width: 200px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+  padding: 15px;
+}
+
+.qrImageWrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   background-color: #ffffff;
-  margin: 0 16px;
-  border-radius: 12px;
+  opacity: 0.8;
+  z-index: 0;
 }
 
 .qrImage {
-  width: 200px;
-  height: 200px;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   display: block;
-  border-radius: 4px;
+  position: relative;
+  z-index: 1;
 }
 
 .qrUrlRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 12px 16px 0;
+  gap: 10px;
   padding: 8px 10px;
   background-color: var(--background-over-container);
-  border-radius: 10px;
+  border-radius: 15px;
   border: 1px solid var(--border-container-color);
+  max-width: 100%;
 }
 
 .qrUrl {
   font-size: 10px;
-  font-family: "Courier New", monospace;
   color: var(--text-not-available);
   flex: 1;
   overflow: hidden;
@@ -360,9 +345,7 @@
   font-size: 11px;
   color: var(--text-not-available);
   text-align: center;
-  padding: 10px 16px 16px;
   margin: 0;
-  line-height: 1.5;
 }
 
 @media only screen and (max-width: 850px) {
@@ -377,7 +360,21 @@
   .tokenPreview {
     font-size: 10px;
   }
-  .qrCard {
-    max-width: 100%;
+  .qrBody {
+    width: 100%;
   }
+}
+
+.icon {
+  stroke: var(--text);
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+.loadingIcon {
+  stroke: var(--text-not-available);
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
 }

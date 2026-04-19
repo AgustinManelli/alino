@@ -11,7 +11,7 @@ import colorsData from "../colors.json";
 
 import { useModalUbication } from "@/hooks/useModalUbication";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
-import CopyButton from "@/components/ui/CopyToClipboard";
+import CopyToClipboard from "@/components/ui/CopyToClipboard";
 
 import { hexColorSchema } from "@/lib/schemas/list/validation";
 
@@ -339,7 +339,10 @@ export function ColorPicker({
                         }}
                         onBlur={(e) => setColor(e.target.value)}
                       />
-                      <CopyButton color={color} />
+                      <CopyToClipboard
+                        text={color}
+                        successMessage="Color copiado al portapapeles"
+                      />
                     </div>
                   </footer>
                 </div>

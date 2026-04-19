@@ -1,7 +1,7 @@
 "use client";
 
 import { Dropdown } from "@/components/ui/Dropdown";
-import { ROLE_LABELS } from "../member-row";
+import { ROLE_LABELS } from "../parts/MemberRow/MemberRow";
 
 interface RoleDropdownProps {
   currentRole: string;
@@ -18,7 +18,7 @@ export const RoleDropdown = ({
 }: RoleDropdownProps) => {
   return (
     <Dropdown>
-      <Dropdown.Trigger disabled={disabled} chevron>
+      <Dropdown.Trigger disabled={disabled} chevron style={{ height: 30 }}>
         {ROLE_LABELS[currentRole] || currentRole}
       </Dropdown.Trigger>
       <Dropdown.Content>

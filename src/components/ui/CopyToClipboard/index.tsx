@@ -6,18 +6,30 @@ import { customToast } from "@/lib/toasts";
 
 const COOLDOWN_MS = 2500;
 
-const CopyButton = memo(function CopyButton({
-  color,
-}: {
-  color: string | null;
-}) {
+interface CopyToClipboardProps {
+  text: string | null;
+  successMessage?: string;
+  size?: number;
+  className?: string;
+  style?: React.CSSProperties;
+  initialBorderStroke?: string;
+}
+
+const CopyToClipboard = memo(function CopyToClipboard({
+  text,
+  successMessage = "Copiado al portapapeles",
+  size = 30,
+  className,
+  style,
+  initialBorderStroke = "var(--border-container-color)",
+}: CopyToClipboardProps) {
   const [isCooling, setIsCooling] = useState(false);
   const [progress, setProgress] = useState(0);
-  const animRef = useRef<number>();
-  const startRef = useRef<number>();
+  const animRef = useRef<number>(undefined);
+  const startRef = useRef<number>(undefined);
 
-  const SIZE = 30;
-  const R = 7;
+  const SIZE = size;
+  const R = (SIZE * 7) / 30;
   const SW = 1.5;
   const half = SW / 2;
   const w = SIZE - SW;
@@ -28,10 +40,10 @@ const CopyButton = memo(function CopyButton({
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      if (!color || isCooling) return;
+      if (!text || isCooling) return;
 
-      navigator.clipboard.writeText(color);
-      customToast.success("Color copiado al portapapeles");
+      navigator.clipboard.writeText(text);
+      customToast.success(successMessage);
 
       setIsCooling(true);
       setProgress(0);
@@ -49,7 +61,7 @@ const CopyButton = memo(function CopyButton({
       };
       animRef.current = requestAnimationFrame(tick);
     },
-    [color, isCooling],
+    [text, isCooling, successMessage],
   );
 
   useEffect(
@@ -63,16 +75,21 @@ const CopyButton = memo(function CopyButton({
   const cx = SIZE / 2;
   const cy = SIZE / 2;
 
+  const iconSize = (SIZE * 13) / 30;
+  const checkSize = (SIZE * 16) / 30;
+
   return (
     <motion.button
-      disabled={!color || isCooling}
+      disabled={!text || isCooling}
       onClick={handleClick}
-      className={styles.copyButton}
+      className={`${styles.copyButton} ${className ?? ""}`}
       whileTap={!isCooling ? { scale: 0.9 } : undefined}
       style={{
+        stroke: "var(--text-not-available)",
+        ...style,
         width: SIZE,
         height: SIZE,
-        opacity: !color ? 0.3 : 1,
+        opacity: !text ? 0.3 : 1,
         cursor: isCooling ? "initial" : "pointer",
       }}
     >
@@ -88,7 +105,7 @@ const CopyButton = memo(function CopyButton({
           height={h}
           rx={R}
           fill="none"
-          stroke="var(--border-container-color)"
+          stroke={initialBorderStroke}
           strokeWidth={SW}
         />
         {isCooling && (
@@ -112,8 +129,8 @@ const CopyButton = memo(function CopyButton({
       <div
         style={{
           position: "relative",
-          width: "13px",
-          height: "13px",
+          width: `${iconSize}px`,
+          height: `${iconSize}px`,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -133,7 +150,7 @@ const CopyButton = memo(function CopyButton({
                 style={{
                   strokeWidth: "2",
                   stroke: "#3fdd00",
-                  width: "16px",
+                  width: `${checkSize}px`,
                 }}
               />
             </motion.div>
@@ -149,8 +166,8 @@ const CopyButton = memo(function CopyButton({
               <CopyToClipboardIcon
                 style={{
                   strokeWidth: "2",
-                  stroke: "var(--text-not-available)",
-                  width: "16px",
+                  stroke: "inherit",
+                  width: `${checkSize}px`,
                 }}
               />
             </motion.div>
@@ -161,4 +178,4 @@ const CopyButton = memo(function CopyButton({
   );
 });
 
-export default CopyButton;
+export default CopyToClipboard;

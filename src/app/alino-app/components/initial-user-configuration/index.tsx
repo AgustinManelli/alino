@@ -8,7 +8,7 @@ import { useUserDataStore } from "@/store/useUserDataStore";
 import { useSetUsernameFirstTime } from "@/hooks/user/useSetUsernameFirstTime";
 
 import { UsernameInput } from "./username-input";
-import { WindowComponent } from "@/components/ui/window-component";
+import { WindowComponent } from "@/components/ui/WindowComponent";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import styles from "./InitialUserConfiguration.module.css";

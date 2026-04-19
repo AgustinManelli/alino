@@ -10,13 +10,6 @@ import { Cross } from "@/components/ui/icons/icons";
 import styles from "./WindowComponent.module.css";
 import Image from "next/image";
 
-const crossIconStyle = {
-  width: "24px",
-  height: "24px",
-  strokeWidth: "1.5",
-  stroke: "var(--text-not-available)",
-} as React.CSSProperties;
-
 interface WindowComponentProps {
   children?: React.ReactNode;
   windowTitle?: string;
@@ -142,7 +135,7 @@ export function WindowComponent({
                 className={styles.windowCrossButton}
                 onClick={crossAction}
               >
-                <Cross style={crossIconStyle} />
+                <Cross className={styles.windowCrossIcon} />
               </button>
             </div>
           )}

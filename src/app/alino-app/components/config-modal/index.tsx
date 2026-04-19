@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import { Switch } from "@/components/ui/switch";
-import { WindowComponent } from "@/components/ui/window-component";
+import { WindowComponent } from "@/components/ui/WindowComponent";
 
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
