@@ -1,10 +1,13 @@
 "use client";
-import { useCallback, useEffect, useMemo, memo, useRef, useState } from "react";
+
+import { useCallback, useMemo, memo, useRef } from "react";
 import { Editor, useEditorState } from "@tiptap/react";
-import { AnimatePresence, motion } from "motion/react";
+
+import { TextColorPicker } from "./TextColorPicker";
+import { HighlightColorPicker } from "./HighlightColorPicker";
+
 import styles from "./RichTextToolbar.module.css";
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
 const BulletListIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -21,6 +24,7 @@ const BulletListIcon = () => (
     <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none" />
   </svg>
 );
+
 const OrderedListIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -37,6 +41,7 @@ const OrderedListIcon = () => (
     <path d="M3.5 17h2l-2 3h2" strokeWidth={1.8} />
   </svg>
 );
+
 const AlignLeftIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -50,6 +55,7 @@ const AlignLeftIcon = () => (
     <line x1="3" y1="18" x2="18" y2="18" />
   </svg>
 );
+
 const AlignCenterIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -63,6 +69,7 @@ const AlignCenterIcon = () => (
     <line x1="4" y1="18" x2="20" y2="18" />
   </svg>
 );
+
 const AlignRightIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -76,6 +83,7 @@ const AlignRightIcon = () => (
     <line x1="6" y1="18" x2="21" y2="18" />
   </svg>
 );
+
 const AlignJustifyIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -89,19 +97,7 @@ const AlignJustifyIcon = () => (
     <line x1="3" y1="18" x2="21" y2="18" />
   </svg>
 );
-const HighlightIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M9 11-6 6v3h9l3-3" />
-    <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4" />
-  </svg>
-);
+
 const LinkIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -115,6 +111,7 @@ const LinkIcon = () => (
     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
   </svg>
 );
+
 const UnlinkIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -133,7 +130,6 @@ const UnlinkIcon = () => (
   </svg>
 );
 
-// ─── Constants ────────────────────────────────────────────────────────────────
 const FONT_SIZES = [
   "10",
   "12",
@@ -163,28 +159,6 @@ const FONT_FAMILIES = [
   { label: "Georgia", value: "Georgia, serif" },
 ] as const;
 
-const TEXT_COLORS = [
-  { label: "Default", value: null },
-  { label: "Rojo", value: "#ef4444" },
-  { label: "Naranja", value: "#f97316" },
-  { label: "Amarillo", value: "#ca8a04" },
-  { label: "Verde", value: "#16a34a" },
-  { label: "Azul", value: "#2563eb" },
-  { label: "Violeta", value: "#7c3aed" },
-  { label: "Rosa", value: "#db2777" },
-  { label: "Gris", value: "#6b7280" },
-] as const;
-
-const HIGHLIGHT_COLORS = [
-  { label: "Ninguno", value: null },
-  { label: "Amarillo", value: "#fef08a" },
-  { label: "Verde", value: "#bbf7d0" },
-  { label: "Azul", value: "#bfdbfe" },
-  { label: "Violeta", value: "#ddd6fe" },
-  { label: "Rosa", value: "#fecaca" },
-  { label: "Naranja", value: "#fed7aa" },
-] as const;
-
 const ALIGNMENTS = [
   { value: "left", label: "Izquierda", Icon: AlignLeftIcon },
   { value: "center", label: "Centro", Icon: AlignCenterIcon },
@@ -194,57 +168,9 @@ const ALIGNMENTS = [
 
 type AlignValue = (typeof ALIGNMENTS)[number]["value"];
 
-const POPOVER_MOTION = {
-  initial: { opacity: 0, scale: 0.9, y: -4 },
-  animate: { opacity: 1, scale: 1, y: 0 },
-  exit: { opacity: 0, scale: 0.9, y: -4 },
-  transition: { duration: 0.13 },
-} as const;
-
 const FONT_FAMILY_STYLE = { maxWidth: "82px" } as const;
 const FONT_SIZE_STYLE = { maxWidth: "52px" } as const;
 
-// ─── ColorSwatch ──────────────────────────────────────────────────────────────
-interface SwatchProps {
-  label: string;
-  value: string | null;
-  onSelect: (val: string | null) => void;
-}
-
-const ColorSwatch = memo(function ColorSwatch({
-  label,
-  value,
-  onSelect,
-}: SwatchProps) {
-  // useCallback with a stable dependency — avoids creating a new fn per swatch render
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      onSelect(value);
-    },
-    [value, onSelect],
-  );
-
-  const style = useMemo(
-    () => ({
-      backgroundColor: value ?? "transparent",
-      border: !value ? "1.5px dashed var(--icon-color)" : "none",
-      opacity: !value ? 0.5 : 1,
-    }),
-    [value],
-  );
-
-  return (
-    <button
-      className={styles.swatch}
-      style={style}
-      title={label}
-      onMouseDown={handleMouseDown}
-    />
-  );
-});
-
-// ─── RichTextToolbar ──────────────────────────────────────────────────────────
 interface RichTextToolbarProps {
   editor: Editor | null;
 }
@@ -253,12 +179,7 @@ export const RichTextToolbar = memo(function RichTextToolbar({
   editor,
 }: RichTextToolbarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [colorOpen, setColorOpen] = useState(false);
-  const [highlightOpen, setHighlightOpen] = useState(false);
 
-  // ── useEditorState: re-renders ONLY when any of these values change ──────
-  // Replaces the fragile `editor.on("transaction") + useState(0)` force-update
-  // pattern which re-rendered on every keystroke/cursor move.
   const editorState = useEditorState({
     editor,
     selector: ({ editor: e }) => {
@@ -293,23 +214,6 @@ export const RichTextToolbar = memo(function RichTextToolbar({
     },
   });
 
-  // ── Close popovers on outside click ───────────────────────────────────────
-  useEffect(() => {
-    if (!colorOpen && !highlightOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setColorOpen(false);
-        setHighlightOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [colorOpen, highlightOpen]);
-
-  // ── Formatting command handlers ────────────────────────────────────────────
   const toggleBold = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -389,8 +293,6 @@ export const RichTextToolbar = memo(function RichTextToolbar({
     [editor],
   );
 
-  // ── Alignment handlers — pre-built map, stable while editor doesn't change ─
-  // Avoids creating a new closure per button on every render.
   const alignHandlers = useMemo<
     Record<AlignValue, (e: React.MouseEvent) => void>
   >(
@@ -407,7 +309,6 @@ export const RichTextToolbar = memo(function RichTextToolbar({
     [editor],
   );
 
-  // ── Font handlers ──────────────────────────────────────────────────────────
   const handleFontFamily = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       if (e.target.value === "inherit") {
@@ -426,27 +327,11 @@ export const RichTextToolbar = memo(function RichTextToolbar({
     [editor],
   );
 
-  // ── Color / Highlight handlers ─────────────────────────────────────────────
-  const toggleColorOpen = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setColorOpen((v) => !v);
-    setHighlightOpen(false);
-  }, []);
-
-  const toggleHighlightOpen = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setHighlightOpen((v) => !v);
-    setColorOpen(false);
-  }, []);
-
   const handleSetColor = useCallback(
     (val: string | null) => {
       if (!editor) return;
       if (val) editor.chain().focus().setColor(val).run();
       else editor.chain().focus().unsetColor().run();
-      setColorOpen(false);
     },
     [editor],
   );
@@ -456,7 +341,6 @@ export const RichTextToolbar = memo(function RichTextToolbar({
       if (!editor) return;
       if (val) editor.chain().focus().setHighlight({ color: val }).run();
       else editor.chain().focus().unsetHighlight().run();
-      setHighlightOpen(false);
     },
     [editor],
   );
@@ -466,7 +350,6 @@ export const RichTextToolbar = memo(function RichTextToolbar({
     [],
   );
 
-  // ─────────────────────────────────────────────────────────────────────────
   if (!editor || !editorState) return null;
 
   const {
@@ -491,7 +374,6 @@ export const RichTextToolbar = memo(function RichTextToolbar({
       onMouseDown={stopPropagation}
       ref={containerRef}
     >
-      {/* ── Formatting ─────────────────────────────────────────────────── */}
       <button
         className={`${styles.btn} ${isBold ? styles.active : ""}`}
         onMouseDown={toggleBold}
@@ -521,7 +403,6 @@ export const RichTextToolbar = memo(function RichTextToolbar({
         <s>S</s>
       </button>
 
-      {/* ── Link ───────────────────────────────────────────────────────── */}
       <button
         className={`${styles.btn} ${isLink ? styles.active : ""}`}
         onMouseDown={setLink}
@@ -541,7 +422,6 @@ export const RichTextToolbar = memo(function RichTextToolbar({
 
       <div className={styles.sep} />
 
-      {/* ── Font family & size ─────────────────────────────────────────── */}
       <select
         className={styles.select}
         style={FONT_FAMILY_STYLE}
@@ -573,81 +453,15 @@ export const RichTextToolbar = memo(function RichTextToolbar({
 
       <div className={styles.sep} />
 
-      {/* ── Text color ─────────────────────────────────────────────────── */}
-      <div className={styles.popoverWrapper}>
-        <button
-          className={`${styles.colorTriggerBtn} ${activeColor ? styles.active : ""}`}
-          onMouseDown={toggleColorOpen}
-          title="Color de texto"
-        >
-          <span className={styles.colorLabel}>A</span>
-          <span
-            className={styles.colorBar}
-            style={{ backgroundColor: activeColor ?? "var(--text)" }}
-          />
-        </button>
-        <AnimatePresence>
-          {colorOpen && (
-            <motion.div
-              className={styles.popover}
-              {...POPOVER_MOTION}
-              onMouseDown={stopPropagation}
-            >
-              {TEXT_COLORS.map((c) => (
-                <ColorSwatch
-                  key={c.label}
-                  label={c.label}
-                  value={c.value}
-                  onSelect={handleSetColor}
-                />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <TextColorPicker activeColor={activeColor} onSetColor={handleSetColor} />
 
-      {/* ── Highlight ──────────────────────────────────────────────────── */}
-      <div className={styles.popoverWrapper}>
-        <button
-          className={`${styles.colorTriggerBtn} ${isHighlight ? styles.active : ""}`}
-          onMouseDown={toggleHighlightOpen}
-          title="Resaltar texto"
-        >
-          <span className={styles.iconWrapper}>
-            <HighlightIcon />
-          </span>
-          <span
-            className={styles.colorBar}
-            style={{
-              backgroundColor: activeHighlight ?? "transparent",
-              border: !activeHighlight ? "1px solid var(--icon-color)" : "none",
-              opacity: !activeHighlight ? 0.3 : 1,
-            }}
-          />
-        </button>
-        <AnimatePresence>
-          {highlightOpen && (
-            <motion.div
-              className={styles.popover}
-              {...POPOVER_MOTION}
-              onMouseDown={stopPropagation}
-            >
-              {HIGHLIGHT_COLORS.map((h) => (
-                <ColorSwatch
-                  key={h.label}
-                  label={h.label}
-                  value={h.value}
-                  onSelect={handleSetHighlight}
-                />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <HighlightColorPicker
+        activeHighlight={activeHighlight}
+        onSetHighlight={handleSetHighlight}
+      />
 
       <div className={styles.sep} />
 
-      {/* ── Lists ──────────────────────────────────────────────────────── */}
       <button
         className={`${styles.btn} ${isBulletList ? styles.active : ""}`}
         onMouseDown={toggleBulletList}
@@ -665,7 +479,6 @@ export const RichTextToolbar = memo(function RichTextToolbar({
 
       <div className={styles.sep} />
 
-      {/* ── Alignment ──────────────────────────────────────────────────── */}
       {ALIGNMENTS.map(({ value, label, Icon }) => (
         <button
           key={value}

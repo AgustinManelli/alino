@@ -31,6 +31,9 @@ import { isHtmlContent } from "@/components/ui/RichTextEditor/richTextUtils";
 
 import { InlineEditWrapper } from "./parts/InlineEditWrapper";
 import styles from "./TaskCard.module.css";
+import { ToolbarAnimated } from "../task-input/parts/ToolbarAnimated";
+
+import { Editor } from "@tiptap/react";
 
 const cardWrapperVariants: Variants = {
   initial: {
@@ -76,7 +79,13 @@ export const TaskCardStatic = memo(
     isReordering?: boolean;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
-    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const { editingTaskId, setEditingTaskId } = useTodoDataStore(
+      useShallow((state) => ({
+        editingTaskId: state.editingTaskId,
+        setEditingTaskId: state.setEditingTaskId,
+      })),
+    );
+    const isEditing = editingTaskId === task.task_id;
 
     const { list } = useTodoDataStore(
       useShallow((state) => ({
@@ -93,6 +102,9 @@ export const TaskCardStatic = memo(
 
     const cardRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLElement>(null);
+
+    const [inlineEditor, setInlineEditor] = useState<Editor | null>(null);
+    const [inlineFocus, setInlineFocus] = useState(false);
 
     useEffect(() => {
       if (!cardRef.current) return;
@@ -127,9 +139,9 @@ export const TaskCardStatic = memo(
         targetDate: string | null,
       ) => {
         updateTaskName(task.task_id, html, newCompleted, targetDate);
-        setIsEditing(false);
+        setEditingTaskId(null);
       },
-      [task.task_id, updateTaskName],
+      [task.task_id, updateTaskName, setEditingTaskId],
     );
 
     const handleDelete = useCallback(() => {
@@ -187,7 +199,7 @@ export const TaskCardStatic = memo(
                 }}
               />
             ),
-            action: () => setIsEditing(true),
+            action: () => setEditingTaskId(task.task_id),
             enabled: canEditOrDelete && !isEditing,
           },
           {
@@ -275,7 +287,9 @@ export const TaskCardStatic = memo(
             <InlineEditWrapper
               task={task}
               onSave={handleSaveInline}
-              onCancel={() => setIsEditing(false)}
+              onCancel={() => setEditingTaskId(null)}
+              onEditorReady={setInlineEditor}
+              onFocusChange={setInlineFocus}
             />
           ) : (
             <div
@@ -374,6 +388,7 @@ export const TaskCardStatic = memo(
             </div>
           )}
         </motion.div>
+        <ToolbarAnimated editor={inlineEditor} focus={inlineFocus} />
       </div>
     );
   },

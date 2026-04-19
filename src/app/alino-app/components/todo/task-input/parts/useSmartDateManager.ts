@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Editor } from "@tiptap/react";
+
 import { useSmartDate } from "@/hooks/useSmartDate";
 import { useSmartDateInteraction } from "@/hooks/useSmartDateInteraction";
 
@@ -43,13 +44,13 @@ export function useSmartDateManager({
     editor.view.dispatch(
       editor.state.tr.setMeta(
         "smartDateHighlight",
-        focus ? (activeDetected?.text || null) : null,
+        activeDetected?.text || null,
       ),
     );
-  }, [activeDetected, editor, focus]);
+  }, [activeDetected, editor]);
 
   useEffect(() => {
-    if (!activeDetected || !focus) {
+    if (!activeDetected || (!focus && !showBubble)) {
       setBubbleCoords(null);
       return;
     }
@@ -68,7 +69,7 @@ export function useSmartDateManager({
       }
     }, 50);
     return () => clearTimeout(timer);
-  }, [activeDetected, editorText, editor, focus, formContainerRef]);
+  }, [activeDetected, editorText, editor, focus, showBubble, formContainerRef]);
 
   useEffect(() => {
     if (editorText === "") setDismissedText(null);

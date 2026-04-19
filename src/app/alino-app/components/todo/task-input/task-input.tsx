@@ -123,7 +123,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     const target = e.target as Element | null;
     if (
       target?.closest(
-        "#calendar-component, #dropdown-component, #ai-enhance-panel, .smart-date-bubble-container, [data-tippy-root], .tippy-box, [data-radix-popper-content-wrapper]",
+        "#calendar-component, #dropdown-component, #ai-enhance-panel, .smart-date-bubble-container, [data-tippy-root], .tippy-box, [data-radix-popper-content-wrapper], .color-picker-portal",
       )
     )
       return;

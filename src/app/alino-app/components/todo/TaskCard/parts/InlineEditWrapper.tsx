@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { EditorContent } from "@tiptap/react";
+import { Editor, EditorContent } from "@tiptap/react";
 
 import type { TaskType } from "@/lib/schemas/database.types";
 import { useInlineEditor } from "./useInlineEditor";
@@ -9,7 +9,6 @@ import { InlineActionBar } from "./InlineActionBar";
 import { InlineItemTypeDropdown } from "./InlineItemTypeDropdown";
 
 import { SmartDateBubbleLayer } from "../../task-input/parts/SmartDateBubbleLayer";
-import { ToolbarAnimated } from "../../task-input/parts/ToolbarAnimated";
 import { useSmartDateManager } from "../../task-input/parts/useSmartDateManager";
 
 import styles from "../TaskCard.module.css";
@@ -37,12 +36,16 @@ interface InlineEditWrapperProps {
     date: string | null,
   ) => void;
   onCancel: () => void;
+  onEditorReady: (editor: Editor | null) => void;
+  onFocusChange: (focused: boolean) => void;
 }
 
 export function InlineEditWrapper({
   task,
   onSave,
   onCancel,
+  onEditorReady,
+  onFocusChange,
 }: InlineEditWrapperProps) {
   const { d: initialD, h: initialH } = extractDateAndHour(task.target_date);
   const [completed, setCompleted] = useState<boolean | null>(task.completed);
@@ -51,6 +54,7 @@ export function InlineEditWrapper({
   const [editorText, setEditorText] = useState("");
   const [cursorPos, setCursorPos] = useState(-1);
   const [isFocused, setIsFocused] = useState(false);
+  const [technicalFocus, setTechnicalFocus] = useState(false);
   const formContainerRef = useRef<HTMLDivElement>(null);
 
   const handleSave = useCallback(() => {
@@ -68,7 +72,10 @@ export function InlineEditWrapper({
     },
     onSave: handleSave,
     onCancel,
-    onFocusToggle: setIsFocused,
+    onFocusToggle: (val) => {
+      setTechnicalFocus(val);
+      if (val) setIsFocused(true);
+    },
   });
 
   const {
@@ -81,7 +88,7 @@ export function InlineEditWrapper({
     editorText,
     cursorPos,
     editor,
-    focus: isFocused,
+    focus: technicalFocus,
     formContainerRef,
   });
 
@@ -91,13 +98,22 @@ export function InlineEditWrapper({
     }
   }, [editor]);
 
+  useEffect(() => {
+    onEditorReady(editor);
+    if (editor) onFocusChange(true);
+    return () => {
+      onEditorReady(null);
+      onFocusChange(false);
+    };
+  }, [editor]);
+
   return (
     <>
       <div className={styles.cardContainer} ref={formContainerRef}>
         <SmartDateBubbleLayer
           activeDetected={activeDetected}
           showBubble={showBubble}
-          focus={isFocused}
+          focus={technicalFocus}
           bubbleCoords={bubbleCoords}
           setIsHoveringBubble={setIsHoveringBubble}
           onAssign={(d, h, txt) => {
@@ -137,8 +153,6 @@ export function InlineEditWrapper({
           onCancel={onCancel}
         />
       </div>
-
-      <ToolbarAnimated editor={editor} focus={isFocused} />
     </>
   );
 }

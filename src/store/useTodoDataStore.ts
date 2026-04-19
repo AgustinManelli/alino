@@ -24,12 +24,14 @@ type TodoStore = {
   completedTasks: TaskType[];
   completedTasksPage: number;
   hasMoreCompletedTasks: boolean;
+  editingTaskId: string | null;
   setLists: (lists: ListsType[]) => void;
   setTasks: (tasks: TaskType[]) => void;
   setFolders: (folders: FolderType[]) => void;
   setInitialFetch: (val: boolean) => void;
   setTaskSort: (sort: TaskSortOption) => void;
   setCompletedTasks: (tasks: TaskType[]) => void;
+  setEditingTaskId: (id: string | null) => void;
   updateState: (partial: Partial<TodoStore>) => void;
 };
 
@@ -48,6 +50,7 @@ export const useTodoDataStore = create<TodoStore>()((set) => ({
   completedTasks: [],
   completedTasksPage: -1,
   hasMoreCompletedTasks: true,
+  editingTaskId: null,
 
   setLists: (lists) => set({ lists }),
   setTasks: (tasks) => set({ tasks }),
@@ -55,5 +58,6 @@ export const useTodoDataStore = create<TodoStore>()((set) => ({
   setInitialFetch: (initialFetch) => set({ initialFetch }),
   setTaskSort: (taskSort) => set({ taskSort }),
   setCompletedTasks: (completedTasks) => set({ completedTasks }),
+  setEditingTaskId: (editingTaskId) => set({ editingTaskId }),
   updateState: (partial) => set((state) => ({ ...state, ...partial })),
 }));

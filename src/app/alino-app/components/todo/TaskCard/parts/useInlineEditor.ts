@@ -98,7 +98,7 @@ export function useInlineEditor({
       onFocusToggleRef.current?.(true);
     },
     onBlur: () => {
-      onFocusToggleRef.current?.(true);
+      onFocusToggleRef.current?.(false);
     },
   });
 

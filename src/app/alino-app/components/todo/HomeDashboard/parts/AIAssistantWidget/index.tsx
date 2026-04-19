@@ -24,11 +24,14 @@ export default function AIAssistantWidget() {
     if (!prompt.trim() || !canGenerateTasks) return;
     setLoadingLocal(true);
     try {
-      const data = await generate(prompt.trim(), null);
-      if (!data || !data.tasks.length) {
-        throw new Error(aiError || "No se pudieron generar tareas.");
+      const { data: responseData, error: responseError } = await generate(
+        prompt.trim(),
+        null,
+      );
+      if (!responseData || !responseData.tasks.length) {
+        throw new Error(responseError || "No se pudieron generar tareas.");
       }
-      const title = data.listSubject || "Lista Generada por IA";
+      const title = responseData.listSubject || "Lista Generada por IA";
       const { error: listError, list_id } = await insertList(
         title,
         "#87189d",
@@ -37,7 +40,7 @@ export default function AIAssistantWidget() {
       if (listError || !list_id) {
         throw new Error("Ocurrió un error creando la lista contenedor.");
       }
-      const tasksToInsert = data.tasks.map((t) => ({
+      const tasksToInsert = responseData.tasks.map((t) => ({
         list_id: list_id,
         task_content: `<p>${t.text}</p>`,
         target_date: t.target_date,
