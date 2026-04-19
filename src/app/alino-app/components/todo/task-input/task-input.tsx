@@ -20,8 +20,6 @@ import { ItemTypeDropdown } from "./parts/ItemTypeDropdown";
 
 import styles from "./task-input.module.css";
 
-const ITEM_SPRING = { type: "spring", stiffness: 500, damping: 28 } as const;
-
 function combineDateAndTime(d?: Date, h?: string): string | null {
   if (!d) return null;
   const combined = new Date(d);
@@ -35,28 +33,35 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   const { addTasks } = useAddTasks();
 
   const [focus, setFocus] = useState(false);
+  const [technicalFocus, setTechnicalFocus] = useState(false);
   const [selected, setSelected] = useState<Date | undefined>(undefined);
   const [hour, setHour] = useState<string | undefined>(undefined);
   const [isNote, setIsNote] = useState(false);
   const [editorText, setEditorText] = useState("");
   const [cursorPos, setCursorPos] = useState(-1);
 
-  // Refs for stable callbacks
   const containerRef = useRef<HTMLDivElement>(null);
   const formContainerRef = useRef<HTMLDivElement>(null);
   const handleAddRef = useRef<() => void>(() => {});
 
-  // ── Editor setup ─────────────────────────────────────────────
   const { editor, clearEditor, focusEditor, blurEditor } = useTaskEditorSetup({
-    setFocus,
     onSubmit: () => handleAddRef.current(),
     onEditorUpdate: (text, pos) => {
       setEditorText(text);
       setCursorPos(pos);
     },
+    onFocus: () => {
+      setFocus(true);
+      setTechnicalFocus(true);
+    },
+    onBlur: () => {
+      setTechnicalFocus(false);
+      if (editorText === "") {
+        setFocus(false);
+      }
+    },
   });
 
-  // ── Smart date management ─────────────────────────────────────
   const {
     activeDetected,
     showBubble,
@@ -67,11 +72,10 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     editorText,
     cursorPos,
     editor,
-    focus,
+    focus: technicalFocus,
     formContainerRef,
   });
 
-  // ── Focus editor after state sets focus ──────────────────────
   useEffect(() => {
     if (focus && editor) {
       const t = setTimeout(() => focusEditor(), 20);
@@ -79,7 +83,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     }
   }, [focus, editor, focusEditor]);
 
-  // ── Submit logic ─────────────────────────────────────────────
   const handleAdd = useCallback(() => {
     if (!editor || editor.isEmpty) {
       clearEditor();
@@ -114,12 +117,10 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     setDismissedText,
   ]);
 
-  // Keep handleAddRef current
   useEffect(() => {
     handleAddRef.current = handleAdd;
   }, [handleAdd]);
 
-  // ── Click outside ─────────────────────────────────────────────
   useOnClickOutside(containerRef, (e: MouseEvent | TouchEvent) => {
     const target = e.target as Element | null;
     if (
@@ -152,11 +153,10 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
         style={{ position: "relative" }}
         ref={formContainerRef}
       >
-        {/* Smart date bubble */}
         <SmartDateBubbleLayer
           activeDetected={activeDetected}
           showBubble={showBubble}
-          focus={focus}
+          focus={technicalFocus}
           bubbleCoords={bubbleCoords}
           setIsHoveringBubble={setIsHoveringBubble}
           onAssign={(d, h, txt) => {
@@ -171,7 +171,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
         />
 
         <div className={styles.form}>
-          {/* Item type toggle (task / note) */}
           <div
             className={styles.inputManagerContainer}
             style={{ marginTop: "10px" }}
@@ -188,13 +187,10 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
             </motion.div>
           </div>
 
-          {/* Editor with resize observer */}
           <TaskEditor editor={editor} focus={focus} />
 
-          {/* Animated placeholder */}
           <PlaceholderText focus={focus} />
 
-          {/* Bottom action bar */}
           <ActionBar
             focus={focus}
             selected={selected}
@@ -208,10 +204,8 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
           />
         </div>
 
-        {/* RichText toolbar with cinematic animation */}
         <ToolbarAnimated editor={editor} focus={focus} />
 
-        {/* Character limit indicator */}
         <CharLimitIndicator charCount={charCount} />
       </div>
     </section>

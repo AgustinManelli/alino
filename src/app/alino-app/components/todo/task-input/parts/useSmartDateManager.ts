@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+
+import { useEffect, useState } from "react";
 import { Editor } from "@tiptap/react";
 import { useSmartDate } from "@/hooks/useSmartDate";
 import { useSmartDateInteraction } from "@/hooks/useSmartDateInteraction";
@@ -37,18 +38,16 @@ export function useSmartDateManager({
     formContainerRef,
   );
 
-  // Sync the smart-date highlight decoration into the editor
   useEffect(() => {
     if (!editor) return;
     editor.view.dispatch(
       editor.state.tr.setMeta(
         "smartDateHighlight",
-        activeDetected?.text || null,
+        focus ? (activeDetected?.text || null) : null,
       ),
     );
-  }, [activeDetected, editor]);
+  }, [activeDetected, editor, focus]);
 
-  // Calculate bubble position relative to the form container
   useEffect(() => {
     if (!activeDetected || !focus) {
       setBubbleCoords(null);
@@ -58,11 +57,10 @@ export function useSmartDateManager({
       const el = editor?.view.dom.querySelector(".smart-date-highlight");
       if (el) {
         const rect = el.getBoundingClientRect();
-        const containerRect = formContainerRef.current?.getBoundingClientRect();
-        if (containerRect) {
+        if (rect) {
           setBubbleCoords({
-            top: rect.top - containerRect.top - 45,
-            left: rect.left - containerRect.left + rect.width / 2,
+            top: rect.top - 45,
+            left: rect.left + rect.width / 2,
           });
         }
       } else {
@@ -72,7 +70,6 @@ export function useSmartDateManager({
     return () => clearTimeout(timer);
   }, [activeDetected, editorText, editor, focus, formContainerRef]);
 
-  // Reset dismissed text when editor content is fully cleared
   useEffect(() => {
     if (editorText === "") setDismissedText(null);
   }, [editorText]);

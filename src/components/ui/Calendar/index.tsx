@@ -24,6 +24,7 @@ interface Props {
   hour: string | undefined;
   setHour: (value: string | undefined) => void;
   focusToParentInput?: () => void;
+  className?: string;
 }
 
 const modalMotion = {
@@ -54,6 +55,7 @@ export const Calendar = ({
   hour,
   setHour,
   focusToParentInput,
+  className,
 }: Props) => {
   const [open, setOpen] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
@@ -151,7 +153,7 @@ export const Calendar = ({
     <>
       <button
         ref={triggerRef}
-        className={styles.triggerButton}
+        className={`${styles.triggerButton} ${className || ""}`.trim()}
         style={triggerStyle}
         onClick={handleOpenCalendar}
         aria-label="Abrir calendario"

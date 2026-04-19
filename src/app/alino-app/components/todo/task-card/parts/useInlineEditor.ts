@@ -1,5 +1,6 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+
+import { useEffect, useRef } from "react";
 import { useEditor, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -10,10 +11,13 @@ import FontFamily from "@tiptap/extension-font-family";
 import TextAlign from "@tiptap/extension-text-align";
 import CharacterCount from "@tiptap/extension-character-count";
 import Link from "@tiptap/extension-link";
+
 import { FontSizeExtension } from "@/components/ui/RichTextEditor/fontSizeExtension";
 import { SmartDateHighlighter } from "@/components/ui/RichTextEditor/SmartDateHighlighter";
+import { parseRichTextContent } from "@/components/ui/RichTextEditor/richTextUtils";
 import { TASK_CHAR_LIMIT } from "@/config/app-config";
-import styles from "../task-input.module.css";
+
+import styles from "../TaskCard.module.css";
 
 const RICH_TEXT_EXTENSIONS = [
   StarterKit.configure({
@@ -34,73 +38,67 @@ const RICH_TEXT_EXTENSIONS = [
   SmartDateHighlighter,
 ];
 
-interface UseTaskEditorSetupOptions {
-  setFocus?: (v: boolean) => void;
-  onSubmit: () => void;
-  onEditorUpdate: (text: string, cursorPos: number) => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
+interface UseInlineEditorProps {
+  initialContent: string;
+  onUpdate: (text: string, pos: number) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onFocusToggle?: (isFocused: boolean) => void;
 }
 
-export function useTaskEditorSetup({
-  setFocus,
-  onSubmit,
-  onEditorUpdate,
-  onFocus,
-  onBlur,
-}: UseTaskEditorSetupOptions) {
+export function useInlineEditor({
+  initialContent,
+  onUpdate,
+  onSave,
+  onCancel,
+  onFocusToggle,
+}: UseInlineEditorProps) {
   const editorRef = useRef<Editor | null>(null);
-  const onSubmitRef = useRef(onSubmit);
-  const setFocusRef = useRef(setFocus);
+  const onSaveRef = useRef(onSave);
+  const onCancelRef = useRef(onCancel);
+  const onFocusToggleRef = useRef(onFocusToggle);
 
   useEffect(() => {
-    onSubmitRef.current = onSubmit;
-  }, [onSubmit]);
+    onSaveRef.current = onSave;
+  }, [onSave]);
   useEffect(() => {
-    setFocusRef.current = setFocus;
-  }, [setFocus]);
+    onCancelRef.current = onCancel;
+  }, [onCancel]);
+  useEffect(() => {
+    onFocusToggleRef.current = onFocusToggle;
+  }, [onFocusToggle]);
 
   const editor = useEditor({
     extensions: RICH_TEXT_EXTENSIONS,
-    content: "",
+    content: parseRichTextContent(initialContent),
     immediatelyRender: false,
     editorProps: {
-      attributes: { class: styles.proseMirror },
+      attributes: { class: styles.proseMirrorCard },
       handleKeyDown: (_view, event) => {
-        if (event.key === "Enter") {
-          if (event.shiftKey) {
-            event.preventDefault();
-            editorRef.current?.commands.splitBlock();
-            return true;
-          } else {
-            event.preventDefault();
-            onSubmitRef.current();
-            return true;
-          }
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          onSaveRef.current();
+          return true;
         }
         if (event.key === "Escape") {
           event.preventDefault();
-          editorRef.current?.commands.clearContent();
-          (editorRef.current?.view.dom as HTMLElement | undefined)?.blur();
-          setFocusRef.current?.(false);
+          onCancelRef.current();
           return true;
         }
         return false;
       },
     },
     onUpdate: ({ editor }) => {
-      onEditorUpdate(editor.getText(), editor.state.selection.from);
+      onUpdate(editor.getText(), editor.state.selection.from);
     },
     onSelectionUpdate: ({ editor }) => {
-      onEditorUpdate(editor.getText(), editor.state.selection.from);
+      onUpdate(editor.getText(), editor.state.selection.from);
     },
     onFocus: () => {
-      onFocus?.();
-      setFocusRef.current?.(true);
+      onFocusToggleRef.current?.(true);
     },
     onBlur: () => {
-      onBlur?.();
-      setFocusRef.current?.(false);
+      onFocusToggleRef.current?.(false);
     },
   });
 
@@ -108,18 +106,5 @@ export function useTaskEditorSetup({
     editorRef.current = editor;
   }, [editor]);
 
-  const clearEditor = useCallback(() => {
-    editorRef.current?.commands.clearContent();
-  }, []);
-
-  const focusEditor = useCallback(() => {
-    editorRef.current?.commands.focus();
-  }, []);
-
-  const blurEditor = useCallback(() => {
-    const dom = editorRef.current?.view.dom;
-    if (dom) (dom as HTMLElement).blur();
-  }, []);
-
-  return { editor, editorRef, clearEditor, focusEditor, blurEditor };
+  return { editor, editorRef };
 }

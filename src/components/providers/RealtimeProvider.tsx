@@ -111,7 +111,7 @@ export const RealtimeProvider = () => {
           table: "tasks",
         },
         (payload) => {
-          onAddTask(payload.new as TaskType);
+          onAddTask(payload.new);
         },
       )
       .on(
@@ -122,7 +122,7 @@ export const RealtimeProvider = () => {
           table: "tasks",
         },
         (payload) => {
-          onUpdateTask(payload.new as TaskType);
+          onUpdateTask(payload.new);
         },
       )
       .on(

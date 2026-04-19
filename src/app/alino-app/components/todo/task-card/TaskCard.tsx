@@ -1,17 +1,20 @@
 "use client";
+
 import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { animate } from "motion";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import type { Variants } from "motion/react";
 import { useSortable } from "@dnd-kit/sortable";
+
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
-import { useUserDataStore } from "@/store/useUserDataStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useDeleteTask } from "@/hooks/todo/tasks/useDeleteTask";
 import { useUpdateTaskCompleted } from "@/hooks/todo/tasks/useUpdateTaskCompleted";
-import { useEditTaskModalStore } from "@/store/useEditTaskModalStore";
+import { useUpdateTaskName } from "@/hooks/todo/tasks/useUpdateTaskName";
+import { useModalStore } from "@/store/useModalStore";
 import type { TaskType } from "@/lib/schemas/database.types";
+
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -25,23 +28,9 @@ import {
   DragDropVerticalIcon,
 } from "@/components/ui/icons/icons";
 import { isHtmlContent } from "@/components/ui/RichTextEditor/richTextUtils";
-import styles from "./task-card.module.css";
-import { useModalStore } from "@/store/useModalStore";
 
-const overlayVariants: Variants = {
-  hidden: { opacity: 1 },
-  visible: {
-    rotate: [-1, 1],
-    x: [-0.5, 0.5],
-    y: [-0.5, 0.5],
-    transition: {
-      duration: 0.12,
-      ease: "easeInOut",
-      repeat: Infinity,
-      repeatType: "reverse",
-    },
-  },
-};
+import { InlineEditWrapper } from "./parts/InlineEditWrapper";
+import styles from "./TaskCard.module.css";
 
 const cardWrapperVariants: Variants = {
   initial: {
@@ -49,13 +38,11 @@ const cardWrapperVariants: Variants = {
     scale: 0.98,
     height: 0,
     marginBottom: 0,
-    overflow: "hidden",
   },
   animate: {
     opacity: 1,
     scale: 1,
     height: "auto",
-    overflow: "hidden",
     transition: {
       height: { duration: 0.22, ease: [0.4, 0, 0.2, 1] },
       opacity: { duration: 0.18, delay: 0.12, ease: [0.4, 0, 0.2, 1] },
@@ -66,7 +53,6 @@ const cardWrapperVariants: Variants = {
     opacity: 0,
     scale: 0.97,
     height: 0,
-    overflow: "hidden",
     transition: {
       height: { duration: 0.18, ease: "easeIn", delay: 0.04 },
       opacity: { duration: 0.14, ease: "easeIn" },
@@ -82,47 +68,36 @@ export const TaskCardStatic = memo(
     home = false,
     isOverlay = false,
     isReordering = false,
-    inTrash = false,
   }: {
     task: TaskType;
     editionMode?: boolean;
     home?: boolean;
     isOverlay?: boolean;
     isReordering?: boolean;
-    inTrash?: boolean;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
-    const { openModal, taskEditing } = useEditTaskModalStore(
-      useShallow((state) => ({
-        openModal: state.openModal,
-        taskEditing: state.task,
-      })),
-    );
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+
     const { list } = useTodoDataStore(
       useShallow((state) => ({
         list: state.lists.find((l) => l.list_id === task.list_id),
       })),
     );
+
     const { deleteTask } = useDeleteTask();
     const { updateTaskCompleted } = useUpdateTaskCompleted();
+    const { updateTaskName } = useUpdateTaskName();
     const taskSort = useTodoDataStore((state) => state.taskSort);
-    const user = useUserDataStore((state) => state.user);
     const animations = useUserPreferencesStore((state) => state.animations);
     const openSplitModal = useModalStore((s) => s.open);
+
     const cardRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLElement>(null);
 
-    const isVisible =
-      taskEditing?.task_id === task.task_id && !editionMode ? 0 : 1;
-
     useEffect(() => {
       if (!cardRef.current) return;
-      animate(
-        cardRef.current,
-        { opacity: isVisible },
-        { duration: 0, delay: isVisible === 1 ? 0.3 : 0.05 },
-      );
-    }, [isVisible]);
+      animate(cardRef.current, { opacity: 1 }, { duration: 0, delay: 0.05 });
+    }, []);
 
     useEffect(() => {
       setCompleted(task.completed);
@@ -131,44 +106,31 @@ export const TaskCardStatic = memo(
     const handleUpdateStatus = useCallback(() => {
       const next = !completed;
       setCompleted(next);
-
       if (!animations) {
         updateTaskCompleted(task.task_id, next);
         return;
       }
-
       const estimatedLines = Math.max(
         1,
         Math.ceil((textRef.current?.offsetHeight ?? 20) / 22),
       );
-      const waveDuration = estimatedLines * 100 + 200; // en ms
-
+      const waveDuration = estimatedLines * 100 + 200;
       setTimeout(() => {
         updateTaskCompleted(task.task_id, next);
       }, waveDuration);
     }, [completed, task.task_id, updateTaskCompleted, animations]);
 
-    const handleEdit = useCallback(() => {
-      const rect = cardRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const tempTextarea = document.createElement("textarea");
-      Object.assign(tempTextarea.style, {
-        position: "absolute",
-        opacity: "0",
-        pointerEvents: "none",
-        top: "-9999px",
-        left: "-9999px",
-      });
-      document.body.appendChild(tempTextarea);
-      tempTextarea.focus();
-      setTimeout(() => window.scrollTo(0, 0), 300);
-      openModal({
-        task,
-        onConfirm: () => {},
-        initialRect: rect,
-        tempFocusElement: tempTextarea,
-      });
-    }, [openModal, task]);
+    const handleSaveInline = useCallback(
+      async (
+        html: string,
+        newCompleted: boolean | null,
+        targetDate: string | null,
+      ) => {
+        await updateTaskName(task.task_id, html, newCompleted, targetDate);
+        setIsEditing(false);
+      },
+      [task.task_id, updateTaskName],
+    );
 
     const handleDelete = useCallback(() => {
       if (animations && completed) {
@@ -181,7 +143,6 @@ export const TaskCardStatic = memo(
     const handleSplit = useCallback(() => {
       const allTasks = useTodoDataStore.getState().tasks;
       const listTasks = allTasks.filter((t) => t.list_id === task.list_id);
-
       const sorted = [...listTasks].sort((a, b) => {
         const ra = a.rank;
         const rb = b.rank;
@@ -192,13 +153,11 @@ export const TaskCardStatic = memo(
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
       });
-
       const idx = sorted.findIndex((t) => t.task_id === task.task_id);
       const prevTaskRank =
         idx >= 0 && idx < sorted.length - 1
           ? (sorted[idx + 1]?.rank ?? null)
           : null;
-
       openSplitModal({
         type: "splitTask",
         props: {
@@ -212,6 +171,7 @@ export const TaskCardStatic = memo(
     }, [task, openSplitModal]);
 
     const canEditOrDelete = list?.role !== "reader";
+
     const configOptions = useMemo(
       () =>
         [
@@ -227,8 +187,8 @@ export const TaskCardStatic = memo(
                 }}
               />
             ),
-            action: handleEdit,
-            enabled: canEditOrDelete,
+            action: () => setIsEditing(true),
+            enabled: canEditOrDelete && !isEditing,
           },
           {
             name: "Dividir",
@@ -243,7 +203,7 @@ export const TaskCardStatic = memo(
               />
             ),
             action: handleSplit,
-            enabled: canEditOrDelete && task.completed !== null,
+            enabled: canEditOrDelete && task.completed !== null && !isEditing,
           },
           {
             name: "Eliminar",
@@ -257,11 +217,12 @@ export const TaskCardStatic = memo(
                 }}
               />
             ),
+            variant: "critical" as const,
             action: handleDelete,
-            enabled: canEditOrDelete,
+            enabled: canEditOrDelete && !isEditing,
           },
         ].filter((o) => o.enabled),
-      [handleEdit, handleSplit, handleDelete, canEditOrDelete, task.completed],
+      [handleSplit, handleDelete, canEditOrDelete, task.completed, isEditing],
     );
 
     const isHtml = isHtmlContent(task.task_content);
@@ -286,7 +247,8 @@ export const TaskCardStatic = memo(
         editionMode ||
         home ||
         isOverlay ||
-        !canEditOrDelete,
+        !canEditOrDelete ||
+        isEditing,
     });
 
     const style = useMemo<React.CSSProperties>(
@@ -304,20 +266,22 @@ export const TaskCardStatic = memo(
     return (
       <div ref={setNodeRef} style={{ ...style, width: "100%" }}>
         <motion.div
-          style={{ width: "100%" }}
           variants={!isOverlay ? cardWrapperVariants : undefined}
           initial={!isOverlay ? "initial" : undefined}
           animate={!isOverlay ? "animate" : undefined}
           exit={!isOverlay ? "exit" : undefined}
         >
-          <motion.div
-            className={styles.cardContainer}
-            ref={cardRef as React.Ref<HTMLDivElement>}
-            variants={animations && isOverlay ? overlayVariants : undefined}
-            initial={isOverlay ? "hidden" : undefined}
-            animate={isOverlay ? "visible" : undefined}
-          >
-            <AnimatePresence mode="wait">
+          {isEditing ? (
+            <InlineEditWrapper
+              task={task}
+              onSave={handleSaveInline}
+              onCancel={() => setIsEditing(false)}
+            />
+          ) : (
+            <div
+              className={styles.cardContainer}
+              ref={cardRef as React.Ref<HTMLDivElement>}
+            >
               {isReordering &&
               taskSort === "default" &&
               !home &&
@@ -371,69 +335,44 @@ export const TaskCardStatic = memo(
                   )}
                 </motion.div>
               )}
-            </AnimatePresence>
 
-            <div className={styles.textContainer}>
-              {isHtml ? (
-                <div
-                  ref={textRef as React.RefObject<HTMLDivElement>}
-                  className={styles.text}
-                  style={{ opacity: completed ? 0.3 : 1 }}
-                  dangerouslySetInnerHTML={{ __html: displayContent }}
-                />
-              ) : (
-                <p
-                  ref={textRef as React.RefObject<HTMLParagraphElement>}
-                  className={styles.text}
-                  style={{ opacity: completed ? 0.3 : 1 }}
-                >
-                  {linkifyWithIcon(displayContent)}
-                </p>
-              )}
-              <WavyStrikethrough
-                textRef={textRef as any}
-                completed={completed}
-              />
-            </div>
-
-            {user?.user_id !== task.created_by?.user_id && (
-              <div
-                style={{
-                  position: "relative",
-                  width: "30px",
-                  height: "30px",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  opacity: 0.2,
-                }}
-              >
-                <div
-                  style={{
-                    width: "25px",
-                    height: "25px",
-                    backgroundImage: `url(${task.created_by?.avatar_url})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    borderRadius: "50%",
-                  }}
+              <div className={styles.textContainer}>
+                {isHtml ? (
+                  <div
+                    ref={textRef as React.RefObject<HTMLDivElement>}
+                    className={styles.text}
+                    style={{ opacity: completed ? 0.3 : 1 }}
+                    dangerouslySetInnerHTML={{ __html: displayContent }}
+                  />
+                ) : (
+                  <p
+                    ref={textRef as React.RefObject<HTMLParagraphElement>}
+                    className={styles.text}
+                    style={{ opacity: completed ? 0.3 : 1 }}
+                  >
+                    {linkifyWithIcon(displayContent)}
+                  </p>
+                )}
+                <WavyStrikethrough
+                  textRef={textRef as any}
+                  completed={completed}
                 />
               </div>
-            )}
 
-            <div className={styles.editingButtons}>
-              <TimeLimitBox
-                target_date={task.target_date}
-                idScrollArea="task-section-scroll-area"
-                completed={completed}
-              />
-              <ConfigMenu
-                iconWidth="25px"
-                configOptions={configOptions}
-                idScrollArea="task-section-scroll-area"
-              />
+              <div className={styles.editingButtons}>
+                <TimeLimitBox
+                  target_date={task.target_date}
+                  idScrollArea="task-section-scroll-area"
+                  completed={completed}
+                />
+                <ConfigMenu
+                  iconWidth="25px"
+                  configOptions={configOptions}
+                  idScrollArea="task-section-scroll-area"
+                />
+              </div>
             </div>
-          </motion.div>
+          )}
         </motion.div>
       </div>
     );

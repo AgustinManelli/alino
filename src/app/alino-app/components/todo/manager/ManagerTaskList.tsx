@@ -31,8 +31,8 @@ import {
   DeleteIcon,
   TaskRemoveIcon,
 } from "@/components/ui/icons/icons";
-import { TaskCardStatic } from "../task-card/task-card-static";
-import { DragTaskCard } from "../task-card/drag-task-card";
+import { TaskCardStatic } from "../task-card/TaskCard";
+import { DragTaskCard } from "../task-card/DragTaskCard";
 import styles from "./manager.module.css";
 
 interface ManagerTaskListProps {
@@ -174,7 +174,7 @@ export const ManagerTaskList = memo(function ManagerTaskList({
       <div className={styles.tasks}>
         <AnimatePresence mode="popLayout" initial={false}>
           {completedTasks.map((task) => (
-            <TaskCardStatic key={task.task_id} task={task} inTrash />
+            <TaskCardStatic key={task.task_id} task={task} />
           ))}
         </AnimatePresence>
         {loadingCompleted && (

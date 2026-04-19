@@ -93,12 +93,16 @@ export function useTodoRealtime() {
     });
   }, [updateState]);
 
-  const onAddTask = useCallback((task: TaskType) => {
+  const onAddTask = useCallback((task: TaskType | any) => {
     const state = useTodoDataStore.getState();
-    const taskExists = state.tasks.some((t) => t.task_id === task.task_id);
+    const existingTask = state.tasks.find((t) => t.task_id === task.task_id);
+    let taskToInsert = task;
+    if (existingTask && typeof task.created_by === "string") {
+      taskToInsert = { ...task, created_by: existingTask.created_by };
+    }
 
     let updatedLists = state.lists;
-    if (!taskExists) {
+    if (!existingTask) {
       updatedLists = state.lists.map((currentItem) => {
         if (currentItem.list.list_id === task.list_id) {
           const currentCount = readTaskCount(currentItem, state.tasks);
@@ -115,18 +119,26 @@ export function useTodoRealtime() {
     }
 
     updateState({
-      tasks: [task, ...state.tasks].filter(
+      tasks: [taskToInsert, ...state.tasks].filter(
         (t, index, self) =>
-          index === self.findIndex((tt) => tt.task_id === t.task_id)
+          index === self.findIndex((tt) => tt.task_id === t.task_id),
       ),
       lists: updatedLists,
     });
   }, [updateState]);
 
-  const onUpdateTask = useCallback((task: TaskType) => {
+  const onUpdateTask = useCallback((task: TaskType | any) => {
     const currentTasks = useTodoDataStore.getState().tasks;
     updateState({
-      tasks: currentTasks.map((t) => (t.task_id === task.task_id ? task : t)),
+      tasks: currentTasks.map((t) => {
+        if (t.task_id === task.task_id) {
+          // Preservamos el objeto created_by previo si el incoming es solo un string o ID
+          const createdBy =
+            typeof task.created_by === "string" ? t.created_by : task.created_by;
+          return { ...t, ...task, created_by: createdBy };
+        }
+        return t;
+      }),
     });
   }, [updateState]);
 

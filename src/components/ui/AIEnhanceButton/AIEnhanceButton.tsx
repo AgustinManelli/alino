@@ -82,6 +82,7 @@ export interface AIEnhanceButtonProps {
     tasks: AIGeneratedTask[],
   ) => Promise<{ error: string | null }>;
   showGenerateTasks?: boolean;
+  className?: string;
 }
 
 export function AIEnhanceButton({
@@ -89,6 +90,7 @@ export function AIEnhanceButton({
   visible,
   onCreateTasks,
   showGenerateTasks = true,
+  className,
 }: AIEnhanceButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("enhance");
@@ -229,7 +231,7 @@ export function AIEnhanceButton({
           <div className={styles.btnWrapper}>
             <button
               ref={triggerRef}
-              className={`${styles.mainBtn} ${isAnyLoading ? styles.loading : ""}`}
+              className={`${styles.mainBtn} ${isAnyLoading ? styles.loading : ""} ${className || ""}`.trim()}
               onClick={(e) => {
                 e.stopPropagation();
                 setIsOpen((v) => !v);

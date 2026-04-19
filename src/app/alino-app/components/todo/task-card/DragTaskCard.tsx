@@ -3,10 +3,10 @@ import { memo } from "react";
 import { motion } from "motion/react";
 import type { Variants } from "motion/react";
 import type { TaskType } from "@/lib/schemas/database.types";
-import { Note, DragDropVerticalIcon } from "@/components/ui/icons/icons";
+import { DragDropVerticalIcon } from "@/components/ui/icons/icons";
 import { isHtmlContent } from "@/components/ui/RichTextEditor/richTextUtils";
 import { linkifyWithIcon } from "@/utils/linkify";
-import styles from "./task-card.module.css";
+import styles from "./TaskCard.module.css";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
 const overlayVariants: Variants = {
@@ -28,7 +28,7 @@ export const DragTaskCard = memo(({ task }: { task: TaskType }) => {
   const animations = useUserPreferencesStore((state) => state.animations);
   const isHtml = isHtmlContent(task.task_content);
   const completed = task.completed;
-  
+
   return (
     <div style={{ width: "100%", pointerEvents: "none" }}>
       <motion.div
@@ -62,13 +62,12 @@ export const DragTaskCard = memo(({ task }: { task: TaskType }) => {
             <div
               className={styles.text}
               style={{ opacity: completed ? 0.3 : 1 }}
-              dangerouslySetInnerHTML={{ __html: task.task_content.slice(0, 200) }}
+              dangerouslySetInnerHTML={{
+                __html: task.task_content.slice(0, 200),
+              }}
             />
           ) : (
-            <p
-              className={styles.text}
-              style={{ opacity: completed ? 0.3 : 1 }}
-            >
+            <p className={styles.text} style={{ opacity: completed ? 0.3 : 1 }}>
               {linkifyWithIcon(task.task_content.slice(0, 200))}
             </p>
           )}

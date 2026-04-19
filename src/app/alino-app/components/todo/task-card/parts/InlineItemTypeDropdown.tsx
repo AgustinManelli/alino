@@ -1,8 +1,8 @@
 "use client";
 
-import { RefObject } from "react";
 import { Dropdown } from "@/components/ui/Dropdown";
 import { Note } from "@/components/ui/icons/icons";
+
 import styles from "../TaskCard.module.css";
 
 const TaskIcon = ({
@@ -42,35 +42,23 @@ const ITEM_TYPE_OPTIONS = [
   { value: "note", label: "Nota", icon: Note },
 ] as const;
 
-interface Props {
+interface InlineItemTypeDropdownProps {
   completed: boolean | null;
   setCompleted: (value: boolean | null) => void;
-  inputRef: RefObject<HTMLTextAreaElement>;
 }
 
-export const ItemTypeDropdown = ({
+export const InlineItemTypeDropdown = ({
   completed,
   setCompleted,
-  inputRef,
-}: Props) => {
+}: InlineItemTypeDropdownProps) => {
   const handleSelected = (value: "task" | "note") => {
-    if (value === "task") {
-      setCompleted(false);
-    } else {
-      setCompleted(null);
-    }
-
-    if (inputRef.current) {
-      const length = inputRef.current.value.length;
-      inputRef.current.setSelectionRange(length, length);
-      inputRef.current.focus();
-    }
+    if (value === "task") setCompleted(false);
+    else setCompleted(null);
   };
 
-  const renderTriggerContent = (): JSX.Element => {
+  const renderTriggerContent = () => {
     const isNote = completed === null;
     const Icon = isNote ? Note : TaskIcon;
-
     return (
       <div className={styles.dropdownItemContainer}>
         <div style={{ width: "15px", height: "15px", display: "flex" }}>
@@ -91,7 +79,7 @@ export const ItemTypeDropdown = ({
     <Dropdown side>
       <Dropdown.Trigger
         style={{
-          borderRadius: "10px",
+          borderRadius: "7px",
           height: "25px",
           width: "25px",
         }}
@@ -109,11 +97,7 @@ export const ItemTypeDropdown = ({
             }
           >
             <opt.icon
-              style={{
-                width: "16px",
-                height: "16px",
-                strokeWidth: "2",
-              }}
+              style={{ width: "16px", height: "16px", strokeWidth: "2" }}
             />
             <p style={{ margin: 0 }}>{opt.label}</p>
           </Dropdown.Item>

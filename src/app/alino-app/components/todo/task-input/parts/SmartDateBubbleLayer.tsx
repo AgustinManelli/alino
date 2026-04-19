@@ -1,7 +1,8 @@
 "use client";
 import { memo } from "react";
-import { SmartDateBubble } from "@/components/ui/SmartDateBubble/SmartDateBubble";
 import { SmartDateResult } from "@/hooks/useSmartDate";
+import { SmartDateBubble } from "@/components/ui/SmartDateBubble/SmartDateBubble";
+import { ClientOnlyPortal } from "@/components/ui/ClientOnlyPortal";
 
 interface SmartDateBubbleLayerProps {
   activeDetected: SmartDateResult | null;
@@ -25,22 +26,26 @@ export const SmartDateBubbleLayer = memo(function SmartDateBubbleLayer({
   if (!activeDetected || !showBubble || !focus || !bubbleCoords) return null;
 
   return (
-    <div
-      onMouseEnter={() => setIsHoveringBubble(true)}
-      onMouseLeave={() => setIsHoveringBubble(false)}
-      style={{
-        position: "absolute",
-        top: `${bubbleCoords.top}px`,
-        left: `${bubbleCoords.left}px`,
-        transform: "translateX(-50%)",
-        zIndex: 27,
-      }}
-    >
-      <SmartDateBubble
-        detected={activeDetected}
-        onAssign={(d, h, txt) => onAssign(d, h, txt)}
-        onDismiss={onDismiss}
-      />
-    </div>
+    <ClientOnlyPortal>
+      <div
+        className="smart-date-bubble-container"
+        onMouseEnter={() => setIsHoveringBubble(true)}
+        onMouseLeave={() => setIsHoveringBubble(false)}
+        onMouseDown={(e) => e.preventDefault()}
+        style={{
+          position: "fixed",
+          top: `${bubbleCoords.top}px`,
+          left: `${bubbleCoords.left}px`,
+          transform: "translateX(-50%)",
+          zIndex: 9999,
+        }}
+      >
+        <SmartDateBubble
+          detected={activeDetected}
+          onAssign={(d, h, txt) => onAssign(d, h, txt)}
+          onDismiss={onDismiss}
+        />
+      </div>
+    </ClientOnlyPortal>
   );
 });

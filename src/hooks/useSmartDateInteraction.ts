@@ -64,14 +64,24 @@ export function useSmartDateInteraction(
       }
     };
 
+    const handleScrollOrResize = () => {
+      setIsAutoVisible(false);
+      setIsHoveringHighlight(false);
+      setIsHoveringBubble(false);
+    };
+
     container.addEventListener("mouseover", handleMouseOver);
     container.addEventListener("mouseout", handleMouseOut);
     container.addEventListener("click", handleClick);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
 
     return () => {
       container.removeEventListener("mouseover", handleMouseOver);
       container.removeEventListener("mouseout", handleMouseOut);
       container.removeEventListener("click", handleClick);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
       clearTimeout(hoverOutTimer);
     };
   }, [containerRef, timeoutMs]);
