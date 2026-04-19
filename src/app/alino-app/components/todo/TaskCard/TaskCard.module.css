@@ -104,9 +104,6 @@
   margin: 0;
   line-height: 1.55;
 }
-.text p + p {
-  margin-top: 2px;
-}
 .text ul,
 .text ol {
   padding-left: 20px;

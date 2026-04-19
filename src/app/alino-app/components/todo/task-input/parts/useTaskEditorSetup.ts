@@ -67,22 +67,19 @@ export function useTaskEditorSetup({
     editorProps: {
       attributes: { class: styles.proseMirror },
       handleKeyDown: (_view, event) => {
-        if (event.key === "Enter") {
-          if (event.shiftKey) {
-            event.preventDefault();
-            editorRef.current?.commands.splitBlock();
-            return true;
-          } else {
-            event.preventDefault();
-            onSubmitRef.current();
-            return true;
-          }
+        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+          event.preventDefault();
+          onSubmitRef.current();
+          return true;
         }
         if (event.key === "Escape") {
           event.preventDefault();
-          editorRef.current?.commands.clearContent();
-          (editorRef.current?.view.dom as HTMLElement | undefined)?.blur();
-          setFocusRef.current?.(false);
+          if (editorRef.current && !editorRef.current.isEmpty) {
+            editorRef.current.commands.clearContent();
+          } else {
+            (editorRef.current?.view.dom as HTMLElement | undefined)?.blur();
+            setFocusRef.current?.(false);
+          }
           return true;
         }
         return false;
@@ -100,7 +97,6 @@ export function useTaskEditorSetup({
     },
     onBlur: () => {
       onBlur?.();
-      setFocusRef.current?.(false);
     },
   });
 

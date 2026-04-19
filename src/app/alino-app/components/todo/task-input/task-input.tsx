@@ -45,6 +45,7 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
   const handleAddRef = useRef<() => void>(() => {});
 
   const { editor, clearEditor, focusEditor, blurEditor } = useTaskEditorSetup({
+    setFocus: setFocus,
     onSubmit: () => handleAddRef.current(),
     onEditorUpdate: (text, pos) => {
       setEditorText(text);
@@ -56,9 +57,6 @@ export default function TaskInput({ setList }: { setList?: ListsType }) {
     },
     onBlur: () => {
       setTechnicalFocus(false);
-      if (editorText === "") {
-        setFocus(false);
-      }
     },
   });
 

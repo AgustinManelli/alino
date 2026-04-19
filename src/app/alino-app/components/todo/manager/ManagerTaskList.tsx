@@ -26,13 +26,9 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { calcNewRank, LexorankItem } from "@/lib/lexorank";
 import { ListsType, TaskType } from "@/lib/schemas/database.types";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  LoadingIcon,
-  DeleteIcon,
-  TaskRemoveIcon,
-} from "@/components/ui/icons/icons";
-import { TaskCardStatic } from "../task-card/TaskCard";
-import { DragTaskCard } from "../task-card/DragTaskCard";
+import { LoadingIcon, TaskRemoveIcon } from "@/components/ui/icons/icons";
+import { TaskCardStatic } from "../TaskCard/TaskCard";
+import { DragTaskCard } from "../TaskCard/DragTaskCard";
 import styles from "./manager.module.css";
 
 interface ManagerTaskListProps {

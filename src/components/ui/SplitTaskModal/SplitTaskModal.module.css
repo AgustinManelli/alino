@@ -1,146 +1,116 @@
-.backdrop {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 900;
-  background-color: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-}
-
-.container {
-  width: min(92vw, 380px);
+.modalContent {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  background-color: var(--background-container);
-  border: 1px solid var(--border-container-color);
-  border-radius: 20px;
-  box-shadow:
-    rgba(12, 20, 66, 0.02) 0px 4px 12px,
-    rgba(12, 20, 66, 0.08) 0px 30px 80px;
+  position: relative;
   padding: 20px;
+  width: 400px;
 }
 
-/* ── Header ── */
 .header {
   display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
 }
 
-.headerIcon {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: var(--alino-primary-color);
+.headerContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.closeButton {
+  height: 20px;
+  width: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-not-available);
+  transition: color 0.2s ease-in-out;
 }
 
-.headerText {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  flex: 1;
-  min-width: 0;
+.closeButton:hover {
+  color: var(--text);
 }
 
 .title {
-  font-weight: 600;
   font-size: 14px;
+  font-weight: 600;
   color: var(--text);
   margin: 0;
 }
 
 .subtitle {
   font-size: 11px;
-  color: var(--text-secondary, rgba(128, 128, 128, 0.8));
+  color: var(--text-not-available);
   margin: 0;
 }
 
-.closeButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-secondary, rgba(128, 128, 128, 0.7));
-  font-size: 20px;
-  line-height: 1;
-  padding: 2px 6px;
-  border-radius: 6px;
-  transition:
-    color 0.15s,
-    background-color 0.15s;
-  flex-shrink: 0;
-}
-
-.closeButton:hover {
-  color: var(--text);
-  background-color: var(--background-over-container-hover);
-}
-
-/* ── Divider ── */
 .divider {
   height: 1px;
   background: var(--border-container-color);
-  margin: 0 -4px;
 }
 
-/* ── Loading ── */
 .loadingArea {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 24px 0 10px;
+  padding: 50px 0px;
 }
 
-/* ── Task list (preview) ── */
 .taskList {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  max-height: 200px;
+  scrollbar-width: none;
+}
+
+.taskList::-webkit-scrollbar {
+  display: none;
 }
 
 .taskItem {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 5px;
   padding: 8px 10px;
   border-radius: 10px;
   background: var(--background-over-container);
   border: 1px solid var(--border-container-color);
+  min-height: 33px;
+  flex-shrink: 0;
 }
 
 .squircleIcon {
   display: flex;
   align-items: center;
-  padding-top: 1px;
+  justify-content: center;
   flex-shrink: 0;
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   fill: none;
   stroke: var(--text);
   stroke-width: 2;
 }
 
 .taskText {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text);
-  line-height: 1.45;
 }
 
-/* ── Actions ── */
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cancelButton,
@@ -148,7 +118,7 @@
 .confirmButton {
   flex: 1;
   height: 38px;
-  border-radius: 10px;
+  border-radius: 15px;
   font-size: 13px;
   cursor: pointer;
   transition:
@@ -191,7 +161,6 @@
   opacity: 0.9;
 }
 
-/* ── Error ── */
 .errorText {
   font-size: 13px;
   color: var(--text);
@@ -203,16 +172,151 @@
   border: 1px solid rgba(239, 68, 68, 0.15);
 }
 
-@media only screen and (max-width: 850px) and (display-mode: standalone) {
-  .backdrop {
-    align-items: flex-end;
-    padding-bottom: env(safe-area-inset-bottom, 16px);
-  }
+.debugPanel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 220px;
+  background: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: debugFadeIn 0.3s ease-out;
+  z-index: 9999;
+}
 
-  .container {
-    width: 100%;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-radius: 20px 20px 0 0;
+@keyframes debugFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
   }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.debugHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.debugBadge {
+  padding: 2px 6px;
+  background: var(--alino-primary-color);
+  color: white;
+  border-radius: 6px;
+  font-size: 10px;
+}
+
+.hookStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: var(--background-over-container);
+  border-radius: 8px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.hookStatusItem {
+  display: flex;
+  justify-content: space-between;
+}
+
+.statusActive {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.statusError {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.debugGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.debugGrid button {
+  padding: 6px;
+  font-size: 11px;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  color: var(--text);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.debugGrid button:hover {
+  background: var(--background-over-container-hover);
+}
+
+.debugActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.debugSimulateBtn,
+.debugErrorBtn {
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.debugSimulateBtn {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.debugSimulateBtn:hover {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+.debugErrorBtn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.debugErrorBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.debugReset {
+  margin-top: 4px;
+}
+
+.debugReset button {
+  width: 100%;
+  padding: 8px;
+  font-size: 11px;
+  background: transparent;
+  border: 1px dashed var(--border-container-color);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.debugReset button:hover {
+  color: var(--text);
+  border-color: var(--text-secondary);
 }

@@ -13,6 +13,7 @@ interface Props {
   title?: string;
   crossButton?: boolean;
   closeAction: () => void;
+  ignoreClass?: string;
 }
 
 export const WindowModal = ({
@@ -20,13 +21,14 @@ export const WindowModal = ({
   title,
   crossButton = true,
   closeAction,
+  ignoreClass,
 }: Props) => {
   const modalRef = useRef<HTMLElement | null>(null);
   const handleCrossAction = () => {
     closeAction();
   };
 
-  useOnClickOutside(modalRef, closeAction);
+  useOnClickOutside(modalRef, closeAction, [], ignoreClass);
   return (
     <ClientOnlyPortal>
       <section className={`${styles.container} ignore-sidebar-close`}>

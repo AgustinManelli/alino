@@ -75,7 +75,7 @@ export function useInlineEditor({
     editorProps: {
       attributes: { class: styles.proseMirrorCard },
       handleKeyDown: (_view, event) => {
-        if (event.key === "Enter" && !event.shiftKey) {
+        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
           event.preventDefault();
           onSaveRef.current();
           return true;
@@ -98,7 +98,7 @@ export function useInlineEditor({
       onFocusToggleRef.current?.(true);
     },
     onBlur: () => {
-      onFocusToggleRef.current?.(false);
+      onFocusToggleRef.current?.(true);
     },
   });
 

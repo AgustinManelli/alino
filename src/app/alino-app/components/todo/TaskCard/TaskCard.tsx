@@ -126,7 +126,7 @@ export const TaskCardStatic = memo(
         newCompleted: boolean | null,
         targetDate: string | null,
       ) => {
-        await updateTaskName(task.task_id, html, newCompleted, targetDate);
+        updateTaskName(task.task_id, html, newCompleted, targetDate);
         setIsEditing(false);
       },
       [task.task_id, updateTaskName],

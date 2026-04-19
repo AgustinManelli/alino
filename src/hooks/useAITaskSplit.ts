@@ -25,7 +25,7 @@ export function useAITaskSplit() {
     async (
       taskContent: string,
       maxSubtasks: number = 5
-    ): Promise<SplitPreviewResult | null> => {
+    ): Promise<{ data: SplitPreviewResult | null; error: string | null }> => {
       setLoading(true);
       setError(null);
 
@@ -39,14 +39,16 @@ export function useAITaskSplit() {
         const data = await res.json();
 
         if (!res.ok) {
-          setError(data.error ?? "Error al generar las subtareas.");
-          return null;
+          const errMsg = data.error ?? "Error al generar las subtareas.";
+          setError(errMsg);
+          return { data: null, error: errMsg };
         }
 
-        return { tasks: data.tasks, credits: data.credits };
-      } catch {
-        setError("No se pudo conectar con el servidor. Verificá tu connexión.");
-        return null;
+        return { data: { tasks: data.tasks, credits: data.credits }, error: null };
+      } catch (err) {
+        const errMsg = "No se pudo conectar con el servidor. Verificá tu connexión.";
+        setError(errMsg);
+        return { data: null, error: errMsg };
       } finally {
         setLoading(false);
       }
@@ -60,7 +62,7 @@ export function useAITaskSplit() {
       listId: string,
       taskRank: string | null,
       prevTaskRank: string | null
-    ): Promise<SplitConfirmResult | null> => {
+    ): Promise<{ data: SplitConfirmResult | null; error: string | null }> => {
       setLoading(true);
       setError(null);
 
@@ -74,14 +76,16 @@ export function useAITaskSplit() {
         const data = await res.json();
 
         if (!res.ok) {
-          setError(data.error ?? "Error al crear las subtareas.");
-          return null;
+          const errMsg = data.error ?? "Error al crear las subtareas.";
+          setError(errMsg);
+          return { data: null, error: errMsg };
         }
 
-        return { tasks: data.tasks as TaskType[] };
-      } catch {
-        setError("No se pudo conectar con el servidor. Verificá tu connexión.");
-        return null;
+        return { data: { tasks: data.tasks as TaskType[] }, error: null };
+      } catch (err) {
+        const errMsg = "No se pudo conectar con el servidor. Verificá tu connexión.";
+        setError(errMsg);
+        return { data: null, error: errMsg };
       } finally {
         setLoading(false);
       }

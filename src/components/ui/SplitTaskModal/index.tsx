@@ -1,16 +1,21 @@
 "use client";
+
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion } from "motion/react";
+
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { getBatchInjectedState } from "@/store/todoUtils";
 import { useAITaskSplit } from "@/hooks/useAITaskSplit";
-import { ClientOnlyPortal } from "../ClientOnlyPortal";
-import { SquircleIcon } from "../icons/icons";
-import { IAStarsLoader } from "../icons/ia-loader";
-import styles from "./SplitTaskModal.module.css";
-import type { AIGeneratedTask } from "@/lib/ai/aiProvider";
+import { WindowModal } from "../WindowModal";
 import { customToast } from "@/lib/toasts";
+import { AIShadowEffect } from "../AIShadowEffect/AIShadowEffect";
+import type { AIGeneratedTask } from "@/lib/ai/aiProvider";
+
+import { IAStarsLoader } from "../icons/ia-loader";
+import { Cross, SquircleIcon } from "../icons/icons";
+
+import styles from "./SplitTaskModal.module.css";
 
 type SplitPhase = "loading" | "preview" | "confirming" | "error";
 
@@ -37,27 +42,28 @@ export const SplitTaskModal = ({
   const [previewTasks, setPreviewTasks] = useState<AIGeneratedTask[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   const updateState = useTodoDataStore((s) => s.updateState);
   const tasks = useTodoDataStore((s) => s.tasks);
   const lists = useTodoDataStore((s) => s.lists);
 
-  // Carga inicial
   useEffect(() => {
     let cancelled = false;
 
     const doPreview = async () => {
-      const result = await split.preview(taskContent, 5);
+      setPhase("loading");
+      const { data, error } = await split.preview(taskContent, 5);
       if (cancelled) return;
-      if (!result || result.tasks.length === 0) {
+      if (error || !data || data.tasks.length === 0) {
         setErrorMessage(
-          split.error ?? "No se pudo dividir la tarea. Intentá nuevamente.",
+          error ?? "No se pudo dividir la tarea. Intentá nuevamente.",
         );
         setPhase("error");
         return;
       }
-      setPreviewTasks(result.tasks);
-      setCredits(result.credits.remaining);
+      setPreviewTasks(data.tasks);
+      setCredits(data.credits.remaining);
       setPhase("preview");
     };
 
@@ -65,11 +71,10 @@ export const SplitTaskModal = ({
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [retryKey, taskContent]);
 
   const handleRetry = useCallback(() => {
-    setPhase("loading");
+    setRetryKey((k) => k + 1);
     setErrorMessage(null);
     setPreviewTasks([]);
   }, []);
@@ -77,14 +82,14 @@ export const SplitTaskModal = ({
   const handleConfirm = useCallback(async () => {
     if (phase !== "preview") return;
     setPhase("confirming");
-    const result = await split.confirm(
+    const { data: result, error } = await split.confirm(
       previewTasks,
       listId,
       taskRank,
       prevTaskRank,
     );
-    if (!result) {
-      setErrorMessage(split.error ?? "Error al crear las subtareas.");
+    if (error || !result) {
+      setErrorMessage(error ?? "Error al crear las subtareas.");
       setPhase("error");
       return;
     }
@@ -129,96 +134,102 @@ export const SplitTaskModal = ({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [canClose, onClose]);
 
+  const contentByPhase = {
+    loading: {
+      title: "Dividiendo tarea...",
+      subtitle: "Estamos analizando la tarea con IA",
+    },
+    preview: {
+      title: `${previewTasks.length} subtareas generadas`,
+      subtitle: "Revisá las subtareas antes de crearlas",
+    },
+    confirming: {
+      title: "Creando subtareas...",
+      subtitle: "Guardando cambios",
+    },
+    error: {
+      title: "No se pudo dividir",
+      subtitle: "Intentá nuevamente más tarde",
+    },
+  };
+
+  const { title, subtitle } = contentByPhase[phase] ?? {
+    title: "",
+    subtitle: "",
+  };
+
   return (
-    <ClientOnlyPortal>
-      <motion.div
-        className={`${styles.backdrop} ignore-sidebar-close`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1, transition: { duration: 0.2 } }}
-        exit={{ opacity: 0, transition: { duration: 0.15 } }}
-      >
-        <div className={styles.container} ref={ref}>
-          <div className={styles.header}>
-            <div className={styles.headerText}>
-              <p className={styles.title}>
-                {phase === "loading" && "Dividiendo tarea..."}
-                {phase === "preview" &&
-                  `${previewTasks.length} subtareas generadas`}
-                {phase === "confirming" && "Creando subtareas..."}
-                {phase === "error" && "No se pudo dividir"}
-              </p>
-              <p className={styles.subtitle}>
-                Divide tu tarea en tareas más pequeñas con IA
-              </p>
-            </div>
-            {canClose && (
-              <button
-                className={styles.closeButton}
-                onClick={onClose}
-                aria-label="Cerrar"
-              >
-                ×
-              </button>
-            )}
+    <WindowModal
+      crossButton={false}
+      closeAction={onClose}
+      ignoreClass="ignore-debug-click"
+    >
+      <div className={styles.modalContent}>
+        <AIShadowEffect
+          visible={phase === "loading" || phase === "confirming"}
+        />
+
+        <div className={styles.header}>
+          <div className={styles.headerContent}>
+            <h2 className={styles.title}>{title}</h2>
+            <p className={styles.subtitle}>{subtitle}</p>
           </div>
-
-          <div className={styles.divider} />
-
-          {(phase === "loading" || phase === "confirming") && (
-            <div className={styles.loadingArea}>
-              <IAStarsLoader size={40} />
-            </div>
-          )}
-
-          {phase === "preview" && (
-            <>
-              <ul className={styles.taskList}>
-                {previewTasks.map((t, i) => (
-                  <motion.li
-                    key={i}
-                    className={styles.taskItem}
-                    initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                  >
-                    <span className={styles.squircleIcon}>
-                      <SquircleIcon />
-                    </span>
-                    <span className={styles.taskText}>{t.text}</span>
-                  </motion.li>
-                ))}
-              </ul>
-              <div className={styles.divider} />
-              <div className={styles.actions}>
-                <button className={styles.cancelButton} onClick={onClose}>
-                  Descartar
-                </button>
-                <button
-                  className={styles.confirmButton}
-                  onClick={handleConfirm}
-                >
-                  ✦ Crear {previewTasks.length} subtarea
-                  {previewTasks.length !== 1 ? "s" : ""}
-                </button>
-              </div>
-            </>
-          )}
-
-          {phase === "error" && (
-            <>
-              <p className={styles.errorText}>{errorMessage}</p>
-              <div className={styles.actions}>
-                <button className={styles.cancelButton} onClick={onClose}>
-                  Cerrar
-                </button>
-                <button className={styles.retryButton} onClick={handleRetry}>
-                  Reintentar
-                </button>
-              </div>
-            </>
-          )}
+          <button className={styles.closeButton} onClick={onClose}>
+            <Cross />
+          </button>
         </div>
-      </motion.div>
-    </ClientOnlyPortal>
+
+        {(phase === "loading" || phase === "confirming") && (
+          <div className={styles.loadingArea}>
+            <IAStarsLoader size={40} />
+          </div>
+        )}
+
+        {phase === "preview" && (
+          <>
+            <ul className={styles.taskList}>
+              {previewTasks.map((t, i) => (
+                <motion.li
+                  key={i}
+                  className={styles.taskItem}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <span className={styles.squircleIcon}>
+                    <SquircleIcon />
+                  </span>
+                  <span className={styles.taskText}>{t.text}</span>
+                </motion.li>
+              ))}
+            </ul>
+            <div className={styles.divider} />
+            <div className={styles.actions}>
+              <button className={styles.cancelButton} onClick={onClose}>
+                Descartar
+              </button>
+              <button className={styles.confirmButton} onClick={handleConfirm}>
+                ✦ Crear {previewTasks.length} subtarea
+                {previewTasks.length !== 1 ? "s" : ""}
+              </button>
+            </div>
+          </>
+        )}
+
+        {phase === "error" && (
+          <>
+            <p className={styles.errorText}>{errorMessage}</p>
+            <div className={styles.actions}>
+              <button className={styles.cancelButton} onClick={onClose}>
+                Cerrar
+              </button>
+              <button className={styles.retryButton} onClick={handleRetry}>
+                Reintentar
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </WindowModal>
   );
 };
