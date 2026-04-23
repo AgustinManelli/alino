@@ -1,3 +1,4 @@
+// store/useNotificationsStore.ts
 "use client";
 
 import { create } from "zustand";
@@ -8,6 +9,7 @@ type NotificationsStore = {
   initialFetch: boolean;
   setNotifications: (notifications: Notification[]) => void;
   markReadInStore: (notificationId: string) => void;
+  markAllReadInStore: () => void;
   removeNotificationFromStore: (notificationId: string) => void;
   addNotificationToStore: (notification: Notification) => void;
 };
@@ -16,12 +18,22 @@ export const useNotificationsStore = create<NotificationsStore>()((set) => ({
   notifications: [],
   initialFetch: false,
 
-  setNotifications: (notifications) => set({ notifications, initialFetch: true }),
+  setNotifications: (notifications) =>
+    set({ notifications, initialFetch: true }),
 
   markReadInStore: (notificationId) =>
     set((state) => ({
       notifications: state.notifications.map((n) =>
-        n.notification_id === notificationId ? { ...n, read: true } : n
+        n.notification_id === notificationId
+          ? { ...n, read: true, read_at: new Date().toISOString() }
+          : n
+      ),
+    })),
+
+  markAllReadInStore: () =>
+    set((state) => ({
+      notifications: state.notifications.map((n) =>
+        n.read ? n : { ...n, read: true, read_at: new Date().toISOString() }
       ),
     })),
 

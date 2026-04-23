@@ -6,8 +6,7 @@ import { AnimatePresence } from "motion/react";
 import { signOutLocal } from "@/lib/auth/actions";
 import { useNavigationLoader } from "@/hooks/useNavigationLoader";
 
-import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
-import { OptionBox } from "@/components/ui/modal-options-box/optionBox";
+import { ModalBox } from "@/components/ui/modal-options-box";
 import { ConfigModal } from "../config-modal";
 import { CloudIndicator } from "./cloud-indicator";
 import { ThemeSelector } from "@/components/ui/theme-selector";
@@ -61,6 +60,20 @@ export const ConfigSection = () => {
     setConfigUserActive(true);
   };
 
+  const userHeader = (
+    <div className={styles.userHeader}>
+      <p className={styles.displayName}>
+        {display_name ? display_name : "User"}
+      </p>
+      <div className={styles.subtitleWrapper}>
+        <p className={styles.username}>{`@${username ? username : "user"}`}</p>
+        <span className={`${styles.tierBadge} ${styles[tier]}`}>
+          {tier.toUpperCase()}
+        </span>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <AnimatePresence>
@@ -97,26 +110,24 @@ export const ConfigSection = () => {
         </div>
         {isOpen && (
           <ModalBox
-            title={display_name ? display_name : "User"}
-            user
-            subtitle={`@${username ? username : "user"}`}
-            tier={tier}
             onClose={handleClose}
             iconRef={iconRef}
+            headerSlot={userHeader}
           >
-            <div className={styles.optionsBoxsContainer}>
+            <ModalBox.Separator />
+            <ModalBox.Content>
               <ThemeSelector />
-              <OptionBox text={"Mi cuenta"} action={handleOpenConfigUser}>
+              <ModalBox.Option text={"Mi cuenta"} action={handleOpenConfigUser}>
                 <UserIcon style={iconStyles} />
-              </OptionBox>
-              <OptionBox text={"Configuración"} action={handleOpenConfig}>
+              </ModalBox.Option>
+              <ModalBox.Option text={"Configuración"} action={handleOpenConfig}>
                 <Config style={iconStyles} />
-              </OptionBox>
-              <div className={styles.separator}></div>
-              <OptionBox text={"Cerrar sesión"} action={logout}>
+              </ModalBox.Option>
+              <ModalBox.Separator />
+              <ModalBox.Option text={"Cerrar sesión"} action={logout}>
                 <LogOut style={iconStyles} />
-              </OptionBox>
-            </div>
+              </ModalBox.Option>
+            </ModalBox.Content>
           </ModalBox>
         )}
       </div>

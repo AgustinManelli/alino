@@ -1,35 +1,42 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import React from "react";
-import { createClient } from "@/utils/supabase/client";
-
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 import { useNotifications } from "@/hooks/notifications/useNotifications";
-import { ModalBox } from "@/components/ui/modal-options-box/modalBox";
+import { ModalBox } from "@/components/ui/modal-options-box";
 import { WindowModal } from "@/components/ui/WindowModal";
-import { LoadingIcon, UserIcon, Alert } from "@/components/ui/icons/icons";
-import { Notification } from "@/lib/schemas/notification.types";
+import {
+  LoadingIcon,
+  UserIcon,
+  Alert,
+  DeleteIcon,
+} from "@/components/ui/icons/icons";
+import {
+  Notification,
+  getNotificationDisplay,
+} from "@/lib/schemas/notification.types";
+import { formatRelativeTime, formatFullDate } from "@/utils/FormatRelativeTime";
 import styles from "./NotificationsSection.module.css";
 import { customToast } from "@/lib/toasts";
 
 export const NotificationsSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedAppUpdate, setSelectedAppUpdate] =
+    useState<Notification | null>(null);
   const iconRef = useRef<HTMLDivElement>(null);
-  const supabase = createClient();
-
-  const [selectedAppUpdate, setSelectedAppUpdate] = useState<any>(null);
 
   const {
     notifications,
     fetchNotifications,
     markAsRead,
+    markAllAsRead,
     deleteNotification,
     updateInvitation,
   } = useNotifications();
 
   const initialFetch = useNotificationsStore((s) => s.initialFetch);
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
     if (!initialFetch) {
@@ -43,163 +50,237 @@ export const NotificationsSection = () => {
   const handleToggle = () => setIsOpen((prev) => !prev);
   const handleClose = () => setIsOpen(false);
 
-  const handleAcceptInvitation = async (notification: Notification) => {
+  const handleMarkAllRead = async () => {
+    if (unreadCount === 0) return;
+    await markAllAsRead();
+    customToast.success("Todas marcadas como leídas");
+  };
+
+  const handleAcceptInvitation = async (n: Notification) => {
+    if (!n.metadata.invitation_id) return;
     await updateInvitation(
-      notification.notification_id,
-      notification.metadata.invitation_id,
+      n.notification_id,
+      n.metadata.invitation_id,
       "accepted",
     );
     customToast.success("Invitación aceptada");
   };
 
-  const handleDeclineInvitation = async (notification: Notification) => {
+  const handleDeclineInvitation = async (n: Notification) => {
+    if (!n.metadata.invitation_id) return;
     await updateInvitation(
-      notification.notification_id,
-      notification.metadata.invitation_id,
+      n.notification_id,
+      n.metadata.invitation_id,
       "rejected",
     );
     customToast.success("Invitación rechazada");
   };
 
-  const handleMarkRead = async (notification: Notification) => {
-    await markAsRead(notification.notification_id);
+  const handleMarkRead = async (n: Notification) => {
+    await markAsRead(n.notification_id);
   };
 
-  const handleDelete = async (notification: Notification) => {
-    await deleteNotification(notification.notification_id);
+  const handleDelete = async (n: Notification) => {
+    await deleteNotification(n.notification_id);
   };
 
-  const handleOpenAppUpdateModal = (notification: Notification) => {
-    setSelectedAppUpdate(notification);
+  const handleOpenAppUpdate = (n: Notification) => {
+    setSelectedAppUpdate(n);
+    if (!n.read) handleMarkRead(n);
   };
 
-  const handleCloseAppUpdateModal = () => {
-    setSelectedAppUpdate(null);
-  };
-
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength).trim() + "...";
-  };
-
-  const renderContent = () => {
-    if (isLoading) {
+  const NotifIcon = ({ notification }: { notification: Notification }) => {
+    if (notification.type === "list_invitation") {
       return (
-        <LoadingIcon
+        <div className={styles.avatarWrap}>
+          {notification.metadata?.inviter_avatar_url ? (
+            <img
+              src={notification.metadata.inviter_avatar_url}
+              alt="avatar"
+              className={styles.avatarImg}
+            />
+          ) : (
+            <UserIcon style={{ width: "55%", height: "55%" }} />
+          )}
+        </div>
+      );
+    }
+    if (notification.type === "app_update") {
+      return (
+        <div className={`${styles.avatarWrap} ${styles.iconAppUpdate}`}>
+          <Alert
+            style={{
+              width: "55%",
+              height: "55%",
+              stroke: "currentColor",
+              strokeWidth: 1.5,
+            }}
+          />
+        </div>
+      );
+    }
+    return (
+      <div className={`${styles.avatarWrap} ${styles.iconSystem}`}>
+        <Alert
           style={{
-            width: "20px",
-            height: "auto",
-            stroke: "var(--text-not-available)",
-            strokeWidth: 3,
+            width: "55%",
+            height: "55%",
+            stroke: "currentColor",
+            strokeWidth: 1.5,
           }}
         />
+      </div>
+    );
+  };
+
+  const headerSlot = (
+    <div className={styles.notifHeader}>
+      <div className={styles.headerLeft}>
+        <span className={styles.headerTitle}>Notificaciones</span>
+        {unreadCount > 0 && (
+          <span className={styles.headerBadge}>{unreadCount}</span>
+        )}
+      </div>
+      <button
+        className={styles.markAllBtn}
+        onClick={handleMarkAllRead}
+        disabled={unreadCount === 0}
+        title="Marcar todas como leídas"
+      >
+        <span>Marcar todo leído</span>
+      </button>
+    </div>
+  );
+
+  const renderList = () => {
+    if (isLoading) {
+      return (
+        <div className={styles.centerState}>
+          <LoadingIcon
+            style={{
+              width: "20px",
+              height: "auto",
+              stroke: "var(--text-not-available)",
+              strokeWidth: 2,
+            }}
+          />
+        </div>
       );
     }
 
     if (!notifications || notifications.length === 0) {
-      return <p className={styles.statusText}>No tienes notificaciones</p>;
+      return (
+        <div className={styles.emptyState}>
+          <span className={styles.emptyEmoji}>
+            <Alert />
+          </span>
+          <p className={styles.emptyTitle}>Sin notificaciones</p>
+          <p className={styles.emptySubtitle}>Estás al día por ahora</p>
+        </div>
+      );
     }
 
     return (
-      <ul className={styles.notificationList}>
-        {notifications.map((notification) => (
-          <li
-            key={notification.notification_id}
-            className={`${styles.notificationItem} ${
-              notification.type === "app_update"
-                ? styles.appUpdateNotification
-                : ""
-            }`}
-            onClick={() => {
-              if (notification.type === "app_update") {
-                handleOpenAppUpdateModal(notification);
-              }
-            }}
-            style={{
-              cursor:
-                notification.type === "app_update" ? "pointer" : "default",
-            }}
-          >
-            <div className={styles.notificationInfo}>
-              {notification.type === "list_invitation" && (
-                <div className={styles.configUserIcon}>
-                  {notification.metadata?.inviter_avatar_url ? (
-                    <img
-                      src={notification.metadata.inviter_avatar_url}
-                      alt="avatar"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        borderRadius: "50%",
-                      }}
-                    />
-                  ) : (
-                    <UserIcon style={{ width: "60%", height: "60%" }} />
-                  )}
+      <ul className={styles.list}>
+        {notifications.map((notification) => {
+          const display = getNotificationDisplay(notification);
+          const isInvitation = notification.type === "list_invitation";
+          const isInvitationPending =
+            isInvitation &&
+            (notification.metadata?.invitation_status === "pending" ||
+              notification.metadata?.invitation_status == null);
+          const isAppUpdate = notification.type === "app_update";
+          const isUnread = !notification.read;
+
+          return (
+            <li
+              key={notification.notification_id}
+              className={`
+                ${styles.item}
+                ${isUnread ? styles.itemUnread : styles.itemRead}
+                ${isAppUpdate ? styles.itemAppUpdate : ""}
+              `}
+              onClick={() => isAppUpdate && handleOpenAppUpdate(notification)}
+              style={{ cursor: isAppUpdate ? "pointer" : "default" }}
+            >
+              <div className={styles.itemRow}>
+                <NotifIcon notification={notification} />
+
+                <div className={styles.itemBody}>
+                  <div className={styles.itemTopLine}>
+                    <span className={styles.itemTitle}>{display.title}</span>
+                    <time
+                      className={styles.itemTime}
+                      title={formatFullDate(notification.created_at)}
+                    >
+                      {formatRelativeTime(notification.created_at)}{" "}
+                      {isUnread && <span className={styles.unreadDot} />}
+                    </time>
+                  </div>
+                  <p className={styles.itemContent}>
+                    {truncate(display.content, 82)}
+                  </p>
                 </div>
-              )}
+              </div>
 
-              <span>
-                <strong>{notification.title}</strong>
-                <br />
-                {truncateText(notification.content, 90)}
-              </span>
-            </div>
+              <div className={styles.actions}>
+                {isInvitationPending && (
+                  <>
+                    <button
+                      className={`${styles.actionBtn} ${styles.btnDecline}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeclineInvitation(notification);
+                      }}
+                    >
+                      Rechazar
+                    </button>
+                    <button
+                      className={`${styles.actionBtn} ${styles.btnAccept}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAcceptInvitation(notification);
+                      }}
+                    >
+                      Aceptar
+                    </button>
+                  </>
+                )}
 
-            <div className={styles.notificationActions}>
-              {notification.type === "list_invitation" && (
-                <>
+                {!isInvitation && isUnread && (
                   <button
+                    className={`${styles.actionBtn} ${styles.btnRead}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleAcceptInvitation(notification);
+                      handleMarkRead(notification);
                     }}
-                    className={`${styles.actionButton} ${styles.accept}`}
                   >
-                    Aceptar
+                    Marcar leída
                   </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeclineInvitation(notification);
-                    }}
-                    className={`${styles.actionButton} ${styles.decline}`}
-                  >
-                    Rechazar
-                  </button>
-                </>
-              )}
-              {notification.type === "app_update" && !notification.read && (
+                )}
+
                 <button
+                  className={`${styles.actionBtn} ${styles.btnDelete}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleMarkRead(notification);
+                    handleDelete(notification);
                   }}
-                  className={`${styles.actionButton} ${styles.markRead}`}
+                  title="Eliminar notificación"
                 >
-                  Marcar como leído
+                  <DeleteIcon style={{ height: 15, width: 15 }} />
                 </button>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(notification);
-                }}
-                className={`${styles.actionButton} ${styles.delete}`}
-              >
-                Eliminar
-              </button>
-            </div>
-          </li>
-        ))}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     );
   };
 
   return (
-    <div className={styles.notificationContainer}>
+    <div className={styles.container}>
       <div
-        className={styles.notificationButton}
+        className={styles.triggerBtn}
         style={{
           backgroundColor: isOpen
             ? "var(--background-over-container-hover)"
@@ -207,6 +288,9 @@ export const NotificationsSection = () => {
         }}
         onClick={handleToggle}
         ref={iconRef}
+        role="button"
+        aria-label="Notificaciones"
+        aria-expanded={isOpen}
       >
         <Alert
           style={{
@@ -216,40 +300,39 @@ export const NotificationsSection = () => {
             strokeWidth: 1.5,
           }}
         />
-        {notifications.filter((n) => !n.read).length > 0 && (
+        {unreadCount > 0 && (
           <span className={styles.badge}>
-            {notifications.filter((n) => !n.read).length}
+            {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </div>
 
       {isOpen && (
         <ModalBox
-          title="Notificaciones"
           onClose={handleClose}
           iconRef={iconRef}
+          headerSlot={headerSlot}
         >
-          <div className={styles.contentWrapper}>{renderContent()}</div>
+          <div className={styles.listWrapper}>{renderList()}</div>
         </ModalBox>
       )}
 
       {selectedAppUpdate && (
         <WindowModal
-          closeAction={handleCloseAppUpdateModal}
+          closeAction={() => setSelectedAppUpdate(null)}
           crossButton={false}
         >
-          <div className={styles.modal}>
+          <div className={styles.detailModal}>
             {selectedAppUpdate.metadata?.image_url && (
               <img
                 src={selectedAppUpdate.metadata.image_url}
                 alt={selectedAppUpdate.title || "Imagen de actualización"}
-                className={styles.modalImage}
-                style={{ width: "100%" }}
+                className={styles.detailImage}
               />
             )}
-            <div className={styles.modalContent}>
+            <div className={styles.detailContent}>
               {!selectedAppUpdate.metadata?.image_url && (
-                <div className={styles.modalHeader}>
+                <div className={styles.detailMeta}>
                   <span className={styles.categoryBadge}>
                     {selectedAppUpdate.metadata?.category || "Actualización"}
                   </span>
@@ -260,10 +343,12 @@ export const NotificationsSection = () => {
                   )}
                 </div>
               )}
-              <h3 className={styles.modalTitle}>{selectedAppUpdate.title}</h3>
-              <p className={styles.modalText}>{selectedAppUpdate.content}</p>
-              <footer className={styles.modalFooter}>
-                <button onClick={handleCloseAppUpdateModal}>Cerrar</button>
+              <h3 className={styles.detailTitle}>{selectedAppUpdate.title}</h3>
+              <p className={styles.detailText}>{selectedAppUpdate.content}</p>
+              <footer className={styles.detailFooter}>
+                <button onClick={() => setSelectedAppUpdate(null)}>
+                  Cerrar
+                </button>
               </footer>
             </div>
           </div>
@@ -272,3 +357,9 @@ export const NotificationsSection = () => {
     </div>
   );
 };
+
+function truncate(text: string, max: number) {
+  if (!text) return "";
+  if (text.length <= max) return text;
+  return text.substring(0, max).trimEnd() + "…";
+}

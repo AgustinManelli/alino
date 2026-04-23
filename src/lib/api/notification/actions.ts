@@ -1,12 +1,9 @@
 "use server";
 
 import { createClient as createClientServer } from "@/utils/supabase/server";
-import { revalidatePath } from "next/cache";
 import { SupabaseClient, User } from "@supabase/supabase-js";
-
 import { Notification } from "@/lib/schemas/notification.types";
 
-// Helper para obtener cliente autenticado
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
 
 interface AuthClient {
@@ -18,17 +15,14 @@ const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
   const supabase = createClientServer();
   const { data: sessionData, error: sessionError } =
     await supabase.auth.getUser();
-
   if (sessionError || !sessionData.user) {
     throw new Error(AUTH_ERROR_MESSAGE);
   }
   return { supabase, user: sessionData.user };
 };
 
-// Obtener notificaciones del usuario actual
 export async function getMyNotifications() {
   const supabase = createClientServer();
-
   const { data, error } = await supabase.rpc("get_my_notifications");
 
   if (error) {
@@ -39,10 +33,8 @@ export async function getMyNotifications() {
   return { notifications: data as Notification[], error: null };
 }
 
-// Marcar notificación como leída
 export async function markNotificationRead(notificationId: string) {
   const supabase = createClientServer();
-
   const { error } = await supabase.rpc("mark_notification_read", {
     p_notification_id: notificationId,
   });
@@ -52,14 +44,23 @@ export async function markNotificationRead(notificationId: string) {
     return { error: error.message };
   }
 
-  revalidatePath("/");
   return { error: null };
 }
 
-// Eliminar notificación (soft delete)
+export async function markAllNotificationsRead() {
+  const supabase = createClientServer();
+  const { error } = await supabase.rpc("mark_all_notifications_read");
+
+  if (error) {
+    console.error("Error marking all notifications read:", error);
+    return { error: error.message };
+  }
+
+  return { error: null };
+}
+
 export async function deleteNotification(notificationId: string) {
   const supabase = createClientServer();
-
   const { error } = await supabase.rpc("delete_notification", {
     p_notification_id: notificationId,
   });
@@ -69,11 +70,13 @@ export async function deleteNotification(notificationId: string) {
     return { error: error.message };
   }
 
-  revalidatePath("/");
   return { error: null };
 }
 
-export const updateInvitationList = async (invitationId: string, status: string) => {
+export const updateInvitationList = async (
+  invitationId: string,
+  status: string
+) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 

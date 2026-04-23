@@ -37,19 +37,57 @@
   background-color: var(--background-container);
 }
 
-.separator {
-  width: 100%;
-  height: 1px;
-  background-color: var(--border-container-color);
+
+
+.userHeader {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 15px 10px 8px 15px;
 }
 
-.optionsBoxsContainer {
-  width: fit-content;
-  height: fit-content;
+.displayName {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.subtitleWrapper {
   display: flex;
-  gap: 5px;
-  justify-content: center;
   align-items: center;
-  flex-direction: column;
-  min-width: 200px;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.username {
+  color: var(--text-not-available);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.tierBadge {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.pro {
+  background-color: rgba(180, 140, 255, 0.2);
+  color: #b48cff;
+  border: 1px solid rgba(180, 140, 255, 0.4);
+}
+
+.student {
+  background-color: rgba(140, 200, 255, 0.2);
+  color: #8cc8ff;
+  border: 1px solid rgba(140, 200, 255, 0.4);
+}
+
+.free {
+  background-color: var(--background-over-container);
+  color: var(--text-not-available);
+  border: 1px solid var(--border-container-color);
 }

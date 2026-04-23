@@ -5,11 +5,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 import { useTodoRealtime } from "@/hooks/todo/useTodoRealtime";
 import { createClient } from "@/utils/supabase/client";
-import {
-  ListsRow,
-  MembershipRow,
-  TaskType,
-} from "@/lib/schemas/database.types";
+import { ListsRow, MembershipRow } from "@/lib/schemas/database.types";
 import { Notification } from "@/lib/schemas/notification.types";
 import { customToast } from "@/lib/toasts";
 
@@ -100,7 +96,7 @@ export const RealtimeProvider = () => {
             read: false,
             deleted: false,
           });
-          customToast.info(newNotification.title);
+          customToast.info(newNotification.title || "Notificación");
         },
       )
       .on(

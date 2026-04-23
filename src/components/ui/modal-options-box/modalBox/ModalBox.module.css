@@ -4,88 +4,55 @@
   backdrop-filter: blur(15px) saturate(180%);
   -webkit-backdrop-filter: blur(15px) saturate(180%);
   border: 1px solid var(--border-container-color);
-  width: -moz-fit-content;
   width: fit-content;
-  height: -moz-fit-content;
   height: fit-content;
-  border-radius: 15px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 15px 5px 5px 5px;
+  padding: 0;
   z-index: 100;
   box-shadow:
     rgba(12, 20, 66, 0.02) 0px 4px 12px,
-    rgba(12, 20, 66, 0.08) 0px 30px 80px,
-    rgb(230, 233, 237) 0px 0px 0px 0px inset;
+    rgba(12, 20, 66, 0.08) 0px 30px 80px;
   overflow: hidden;
   min-width: 100px;
-  min-height: 50px;
-  max-height: 300px;
   top: 110%;
   right: 0;
+}
+
+.customHeader {
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .textContainer {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: left;
+  align-items: flex-start;
+  padding: 15px 10px 8px 10px;
 }
 
 .title {
   color: var(--text-not-available);
   font-size: 12px;
   font-weight: 500;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-.subtitleWrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-left: 10px;
-  padding-right: 10px;
-  margin-top: 2px;
-}
-
-.subtitle {
-  color: var(--text-not-available);
-  font-size: 10px;
-  font-weight: 500;
-}
-
-/* Badge de Suscripción */
-.tierBadge {
-  font-size: 8px;
-  font-weight: 700;
-  padding: 2px 5px;
-  border-radius: 4px;
-  letter-spacing: 0.05em;
-}
-
-.pro {
-  background-color: rgba(180, 140, 255, 0.2);
-  color: #b48cff;
-  border: 1px solid rgba(180, 140, 255, 0.4);
-}
-
-.student {
-  background-color: rgba(140, 200, 255, 0.2);
-  color: #8cc8ff;
-  border: 1px solid rgba(140, 200, 255, 0.4);
-}
-
-.free {
-  background-color: var(--background-over-container);
-  color: var(--text-not-available);
-  border: 1px solid var(--border-container-color);
 }
 
 .separator {
   width: 100%;
   height: 1px;
   background-color: var(--border-container-color);
-  margin-top: 8px; /* Damos un poco de respiro antes del separator */
+}
+
+.content {
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 10px;
 }
