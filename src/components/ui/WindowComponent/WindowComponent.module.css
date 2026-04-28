@@ -33,7 +33,7 @@
     rgba(12, 20, 66, 0.08) 0px 30px 80px,
     rgb(230, 233, 237) 0px 0px 0px 0px inset;
   overflow: hidden;
-  padding: 25px 25px;
+  padding: 25px 0 0 0;
   width: 50%;
   height: 80%;
   min-width: 300px;
@@ -47,7 +47,7 @@
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding-bottom: 20px;
+  padding: 0 25px 20px 25px;
 }
 
 .windowTitle {
@@ -98,18 +98,68 @@
   width: 100%;
   flex: 1;
   min-height: 0;
+}
+
+.windowContent :global(.simplebar-content) {
+  padding: 0 25px 25px 25px !important;
   display: flex;
   flex-direction: column;
+  height: 100%;
+}
+
+.windowContent :global(.simplebar-track.simplebar-vertical) {
+  width: 7px;
+  background-color: transparent;
+  right: 9px;
+  bottom: 25px;
+  top: 0;
+}
+
+.windowContent :global(.simplebar-scrollbar::before) {
+  background-color: var(--background-over-container);
+  border-radius: 999px;
+  opacity: 0.4;
+  transition:
+    opacity 0.3s ease,
+    background-color 0.3s ease;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.windowContent :global(.simplebar-scrollbar.simplebar-visible::before) {
+  opacity: 0.6;
+}
+
+.windowContent
+  :global(
+    .simplebar-track.simplebar-vertical:hover .simplebar-scrollbar::before
+  ) {
+  opacity: 1;
+  background-color: var(--text-not-available);
 }
 
 @media only screen and (max-width: 850px) {
   .windowModal {
     width: 100%;
-    min-width: none;
     height: 80%;
     min-width: initial;
     max-width: initial;
-    padding: 20px 15px 15px 15px;
+    padding: 20px 0 0 0;
+  }
+
+  .windowHeader {
+    padding: 0 15px 15px 15px;
+  }
+
+  .windowContent :global(.simplebar-content) {
+    padding: 0 15px 15px 15px !important;
+  }
+
+  .windowContent :global(.simplebar-track.simplebar-vertical) {
+    right: 4px;
+    bottom: 15px;
   }
 }
 

@@ -18,6 +18,9 @@ import {
 import styles from "./Weather.module.css";
 import { LoadingIcon } from "@/components/ui/icons/icons";
 import { useDashboardStore } from "@/store/useDashboardStore";
+import { useWidgetPreview } from "@/context/WidgetPreviewContext";
+
+import { WeatherPreview } from "./WeatherPreview";
 
 type WeatherState = {
   temperature: number | null;
@@ -193,6 +196,7 @@ function getHourlyEmoji(code: number, isDay: boolean): React.ReactNode {
 export const Weather: React.FC<{ label?: string }> = ({ label }) => {
   const weather = useDashboardStore((state) => state.weather);
   const setWeather = useDashboardStore((state) => state.setWeather);
+  const isPreview = useWidgetPreview();
 
   useEffect(() => {
     if (!weather.loading && weather.temperature !== null) return;
@@ -321,7 +325,11 @@ export const Weather: React.FC<{ label?: string }> = ({ label }) => {
     return () => {
       mounted = false;
     };
-  }, [label, setWeather]);
+  }, [label, setWeather, weather.loading, weather.temperature]);
+
+  if (isPreview) {
+    return <WeatherPreview />;
+  }
 
   return (
     <div className={`${styles.weatherWidget} ${styles[weather.weatherType]}`}>

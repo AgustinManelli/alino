@@ -502,13 +502,21 @@ export const FaceIcon3 = ({ style }: { style?: React.CSSProperties }) => {
   );
 };
 
-export const ConfigIcon = ({ style }: { style?: React.CSSProperties }) => {
+export const ConfigIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      style={style}
+      color="currentColor"
       fill="none"
+      stroke="currentColor"
+      style={style}
+      className={className}
+      {...props}
     >
       <path d="M15.5 12C15.5 13.933 13.933 15.5 12 15.5C10.067 15.5 8.5 13.933 8.5 12C8.5 10.067 10.067 8.5 12 8.5C13.933 8.5 15.5 10.067 15.5 12Z" />
       <path
@@ -599,7 +607,10 @@ export const Edit = ({
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
+      color="currentColor"
       fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
       style={style}
       className={className}
       {...props}
@@ -887,7 +898,9 @@ export const Calendar = ({
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
+      color="currentColor"
       fill="none"
+      stroke="currentColor"
       style={style}
       className={className}
       {...props}
@@ -1014,7 +1027,9 @@ export const Information = ({
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill={"none"}
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
       style={style}
       className={className}
       {...props}
@@ -1245,28 +1260,19 @@ export const EditGrid = ({
   );
 };
 
-export const PlayIcon = ({ style }: { style?: React.CSSProperties }) => {
+export const StopIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill={"none"}
-      style={style}
-    >
-      <path
-        d="M18.8906 12.846C18.5371 14.189 16.8667 15.138 13.5257 17.0361C10.296 18.8709 8.6812 19.7884 7.37983 19.4196C6.8418 19.2671 6.35159 18.9776 5.95624 18.5787C5 17.6139 5 15.7426 5 12C5 8.2574 5 6.3861 5.95624 5.42132C6.35159 5.02245 6.8418 4.73288 7.37983 4.58042C8.6812 4.21165 10.296 5.12907 13.5257 6.96393C16.8667 8.86197 18.5371 9.811 18.8906 11.154C19.0365 11.7084 19.0365 12.2916 18.8906 12.846Z"
-        strokeLinejoin="round"
-      ></path>
-    </svg>
-  );
-};
-
-export const StopIcon = ({ style }: { style?: React.CSSProperties }) => {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill={"none"}
+      color="currentColor"
+      stroke="currentColor"
+      {...props}
+      className={className}
       style={style}
     >
       <path
@@ -1290,9 +1296,9 @@ export const IAStars = ({
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
+      color="currentColor"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.5}
       strokeLinejoin="round"
       style={style}
       className={className}
@@ -1723,7 +1729,6 @@ export const TaskDoneIcon = ({
       color="currentColor"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
@@ -1865,6 +1870,28 @@ export const ShareIcon = ({
     >
       <path d="M9.39584 4.5H8.35417C5.40789 4.5 3.93475 4.5 3.01946 5.37868C2.10417 6.25736 2.10417 7.67157 2.10417 10.5V14.5C2.10417 17.3284 2.10417 18.7426 3.01946 19.6213C3.93475 20.5 5.40789 20.5 8.35417 20.5H12.5608C15.5071 20.5 16.9802 20.5 17.8955 19.6213C18.4885 19.052 18.6973 18.2579 18.7708 17" />
       <path d="M16.1667 7V3.85355C16.1667 3.65829 16.3316 3.5 16.535 3.5C16.6326 3.5 16.7263 3.53725 16.7954 3.60355L21.5275 8.14645C21.7634 8.37282 21.8958 8.67986 21.8958 9C21.8958 9.32014 21.7634 9.62718 21.5275 9.85355L16.7954 14.3964C16.7263 14.4628 16.6326 14.5 16.535 14.5C16.3316 14.5 16.1667 14.3417 16.1667 14.1464V11H13.1157C8.875 11 7.3125 14.5 7.3125 14.5V12C7.3125 9.23858 9.64435 7 12.5208 7H16.1667Z" />
+    </svg>
+  );
+};
+
+export const PlayIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      color="currentColor"
+      // fill="currentColor"
+      stroke="currentColor"
+      stroke-linejoin="round"
+      {...props}
+      className={className}
+      style={style}
+    >
+      <path d="M18.8906 12.846C18.5371 14.189 16.8667 15.138 13.5257 17.0361C10.296 18.8709 8.6812 19.7884 7.37983 19.4196C6.8418 19.2671 6.35159 18.9776 5.95624 18.5787C5 17.6139 5 15.7426 5 12C5 8.2574 5 6.3861 5.95624 5.42132C6.35159 5.02245 6.8418 4.73288 7.37983 4.58042C8.6812 4.21165 10.296 5.12907 13.5257 6.96393C16.8667 8.86197 18.5371 9.811 18.8906 11.154C19.0365 11.7084 19.0365 12.2916 18.8906 12.846Z" />
     </svg>
   );
 };

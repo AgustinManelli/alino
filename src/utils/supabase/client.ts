@@ -13,12 +13,6 @@ export const createClient = (): SupabaseClient => {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  newSupabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) {
-      newSupabase.realtime.setAuth(session.access_token);
-    }
-  });
-
   newSupabase.auth.onAuthStateChange((_event, session) => {
     if (session) {
       newSupabase.realtime.setAuth(session.access_token);
@@ -28,3 +22,4 @@ export const createClient = (): SupabaseClient => {
   supabase = newSupabase;
   return supabase;
 };
+

@@ -19,9 +19,13 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "simplebar-react/dist/simplebar.min.css";
 
-interface BentoItem {
+import { BentoGridItem } from "./BentoGridItem";
+
+export interface BentoItem {
   id: string;
   title: string;
+  icon?: React.ReactNode;
+  color?: string;
   content: React.ReactNode;
   withoutTopPadding?: boolean;
   withoutHeader?: boolean;
@@ -73,7 +77,12 @@ export const DraggableBentoGrid = memo(
           style={{
             opacity: isEdit ? 1 : 0,
             pointerEvents: isEdit ? "auto" : "none",
-            display: isEdit ? "block" : "none",
+            transform: isEdit ? "scale(1)" : "scale(0.8)",
+            transition: "opacity 0.2s ease, transform 0.2s ease",
+            position: "absolute",
+            bottom: "10px",
+            right: "10px",
+            zIndex: 10,
           }}
         >
           <ResizeIcon
@@ -128,63 +137,11 @@ export const DraggableBentoGrid = memo(
           >
             {items.map((item) => (
               <div key={item.id} data-grid-id={item.id}>
-                <div
-                  className={`${styles.bentoItem} ${
-                    draggingItemId === item.id ? styles.dragging : ""
-                  }`}
-                >
-                  <div className={styles.bentoContent}>
-                    {!(item.withoutHeader ?? false) && (
-                      <header className={styles.bentoHeader}>
-                        <h3 className={styles.bentoTitle}>{item.title}</h3>
-                      </header>
-                    )}
-
-                    <div
-                      className={`${styles.dragHandle} dragHandle`}
-                      style={{ visibility: isEdit ? "visible" : "hidden" }}
-                      aria-label={`Mover elemento ${item.title}`}
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <circle cx="9" cy="12" r="1" />
-                        <circle cx="9" cy="5" r="1" />
-                        <circle cx="9" cy="19" r="1" />
-                        <circle cx="15" cy="12" r="1" />
-                        <circle cx="15" cy="5" r="1" />
-                        <circle cx="15" cy="19" r="1" />
-                      </svg>
-                    </div>
-
-                    {(item.scrollable ?? false) ? (
-                      <SimpleBar
-                        className={styles.bentoBody}
-                        style={{
-                          paddingTop:
-                            (item.withoutTopPadding ?? false) ? 0 : "40px",
-                        }}
-                      >
-                        {item.content}
-                      </SimpleBar>
-                    ) : (
-                      <div
-                        className={styles.bentoBody}
-                        style={{
-                          paddingTop:
-                            (item.withoutTopPadding ?? false) ? 0 : "40px",
-                        }}
-                      >
-                        {item.content}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <BentoGridItem
+                  item={item}
+                  isEdit={isEdit}
+                  isDragging={draggingItemId === item.id}
+                />
               </div>
             ))}
           </Responsive>

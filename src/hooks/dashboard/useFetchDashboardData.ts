@@ -27,7 +27,6 @@ export function useFetchDashboardData() {
 
       useDashboardStore.setState({
         total_tasks: data.total_tasks ?? 0,
-        pending_tasks: data.pending_tasks ?? 0,
         completed_tasks: data.completed_tasks ?? 0,
         overdue_tasks: data.overdue_tasks ?? 0,
         upcoming_tasks:

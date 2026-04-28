@@ -6,7 +6,7 @@ import { UserWidgetRow } from "@/lib/schemas/database.types";
 import { useCreateEmbeddedWidget } from "@/hooks/dashboard/useCreateEmbeddedWidget";
 import { useUpdateEmbeddedWidget } from "@/hooks/dashboard/useUpdateEmbeddedWidget";
 import { useDeleteEmbeddedWidget } from "@/hooks/dashboard/useDeleteEmbeddedWidget";
-import { Cross, Edit, Share } from "@/components/ui/icons/icons";
+import { Cross, Edit } from "@/components/ui/icons/icons";
 import styles from "./EmbeddedWidgetManager.module.css";
 import { customToast } from "@/lib/toasts";
 

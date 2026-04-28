@@ -1,9 +1,8 @@
 "use client";
+
 import React, { memo, useEffect, useMemo, useState } from "react";
-
 import { usePomodoroStore } from "@/store/usePomodoroStore";
-
-import styles from "./PomodoroMiniIndicator.module.css";
+import styles from "./MiniIndicator.module.css";
 
 interface Props {
   onClick?: () => void;
@@ -14,7 +13,7 @@ interface Props {
 const GRACE_PERIOD_MS = 10000;
 const ANIMATION_DURATION_MS = 400;
 
-export const PomodoroMiniIndicator = memo(
+export const MiniIndicator = memo(
   ({ onClick, className = "", size = "medium" }: Props) => {
     const {
       timeLeft,
@@ -130,28 +129,6 @@ export const PomodoroMiniIndicator = memo(
                   backgroundColor: modes[mode].color,
                 }}
               ></div>
-
-              <div className={styles.progressMarkers}>
-                {[25, 50, 75].map((marker) => (
-                  <div
-                    key={marker}
-                    className={`${styles.progressMarker} ${
-                      progress >= marker ? styles.markerActive : ""
-                    }`}
-                    style={{ left: `${marker}%` }}
-                  >
-                    <div
-                      className={styles.markerDot}
-                      style={{
-                        backgroundColor:
-                          progress >= marker
-                            ? modes[mode].color
-                            : "transparent",
-                      }}
-                    ></div>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>

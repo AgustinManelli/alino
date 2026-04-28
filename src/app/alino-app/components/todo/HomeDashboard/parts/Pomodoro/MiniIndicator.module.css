@@ -1,4 +1,3 @@
-/* Container principal */
 .container {
   position: fixed;
   bottom: calc(env(safe-area-inset-bottom) + 15px);
@@ -45,16 +44,22 @@
   flex-direction: column;
   position: relative;
   gap: 5px;
+  background: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  padding: 10px 15px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .progressContainer {
   position: relative;
-  width: 100%;
+  width: 60px;
 }
 
 .progressTrack {
   width: 100%;
-  height: 6px;
+  height: 4px;
   background: var(--background-over-container);
   border-radius: 20px;
   position: relative;
@@ -75,43 +80,11 @@
 @keyframes progressPulse {
   0%,
   100% {
-    filter: brightness(1) saturate(1);
-    transform: scaleY(1);
+    filter: brightness(1);
   }
   50% {
-    filter: brightness(1.1) saturate(1.2);
-    transform: scaleY(1.05);
+    filter: brightness(1.2);
   }
-}
-
-.progressMarkers {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.progressMarker {
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-}
-
-.markerDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  border: 1px solid white;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(1);
-}
-
-.markerActive .markerDot {
-  transform: scale(1);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .timeDisplay {
@@ -120,31 +93,25 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.timeDisplay.timeRunning {
-  transform: scale(1.02);
-}
-
 .timeContainer {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--mode-color);
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
   line-height: 1;
 }
 
-/* Panel de controles */
 .controlsPanel {
   position: absolute;
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease;
   pointer-events: none;
-  right: 100%;
+  right: calc(100% + 10px);
 }
 
 .container:hover .controlsPanel {
@@ -153,11 +120,20 @@
   pointer-events: auto;
 }
 
-/* Contenido del panel */
+.controlsPanel::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  right: -15px;
+  width: 20px;
+  background: transparent;
+}
+
 .controlsContent {
   background: var(--background-container);
   border: 1px solid var(--border-container-color);
-  border-radius: 15px;
+  border-radius: 20px;
   padding: 10px;
   text-align: center;
   position: relative;
@@ -166,9 +142,9 @@
   gap: 5px;
   justify-content: center;
   align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-/* Etiqueta del modo */
 .modeLabel {
   font-size: 10px;
   color: var(--mode-color);
@@ -176,24 +152,21 @@
   text-transform: uppercase;
 }
 
-/* Botones de control */
 .controlButtons {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
 }
 
 .controlBtn {
   padding: 6px 12px;
-  width: 75px;
+  width: 70px;
   border: none;
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: 8px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  flex: 1;
-  min-width: 0;
 }
 
 .primaryBtn {
@@ -201,30 +174,12 @@
   color: white;
 }
 
-.primaryBtn:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.primaryBtn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
 .secondaryBtn {
-  background: #f8f9fa;
-  color: #1c1c1cb0;
+  background: var(--background-over-container);
+  color: var(--text);
+  opacity: 0.6;
 }
 
 .secondaryBtn:hover {
-  background: #e9ecef;
-  color: #495057;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.secondaryBtn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  opacity: 1;
 }

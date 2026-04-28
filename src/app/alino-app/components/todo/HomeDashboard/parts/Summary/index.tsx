@@ -1,28 +1,26 @@
 "use client";
-import { useEffect } from "react";
-import { SummaryCircle } from "@/components/ui/SummaryCircle";
 
-import styles from "./Summary.module.css";
+import { useEffect } from "react";
+import { useShallow } from "zustand/shallow";
+
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useFetchDashboardData } from "@/hooks/dashboard/useFetchDashboardData";
-import { useShallow } from "zustand/shallow";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWidgetPreview } from "@/context/WidgetPreviewContext";
+
+import { SummaryPreview } from "./SummaryPreview";
+import styles from "./Summary.module.css";
 
 export const Summary = () => {
   const { fetchDashboardData } = useFetchDashboardData();
-  const {
-    total_tasks,
-    pending_tasks,
-    completed_tasks,
-    hasFetchedData,
-  } = useDashboardStore(
+  const { total_tasks, completed_tasks, hasFetchedData } = useDashboardStore(
     useShallow((state) => ({
       total_tasks: state.total_tasks,
-      pending_tasks: state.pending_tasks,
       completed_tasks: state.completed_tasks,
       hasFetchedData: state.hasFetchedData,
     })),
   );
+  const isPreview = useWidgetPreview();
 
   useEffect(() => {
     if (!hasFetchedData) {
@@ -30,66 +28,49 @@ export const Summary = () => {
     }
   }, [hasFetchedData, fetchDashboardData]);
 
+  if (isPreview) {
+    return <SummaryPreview />;
+  }
+
   const init = hasFetchedData;
+  const percentage =
+    total_tasks > 0 ? Math.round((completed_tasks / total_tasks) * 100) : 0;
 
   return (
-    <div className={styles.summaryContent}>
-      <div className={styles.summaryMain}>
-        <div className={styles.summaryCircleContainer}>
-          <SummaryCircle
-            stats={{
-              completed: completed_tasks,
-              pending: pending_tasks,
-              total: total_tasks,
-            }}
-            completedFetch={init}
+    <div className={styles.summaryContainer}>
+      <div className={styles.percentageWrapper}>
+        {init ? (
+          <>
+            <span className={styles.percentageNumber}>{percentage}</span>
+            <span className={styles.percentageSymbol}>%</span>
+          </>
+        ) : (
+          <Skeleton
+            style={{ width: "100px", height: "52px", borderRadius: "12px" }}
           />
-        </div>
-        <div className={styles.summaryStats}>
-          <div className={styles.totalTasks}>
-            {init ? (
-              <span className={styles.totalNumber}>{total_tasks}</span>
-            ) : (
-              <Skeleton
-                style={{
-                  width: "30px",
-                  height: "20px",
-                  borderRadius: "8px",
-                }}
-              />
-            )}
-            <span className={styles.totalLabel}>tareas totales</span>
-          </div>
-        </div>
+        )}
       </div>
-      <div className={styles.summaryBreakdown}>
-        <div className={styles.completedStat}>
-          {init ? (
-            <span className={styles.statNumber}>{completed_tasks}</span>
-          ) : (
-            <Skeleton
-              style={{
-                width: "30px",
-                height: "20px",
-                borderRadius: "8px",
-              }}
-            />
+
+      <div className={styles.statsInfo}>
+        {init ? (
+          `${total_tasks} ${total_tasks === 1 ? "Tarea total" : "Tareas totales"}`
+        ) : (
+          <Skeleton
+            style={{ width: "80px", height: "12px", borderRadius: "4px" }}
+          />
+        )}
+      </div>
+
+      <div className={styles.progressBarWrapper}>
+        <div
+          className={styles.progressBar}
+          style={{ width: init ? `${percentage}%` : "0%" }}
+        >
+          {init && percentage > 10 && (
+            <span className={styles.completedCount}>
+              {completed_tasks} completadas
+            </span>
           )}
-          <span className={styles.statLabel}>Completadas</span>
-        </div>
-        <div className={styles.pendingStat}>
-          {init ? (
-            <span className={styles.statNumber}>{pending_tasks}</span>
-          ) : (
-            <Skeleton
-              style={{
-                width: "30px",
-                height: "20px",
-                borderRadius: "8px",
-              }}
-            />
-          )}
-          <span className={styles.statLabel}>Pendientes</span>
         </div>
       </div>
     </div>

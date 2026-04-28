@@ -13,7 +13,9 @@ import { useDeleteTask } from "@/hooks/todo/tasks/useDeleteTask";
 import { useUpdateTaskCompleted } from "@/hooks/todo/tasks/useUpdateTaskCompleted";
 import { useUpdateTaskName } from "@/hooks/todo/tasks/useUpdateTaskName";
 import { useModalStore } from "@/store/useModalStore";
+import { useDashboardStore } from "@/store/useDashboardStore";
 import type { TaskType } from "@/lib/schemas/database.types";
+import Link from "next/link";
 
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
@@ -26,6 +28,7 @@ import {
   Note,
   SplitIcon,
   DragDropVerticalIcon,
+  ArrowLeft,
 } from "@/components/ui/icons/icons";
 import { isHtmlContent } from "@/components/ui/RichTextEditor/richTextUtils";
 
@@ -71,12 +74,14 @@ export const TaskCardStatic = memo(
     home = false,
     isOverlay = false,
     isReordering = false,
+    isWidget = false,
   }: {
     task: TaskType;
     editionMode?: boolean;
     home?: boolean;
     isOverlay?: boolean;
     isReordering?: boolean;
+    isWidget?: boolean;
   }) => {
     const [completed, setCompleted] = useState<boolean | null>(task.completed);
     const { editingTaskId, setEditingTaskId } = useTodoDataStore(
@@ -129,8 +134,20 @@ export const TaskCardStatic = memo(
       const waveDuration = estimatedLines * 100 + 200;
       setTimeout(() => {
         updateTaskCompleted(task.task_id, next);
+
+        if (isWidget && next) {
+          const dashboardStore = useDashboardStore.getState();
+          dashboardStore.setDashboardData({
+            upcoming_tasks: dashboardStore.upcoming_tasks.filter(
+              (t) => t.task_id !== task.task_id,
+            ),
+            due_today_tasks: dashboardStore.due_today_tasks.filter(
+              (t) => t.task_id !== task.task_id,
+            ),
+          });
+        }
       }, waveDuration);
-    }, [completed, task.task_id, updateTaskCompleted, animations]);
+    }, [completed, task.task_id, updateTaskCompleted, animations, isWidget]);
 
     const handleSaveInline = useCallback(
       async (
@@ -259,6 +276,7 @@ export const TaskCardStatic = memo(
         editionMode ||
         home ||
         isOverlay ||
+        isWidget ||
         !canEditOrDelete ||
         isEditing,
     });
@@ -295,6 +313,12 @@ export const TaskCardStatic = memo(
             <div
               className={styles.cardContainer}
               ref={cardRef as React.Ref<HTMLDivElement>}
+              style={{
+                backgroundColor: isWidget
+                  ? "var(--background-over-container)"
+                  : "var(--background-container)",
+                borderRadius: isWidget ? "20px" : "15px",
+              }}
             >
               {isReordering &&
               taskSort === "default" &&
@@ -379,16 +403,39 @@ export const TaskCardStatic = memo(
                   idScrollArea="task-section-scroll-area"
                   completed={completed}
                 />
-                <ConfigMenu
-                  iconWidth="25px"
-                  configOptions={configOptions}
-                  idScrollArea="task-section-scroll-area"
-                />
+                {!isWidget ? (
+                  <ConfigMenu
+                    iconWidth="25px"
+                    configOptions={configOptions}
+                    idScrollArea="task-section-scroll-area"
+                  />
+                ) : (
+                  <Link
+                    href={`/alino-app/${task.list_id}`}
+                    className={styles.navigateBtn}
+                    onClick={(e) => {
+                      if (isEditing) e.preventDefault();
+                    }}
+                  >
+                    <ArrowLeft
+                      style={{
+                        width: "14px",
+                        height: "14px",
+                        stroke: "var(--text)",
+                        strokeWidth: 2.5,
+                        transform: "rotate(180deg)",
+                        opacity: 0.4,
+                      }}
+                    />
+                  </Link>
+                )}
               </div>
             </div>
           )}
         </motion.div>
-        <ToolbarAnimated editor={inlineEditor} focus={inlineFocus} />
+        {!isWidget && (
+          <ToolbarAnimated editor={inlineEditor} focus={inlineFocus} />
+        )}
       </div>
     );
   },

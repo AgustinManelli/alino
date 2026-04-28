@@ -1,13 +1,25 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/sign-in", "/api/auth/callback", "/api/push/trigger", "/api/webhooks", "/api/cron/process-phases"];
+const PUBLIC_PATHS = [
+  "/sign-in",
+  "/api/auth/callback",
+  "/api/push/trigger",
+  "/api/webhooks",
+  "/api/cron/process-phases",
+];
 
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  const isApiPath = pathname.startsWith("/api");
+
+  if (isApiPath) {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
+
   let supabaseResponse = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request: { headers: request.headers },
   });
 
   const supabase = createServerClient(
@@ -20,9 +32,7 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({
-            request,
-          });
+          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -31,20 +41,18 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const { pathname } = request.nextUrl;
-  const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
-  const isApiPath = pathname.startsWith("/api");
-
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   const user = session?.user;
 
+  if (pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = user ? "/alino-app" : "/sign-in";
+    return NextResponse.redirect(url);
+  }
+
   if (!user && !isPublicPath) {
-    if (isApiPath) {
-      return new NextResponse(
-        JSON.stringify({ error: "No autorizado" }),
-        { status: 401, headers: { 'content-type': 'application/json' } }
-      );
-    }
     const url = request.nextUrl.clone();
     url.pathname = "/sign-in";
     return NextResponse.redirect(url);

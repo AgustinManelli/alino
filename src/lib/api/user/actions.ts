@@ -9,6 +9,7 @@ import {
   SearchUserSchema,
 } from "@/lib/schemas/user/validation";
 import { ProfileStats, FeatureUsage, ActiveSubscription } from "@/lib/schemas/user.types";
+import { UserType } from "@/lib/schemas/database.types";
 
 import { fileTypeFromBuffer } from "file-type";
 
@@ -39,36 +40,23 @@ const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
   return { supabase, user: sessionData.user };
 };
 
-// ─── USER ──────────────────────────────────────────────────
-
 export const getUser = cache(async () => {
   try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    const supabase = createClientServer();
+    const { data, error } = await supabase.rpc("get_current_user_full");
 
-    const [userResult, tierResult] = await Promise.all([
-      supabase
-        .from("users")
-        .select(`*, user_private (*)`)
-        .eq("user_id", user.id)
-        .single(),
-      supabase.rpc("get_user_tier", { p_user_id: user.id }),
-    ]);
+    if (error || !data) {
+      throw new Error("No se pudo obtener el usuario.");
+    }
 
-    if (userResult.error) throw new Error("No se pudo obtener el usuario.");
-    if (tierResult.error)
-      console.error("Error obteniendo tier:", tierResult.error);
-
-    return {
-      data: {
-        user: { ...userResult.data, tier: tierResult.data ?? "free" },
-      },
-    };
+    return { data: { user: data as UserType } };
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE,
     };
   }
 });
+
 
 export const setUsernameFirstTime = async (username: string) => {
   try {

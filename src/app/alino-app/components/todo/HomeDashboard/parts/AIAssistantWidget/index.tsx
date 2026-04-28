@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useAITaskGeneration } from "@/hooks/useAITaskGeneration";
 import { IAStars } from "@/components/ui/icons/icons";
 import { motion, AnimatePresence } from "motion/react";
@@ -9,19 +9,37 @@ import { IAStarsLoader } from "@/components/ui/icons/ia-loader";
 import { useInsertList } from "@/hooks/todo/lists/useInsertList";
 import { useAddTasks } from "@/hooks/todo/tasks/useAddTasks";
 import { customToast } from "@/lib/toasts";
+import { useWidgetPreview } from "@/context/WidgetPreviewContext";
+
+import { AIAssistantWidgetPreview } from "./AIAssistantWidgetPreview";
 
 export default function AIAssistantWidget() {
+  const isPreview = useWidgetPreview();
   const [prompt, setPrompt] = useState("");
   const [loadingLocal, setLoadingLocal] = useState(false);
   const [success, setSuccess] = useState(false);
-  const { generate, error: aiError } = useAITaskGeneration();
+  const {
+    generate,
+    error: aiError,
+    loading: loadingHook,
+  } = useAITaskGeneration();
   const { insertList } = useInsertList();
   const { addTasks } = useAddTasks();
   const user = useUserDataStore((state) => state.user);
-  const canGenerateTasks = user?.tier === "pro" || user?.tier === "student";
 
-  const handleGenerateList = async () => {
-    if (!prompt.trim() || !canGenerateTasks) return;
+  const canGenerateTasks = useMemo(
+    () => user?.tier === "pro" || user?.tier === "student",
+    [user?.tier],
+  );
+
+  if (isPreview) {
+    return <AIAssistantWidgetPreview />;
+  }
+
+  const isProcessing = loadingLocal || loadingHook;
+
+  const handleGenerateList = useCallback(async () => {
+    if (!prompt.trim() || !canGenerateTasks || isProcessing) return;
     setLoadingLocal(true);
     try {
       const { data: responseData, error: responseError } = await generate(
@@ -60,24 +78,13 @@ export default function AIAssistantWidget() {
     } finally {
       setLoadingLocal(false);
     }
-  };
+  }, [prompt, canGenerateTasks, isProcessing, generate, insertList, addTasks]);
 
-  const currentLength = prompt.length;
   const maxLength = 2000;
+  const currentLength = prompt.length;
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <IAStarsLoader
-          size={15}
-          color="#e2a5ff"
-          duration={2}
-          title="Cargando IA"
-          strokeWidth={1}
-        />
-        {/* <IAStars style={{ width: 14, height: 14, stroke: "#b48cff" }} /> */}
-        <h3 className={styles.title}>Planificador IA</h3>
-      </div>
       <div className={styles.content}>
         <AnimatePresence mode="wait">
           {success ? (
@@ -88,7 +95,14 @@ export default function AIAssistantWidget() {
               exit={{ opacity: 0, scale: 0.95 }}
               className={styles.successState}
             >
-              <IAStars style={{ width: 24, height: 24, stroke: "#4ade80" }} />
+              <IAStars
+                style={{
+                  width: 24,
+                  height: 24,
+                  stroke: "#4ade80",
+                  strokeWidth: 2,
+                }}
+              />
               <h4 className={styles.successTitle}>¡Todo listo!</h4>
               <p className={styles.successDesc}>
                 Revisa tu nueva lista en la barra lateral.
@@ -100,7 +114,7 @@ export default function AIAssistantWidget() {
                 Planificar más
               </button>
             </motion.div>
-          ) : loadingLocal ? (
+          ) : isProcessing ? (
             <motion.div
               key="loading"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -110,7 +124,7 @@ export default function AIAssistantWidget() {
             >
               <IAStarsLoader
                 size={40}
-                color="#b48cff"
+                color="#ec489a"
                 duration={2}
                 title="Cargando IA"
               />
@@ -124,9 +138,11 @@ export default function AIAssistantWidget() {
               exit={{ opacity: 0, scale: 0.95 }}
               className={styles.textareaContainer}
             >
-              {!canGenerateTasks && (
+              {(!canGenerateTasks || aiError) && (
                 <div className={styles.errorState}>
-                  Función exclusiva para usuarios Pro y Estudiantes.
+                  {!canGenerateTasks
+                    ? "Función exclusiva para usuarios Pro y Estudiantes."
+                    : aiError}
                 </div>
               )}
               <textarea
@@ -146,9 +162,7 @@ export default function AIAssistantWidget() {
                   disabled={!prompt.trim() || !canGenerateTasks}
                   onClick={handleGenerateList}
                 >
-                  <IAStars
-                    style={{ width: 15, height: 15, stroke: "#b48cff" }}
-                  />
+                  <IAStars style={{ width: 15, height: 15, strokeWidth: 2 }} />
                   Generar
                 </button>
               </div>

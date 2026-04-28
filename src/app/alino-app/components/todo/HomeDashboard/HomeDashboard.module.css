@@ -212,3 +212,23 @@
   stroke: var(--text);
   stroke-width: 2;
 }
+
+.checkButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  background-color: var(--background-over-container);
+  padding: 5px 12px;
+  border-radius: 7px;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.checkButton:hover {
+  background: var(--background-over-container-hover);
+}

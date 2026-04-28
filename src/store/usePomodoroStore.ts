@@ -19,35 +19,26 @@ interface ModeConfigs {
 }
 
 interface PomodoroSettings {
-  workTime: number; // en minutos
-  shortBreakTime: number; // en minutos
-  longBreakTime: number; // en minutos
+  workTime: number;
+  shortBreakTime: number;
+  longBreakTime: number;
   autoStartBreaks: boolean;
   autoStartPomodoros: boolean;
-  longBreakInterval: number; // cada cuántos ciclos
+  longBreakInterval: number;
   alarmSound: string;
   alarmRep: number;
-  volume: number; // 0-100
+  volume: number;
   notifications: boolean;
 }
 
 interface PomodoroState {
-  // Estado
   timeLeft: number;
   isRunning: boolean;
   mode: PomodoroMode;
   cycles: number;
-  
-  // Configuraciones persistentes
   settings: PomodoroSettings;
-  
-  // Configuraciones calculadas
   modes: ModeConfigs;
-  
-  // Control interno del timer
   _intervalId: NodeJS.Timeout | null;
-  
-  // Acciones
   toggleTimer: () => void;
   resetTimer: () => void;
   switchMode: (mode: PomodoroMode) => void;
@@ -55,13 +46,9 @@ interface PomodoroState {
   _completeTimer: () => void;
   _startInterval: () => void;
   _stopInterval: () => void;
-  
-  // Configuración
   updateSettings: (newSettings: Partial<PomodoroSettings>) => void;
   updateCycles: (newCycle: number) => void;
   resetSettings: () => void;
-  
-  // Utilidades
   formatTime: (seconds: number) => string;
   getProgress: () => number;
   isActive: () => boolean;
@@ -83,24 +70,20 @@ const defaultSettings: PomodoroSettings = {
 export const usePomodoroStore = create<PomodoroState>()(
   persist(
     subscribeWithSelector((set, get) => ({
-      // Estado inicial
       timeLeft: defaultSettings.workTime * 60,
       isRunning: false,
       mode: 'work',
       cycles: 0,
       _intervalId: null,
       
-      // Configuraciones persistentes
       settings: defaultSettings,
       
-      // Configuraciones calculadas (se actualizan con settings)
       modes: {
         work: { time: defaultSettings.workTime * 60, label: 'Pomodoro', color: '#e74c3c' },
         shortBreak: { time: defaultSettings.shortBreakTime * 60, label: 'Short break', color: '#27ae60' },
         longBreak: { time: defaultSettings.longBreakTime * 60, label: 'Long break', color: '#3498db' }
       },
       
-      // Acciones
       toggleTimer: () => {
         const { isRunning } = get();
         if (isRunning) {
@@ -131,7 +114,6 @@ export const usePomodoroStore = create<PomodoroState>()(
         });
       },
       
-      // Métodos internos del timer
       _tick: () => {
         const { timeLeft } = get();
         if (timeLeft > 0) {
@@ -145,7 +127,6 @@ export const usePomodoroStore = create<PomodoroState>()(
         const { mode, cycles, modes, settings, toggleTimer } = get();
         get()._stopInterval();
         
-        // Notificación del navegador
         if (settings.notifications && 'Notification' in window && Notification.permission === 'granted') {
           new Notification(`¡${modes[mode].label} completado!`, {
             body: 'Es hora de cambiar de actividad',
@@ -173,7 +154,6 @@ export const usePomodoroStore = create<PomodoroState>()(
               }
             );
             
-            // Auto iniciar si está activado
             if (settings.autoStartBreaks) {
               setTimeout(() => toggleTimer(), 1000);
             }
@@ -193,7 +173,6 @@ export const usePomodoroStore = create<PomodoroState>()(
               }
             );
             
-            // Auto iniciar si está activado
             if (settings.autoStartBreaks) {
               setTimeout(() => toggleTimer(), 1000);
             }
@@ -214,7 +193,6 @@ export const usePomodoroStore = create<PomodoroState>()(
             }
           );
           
-          // Auto iniciar si está activado
           if (settings.autoStartPomodoros) {
             setTimeout(() => toggleTimer(), 1000);
           }
@@ -251,7 +229,6 @@ export const usePomodoroStore = create<PomodoroState>()(
         }
       },
       
-      // Configuración
       updateSettings: (newSettings: Partial<PomodoroSettings>) => {
         const currentSettings = get().settings;
         const updatedSettings = { ...currentSettings, ...newSettings };
@@ -260,14 +237,12 @@ export const usePomodoroStore = create<PomodoroState>()(
           currentAlarmAudio.volume = updatedSettings.volume / 100;
         }
         
-        // Actualizar modes con los nuevos tiempos
         const newModes = {
           work: { time: updatedSettings.workTime * 60, label: 'Pomodoro', color: '#e74c3c' },
           shortBreak: { time: updatedSettings.shortBreakTime * 60, label: 'Short break', color: '#27ae60' },
           longBreak: { time: updatedSettings.longBreakTime * 60, label: 'Long break', color: '#3498db' }
         };
         
-        // Si el timer no está corriendo, actualizar timeLeft del modo actual
         const { isRunning, mode } = get();
         const newTimeLeft = isRunning ? get().timeLeft : newModes[mode].time;
         
@@ -294,7 +269,6 @@ export const usePomodoroStore = create<PomodoroState>()(
         get()._stopInterval();
       },
       
-      // Utilidades
       formatTime: (seconds: number): string => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -322,26 +296,50 @@ export const usePomodoroStore = create<PomodoroState>()(
       partialize: (state) => ({ 
         settings: state.settings,
         cycles: state.cycles,
+        timeLeft: state.timeLeft,
+        isRunning: state.isRunning,
+        mode: state.mode,
       }),
+      onRehydrateStorage: (state) => {
+        return (rehydratedState, error) => {
+          if (!error && rehydratedState?.isRunning) {
+            setTimeout(() => {
+              rehydratedState._startInterval();
+            }, 500);
+          }
+        };
+      },
       merge: (persistedState, currentState) => {
-       const mergedState = { ...currentState, ...(persistedState as object) };
+        const mergedState = { ...currentState, ...(persistedState as object) };
 
-       if (persistedState) {
-         const userSettings = mergedState.settings;
+        if (persistedState) {
+          const userSettings = mergedState.settings;
 
-         mergedState.modes = {
-           work: { time: userSettings.workTime * 60, label: 'Pomodoro', color: '#e74c3c' },
-           shortBreak: { time: userSettings.shortBreakTime * 60, label: 'Short break', color: '#27ae60' },
-           longBreak: { time: userSettings.longBreakTime * 60, label: 'Long break', color: '#3498db' }
-         };
+          mergedState.modes = {
+            work: {
+              time: userSettings.workTime * 60,
+              label: "Pomodoro",
+              color: "#e74c3c",
+            },
+            shortBreak: {
+              time: userSettings.shortBreakTime * 60,
+              label: "Short break",
+              color: "#27ae60",
+            },
+            longBreak: {
+              time: userSettings.longBreakTime * 60,
+              label: "Long break",
+              color: "#3498db",
+            },
+          };
 
-         if (!mergedState.isRunning) {
-           mergedState.timeLeft = mergedState.modes[mergedState.mode].time;
-         }
-       }
-       
-       return mergedState;
-     },
+          if (mergedState.timeLeft === undefined) {
+            mergedState.timeLeft = mergedState.modes[mergedState.mode].time;
+          }
+        }
+
+        return mergedState;
+      },
     }
   )
 );

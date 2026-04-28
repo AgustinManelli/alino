@@ -17,6 +17,7 @@ interface TabsProps {
   onChange: (id: string) => void;
   className?: string;
   disabled?: boolean;
+  layoutId?: string;
 }
 
 export const Tabs: React.FC<TabsProps> = ({
@@ -25,6 +26,7 @@ export const Tabs: React.FC<TabsProps> = ({
   onChange,
   className,
   disabled,
+  layoutId = "active-tab",
 }) => {
   return (
     <div
@@ -45,7 +47,7 @@ export const Tabs: React.FC<TabsProps> = ({
             <span className={styles.label}>{option.label}</span>
             {isActive && (
               <motion.div
-                layoutId="active-tab"
+                layoutId={layoutId}
                 className={styles.activeIndicator}
                 transition={{
                   type: "spring",

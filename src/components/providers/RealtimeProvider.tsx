@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 import { useTodoRealtime } from "@/hooks/todo/useTodoRealtime";
@@ -22,6 +22,9 @@ export const RealtimeProvider = () => {
     onDeleteTask,
   } = useTodoRealtime();
   const lists = useTodoDataStore((s) => s.lists);
+  const listsRef = useRef(lists);
+  listsRef.current = lists;
+
   const addNotificationToStore = useNotificationsStore(
     (s) => s.addNotificationToStore,
   );
@@ -38,7 +41,7 @@ export const RealtimeProvider = () => {
         },
         (payload) => {
           const newMembership = payload.new as MembershipRow;
-          const exists = lists.some(
+          const exists = listsRef.current.some(
             (list) => list.list_id === newMembership.list_id,
           );
           if (!exists) onAddList(newMembership);
@@ -147,7 +150,6 @@ export const RealtimeProvider = () => {
     onUpdateTask,
     onDeleteTask,
     addNotificationToStore,
-    lists,
   ]);
 
   return null;

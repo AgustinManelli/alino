@@ -1,0 +1,224 @@
+.bentoItem {
+  background: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 30px;
+  padding: 0;
+  transition: all 0.2s ease-in-out;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  cursor: default;
+  overflow: hidden;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.bentoItem.dragging {
+  opacity: 1;
+  transform: rotate(-2deg) scale(1.02);
+  box-shadow:
+    0 10px 30px 0 rgba(0, 0, 0, 0.2),
+    0 4px 8px 0 rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  border-color: #3b82f6;
+}
+
+.bentoContent {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bentoHeader {
+  position: relative;
+  z-index: 2;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  display: flex;
+  align-items: center;
+  padding: 10px 10px 0 10px;
+}
+
+.bentoBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px;
+  border-radius: 999px;
+  background-color: var(--background-over-container);
+  color: var(--text);
+}
+
+.badgeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  color: inherit;
+  stroke-width: 2;
+}
+
+.bentoTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: inherit;
+  line-height: 1;
+}
+
+.dragHandle {
+  position: absolute;
+  background: none;
+  background-color: var(--background-over-container);
+  border: none;
+  color: var(--text-not-available);
+  cursor: grab;
+  padding: 5px;
+  border-radius: 10px;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    color 0.2s ease,
+    background-color 0.2s ease;
+  flex-shrink: 0;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+  color: var(--text);
+}
+
+.bentoBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
+  line-height: 1.6;
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+  z-index: 1;
+}
+
+.bentoBody::-webkit-scrollbar {
+  width: none;
+}
+
+.bentoItem.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.bentoItem.loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.bentoItem.error {
+  border-color: #ef4444;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+}
+
+.bentoItem.success {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.bentoBody :global(.simplebar-track.simplebar-vertical) {
+  width: 8px;
+  border-radius: 4px;
+  top: 0;
+  bottom: 25px;
+}
+
+.bentoBody :global(.simplebar-scrollbar::before) {
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  left: 2px;
+  background-color: var(--background-over-container);
+  border-radius: 4px;
+  opacity: 1;
+  transition: background-color 0.2s ease;
+}
+
+.bentoBody :global(.simplebar-scrollbar:hover::before) {
+  background-color: var(--background-over-container-hover);
+}
+
+.bentoBody :global(.simplebar-track.simplebar-vertical) {
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+}
+
+.bentoBody:hover :global(.simplebar-track.simplebar-vertical) {
+  opacity: 1;
+}
+
+.bentoBody :global(.simplebar-track.simplebar-horizontal) {
+  display: none !important;
+}
+
+.bentoBody :global(.simplebar-content) {
+  height: 100% !important;
+}
+
+@media (max-width: 768px) {
+  .bentoTitle {
+    font-size: 13px;
+  }
+  .dragHandle {
+    opacity: 1;
+    transform: none;
+    color: #d1d5db;
+  }
+}
+
+@media (max-width: 480px) {
+  .bentoItem {
+    border-radius: 16px;
+  }
+  .bentoTitle {
+    font-size: 12px;
+  }
+}

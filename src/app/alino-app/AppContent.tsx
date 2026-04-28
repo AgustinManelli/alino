@@ -10,7 +10,16 @@ import { ConfigSection } from "./components/config-section";
 import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import { InitialUserConfiguration } from "./components/initial-user-configuration";
-import { PomodoroMiniIndicator } from "@/components/ui/PomodoroMiniIndicator";
+import { useDashboardStore } from "@/store/useDashboardStore";
+import dynamic from "next/dynamic";
+
+const MiniIndicator = dynamic(
+  () =>
+    import(
+      "./components/todo/HomeDashboard/parts/Pomodoro/MiniIndicator"
+    ).then((m) => m.MiniIndicator),
+  { ssr: false },
+);
 
 import styles from "./AlinoAppLayout.module.css";
 import { ModalRenderer } from "@/components/ui/ModalRenderer";
@@ -30,6 +39,11 @@ export const AppContent = ({ children }: Props) => {
     setShowConfiguration(false);
   };
 
+  const widgetInstances = useDashboardStore((state) => state.widgetInstances);
+  const isPomodoroInstalled = widgetInstances.some(
+    (inst) => inst.widgetKey === "pomodoro" && inst.isInstalled,
+  );
+
   if (showConfiguration) {
     return (
       <AnimatePresence>
@@ -42,7 +56,7 @@ export const AppContent = ({ children }: Props) => {
     <>
       <RealtimeProvider />
       <ModalRenderer />
-      <PomodoroMiniIndicator />
+      {isPomodoroInstalled && <MiniIndicator />}
       <section className={styles.topButtons}>
         <NotificationsSection />
         <ConfigSection />

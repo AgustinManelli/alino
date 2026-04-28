@@ -1,257 +1,132 @@
 .container {
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  gap: 0;
+  height: 100%;
+  width: 100%;
+  padding: 15px 20px 20px 20px;
+  user-select: none;
+  position: relative;
   overflow: hidden;
-  align-items: center;
-  padding: 10px;
 }
 
 .header {
+  position: relative;
   display: flex;
-  justify-content: center;
-  width: 100%;
-  gap: 5px;
-}
-
-.modeButtons {
-  display: flex;
-  width: 100%;
-  background-color: var(--background-over-container);
-  border-radius: 10px;
-  padding: 2px;
-  flex-grow: 1;
-}
-
-.modeBtn {
-  padding: 4px 6px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-not-available);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  text-indent: -1px;
-  width: 100%;
-  transition: all 0.2s ease;
-}
-
-.modeBtn:hover {
-  color: var(--text);
-}
-
-.modeBtn.active {
-  background: var(--mode-color);
-  color: var(--text);
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
 }
 
 .timerSection {
-  flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
   flex-direction: column;
-  position: relative;
   gap: 5px;
 }
 
-.progressContainer {
-  position: relative;
-  width: 70%;
+.timeWrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
 }
 
-.progressTrack {
+.timeNumber {
+  font-size: 60px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.statsInfo {
+  font-size: 14px;
+  color: var(--text);
+  opacity: 0.5;
+  font-weight: 400;
+  white-space: nowrap;
+  line-height: 1;
+  margin-bottom: 5px;
+  padding-left: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.resetButton,
+.configButton {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.4;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.resetButton:hover,
+.configButton:hover {
+  opacity: 1;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
-  height: 12px;
-  background: var(--background-over-container);
-  border-radius: 20px;
-  position: relative;
+}
+
+.progressBarWrapper {
+  flex: 1;
+  height: 25px;
+  min-height: 25px;
+  background-color: var(--background-over-container);
+  border-radius: 999px;
   overflow: hidden;
+  position: relative;
 }
 
 .progressBar {
   height: 100%;
-  border-radius: 20px;
-  position: relative;
-  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--mode-color);
+  border-radius: 999px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.progressBar.animatedBar {
-  animation: progressPulse 2s ease-in-out infinite;
-}
-
-@keyframes progressPulse {
-  0%,
-  100% {
-    filter: brightness(1) saturate(1);
-    transform: scaleY(1);
-  }
-  50% {
-    filter: brightness(1.1) saturate(1.2);
-    transform: scaleY(1.05);
-  }
-}
-
-.progressMarkers {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.progressMarker {
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-}
-
-.markerDot {
-  width: 6px;
-  height: 6px;
+.playPauseBtn {
+  width: 25px;
+  height: 25px;
   border-radius: 50%;
-  border: 1px solid white;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(1);
-}
-
-.markerActive .markerDot {
-  transform: scale(2);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-}
-
-.timeDisplay {
-  position: relative;
-  text-align: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.timeDisplay.timeRunning {
-  transform: scale(1.02);
-}
-
-.timeContainer {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 48px;
-  font-weight: 700;
-  color: var(--mode-color);
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-  line-height: 1;
-}
-
-.controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  width: 100%;
-}
-
-.controlBtn {
-  padding: 5px 10px;
-  border: none;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex: 1;
-  height: 100%;
-}
-
-.primaryBtn {
-  background: var(--mode-color);
-  color: white;
-}
-
-.primaryBtn:hover {
-  filter: brightness(1.1);
-}
-
-.secondaryBtn {
-  background: #f8f9fa;
-  color: #666;
-  border: 1px solid #e9ecef;
-}
-
-.secondaryBtn:hover {
-  background: #e9ecef;
-  color: #495057;
-}
-
-.configButton {
-  background: none;
-  border: none;
   background-color: var(--background-over-container);
-  height: 100%;
-  width: auto;
-  aspect-ratio: 1 / 1;
-  border-radius: 10px;
+  border: none;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
+  fill: var(--mode-color);
+  stroke-width: 0;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
 }
 
-.configButton svg {
-  transform: scale(1);
-  transition:
-    transform 0.2s ease-in-out,
-    stroke 0.2s ease-in-out;
-  width: 15px;
-  height: 15px;
-  stroke-width: 2;
-  stroke: var(--text-not-available);
+.playPauseBtn:hover {
+  background-color: var(--background-over-container-hover);
 }
 
-.configButton:hover svg {
-  stroke: var(--text);
-}
-
-.stats {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.cycles {
-  font-size: 10px;
-  color: #666;
-  font-weight: 500;
-  line-height: 1;
-  display: none;
-}
-
-/* Animation for mode transitions */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.modeBtn.active {
-  animation: pulse 0.3s ease-in-out;
-}
-
-.pomoBody {
-  background-color: aqua;
-  min-height: 100px;
-  width: 100%;
+.playPauseBtn svg {
+  width: 14px;
+  height: 14px;
 }

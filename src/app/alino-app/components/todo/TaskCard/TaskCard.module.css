@@ -6,9 +6,7 @@
   justify-content: flex-start;
   align-items: flex-start;
   gap: 5px;
-  border-radius: 15px;
   padding: 10px;
-  background-color: var(--background-container);
 }
 
 .checkboxContainer {
@@ -256,4 +254,24 @@
   opacity: 0.5;
   background-color: var(--background-over-container);
   border-radius: 7px;
+}
+
+.navigateBtn {
+  width: 25px;
+  height: 25px;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--background-over-container);
+  transition: all 0.2s ease-in-out;
+  padding: 0;
+  text-decoration: none;
+}
+
+.navigateBtn:hover {
+  background-color: var(--background-over-container-hover);
+  transform: translateX(2px);
 }

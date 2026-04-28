@@ -51,7 +51,6 @@ type DashboardStore = {
   activeWidgets: string[];
   layout: ResponsiveLayouts;
   total_tasks: number;
-  pending_tasks: number;
   completed_tasks: number;
   overdue_tasks: number;
   upcoming_tasks: DashboardData["upcoming_tasks"];
@@ -116,7 +115,6 @@ export const useDashboardStore = create<DashboardStore>()((set) => ({
   invalidateDashboardData: () =>
     set({
       total_tasks: 0,
-      pending_tasks: 0,
       completed_tasks: 0,
       overdue_tasks: 0,
       upcoming_tasks: [],

@@ -3,9 +3,10 @@
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
+import SimpleBar from "simplebar-react";
+import "simplebar-react/dist/simplebar.min.css";
 
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
-
 import { Cross } from "@/components/ui/icons/icons";
 import styles from "./WindowComponent.module.css";
 import Image from "next/image";
@@ -140,7 +141,10 @@ export function WindowComponent({
             </div>
           )}
         </section>
-        <section className={styles.windowContent}>{children}</section>
+
+        <SimpleBar autoHide={true} className={styles.windowContent}>
+          {children}
+        </SimpleBar>
       </motion.section>
     </motion.div>,
     container,

@@ -1422,6 +1422,7 @@ export type Database = {
           widget_source: string
         }[]
       }
+      get_current_user_full: { Args: Record<PropertyKey, never>; Returns: Json }
       get_feature_usage: { Args: { p_feature_key: string }; Returns: Json }
       get_initial_data: { Args: { p_user_id: string }; Returns: Json }
       get_invite_link_info: { Args: { p_token: string }; Returns: Json }

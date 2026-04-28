@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ResponsiveLayouts } from "react-grid-layout";
-import dynamic from "next/dynamic";
 
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useUIStore } from "@/store/useUIStore";
@@ -11,72 +10,41 @@ import { useLoadDashboard } from "@/hooks/dashboard/useLoadDashboard";
 import { useFetchDashboardData } from "@/hooks/dashboard/useFetchDashboardData";
 import { useFetchAppUpdates } from "@/hooks/dashboard/useFetchAppUpdates";
 import { useDashboardLayoutActions } from "@/hooks/dashboard/useDashboardLayoutActions";
+import { useSaveWidgetLayouts } from "@/hooks/dashboard/useSaveWidgetLayouts";
 
 import { tierSatisfies } from "@/config/widgets.registry";
+import WIDGET_COMPONENTS from "@/config/widgetComponents";
+import WIDGET_UI_META from "@/config/widgetUiMeta";
+
 import { UpgradePlaceholder } from "./parts/UpgradePlaceholder";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
-import { DraggableBentoGrid } from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";
+import {
+  DraggableBentoGrid,
+  type BentoItem,
+} from "@/components/ui/DraggableBentoGrid/DraggableBentoGrid";
+import { AnimatePresence, motion } from "motion/react";
+
+import dynamic from "next/dynamic";
 
 import {
   Check,
   EditGrid,
   ReloadIcon,
   GridPlusIcon,
+  Link,
 } from "@/components/ui/icons/icons";
 import styles from "./HomeDashboard.module.css";
 
 const BLUR_COLOR = "rgb(106, 195, 255)";
 
-const Summary = dynamic(
-  () => import("./parts/Summary").then((mod) => mod.Summary),
-  { ssr: false },
-);
-const UpcomingTask = dynamic(
-  () => import("./parts/UpcomingTasks").then((mod) => mod.UpcomingTask),
-  { ssr: false },
-);
-const Weather = dynamic(
-  () => import("./parts/Weather").then((mod) => mod.Weather),
-  { ssr: false },
-);
-const NewFeature = dynamic(
-  () => import("./parts/NewFeatures").then((mod) => mod.NewFeature),
-  { ssr: false },
-);
-const Pomodoro = dynamic(
-  () => import("./parts/Pomodoro").then((mod) => mod.Pomodoro),
-  { ssr: false },
-);
 const EmbeddedWidget = dynamic(
   () => import("./parts/EmbeddedWidget").then((mod) => mod.EmbeddedWidget),
-  { ssr: false },
-);
-const AIAssistantWidget = dynamic(
-  () => import("./parts/AIAssistantWidget").then((mod) => mod.default),
   { ssr: false },
 );
 const WidgetGallery = dynamic(
   () => import("./WidgetGallery/index").then((mod) => mod.WidgetGallery),
   { ssr: false },
 );
-
-const PREDEFINED_COMPONENTS: Record<string, React.ComponentType<any>> = {
-  summary: Summary,
-  "upcoming-tasks": UpcomingTask,
-  weather: Weather,
-  "new-features": NewFeature,
-  pomodoro: Pomodoro,
-  "ai-planner": AIAssistantWidget,
-};
-
-interface BentoItem {
-  id: string;
-  title: string;
-  content: React.ReactNode;
-  withoutTopPadding?: boolean;
-  withoutHeader?: boolean;
-  scrollable?: boolean;
-}
 
 interface ConfigOption {
   name: string;
@@ -163,10 +131,12 @@ export const HomeDashboard = () => {
 
   const bentoItems: BentoItem[] = useMemo(() => {
     return widgetInstances
-      .filter((inst) => inst.isInstalled)
+      .filter((inst) => inst.isInstalled && inst.pwIsActive !== false)
       .map((inst): BentoItem | null => {
         if (inst.widgetSource === "predefined") {
-          const WidgetComponent = PREDEFINED_COMPONENTS[inst.widgetKey];
+          const key = inst.componentKey ?? inst.widgetKey;
+          const WidgetComponent = WIDGET_COMPONENTS[key];
+
           if (!WidgetComponent) return null;
 
           const isAllowed = tierSatisfies(
@@ -174,27 +144,24 @@ export const HomeDashboard = () => {
             inst.pwTierRequired ?? "free",
           );
 
+          const meta = WIDGET_UI_META[key] ?? {
+            icon: null,
+            color: "#6366f1",
+          };
+
           return {
             id: inst.widgetKey,
             title: inst.pwName ?? inst.widgetKey,
+            icon: meta.icon,
+            color: meta.color,
             content: isAllowed ? (
               <WidgetComponent />
             ) : (
               <UpgradePlaceholder widgetName={inst.pwName ?? ""} />
             ),
-            withoutTopPadding: [
-              "weather",
-              "new-features",
-              "pomodoro",
-              "ai-planner",
-            ].includes(inst.widgetKey),
-            withoutHeader: [
-              "weather",
-              "new-features",
-              "pomodoro",
-              "ai-planner",
-            ].includes(inst.widgetKey),
-            scrollable: inst.widgetKey === "upcoming-tasks",
+            withoutTopPadding: meta.withoutTopPadding ?? false,
+            withoutHeader: meta.withoutHeader ?? false,
+            scrollable: meta.scrollable ?? false,
           };
         }
 
@@ -202,6 +169,8 @@ export const HomeDashboard = () => {
           return {
             id: inst.widgetKey,
             title: inst.uwTitle ?? "Widget",
+            icon: <Link style={{ width: "16px" }} />,
+            color: "#6366f1",
             content: (
               <EmbeddedWidget
                 widget={{
@@ -215,6 +184,7 @@ export const HomeDashboard = () => {
             scrollable: false,
           };
         }
+
         return null;
       })
       .filter(isBentoItem);
@@ -237,12 +207,38 @@ export const HomeDashboard = () => {
     }
   }, [autoSortLayout, isEdit]);
 
+  const { scheduleSave } = useSaveWidgetLayouts();
+
   const handleFinishEdit = useCallback(() => {
     if (JSON.stringify(layout) !== JSON.stringify(tempLayout)) {
       setLayout(tempLayout);
+      const { widgetInstances, setWidgetInstances } =
+        useDashboardStore.getState();
+
+      const newInstances = widgetInstances.map((instance) => {
+        const id = instance.widgetKey;
+        const lg = tempLayout.lg?.find((l) => l.i === id);
+        const md = tempLayout.md?.find((l) => l.i === id);
+        const xs = tempLayout.xs?.find((l) => l.i === id);
+        return {
+          ...instance,
+          layoutLg: lg
+            ? { i: id, x: lg.x, y: lg.y, w: lg.w, h: lg.h }
+            : instance.layoutLg,
+          layoutMd: md
+            ? { i: id, x: md.x, y: md.y, w: md.w, h: md.h }
+            : instance.layoutMd,
+          layoutXs: xs
+            ? { i: id, x: xs.x, y: xs.y, w: xs.w, h: xs.h }
+            : instance.layoutXs,
+        };
+      });
+
+      setWidgetInstances(newInstances);
+      scheduleSave();
     }
     setIsEdit(false);
-  }, [layout, tempLayout, setLayout]);
+  }, [layout, tempLayout, setLayout, scheduleSave]);
 
   const effectiveLayout = isEdit ? tempLayout : layout;
 
@@ -292,23 +288,49 @@ export const HomeDashboard = () => {
               </div>
             </div>
             <div className={styles.configSection}>
-              {isEdit && (
-                <button
-                  onClick={handleFinishEdit}
-                  className={styles.saveButton}
-                  aria-label="Guardar cambios"
-                >
-                  <Check className={styles.buttonConfig} />
-                </button>
-              )}
-              <button
-                onClick={() => setShowGallery(true)}
-                title="Galería de widgets"
-                className={styles.galleryButton}
-              >
-                <GridPlusIcon className={styles.buttonConfig} />
-              </button>
-              <ConfigMenu iconWidth="25px" configOptions={configOptions} />
+              <AnimatePresence mode="wait">
+                {isEdit ? (
+                  <motion.button
+                    key="finish-btn"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    onClick={handleFinishEdit}
+                    className={styles.checkButton}
+                    aria-label="Guardar cambios"
+                  >
+                    <Check
+                      style={{
+                        width: "16px",
+                        height: "auto",
+                        stroke: "var(--text)",
+                        strokeWidth: 2,
+                      }}
+                    />
+                    Finalizar
+                  </motion.button>
+                ) : (
+                  <motion.div
+                    key="config-btns"
+                    initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, x: -10 }}
+                    style={{ display: "flex", gap: "5px" }}
+                  >
+                    <button
+                      onClick={() => setShowGallery(true)}
+                      title="Galería de widgets"
+                      className={styles.galleryButton}
+                    >
+                      <GridPlusIcon className={styles.buttonConfig} />
+                    </button>
+                    <ConfigMenu
+                      iconWidth="25px"
+                      configOptions={configOptions}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </section>
         </div>

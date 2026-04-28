@@ -21,11 +21,13 @@ export interface WidgetInstance {
   instanceId: string;
   widgetKey: string;
   widgetSource: "predefined" | "embedded";
+  componentKey: string | null;
   pwName: string | null;
   pwDescription: string | null;
   pwCategory: string | null;
   pwTierRequired: SubscriptionTier | null;
   pwIsResizable: boolean | null;
+  pwIsActive: boolean;
   uwTitle: string | null;
   uwUrl: string | null;
   uwConfig: Record<string, unknown> | null;
@@ -45,6 +47,7 @@ export interface PredefinedWidget {
   tierRequired: SubscriptionTier;
   isActive: boolean;
   isResizable: boolean;
+  componentKey: string;
   defaultLayoutLg: WidgetLayoutItem | null;
   defaultLayoutMd: WidgetLayoutItem | null;
   defaultLayoutXs: WidgetLayoutItem | null;

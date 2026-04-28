@@ -1,0 +1,109 @@
+.perspectiveContainer {
+  perspective: 1000px;
+  width: 100%;
+  height: 200px; /* Altura fija para la preview */
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.previewCard {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 30px;
+  /* El boxShadow puede añadir un efecto extra al 3D */
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.2s ease;
+}
+
+.previewCard:hover {
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+}
+
+.previewInner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 30px;
+  /* pointer-events: none es CLAVE para evitar que el usuario interactúe con el widget */
+  pointer-events: none;
+  /* Usamos un scale o container-type si el widget necesita saber su tamaño */
+  /* container-type: inline-size; */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ocultar scrollbars en la preview */
+.previewInner :global(::-webkit-scrollbar) {
+  display: none;
+}
+.previewInner {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.placeholder {
+  width: 100%;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-over-container);
+  border-radius: 20px;
+  color: var(--text-not-available);
+  font-size: 13px;
+  margin: 10px 0;
+}
+
+/* === Estilos simulados de BentoGridItem === */
+
+.bentoHeader {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  padding: 10px 10px 10px 10px;
+}
+
+.bentoBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px;
+  border-radius: 999px;
+  background-color: var(--background-over-container);
+  color: var(--text);
+}
+
+.badgeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: inherit;
+  stroke-width: 2;
+}
+
+.bentoTitle {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: inherit;
+  line-height: 1;
+}
+
+.bentoBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}

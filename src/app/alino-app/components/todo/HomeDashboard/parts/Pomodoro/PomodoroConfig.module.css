@@ -13,7 +13,6 @@
   background-color: var(--border-container-color);
 }
 
-/* Títulos de sección */
 .titleSectionConfig {
   font-size: 14px;
   font-weight: 600;
@@ -26,7 +25,6 @@
   gap: 20px;
 }
 
-/* Configuración de tiempos */
 .timeConfig {
   display: flex;
   flex-direction: column;
@@ -68,19 +66,16 @@
   margin: 0;
 }
 
-/* Para Firefox */
 .timeInput {
   appearance: textfield;
 }
 
-/* Switches */
 .switchContainer {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* Intervalo de long breaks */
 .LongBreakInterval {
   display: flex;
   flex-direction: column;
@@ -111,7 +106,6 @@
   border-color: var(--text-not-available);
 }
 
-/* Configuración de sonidos */
 .soundsConfig {
   display: flex;
   flex-direction: column;
@@ -137,6 +131,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  fill: none;
 }
 
 .testSoundButton:hover {
@@ -239,7 +234,6 @@
   color: var(--text);
 }
 
-/* Volumen */
 .volumeLabel {
   display: block;
   font-size: 13px;
@@ -288,7 +282,6 @@
   border: none;
 }
 
-/* Botón de reset */
 .resetButton {
   padding: 10px 20px;
   border: 1px solid #dc3545;

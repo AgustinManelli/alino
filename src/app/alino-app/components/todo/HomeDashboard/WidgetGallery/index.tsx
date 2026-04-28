@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Crown } from "@/components/ui/icons/icons";
 import { tierSatisfies } from "@/config/widgets.registry";
 import { useInstallWidget } from "@/hooks/dashboard/useInstallWidget";
@@ -11,8 +11,11 @@ import { WindowComponent } from "@/components/ui/WindowComponent";
 import { getUserEmbeddedWidgets } from "@/lib/api/user-widgets/actions";
 
 import { EmbeddedWidgetManager } from "./EmbeddedWidgetManager";
+import { Tabs, TabOption } from "@/components/ui/Tabs/Tabs";
 import styles from "./WidgetGallery.module.css";
 import { useModalStore } from "@/store/useModalStore";
+import { WidgetPreview } from "./WidgetPreview";
+import WIDGET_UI_META from "@/config/widgetUiMeta";
 
 type Tab = "catalog" | "my-widgets";
 
@@ -44,6 +47,16 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
   const { installWidget, isPending: isInstalling } = useInstallWidget();
   const { uninstallWidget, isPending: isUninstalling } = useUninstallWidget();
 
+  const [targetWidgetId, setTargetWidgetId] = useState<string | null>(null);
+
+  const TABS: TabOption[] = useMemo(
+    () => [
+      { id: "catalog", label: "Catálogo" },
+      { id: "my-widgets", label: "Mis Widgets" },
+    ],
+    [],
+  );
+
   const [myEmbeddedWidgets, setMyEmbeddedWidgets] = useState<UserWidgetRow[]>(
     [],
   );
@@ -66,22 +79,12 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
     >
       <div className={styles.container}>
         <div className={styles.header}>
-          <div className={styles.modeButtons}>
-            <button
-              type="button"
-              className={`${styles.modeBtn} ${tab === "catalog" ? styles.active : ""}`}
-              onClick={() => setTab("catalog")}
-            >
-              Catálogo
-            </button>
-            <button
-              type="button"
-              className={`${styles.modeBtn} ${tab === "my-widgets" ? styles.active : ""}`}
-              onClick={() => setTab("my-widgets")}
-            >
-              Mis Widgets
-            </button>
-          </div>
+          <Tabs
+            options={TABS}
+            activeTab={tab}
+            onChange={(id) => setTab(id as Tab)}
+            layoutId="gallery-tabs"
+          />
         </div>
 
         <div className={styles.content}>
@@ -90,19 +93,39 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
               {predefinedWidgets.map((def) => {
                 const isInstalled = activeWidgets.includes(def.id);
                 const canUse = tierSatisfies(userTier, def.tierRequired);
-                const buttonLabel = isInstalled
-                  ? "Desinstalar"
-                  : !canUse
-                    ? `Requiere ${TIER_LABELS[def.tierRequired]}`
-                    : "Instalar";
-                const buttonDisabled = !isInstalled && !canUse;
-                const handleClick = () => {
-                  if (isInstalled) {
-                    uninstallWidget(def.id);
-                  } else if (canUse) {
-                    installWidget(def.id);
-                  } else {
-                    handleOpenPremiumModal();
+                const isThisInstalling =
+                  isInstalling && targetWidgetId === def.id;
+                const isThisUninstalling =
+                  isUninstalling && targetWidgetId === def.id;
+
+                let buttonLabel = "";
+                if (isInstalled)
+                  buttonLabel = isThisUninstalling
+                    ? "Desinstalando..."
+                    : "Desinstalar";
+                else if (isThisInstalling) buttonLabel = "Instalando...";
+                else if (!canUse)
+                  buttonLabel = `Requiere ${TIER_LABELS[def.tierRequired]}`;
+                else buttonLabel = "Instalar";
+
+                const buttonDisabled =
+                  (!isInstalled && !canUse) ||
+                  isThisInstalling ||
+                  isThisUninstalling;
+
+                const handleClick = async () => {
+                  if (isThisInstalling || isThisUninstalling) return;
+                  setTargetWidgetId(def.id);
+                  try {
+                    if (isInstalled) {
+                      await uninstallWidget(def.id);
+                    } else if (canUse) {
+                      await installWidget(def.id);
+                    } else {
+                      handleOpenPremiumModal();
+                    }
+                  } finally {
+                    setTargetWidgetId(null);
                   }
                 };
 
@@ -137,10 +160,13 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
                     </div>
                     <h3 className={styles.cardTitle}>{def.name}</h3>
                     <p className={styles.cardDesc}>{def.description}</p>
+                    
+                    <WidgetPreview componentKey={def.componentKey} title={def.name} />
+
                     <button
                       className={`${styles.cardAction} ${isInstalled ? styles.cardActionRemove : ""}`}
-                      onClick={() => handleClick()}
-                      // disabled={buttonDisabled}
+                      onClick={handleClick}
+                      disabled={isThisInstalling || isThisUninstalling}
                     >
                       {buttonLabel}
                     </button>

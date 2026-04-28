@@ -147,31 +147,30 @@ export async function getLists(): Promise<{
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const { data: pinnedData, error: pinnedError } = await supabase
-      .from("list_memberships")
-      .select(`*, list: lists (*, tasks(count))`)
-      .eq("user_id", user.id)
-      .eq("pinned", true)
-      .order("rank", { ascending: true });
-
-    if (pinnedError) {
-      throw new Error("No se pudieron obtener las listas fijadas.");
-    }
-
-    const { data: mixedData, error: mixedError } = await supabase
-      .rpc("get_paginated_sidebar", {
+    const [pinnedResult, mixedResult] = await Promise.all([
+      supabase
+        .from("list_memberships")
+        .select(`*, list: lists (*, tasks(count))`)
+        .eq("user_id", user.id)
+        .eq("pinned", true)
+        .order("rank", { ascending: true }),
+      supabase.rpc("get_paginated_sidebar", {
         p_user_id: user.id,
         p_page_limit: SIDEBAR_PAGE_SIZE,
         p_offset: 0,
-      });
+      }),
+    ]);
 
-    if (mixedError) {
+    if (pinnedResult.error) {
+      throw new Error("No se pudieron obtener las listas fijadas.");
+    }
+    if (mixedResult.error) {
       throw new Error(
         "No se pudo inicializar la barra lateral. Intentalo nuevamente."
       );
     }
 
-    const rows = (mixedData ?? []) as SidebarRpcRow[];
+    const rows = (mixedResult.data ?? []) as SidebarRpcRow[];
 
     const folders: FolderType[] = [];
     const unpinnedLists: ListsType[] = [];
@@ -198,7 +197,7 @@ export async function getLists(): Promise<{
 
     return {
       data: {
-        lists: [...(pinnedData as ListsType[] ?? []), ...unpinnedLists],
+        lists: [...((pinnedResult.data as ListsType[]) ?? []), ...unpinnedLists],
         tasks: [],
         folders,
         hasMoreRoot: rows.length >= SIDEBAR_PAGE_SIZE,
@@ -212,6 +211,7 @@ export async function getLists(): Promise<{
     return { error: UNKNOWN_ERROR_MESSAGE };
   }
 }
+
 
 export async function getNextRankForUser(): Promise<{ rank?: string; error?: string }> {
   try {

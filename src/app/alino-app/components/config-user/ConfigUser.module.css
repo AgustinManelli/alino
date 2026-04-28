@@ -4,8 +4,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow-y: auto;
-  scrollbar-width: none;
 }
 
 .configModalContainer::-webkit-scrollbar {
@@ -624,4 +622,10 @@
   justify-content: flex-end;
   gap: 10px;
   margin-top: 5px;
+}
+
+@media only screen and (max-width: 850px) {
+  .configModalContainer {
+    padding-bottom: 15px;
+  }
 }
