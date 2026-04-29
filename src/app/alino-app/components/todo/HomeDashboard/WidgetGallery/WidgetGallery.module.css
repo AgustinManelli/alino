@@ -56,6 +56,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-auto-flow: dense;
   gap: 12px;
 }
 
@@ -84,6 +85,14 @@
 
 .cardLocked {
   opacity: 0.5;
+}
+.cardWide {
+  grid-column: span 2;
+}
+@media (max-width: 600px) {
+  .cardWide {
+    grid-column: span 1;
+  }
 }
 
 .cardHeader {

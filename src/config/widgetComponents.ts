@@ -40,6 +40,10 @@ const WIDGET_COMPONENTS: WidgetComponentMap = {
     () => import("@/app/alino-app/components/todo/HomeDashboard/parts/AIAssistantWidget").then((m) => m.default),
     { ssr: false },
   ),
+  "weekly-activity": dynamic(
+    () => import("@/app/alino-app/components/todo/HomeDashboard/parts/WeeklyActivity").then((m) => m.WeeklyActivity),
+    { ssr: false },
+  ),
 };
 
 export default WIDGET_COMPONENTS;

@@ -31,7 +31,7 @@ export const PomodoroPreview = () => {
 
       <div className={styles.timerSection}>
         <div className={styles.timeWrapper}>
-          <span className={styles.timeNumber}>25:00</span>
+          <span className={styles.timeNumber}>8:44</span>
         </div>
 
         <div className={styles.statsInfo}>

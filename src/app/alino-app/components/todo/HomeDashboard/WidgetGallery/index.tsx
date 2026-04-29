@@ -135,7 +135,7 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
                 return (
                   <div
                     key={def.id}
-                    className={`${styles.card} ${isInstalled ? styles.cardInstalled : ""} ${!canUse ? styles.cardLocked : ""}`}
+                    className={`${styles.card} ${isInstalled ? styles.cardInstalled : ""} ${!canUse ? styles.cardLocked : ""} ${WIDGET_UI_META[def.componentKey]?.colSpan === 2 ? styles.cardWide : ""}`}
                   >
                     <div className={styles.cardHeader}>
                       <div

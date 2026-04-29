@@ -42,6 +42,7 @@ const WIDGET_UI_META: Record<string, WidgetUiMeta> = {
     icon: React.createElement(Calendar),
     color: "#b700ff",
     scrollable: true,
+    colSpan: 2
   },
   weather: {
     icon: React.createElement(Cloud, { style: { width: "16px" } }),
@@ -62,6 +63,11 @@ const WIDGET_UI_META: Record<string, WidgetUiMeta> = {
   "ai-planner": {
     icon: React.createElement(IAStars),
     color: "#ec4899",
+  },
+  "weekly-activity": {
+    icon: React.createElement(TaskDoneIcon),
+    color: "#ff9900ff",
+    // colSpan: 2,
   },
 };
 

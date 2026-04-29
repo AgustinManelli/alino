@@ -17,14 +17,7 @@ export const UpgradePlaceholder = ({ widgetName }: Props) => {
   return (
     <div className={styles.placeholder}>
       <div className={styles.iconWrapper}>
-        <Crown
-          style={{
-            stroke: "#ffb400",
-            width: "20px",
-            height: "auto",
-            strokeWidth: 2,
-          }}
-        />
+        <Crown className={styles.icon} />
       </div>
       <h3 className={styles.title}>{widgetName} Bloqueado</h3>
       <p className={styles.text}>

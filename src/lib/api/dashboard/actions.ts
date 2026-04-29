@@ -190,3 +190,19 @@ export async function getDashboardBatch(): Promise<{
     return { error: e instanceof Error ? e.message : UNKNOWN_ERROR };
   }
 }
+
+export async function getWeeklyActivity(): Promise<{
+  data?: Array<{ date: string; completed_count: number }>;
+  error?: string;
+}> {
+  try {
+    const { supabase, user } = await getAuth();
+    const { data, error } = await supabase.rpc("get_weekly_activity", {
+      p_user_id: user.id,
+    });
+    if (error) throw new Error(error.message);
+    return { data: (data || []) as Array<{ date: string; completed_count: number }> };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : UNKNOWN_ERROR };
+  }
+}
