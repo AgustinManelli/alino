@@ -50,7 +50,6 @@ export function useUpdateTaskCompleted() {
       handleError(error);
       useTodoDataStore.setState({ tasks: prevTasks, completedTasks: prevCompletedTasks });
     } else if (completed) {
-      // Refresh streak if task was marked as completed
       fetchStreak();
     }
 
