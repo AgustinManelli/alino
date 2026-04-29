@@ -216,6 +216,21 @@ export async function getStreakData(): Promise<{
     free_protectors_limit: number;
     purchased_protectors: number;
     is_active_today: boolean;
+    last_7_days: Array<{
+      date: string;
+      event_type:
+        | "started"
+        | "extended"
+        | "protected_free"
+        | "protected_purchased"
+        | "protected_mixed"
+        | "lost"
+        | "missed"
+        | "today";
+      streak_after: number | null;
+      free_protectors_used: number;
+      purchased_protectors_used: number;
+    }>;
   };
   error?: string;
 }> {
@@ -225,7 +240,7 @@ export async function getStreakData(): Promise<{
       p_user_id: user.id,
     });
     if (error) throw new Error(error.message);
-    return { data: data as any };
+    return { data: data as NonNullable<typeof data> };
   } catch (e) {
     return { error: e instanceof Error ? e.message : UNKNOWN_ERROR };
   }
