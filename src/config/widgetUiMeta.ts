@@ -16,6 +16,7 @@ import {
   Clock,
   IAStars,
   Cloud,
+  StreakFlameIcon,
 } from "@/components/ui/icons/icons";
 
 export interface WidgetUiMeta {
@@ -68,6 +69,10 @@ const WIDGET_UI_META: Record<string, WidgetUiMeta> = {
     icon: React.createElement(TaskDoneIcon),
     color: "#ff9900ff",
     // colSpan: 2,
+  },
+  streak: {
+    icon: React.createElement(StreakFlameIcon),
+    color: "#f97316",
   },
 };
 

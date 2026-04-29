@@ -206,3 +206,43 @@ export async function getWeeklyActivity(): Promise<{
     return { error: e instanceof Error ? e.message : UNKNOWN_ERROR };
   }
 }
+
+export async function getStreakData(): Promise<{
+  data?: {
+    current_streak: number;
+    max_streak: number;
+    last_completion_date: string | null;
+    free_protectors_used: number;
+    free_protectors_limit: number;
+    purchased_protectors: number;
+    is_active_today: boolean;
+  };
+  error?: string;
+}> {
+  try {
+    const { supabase, user } = await getAuth();
+    const { data, error } = await supabase.rpc("get_user_streak_data", {
+      p_user_id: user.id,
+    });
+    if (error) throw new Error(error.message);
+    return { data: data as any };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : UNKNOWN_ERROR };
+  }
+}
+
+export async function updateStreak(): Promise<{
+  data?: any;
+  error?: string;
+}> {
+  try {
+    const { supabase, user } = await getAuth();
+    const { data, error } = await supabase.rpc("update_user_streak", {
+      p_user_id: user.id,
+    });
+    if (error) throw new Error(error.message);
+    return { data };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : UNKNOWN_ERROR };
+  }
+}

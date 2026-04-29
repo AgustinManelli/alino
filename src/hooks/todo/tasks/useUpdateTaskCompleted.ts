@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
+import { useStreakStore } from "@/store/useStreakStore";
 import { updateCompletedTask } from "@/lib/api/task/actions";
 import { handleError } from "@/store/todoUtils";
 
@@ -43,10 +44,14 @@ export function useUpdateTaskCompleted() {
     });
 
     const { error } = await updateCompletedTask(task_id, completed);
+    const { fetchStreak } = useStreakStore.getState();
 
     if (error) {
       handleError(error);
       useTodoDataStore.setState({ tasks: prevTasks, completedTasks: prevCompletedTasks });
+    } else if (completed) {
+      // Refresh streak if task was marked as completed
+      fetchStreak();
     }
 
     setIsPending(false);
