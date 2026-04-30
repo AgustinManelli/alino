@@ -37,8 +37,6 @@
   background-color: var(--background-container);
 }
 
-
-
 .userHeader {
   display: flex;
   flex-direction: column;
@@ -96,9 +94,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid var(--border-container-color);
   width: 100%;
 }
 
@@ -113,9 +109,16 @@
   height: 14px;
 }
 
-.streakIcon.active { color: #f97316; }
-.streakIcon.off { color: var(--text-not-available); opacity: 0.5; }
-.streakIcon.protector { color: #eab308; }
+.streakIcon.active {
+  color: #f97316;
+}
+.streakIcon.off {
+  color: var(--text-not-available);
+  opacity: 0.5;
+}
+.streakIcon.protector {
+  color: #eab308;
+}
 
 .streakValue {
   font-size: 11px;
