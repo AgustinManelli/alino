@@ -209,7 +209,7 @@
   height: 100% !important;
 }
 
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   .bentoTitle {
     font-size: 13px;
   }
@@ -227,4 +227,4 @@
   .bentoTitle {
     font-size: 12px;
   }
-}
+} */
