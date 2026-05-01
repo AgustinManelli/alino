@@ -166,6 +166,57 @@ export const AnimatedStreakFlame = ({
   const isActive = status === "active";
   const isFrozen = status === "frozen";
 
+  const backFlameAnimate = {
+    fill: isOff ? "#e5e7eb" : isActive ? "#f97316" : "#bae6fd",
+    scale: isFrozen ? 0.85 : isOff ? [0.85, 0.87, 0.85] : [0.87, 0.9, 0.87],
+    rotate: isFrozen
+      ? -30
+      : isOff
+        ? [-30, -25, -30]
+        : [-30, -20, -25, -20, -30],
+    y: -2.2,
+    x: 0.8,
+  };
+
+  const backFlameTransition: any = isFrozen
+    ? { duration: 0.2, ease: "easeOut" as const }
+    : {
+        fill: { duration: 0.3 },
+        scale: {
+          duration: isOff ? 2 : 1.6,
+          repeat: Infinity,
+          ease: "easeInOut" as const,
+        },
+        rotate: {
+          duration: isOff ? 2.5 : 2,
+          repeat: Infinity,
+          ease: "easeInOut" as const,
+        },
+      };
+
+  const groupAnimate = {
+    scale: isFrozen ? 1 : isOff ? [1, 1.02, 1] : [1, 1.05, 1.03, 1.05, 1],
+    rotate: isFrozen ? -3 : isOff ? [-3, 3, -3] : [-6, 6, -4, 4, -6],
+    y: 0,
+  };
+
+  const groupTransition: any = isFrozen
+    ? { duration: 0.2, ease: "easeOut" as const }
+    : {
+        scale: {
+          duration: isOff ? 2.2 : 1.6,
+          repeat: Infinity,
+          ease: "easeInOut" as const,
+        },
+        rotate: {
+          duration: isOff ? 2.5 : 2,
+          repeat: Infinity,
+          ease: "easeInOut" as const,
+        },
+      };
+
+  const outlineColor = "#f7da37ff";
+
   return (
     <div
       className={`${styles.flameContainer} ${className}`}
@@ -177,70 +228,52 @@ export const AnimatedStreakFlame = ({
         xmlns="http://www.w3.org/2000/svg"
         style={{ width: "100%", height: "100%", overflow: "visible" }}
       >
+        {/* Yellow Outline Background Layer */}
+        {isActive && (
+          <>
+            <motion.path
+              d={FLAME_PATH}
+              style={{ originX: "50%", originY: "90%" }}
+              animate={{
+                ...backFlameAnimate,
+                fill: outlineColor,
+                stroke: outlineColor,
+                strokeWidth: 5,
+                strokeLinejoin: "round",
+              }}
+              transition={backFlameTransition}
+            />
+            <motion.g
+              style={{ originX: "50%", originY: "90%" }}
+              animate={groupAnimate}
+              transition={groupTransition}
+            >
+              <motion.path
+                d={FLAME_PATH}
+                animate={{
+                  fill: outlineColor,
+                  stroke: outlineColor,
+                  strokeWidth: 5,
+                  strokeLinejoin: "round",
+                }}
+                transition={{ duration: 0.3 }}
+              />
+            </motion.g>
+          </>
+        )}
+
+        {/* Main Flame Layer */}
         <motion.path
           d={FLAME_PATH}
           style={{ originX: "50%", originY: "90%" }}
-          animate={{
-            fill: isOff ? "#e5e7eb" : isActive ? "#f97316" : "#bae6fd",
-            scale: isFrozen
-              ? 0.85
-              : isOff
-                ? [0.85, 0.87, 0.85]
-                : [0.87, 0.9, 0.87],
-            rotate: isFrozen
-              ? -30
-              : isOff
-                ? [-30, -25, -30]
-                : [-30, -20, -25, -20, -30],
-            y: -2,
-            x: 1,
-          }}
-          transition={
-            isFrozen
-              ? { duration: 0.2, ease: "easeOut" }
-              : {
-                  fill: { duration: 0.3 },
-                  scale: {
-                    duration: isOff ? 2 : 1.2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  },
-                  rotate: {
-                    duration: isOff ? 2.5 : 1.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  },
-                }
-          }
+          animate={backFlameAnimate}
+          transition={backFlameTransition}
         />
 
         <motion.g
           style={{ originX: "50%", originY: "90%" }}
-          animate={{
-            scale: isFrozen
-              ? 1
-              : isOff
-                ? [1, 1.02, 1]
-                : [1, 1.05, 1.03, 1.05, 1],
-            rotate: isFrozen ? -3 : isOff ? [-3, 3, -3] : [-6, 6, -4, 4, -6],
-            y: 0,
-          }}
-          transition={
-            isFrozen
-              ? { duration: 0.2, ease: "easeOut" }
-              : {
-                  scale: {
-                    duration: isOff ? 2.2 : 1.3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  },
-                  rotate: {
-                    duration: isOff ? 2.5 : 1.4,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  },
-                }
-          }
+          animate={groupAnimate}
+          transition={groupTransition}
         >
           <motion.path
             d={FLAME_PATH}
@@ -254,7 +287,7 @@ export const AnimatedStreakFlame = ({
             d={FLAME_PATH}
             style={{ originX: "50%", originY: "90%" }}
             animate={{
-              fill: isOff ? "#d8dadf" : isActive ? "#f9a916" : "#8fd6fc",
+              fill: isOff ? "#d8dadf" : isActive ? "#f7b337ff" : "#8fd6fc",
               scale: isFrozen
                 ? 0.3
                 : isOff

@@ -18,7 +18,8 @@ export function useWeeklyActivity() {
     setIsLoading(true);
     setError(null);
     try {
-      const { data: result, error: apiError } = await getWeeklyActivity();
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const { data: result, error: apiError } = await getWeeklyActivity(timezone);
       if (apiError) {
         setError(apiError);
         customToast.error("Error al cargar actividad semanal");

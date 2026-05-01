@@ -191,7 +191,7 @@ export async function getDashboardBatch(): Promise<{
   }
 }
 
-export async function getWeeklyActivity(): Promise<{
+export async function getWeeklyActivity(timezone?: string): Promise<{
   data?: Array<{ date: string; completed_count: number }>;
   error?: string;
 }> {
@@ -199,6 +199,7 @@ export async function getWeeklyActivity(): Promise<{
     const { supabase, user } = await getAuth();
     const { data, error } = await supabase.rpc("get_weekly_activity", {
       p_user_id: user.id,
+      p_timezone: timezone || null,
     });
     if (error) throw new Error(error.message);
     return { data: (data || []) as Array<{ date: string; completed_count: number }> };
@@ -207,7 +208,7 @@ export async function getWeeklyActivity(): Promise<{
   }
 }
 
-export async function getStreakData(): Promise<{
+export async function getStreakData(timezone?: string): Promise<{
   data?: {
     current_streak: number;
     max_streak: number;
@@ -238,6 +239,7 @@ export async function getStreakData(): Promise<{
     const { supabase, user } = await getAuth();
     const { data, error } = await supabase.rpc("get_user_streak_data", {
       p_user_id: user.id,
+      p_timezone: timezone || null,
     });
     if (error) throw new Error(error.message);
     return { data: data as NonNullable<typeof data> };

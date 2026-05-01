@@ -16,7 +16,10 @@ export const useStreakStore = create<StreakStore>((set) => ({
   isLoading: false,
   fetchStreak: async () => {
     set({ isLoading: true });
-    const { data } = await getStreakData();
+    // Enviamos la zona horaria actual al backend.
+    // El backend se encargará de guardarla si es necesario.
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const { data } = await getStreakData(timezone);
     if (data) {
       set({ streak: data });
     }
