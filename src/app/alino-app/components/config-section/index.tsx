@@ -16,16 +16,9 @@ import {
   Config,
   LogOut,
   UserIcon,
-  ProtectorIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
 import { useUserDataStore } from "@/store/useUserDataStore";
-import { useStreak } from "@/hooks/dashboard/useStreak";
-import {
-  AnimatedStreakFlame,
-  FlameStatus,
-} from "@/components/ui/animated-streak-flame";
-import { useEffect } from "react";
 
 export const ConfigSection = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -38,11 +31,6 @@ export const ConfigSection = () => {
   const { setLoading } = useNavigationLoader();
 
   const user = useUserDataStore((state) => state.user);
-  const { streak, fetchStreak } = useStreak();
-
-  useEffect(() => {
-    fetchStreak();
-  }, [fetchStreak]);
 
   const iconRef = useRef<HTMLDivElement>(null);
 
@@ -50,28 +38,6 @@ export const ConfigSection = () => {
   const display_name = user?.display_name;
   const username = user?.username;
   const tier = (user as any)?.tier || "free";
-
-  const streakCount = streak?.current_streak || 0;
-  const freeLeft =
-    (streak?.free_protectors_limit || 0) - (streak?.free_protectors_used || 0);
-  const protectorsCount = freeLeft + (streak?.purchased_protectors || 0);
-  const isActiveToday = streak?.is_active_today || false;
-
-  let status: FlameStatus = "off";
-  if (isActiveToday) {
-    status = "active";
-  } else if (streakCount > 0 && streak?.last_completion_date) {
-    const lastDate = new Date(streak.last_completion_date + "T12:00:00");
-    const today = new Date();
-    today.setHours(12, 0, 0, 0);
-    const diffDays = Math.floor(
-      (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24),
-    );
-
-    if (diffDays === 1) status = "off";
-    else if (diffDays > 1 && protectorsCount > 0) status = "frozen";
-    else status = "off";
-  }
 
   const logout = () => {
     signOutLocal();
@@ -110,19 +76,6 @@ export const ConfigSection = () => {
         <span className={`${styles.tierBadge} ${styles[tier]}`}>
           {tier.toUpperCase()}
         </span>
-      </div>
-
-      <div className={styles.streakHeaderWrapper}>
-        <div className={styles.streakItem}>
-          <AnimatedStreakFlame status={status} size={16} />
-          <span className={styles.streakValue}>{streakCount}</span>
-        </div>
-        <div className={styles.streakItem}>
-          <ProtectorIcon
-            className={`${styles.streakIcon} ${styles.protector}`}
-          />
-          <span className={styles.streakValue}>{protectorsCount}</span>
-        </div>
       </div>
     </div>
   );

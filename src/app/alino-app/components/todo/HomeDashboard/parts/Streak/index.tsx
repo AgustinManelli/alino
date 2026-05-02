@@ -2,82 +2,19 @@
 import { useEffect } from "react";
 import { useStreak, DayHistory } from "@/hooks/dashboard/useStreak";
 import { useWidgetPreview } from "@/context/WidgetPreviewContext";
-import { ProtectorIcon, TickIcon } from "@/components/ui/icons/icons";
+import { FreezeDayIcon } from "@/components/ui/icons/icons";
 import { motion } from "motion/react";
 import {
   AnimatedStreakFlame,
   FlameStatus,
 } from "@/components/ui/animated-streak-flame";
 import styles from "./Streak.module.css";
-
-const SPANISH_DAY_ABBREV = ["D", "L", "M", "X", "J", "V", "S"];
-
-const getDayAbbrev = (dateStr: string): string => {
-  const date = new Date(dateStr + "T12:00:00");
-  return SPANISH_DAY_ABBREV[date.getDay()];
-};
-
-const getDayCircleClass = (eventType: DayHistory["event_type"]): string => {
-  switch (eventType) {
-    case "extended":
-    case "started":
-      return styles.circleActive;
-    case "protected_free":
-    case "protected_purchased":
-    case "protected_mixed":
-      return styles.circleProtected;
-    case "lost":
-      return styles.circleLost;
-    case "today":
-      return styles.circleToday;
-    case "missed":
-    default:
-      return styles.circleMissed;
-  }
-};
-
-const getDayCircleContent = (
-  eventType: DayHistory["event_type"],
-): React.ReactNode => {
-  switch (eventType) {
-    case "extended":
-    case "started":
-      return (
-        <TickIcon
-          style={{ width: 14, height: 14, color: "#fff", strokeWidth: 4 }}
-        />
-      );
-    case "protected_free":
-    case "protected_purchased":
-    case "protected_mixed":
-      return "❄";
-    default:
-      return null;
-  }
-};
-
-const getTooltip = (day: DayHistory): string => {
-  switch (day.event_type) {
-    case "started":
-      return `Racha iniciada (→ ${day.streak_after} días)`;
-    case "extended":
-      return `Racha extendida (→ ${day.streak_after} días)`;
-    case "protected_free":
-      return `Protegida con ${day.free_protectors_used} protector${day.free_protectors_used > 1 ? "es" : ""} gratuito${day.free_protectors_used > 1 ? "s" : ""}`;
-    case "protected_purchased":
-      return `Protegida con ${day.purchased_protectors_used} protector${day.purchased_protectors_used > 1 ? "es" : ""} comprado${day.purchased_protectors_used > 1 ? "s" : ""}`;
-    case "protected_mixed":
-      return `Protegida (${day.free_protectors_used} gratuito + ${day.purchased_protectors_used} comprado)`;
-    case "lost":
-      return "Racha perdida";
-    case "today":
-      return "Completá una tarea hoy";
-    case "missed":
-      return "Sin actividad";
-    default:
-      return "";
-  }
-};
+import {
+  getDayAbbrev,
+  getDayCircleClass,
+  getDayCircleContent,
+  getTooltip,
+} from "../../../../streak-section/streakUtils";
 
 const generatePreviewDays = (): DayHistory[] => {
   const today = new Date();
@@ -171,11 +108,20 @@ export const StreakWidget = () => {
     }
   }
 
+  const now = new Date();
+  const hoursLeft = 24 - now.getHours();
+  const isEndingSoon = hoursLeft <= 4;
+  const showWarning = status === "off" && isEndingSoon;
+
   return (
     <div className={styles.streakContainer}>
       <div className={styles.mainInfo}>
         <div className={styles.flameWrapper}>
-          <AnimatedStreakFlame status={status} size={60} />
+          <AnimatedStreakFlame
+            status={status}
+            size={60}
+            showWarning={showWarning}
+          />
         </div>
         <div className={styles.countWrapper}>
           <span className={styles.currentStreak}>{currentStreak}</span>
@@ -218,22 +164,48 @@ export const StreakWidget = () => {
               );
             })}
           </div>
-          {weekDays.map((day, i) => (
-            <div key={i} className={styles.dayItem} title={getTooltip(day)}>
-              <div
-                className={`${styles.dayCircle} ${getDayCircleClass(day.event_type)}`}
-              >
-                <span className={styles.dayCircleContent}>
-                  {getDayCircleContent(day.event_type)}
+          {weekDays.map((day, i) => {
+            const isProtected = day.event_type.startsWith("protected_");
+            return (
+              <div key={i} className={styles.dayItem} title={getTooltip(day)}>
+                {isProtected ? (
+                  <div
+                    className={styles.dayCircle}
+                    style={{
+                      position: "relative",
+                      border: "none",
+                      background: "transparent",
+                    }}
+                  >
+                    <FreezeDayIcon
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -41.77%)",
+                        width: 30,
+                        height: 40,
+                        zIndex: 2,
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className={`${styles.dayCircle} ${getDayCircleClass(day.event_type, styles)}`}
+                  >
+                    <span className={styles.dayCircleContent}>
+                      {getDayCircleContent(day.event_type)}
+                    </span>
+                  </div>
+                )}
+                <span
+                  className={`${styles.dayLabel} ${day.event_type === "today" ? styles.dayLabelToday : ""}`}
+                >
+                  {getDayAbbrev(day.date)}
                 </span>
               </div>
-              <span
-                className={`${styles.dayLabel} ${day.event_type === "today" ? styles.dayLabelToday : ""}`}
-              >
-                {getDayAbbrev(day.date)}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

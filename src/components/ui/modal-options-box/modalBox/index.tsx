@@ -1,7 +1,7 @@
 "use client";
-
 import { useRef } from "react";
-import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { createPortal } from "react-dom";
+import { useModalBoxUbication } from "@/hooks/useModalBoxUbication";
 import styles from "./ModalBox.module.css";
 
 interface Props {
@@ -22,15 +22,12 @@ export function ModalBox({
   headerSlot,
 }: Props) {
   const modalRef = useRef<HTMLDivElement>(null);
-  useOnClickOutside(modalRef, onClose, [iconRef]);
+  useModalBoxUbication(iconRef, modalRef, onClose);
 
-  const showDefaultHeader = !headerSlot && title;
-
-  return (
-    <div className={styles.container} ref={modalRef}>
+  const content = (
+    <div ref={modalRef} className={styles.container}>
       {headerSlot && <div className={styles.customHeader}>{headerSlot}</div>}
-
-      {showDefaultHeader && (
+      {!headerSlot && title && (
         <div className={styles.textContainer}>
           <p
             className={styles.title}
@@ -42,8 +39,12 @@ export function ModalBox({
           </p>
         </div>
       )}
-
       {children}
     </div>
   );
+
+  const portalRoot = document.getElementById("portal-root");
+  if (!portalRoot) return null;
+
+  return createPortal(content, portalRoot);
 }

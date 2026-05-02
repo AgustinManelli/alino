@@ -1952,3 +1952,50 @@ export const ProtectorIcon = ({
     />
   </svg>
 );
+
+export const ExclamationIcon = ({
+  className,
+  style,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    color="currentColor"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    style={style}
+    {...props}
+  >
+    <path d="M13.5 12.5V5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5V12.5C10.5 13.3284 11.1716 14 12 14C12.8284 14 13.5 13.3284 13.5 12.5Z" />
+    <path d="M12 20C12.8284 20 13.5 19.3284 13.5 18.5C13.5 17.6716 12.8284 17 12 17C11.1716 17 10.5 17.6716 10.5 18.5C10.5 19.3284 11.1716 20 12 20Z" />
+  </svg>
+);
+
+export const FreezeDayIcon = ({
+  className,
+  style,
+  primaryColor = "#55dbff",
+  secondaryColor = "#00b7ff",
+  ...props
+}: React.SVGProps<SVGSVGElement> & {
+  primaryColor?: string;
+  secondaryColor?: string;
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 39.68 47.5"
+    className={className}
+    style={style}
+    {...props}
+  >
+    <path
+      fill={primaryColor}
+      d="m37.39,29.1h.01l-7.67,16.65c-1.05,2.28-4.28,2.34-5.41.09l-1.75-3.49c-.51-1.01-1.54-1.65-2.67-1.66h-1.66c-.91-.01-1.77.4-2.34,1.11l-1.77,2.18c-1.39,1.72-4.09,1.4-5.04-.59L1.87,28.27h0C.65,25.69-.02,22.79,0,19.72.06,9.38,8.34.63,18.67.03c11.49-.66,21.01,8.46,21.01,19.81,0,3.35-.83,6.5-2.29,9.26Z"
+    />
+    <circle fill={secondaryColor} cx="19.84" cy="19.84" r="16.71" />
+  </svg>
+);

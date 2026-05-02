@@ -3,6 +3,7 @@
 import React from "react";
 import { motion, AnimatePresence, Variants } from "motion/react";
 import styles from "./AnimatedStreakFlame.module.css";
+import { ExclamationIcon } from "../icons/icons";
 
 export type FlameStatus = "active" | "off" | "frozen";
 
@@ -10,157 +11,159 @@ interface AnimatedStreakFlameProps {
   status: FlameStatus;
   size?: number;
   className?: string;
+  showWarning?: boolean;
 }
 
 const FLAME_PATH =
   "M12 22C7.58172 22 4 18.4183 4 14C4 10.5 7.5 5 12 2C16.5 5 20 10.5 20 14C20 18.4183 16.4183 22 12 22Z";
 
-const shards = [
-  {
-    id: "shard-1",
-    clip: "6.3,0.5 11.0,7.2 17.4,4.1 24.0,2.8 30,-5 -5,-5",
-    exitX: 5,
-    exitY: -20,
-    exitR: 25,
-  },
-  {
-    id: "shard-2",
-    clip: "24.0,2.8 17.4,4.1 11.0,7.2 13.6,11.2 18.9,14.0 24.0,14.8 30,14.8 30,-5",
-    exitX: 25,
-    exitY: -5,
-    exitR: 45,
-  },
-  {
-    id: "shard-3",
-    clip: "24.0,14.8 18.9,14.0 13.6,11.2 12.3,17.1 7.4,20.8 7.4,30 30,30 30,14.8",
-    exitX: 18,
-    exitY: 20,
-    exitR: 30,
-  },
-  {
-    id: "shard-4",
-    clip: "7.4,20.8 12.3,17.1 13.6,11.2 11.0,7.2 12.3,9.2 7.4,10.4 3.2,17.0 -5,17.0 -5,30 7.4,30",
-    exitX: 0,
-    exitY: 25,
-    exitR: -15,
-  },
-  {
-    id: "shard-5",
-    clip: "3.2,17.0 7.4,10.4 0.5,6.9 -5,6.9 -5,17.0",
-    exitX: -22,
-    exitY: 10,
-    exitR: -50,
-  },
-  {
-    id: "shard-6",
-    clip: "0.5,6.9 7.4,10.4 12.3,9.2 11.0,7.2 6.3,0.5 -5,-5 -5,6.9",
-    exitX: -18,
-    exitY: -15,
-    exitR: -35,
-  },
-];
+// const shards = [
+//   {
+//     id: "shard-1",
+//     clip: "6.3,0.5 11.0,7.2 17.4,4.1 24.0,2.8 30,-5 -5,-5",
+//     exitX: 5,
+//     exitY: -20,
+//     exitR: 25,
+//   },
+//   {
+//     id: "shard-2",
+//     clip: "24.0,2.8 17.4,4.1 11.0,7.2 13.6,11.2 18.9,14.0 24.0,14.8 30,14.8 30,-5",
+//     exitX: 25,
+//     exitY: -5,
+//     exitR: 45,
+//   },
+//   {
+//     id: "shard-3",
+//     clip: "24.0,14.8 18.9,14.0 13.6,11.2 12.3,17.1 7.4,20.8 7.4,30 30,30 30,14.8",
+//     exitX: 18,
+//     exitY: 20,
+//     exitR: 30,
+//   },
+//   {
+//     id: "shard-4",
+//     clip: "7.4,20.8 12.3,17.1 13.6,11.2 11.0,7.2 12.3,9.2 7.4,10.4 3.2,17.0 -5,17.0 -5,30 7.4,30",
+//     exitX: 0,
+//     exitY: 25,
+//     exitR: -15,
+//   },
+//   {
+//     id: "shard-5",
+//     clip: "3.2,17.0 7.4,10.4 0.5,6.9 -5,6.9 -5,17.0",
+//     exitX: -22,
+//     exitY: 10,
+//     exitR: -50,
+//   },
+//   {
+//     id: "shard-6",
+//     clip: "0.5,6.9 7.4,10.4 12.3,9.2 11.0,7.2 6.3,0.5 -5,-5 -5,6.9",
+//     exitX: -18,
+//     exitY: -15,
+//     exitR: -35,
+//   },
+// ];
 
-const shardVariants: Variants = {
-  initial: { opacity: 0, scale: 0.85 },
-  animate: {
-    opacity: 1,
-    scale: 1,
-    x: 0,
-    y: 0,
-    rotate: 0,
-    transition: { duration: 0.35, type: "spring" as const, bounce: 0.4 },
-  },
-  exit: (custom: any) => ({
-    opacity: 0,
-    x: custom.exitX,
-    y: custom.exitY,
-    rotate: custom.exitR,
-    scale: 0.4,
-    transition: { duration: 0.4, ease: "easeOut" },
-  }),
-};
+// const shardVariants: Variants = {
+//   initial: { opacity: 0, scale: 0.85 },
+//   animate: {
+//     opacity: 1,
+//     scale: 1,
+//     x: 0,
+//     y: 0,
+//     rotate: 0,
+//     transition: { duration: 0.35, type: "spring" as const, bounce: 0.4 },
+//   },
+//   exit: (custom: any) => ({
+//     opacity: 0,
+//     x: custom.exitX,
+//     y: custom.exitY,
+//     rotate: custom.exitR,
+//     scale: 0.4,
+//     transition: { duration: 0.4, ease: "easeOut" },
+//   }),
+// };
 
-const IceBlock = () => (
-  <g>
-    <path
-      d={FLAME_PATH}
-      fill="#ffffff"
-      stroke="#ffffff"
-      strokeWidth={3.5}
-      strokeLinejoin="round"
-      style={{
-        transformOrigin: "12px 21.6px",
-        transform: "translate(1px, -2px) rotate(-30deg) scale(0.85)",
-      }}
-    />
-    <path
-      d={FLAME_PATH}
-      fill="#ffffff"
-      stroke="#ffffff"
-      strokeWidth={3.5}
-      strokeLinejoin="round"
-      style={{ transformOrigin: "12px 21.6px", transform: "rotate(-3deg)" }}
-    />
+// const IceBlock = () => (
+//   <g>
+//     <path
+//       d={FLAME_PATH}
+//       fill="#ffffff"
+//       stroke="#ffffff"
+//       strokeWidth={3.5}
+//       strokeLinejoin="round"
+//       style={{
+//         transformOrigin: "12px 21.6px",
+//         transform: "translate(1px, -2px) rotate(-30deg) scale(0.85)",
+//       }}
+//     />
+//     <path
+//       d={FLAME_PATH}
+//       fill="#ffffff"
+//       stroke="#ffffff"
+//       strokeWidth={3.5}
+//       strokeLinejoin="round"
+//       style={{ transformOrigin: "12px 21.6px", transform: "rotate(-3deg)" }}
+//     />
 
-    <path
-      d={FLAME_PATH}
-      fill="#dff6ffb6"
-      style={{
-        transformOrigin: "12px 21.6px",
-        transform: "translate(1px, -2px) rotate(-30deg) scale(0.85)",
-      }}
-    />
-    <path
-      d={FLAME_PATH}
-      fill="#dff6ffb6"
-      style={{ transformOrigin: "12px 21.6px", transform: "rotate(-3deg)" }}
-    />
+//     <path
+//       d={FLAME_PATH}
+//       fill="#dff6ffb6"
+//       style={{
+//         transformOrigin: "12px 21.6px",
+//         transform: "translate(1px, -2px) rotate(-30deg) scale(0.85)",
+//       }}
+//     />
+//     <path
+//       d={FLAME_PATH}
+//       fill="#dff6ffb6"
+//       style={{ transformOrigin: "12px 21.6px", transform: "rotate(-3deg)" }}
+//     />
 
-    <path
-      d="M112.1,13.25l-30.65,6.04-30.06,14.38L29.49,2.42M34.68,97.1l22.76-17.37,6.27-27.45-12.32-18.6M63.71,52.28l24.71,13.11,23.67,3.77M2.42,32.13l32.26,16.37,22.79-5.65M15.14,79.47l19.54-30.97"
-      stroke="#ffffff91"
-      strokeWidth={7}
-      fill="none"
-      strokeLinejoin="round"
-      strokeLinecap="round"
-      style={{ transform: "scale(0.214)" }}
-    />
-  </g>
-);
+//     <path
+//       d="M112.1,13.25l-30.65,6.04-30.06,14.38L29.49,2.42M34.68,97.1l22.76-17.37,6.27-27.45-12.32-18.6M63.71,52.28l24.71,13.11,23.67,3.77M2.42,32.13l32.26,16.37,22.79-5.65M15.14,79.47l19.54-30.97"
+//       stroke="#ffffff91"
+//       strokeWidth={7}
+//       fill="none"
+//       strokeLinejoin="round"
+//       strokeLinecap="round"
+//       style={{ transform: "scale(0.214)" }}
+//     />
+//   </g>
+// );
 
-const FrozenOverlay = () => {
-  return (
-    <g>
-      <defs>
-        {shards.map((s) => (
-          <clipPath id={s.id} key={s.id}>
-            <polygon points={s.clip} />
-          </clipPath>
-        ))}
-      </defs>
+// const FrozenOverlay = () => {
+//   return (
+//     <g>
+//       <defs>
+//         {shards.map((s) => (
+//           <clipPath id={s.id} key={s.id}>
+//             <polygon points={s.clip} />
+//           </clipPath>
+//         ))}
+//       </defs>
 
-      {shards.map((s) => (
-        <motion.g
-          key={s.id}
-          clipPath={`url(#${s.id})`}
-          custom={s}
-          variants={shardVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          style={{ originX: "12px", originY: "12px" }}
-        >
-          <IceBlock />
-        </motion.g>
-      ))}
-    </g>
-  );
-};
+//       {shards.map((s) => (
+//         <motion.g
+//           key={s.id}
+//           clipPath={`url(#${s.id})`}
+//           custom={s}
+//           variants={shardVariants}
+//           initial="initial"
+//           animate="animate"
+//           exit="exit"
+//           style={{ originX: "12px", originY: "12px" }}
+//         >
+//           <IceBlock />
+//         </motion.g>
+//       ))}
+//     </g>
+//   );
+// };
 
 export const AnimatedStreakFlame = ({
   status,
   size = 40,
   className = "",
+  showWarning = false,
 }: AnimatedStreakFlameProps) => {
   const isOff = status === "off";
   const isActive = status === "active";
@@ -215,12 +218,23 @@ export const AnimatedStreakFlame = ({
         },
       };
 
-  const outlineColor = "#f7da37ff";
+  const outlineColor = isActive
+    ? "#f7da37ff"
+    : isFrozen
+      ? "#ffffff"
+      : "#b8b8b8";
 
   return (
     <div
       className={`${styles.flameContainer} ${className}`}
-      style={{ width: size, height: size, position: "relative" }}
+      style={
+        {
+          width: size,
+          height: size,
+          position: "relative",
+          "--flame-size": `${size}px`,
+        } as React.CSSProperties
+      }
     >
       <motion.svg
         viewBox="0 0 24 24"
@@ -228,48 +242,44 @@ export const AnimatedStreakFlame = ({
         xmlns="http://www.w3.org/2000/svg"
         style={{ width: "100%", height: "100%", overflow: "visible" }}
       >
-        {/* Yellow Outline Background Layer */}
-        {isActive && (
-          <>
+        {/* Yellow Outline Background Layer */}(
+        <>
+          <motion.path
+            d={FLAME_PATH}
+            style={{ originX: "50%", originY: "90%" }}
+            animate={{
+              ...backFlameAnimate,
+              fill: outlineColor,
+              stroke: outlineColor,
+              strokeWidth: 5,
+              strokeLinejoin: "round",
+            }}
+            transition={backFlameTransition}
+          />
+          <motion.g
+            style={{ originX: "50%", originY: "90%" }}
+            animate={groupAnimate}
+            transition={groupTransition}
+          >
             <motion.path
               d={FLAME_PATH}
-              style={{ originX: "50%", originY: "90%" }}
               animate={{
-                ...backFlameAnimate,
                 fill: outlineColor,
                 stroke: outlineColor,
                 strokeWidth: 5,
                 strokeLinejoin: "round",
               }}
-              transition={backFlameTransition}
+              transition={{ duration: 0.3 }}
             />
-            <motion.g
-              style={{ originX: "50%", originY: "90%" }}
-              animate={groupAnimate}
-              transition={groupTransition}
-            >
-              <motion.path
-                d={FLAME_PATH}
-                animate={{
-                  fill: outlineColor,
-                  stroke: outlineColor,
-                  strokeWidth: 5,
-                  strokeLinejoin: "round",
-                }}
-                transition={{ duration: 0.3 }}
-              />
-            </motion.g>
-          </>
-        )}
-
-        {/* Main Flame Layer */}
+          </motion.g>
+        </>
+        ) {/* Main Flame Layer */}
         <motion.path
           d={FLAME_PATH}
           style={{ originX: "50%", originY: "90%" }}
           animate={backFlameAnimate}
           transition={backFlameTransition}
         />
-
         <motion.g
           style={{ originX: "50%", originY: "90%" }}
           animate={groupAnimate}
@@ -326,9 +336,36 @@ export const AnimatedStreakFlame = ({
             }
           />
         </motion.g>
-
-        <AnimatePresence>{isFrozen && <FrozenOverlay />}</AnimatePresence>
+        {/* <AnimatePresence>{isFrozen && <FrozenOverlay />}</AnimatePresence> */}
       </motion.svg>
+
+      <AnimatePresence>
+        {showWarning && (
+          <motion.div
+            className={styles.warningIcon}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: 1,
+            }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{
+              scale: {
+                repeat: Infinity,
+                duration: 2,
+                ease: "easeInOut",
+              },
+              opacity: { duration: 0.2 },
+            }}
+            style={{
+              borderWidth: Math.max(1, size * 0.035),
+              boxShadow: `0 ${size * 0.04}px ${size * 0.08}px rgba(0, 0, 0, 0.2)`,
+            }}
+          >
+            <ExclamationIcon className={styles.exclamationIcon} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

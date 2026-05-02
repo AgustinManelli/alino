@@ -9,6 +9,7 @@ import { RealtimeProvider } from "@/components/providers/RealtimeProvider";
 import { ConfigSection } from "./components/config-section";
 import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
+import { StreakSection } from "./components/streak-section";
 import { InitialUserConfiguration } from "./components/initial-user-configuration";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import dynamic from "next/dynamic";
@@ -58,6 +59,7 @@ export const AppContent = ({ children }: Props) => {
       <ModalRenderer />
       {isPomodoroInstalled && <MiniIndicator />}
       <section className={styles.topButtons}>
+        <StreakSection />
         <NotificationsSection />
         <ConfigSection />
       </section>

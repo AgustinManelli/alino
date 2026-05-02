@@ -5,3 +5,27 @@
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
 }
+
+.warningIcon {
+  position: absolute;
+  bottom: 8%;
+  right: 8%;
+  width: 34%;
+  height: 34%;
+  background: var(--error-color);
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.exclamationIcon {
+  fill: #ffffff;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  height: 70%;
+  width: 70%;
+}

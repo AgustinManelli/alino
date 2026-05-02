@@ -1,0 +1,219 @@
+.container {
+  position: relative;
+  z-index: 100;
+}
+
+.triggerBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  background-color: var(--background-over-container);
+}
+
+.triggerBtn:hover {
+  background-color: var(--background-over-container-hover);
+}
+
+.streakCount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.panel {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.headerSlot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 10px 10px 10px;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.mainInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.countWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.currentStreak {
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--text);
+}
+
+.streakLabel {
+  font-size: 14px;
+  color: var(--text-not-available);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.protectorsSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+
+.protectorRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  width: 100%;
+  gap: 10px;
+}
+
+.protectorInfo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.protectorIcon {
+  width: 18px;
+  height: 18px;
+  color: #eab308;
+}
+
+.protectorsTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.protectorCount {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.historySection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.historyTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.weekHistory {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 4px;
+  width: 100%;
+  position: relative;
+  height: 48px;
+}
+
+.barsContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  z-index: 0;
+}
+
+.animatedBar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  z-index: 0;
+}
+
+.dayItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.dayCircle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.circleActive {
+  background: transparent;
+}
+
+.circleProtected {
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
+}
+
+.circleLost {
+  background: linear-gradient(135deg, #f87171, #dc2626);
+}
+
+.circleMissed {
+  border: 2px solid var(--text-not-available);
+}
+
+.circleToday {
+  border: 2px dashed var(--text-not-available);
+  opacity: 0.7;
+}
+
+.dayCircleContent {
+  font-size: 12px;
+  color: white;
+  font-weight: 700;
+}
+
+.dayLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-not-available);
+  text-transform: uppercase;
+}
+
+.dayLabelToday {
+  color: var(--text);
+}

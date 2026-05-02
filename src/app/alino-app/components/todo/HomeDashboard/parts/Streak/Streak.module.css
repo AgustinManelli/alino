@@ -137,12 +137,12 @@
 
 .circleMissed {
   background: transparent;
-  border: 2px solid var(--border, #e5e7eb);
+  border: 2px solid var(--text-not-available);
 }
 
 .circleToday {
   background: transparent;
-  border: 2px dashed var(--border, #94a3b8);
+  border: 2px dashed var(--text-not-available);
   opacity: 0.7;
 }
 
