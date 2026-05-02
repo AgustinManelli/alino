@@ -4,9 +4,7 @@
   backdrop-filter: blur(15px) saturate(180%);
   -webkit-backdrop-filter: blur(15px) saturate(180%);
   border: 1px solid var(--border-container-color);
-  width: max-content;
-  max-width: calc(100vw - 30px);
-  min-width: 200px;
+  width: fit-content;
   height: fit-content;
   border-radius: 20px;
   display: flex;
@@ -17,6 +15,7 @@
     rgba(12, 20, 66, 0.02) 0px 4px 12px,
     rgba(12, 20, 66, 0.08) 0px 30px 80px;
   overflow: hidden;
+  min-width: 100px;
 }
 
 .customHeader {
@@ -48,5 +47,6 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  min-width: 200px;
   padding: 10px;
 }
