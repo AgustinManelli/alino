@@ -19,6 +19,7 @@ interface Props {
   colorTemp: string | null;
   setColorTemp: (value: string | null) => void;
   folderOpen?: boolean;
+  hideText?: boolean;
 }
 
 const motionInputInitialState = {
@@ -42,6 +43,7 @@ export const FolderInfoEdit = memo(function ListInfoEdit({
   colorTemp,
   setColorTemp,
   folderOpen = false,
+  hideText = false,
 }: Props) {
   const { updateDataFolder } = useUpdateDataFolder();
 
@@ -185,32 +187,34 @@ export const FolderInfoEdit = memo(function ListInfoEdit({
           )}
         </AnimatePresence>
       </div>
-      <div className={styles.textContainer}>
-        <AnimatePresence mode="wait">
-          {isNameChange ? (
-            <motion.input
-              key="input"
-              style={{
-                fontSize: "14px",
-                fontWeight: "initial",
-              }}
-              maxLength={30}
-              initial={motionInputInitialState}
-              animate={motionInputFinalState}
-              exit={motionInputInitialState}
-              transition={motionTransition}
-              className={styles.nameChangerInput}
-              type="text"
-              defaultValue={folder.folder_name}
-              ref={inputRef}
-              onKeyDown={handleKeyDown}
-              id={`folder-info-edit-container`}
-            />
-          ) : (
-            <span className={styles.listName}>{folder.folder_name}</span>
-          )}
-        </AnimatePresence>
-      </div>
+      {!hideText && (
+        <div className={styles.textContainer}>
+          <AnimatePresence mode="wait">
+            {isNameChange ? (
+              <motion.input
+                key="input"
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "initial",
+                }}
+                maxLength={30}
+                initial={motionInputInitialState}
+                animate={motionInputFinalState}
+                exit={motionInputInitialState}
+                transition={motionTransition}
+                className={styles.nameChangerInput}
+                type="text"
+                defaultValue={folder.folder_name}
+                ref={inputRef}
+                onKeyDown={handleKeyDown}
+                id={`folder-info-edit-container`}
+              />
+            ) : (
+              <span className={styles.listName}>{folder.folder_name}</span>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
       {isNameChange && (
         <button onClick={handleSaveClick} className={styles.checkButton}>
           <Check className={styles.checkIconStyle} />

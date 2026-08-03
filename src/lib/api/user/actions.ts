@@ -1,5 +1,6 @@
 "use server";
 import { cache } from "react";
+import { revalidatePath } from "next/cache";
 import { createClient as createClientServer } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
 import sizeOf from "image-size";
@@ -425,5 +426,41 @@ export const getFeatureUsageAction = async (
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
     return { error: "Error desconocido." };
+  }
+};
+
+export const updateUserPreferences = async (preferences: Record<string, any>) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    
+    const { data: currentPrivate, error: readError } = await supabase
+      .from("user_private")
+      .select("preferences")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (readError) throw readError;
+
+    const mergedPreferences = {
+      ...(currentPrivate?.preferences as Record<string, any> || {}),
+      ...preferences,
+    };
+
+    const { error: updateError } = await supabase
+      .from("user_private")
+      .update({ 
+        preferences: mergedPreferences, 
+        updated_at: new Date().toISOString() 
+      })
+      .eq("user_id", user.id);
+
+    if (updateError) throw updateError;
+
+    revalidatePath("/alino-app", "layout");
+
+    return { data: mergedPreferences };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
   }
 };

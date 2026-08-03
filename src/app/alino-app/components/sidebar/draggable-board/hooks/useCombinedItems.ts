@@ -3,28 +3,7 @@
 import { useMemo } from "react";
 import type { ListsType, FolderType } from "@/lib/schemas/database.types";
 import type { NormalizedItem } from "../utils/types";
-
-/**
- * Orden lexicográfico por rank con desempate por id.
- * Usar id como tiebreaker hace el sort estable: dos ítems con el mismo rank
- * (o ambos null) siempre quedan en el mismo orden relativo, evitando que
- * al cargar la página 2 se reordenen los ya cargados visualmente.
- */
-const byRank = (
-  a: { rank?: string | null; id?: string },
-  b: { rank?: string | null; id?: string }
-) => {
-  // Nulls van al final (mismo comportamiento que ORDER BY rank ASC NULLS LAST)
-  const aNull = a.rank == null;
-  const bNull = b.rank == null;
-  if (aNull && bNull) return (a.id ?? "").localeCompare(b.id ?? "");
-  if (aNull) return 1;
-  if (bNull) return -1;
-  if (a.rank! < b.rank!) return -1;
-  if (a.rank! > b.rank!) return 1;
-  // Desempate determinístico por id
-  return (a.id ?? "").localeCompare(b.id ?? "");
-};
+import { compareRanks } from "@/lib/lexorank";
 
 export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
   const combinedItems = useMemo<NormalizedItem[]>(() => {
@@ -32,11 +11,10 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
       id: f.folder_id,
       kind: "folder" as const,
       data: f,
-      // sort hijos por rank; usa list_id como tiebreaker para sort estable
       childrens: lists
         .filter((ls) => ls.folder === f.folder_id)
         .map((ls) => ({ ...ls, _sortId: ls.list_id }))
-        .sort((a, b) => byRank({ rank: a.rank, id: a.list_id }, { rank: b.rank, id: b.list_id })),
+        .sort((a, b) => compareRanks({ rank: a.rank, id: a.list_id }, { rank: b.rank, id: b.list_id })),
       rank: (f as any).rank ?? null,
     }));
 
@@ -48,8 +26,7 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
       rank: (l as any).rank ?? null,
     }));
 
-    // Ordenar por rank lexicográficamente con desempate por id
-    return [...foldersNorm, ...listsNorm].sort(byRank);
+    return [...foldersNorm, ...listsNorm].sort((a, b) => compareRanks(a, b));
   }, [lists, folders]);
 
 

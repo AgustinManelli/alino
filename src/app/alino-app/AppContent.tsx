@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence } from "motion/react";
 
 import { useUserDataStore } from "@/store/useUserDataStore";
@@ -25,12 +25,17 @@ const MiniIndicator = dynamic(
 import styles from "./AlinoAppLayout.module.css";
 import { ModalRenderer } from "@/components/ui/ModalRenderer";
 
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
+
 interface Props {
   children: React.ReactNode;
 }
 
 export const AppContent = ({ children }: Props) => {
   const user = useUserDataStore((state) => state.user);
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
+  const { sidebarCollapsed, sidebarPosition } = useUserPreferencesStore();
 
   const [showConfiguration, setShowConfiguration] = useState(
     user?.user_private?.initial_username_prompt_shown ?? false,
@@ -53,8 +58,14 @@ export const AppContent = ({ children }: Props) => {
     );
   }
 
+  const containerClassName = [
+    styles.appContentContainer,
+    !isMobile && sidebarPosition === "right" ? styles.sidebarRight : "",
+    !isMobile && sidebarCollapsed ? "collapsed" : "",
+  ].filter(Boolean).join(" ");
+
   return (
-    <>
+    <div className={containerClassName}>
       <RealtimeProvider />
       <ModalRenderer />
       {isPomodoroInstalled && <MiniIndicator />}
@@ -65,6 +76,6 @@ export const AppContent = ({ children }: Props) => {
       </section>
       <Sidebar />
       {children}
-    </>
+    </div>
   );
 };

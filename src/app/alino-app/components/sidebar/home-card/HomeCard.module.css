@@ -118,3 +118,22 @@
 .Mobile {
   position: relative;
 }
+
+@media only screen and (min-width: 851px) {
+  :global(.collapsed) .container {
+    justify-content: center !important;
+    padding: 7px 0 !important;
+    gap: 0 !important;
+    border-radius: 10px !important;
+  }
+
+  :global(.collapsed) .textContainer {
+    display: none !important;
+  }
+
+  :global(.collapsed) .colorPickerContainer {
+    width: 100% !important;
+    justify-content: center !important;
+    min-width: unset !important;
+  }
+}

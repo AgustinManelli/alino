@@ -5,26 +5,38 @@ import { type StoreApi } from "zustand";
 import { UserType } from "@/lib/schemas/database.types";
 import { createUserDataStore, UserStoreContext, type UserState } from "@/store/useUserDataStore";
 
+import { createUserPreferencesStore, UserPreferencesContext } from "@/store/useUserPreferencesStore";
+
 interface Props {
   children: ReactNode;
   user: UserType | null;
+  initialSidebarCollapsed: boolean;
+  initialSidebarPosition: "left" | "right";
 }
 
-/**
- * Provee el store de usuario a través de un Contexto.
- * Esto evita problemas de hidratación ("saltos") porque el store
- * ya nace instanciado con los datos del servidor para esta petición específica.
- */
-export const UserStoreProvider = ({ children, user }: Props) => {
+export const UserStoreProvider = ({ children, user, initialSidebarCollapsed, initialSidebarPosition }: Props) => {
   const storeRef = useRef<StoreApi<UserState> | null>(null);
+  const prefsStoreRef = useRef<any>(null);
 
   if (!storeRef.current) {
     storeRef.current = createUserDataStore({ user });
   }
 
+  if (!prefsStoreRef.current) {
+    const dbPrefs = (user?.user_private?.preferences || {}) as any;
+    prefsStoreRef.current = createUserPreferencesStore({
+      ...dbPrefs,
+      sidebarCollapsed: initialSidebarCollapsed,
+      sidebarPosition: initialSidebarPosition,
+    });
+  }
+
   return (
     <UserStoreContext.Provider value={storeRef.current}>
-      {children}
+      <UserPreferencesContext.Provider value={prefsStoreRef.current}>
+        {children}
+      </UserPreferencesContext.Provider>
     </UserStoreContext.Provider>
   );
 };
+

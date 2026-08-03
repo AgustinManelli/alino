@@ -16,8 +16,7 @@ export function PinnedLists({
     <AnimatePresence mode="popLayout">
       {pinned.map((list) => (
         <motion.div
-          layoutId={`list-card-transition-${list.list_id}`}
-          layout
+          layout="position"
           variants={animations ? variants : undefined}
           initial="initial"
           animate="visible"
@@ -32,7 +31,7 @@ export function PinnedLists({
 
       {pinned.length > 0 && (
         <motion.div
-          layout
+          layout="position"
           initial={{ opacity: 0, height: 0, marginBottom: 0 }}
           animate={{
             opacity: 1,
@@ -40,7 +39,7 @@ export function PinnedLists({
             backgroundPosition: ["200% center", "0% center"],
           }}
           exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.2 }}
           id="separator"
           style={{
             width: "100%",

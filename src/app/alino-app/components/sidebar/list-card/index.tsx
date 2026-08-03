@@ -12,6 +12,7 @@ import {
 import { usePathname } from "next/navigation";
 import { useSortable } from "@dnd-kit/sortable";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { readTaskCount } from "@/store/todoUtils";
@@ -21,9 +22,13 @@ import { useUpdatePinnedList } from "@/hooks/todo/lists/useUpdatePinnedList";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { ListInfoEdit } from "@/components/ui/list-info-edit";
 import { CounterAnimation } from "@/components/ui/CounterAnimation";
+import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { useSidebarSelectionStore } from "@/store/useSidebarSelectionStore";
 
 import { ListsType } from "@/lib/schemas/database.types";
 
@@ -35,6 +40,7 @@ import {
   Colaborate,
   LogOut,
   Information,
+  Check,
 } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 import { openModal, useModalStore } from "@/store/useModalStore";
@@ -46,6 +52,7 @@ interface ListCardProps {
 const EDIT_ICON = <Edit className={styles.iconStyle} />;
 const PIN_ICON = <Pin className={styles.iconStyle} />;
 const UNPIN_ICON = <Unpin className={styles.iconStyle} />;
+const CHECK_ICON = <Check className={styles.iconStyle} />;
 const DELETE_ICON = <DeleteIcon className={styles.iconStyle} />;
 const LOGOUT_ICON = <LogOut className={styles.iconStyle} />;
 const INFO_ICON = <Information className={styles.iconStyle} />;
@@ -71,12 +78,22 @@ export const ListCard = memo(({ list }: ListCardProps) => {
 
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const openConfirmationModal = useModalStore((s) => s.open);
+  const sidebarCollapsed = useUserPreferencesStore((state) => state.sidebarCollapsed);
   const setNavbarStatus = useSidebarStateStore(
     (state) => state.setNavbarStatus,
   );
   const setPendingListId = useSidebarStateStore(
     (state) => state.setPendingListId,
   );
+
+  const isSelectionMode = useSidebarSelectionStore((s) => s.isSelectionMode);
+  const selectedItems = useSidebarSelectionStore((s) => s.selectedItems);
+  const toggleItemSelection = useSidebarSelectionStore((s) => s.toggleItemSelection);
+  const startSelectionMode = useSidebarSelectionStore((s) => s.startSelectionMode);
+
+  const isSelected = selectedItems.some((x) => x.id === list.list_id);
+  const isParentFolderSelected = !!(list.folder && selectedItems.some((x) => x.id === list.folder && x.kind === "folder"));
+  const checkboxDisabled = isParentFolderSelected;
 
   const divRef = useRef<HTMLInputElement | null>(null);
   const pathname = usePathname();
@@ -127,6 +144,15 @@ export const ListCard = memo(({ list }: ListCardProps) => {
   const handlePin = useCallback(() => {
     updatePinnedList(list.list_id, !list.pinned);
   }, [updatePinnedList, list.list_id, list.pinned]);
+
+  const handleStartMultiDelete = useCallback(() => {
+    startSelectionMode({
+      id: list.list_id,
+      kind: "list",
+      parentFolderId: list.folder,
+      name: listName,
+    });
+  }, [startSelectionMode, list, listName]);
 
   useEffect(() => {
     if (isNameChange) {
@@ -223,6 +249,13 @@ export const ListCard = memo(({ list }: ListCardProps) => {
         enabled: true,
       },
       {
+        name: "Eliminar múltiple",
+        icon: DELETE_ICON,
+        action: handleStartMultiDelete,
+        enabled: canDelete,
+        variant: "critical" as const,
+      },
+      {
         name: "Eliminar",
         icon: DELETE_ICON,
         action: handleConfirm,
@@ -239,16 +272,30 @@ export const ListCard = memo(({ list }: ListCardProps) => {
     handlePin,
     handleConfirm,
     handleConfirmLeave,
+    handleStartMultiDelete,
   ]);
 
-  return (
+  const card = (
     <div ref={setNodeRef} className={styles.allContainer}>
+
       <div {...attributes} {...listeners} ref={divRef}>
         <Link
-          className={styles.container}
-          href={isNameChange || isDragging ? "#" : `/alino-app/${list.list_id}`}
-          prefetch={false}
+          className={`${styles.container}${isSelectionMode ? " " + styles.selectionMode : ""}`}
+          href={isSelectionMode || isNameChange || isDragging ? "#" : `/alino-app/${list.list_id}`}
           onClick={(e) => {
+            if (isSelectionMode) {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!checkboxDisabled) {
+                toggleItemSelection({
+                  id: list.list_id,
+                  kind: "list",
+                  parentFolderId: list.folder,
+                  name: list.list.list_name,
+                });
+              }
+              return;
+            }
             if (isNameChange || isDragging) {
               e.preventDefault();
               return;
@@ -263,6 +310,38 @@ export const ListCard = memo(({ list }: ListCardProps) => {
             className={`${styles.cardFx} ${isActive ? styles.cardFxActive : ""}`}
           ></div>
 
+          <AnimatePresence>
+            {isSelectionMode && (
+              <motion.div
+                initial={{ width: 0, opacity: 0, marginRight: -7 }}
+                animate={{ width: 24, opacity: 1, marginRight: 0 }}
+                exit={{ width: 0, opacity: 0, marginRight: -7 }}
+                transition={{ type: "spring", stiffness: 500, damping: 32 }}
+                style={{ overflow: "hidden", flexShrink: 0 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  if (!checkboxDisabled) {
+                    toggleItemSelection({
+                      id: list.list_id,
+                      kind: "list",
+                      parentFolderId: list.folder,
+                      name: list.list.list_name,
+                    });
+                  }
+                }}
+              >
+                <div className={styles.checkboxContainer}>
+                  <Checkbox
+                    status={isSelected || isParentFolderSelected}
+                    handleUpdateStatus={() => { }}
+                    disabled={checkboxDisabled}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <ListInfoEdit
             list={list}
             isNameChange={isNameChange}
@@ -272,6 +351,7 @@ export const ListCard = memo(({ list }: ListCardProps) => {
             emoji={emoji}
             setEmoji={setEmoji}
             uniqueId={uniqueEditId}
+            hideText={!isMobile && sidebarCollapsed}
           />
 
           {!isNameChange && (
@@ -296,11 +376,10 @@ export const ListCard = memo(({ list }: ListCardProps) => {
                       ? `${styles.configButtonContainer} ${styles.Mobile}`
                       : `${styles.configButtonContainerDesktop} ${styles.Desktop}`
                   }
-                  style={
-                    !isMobile
-                      ? { opacity: isMoreOptions ? "1" : "0" }
-                      : undefined
-                  }
+                  style={{
+                    ...(!isMobile ? { opacity: isMoreOptions && !isSelectionMode ? "1" : "0" } : {}),
+                    ...(isSelectionMode ? { pointerEvents: "none" } : {}),
+                  }}
                 >
                   <ConfigMenu
                     iconWidth="23px"
@@ -318,7 +397,7 @@ export const ListCard = memo(({ list }: ListCardProps) => {
                   }
                   style={
                     !isMobile
-                      ? { opacity: isMoreOptions ? "0" : "1" }
+                      ? { opacity: isMoreOptions && !isSelectionMode ? "0" : "1" }
                       : undefined
                   }
                 >
@@ -331,4 +410,24 @@ export const ListCard = memo(({ list }: ListCardProps) => {
       </div>
     </div>
   );
+
+  if (sidebarCollapsed && !isMobile) {
+    return (
+      <SidebarTooltip label={listName}>
+        {({ triggerRef, onMouseEnter, onMouseLeave }) => (
+          <div
+            ref={(node) => {
+              (triggerRef as React.MutableRefObject<HTMLElement | null>).current = node;
+            }}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+          >
+            {card}
+          </div>
+        )}
+      </SidebarTooltip>
+    );
+  }
+
+  return card;
 });

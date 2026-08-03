@@ -3,9 +3,6 @@
 import { create } from "zustand";
 import { ListsType } from "@/lib/schemas/database.types";
 
-
-//Prop types de cada modal
-
 export interface ConfirmationModalProps {
   text: string;
   additionalText?: string;
@@ -30,20 +27,21 @@ export interface ListInformationModalProps {
   list: ListsType;
 }
 
-
-//Discriminated union
+export interface MultiDeleteConfirmModalProps {
+  selectedItems: { id: string; kind: "list" | "folder"; parentFolderId?: string | null; name: string }[];
+  onConfirm: (folderOptions: { folderId: string; option: "keep_lists" | "delete_contents" }[]) => void;
+}
 
 export type ModalEntry =
   | { type: "confirmation"; props: ConfirmationModalProps }
   | { type: "splitTask";    props: SplitTaskModalProps }
   | { type: "editTask";     props: EditTaskModalProps }
   | { type: "listInformation"; props: ListInformationModalProps }
+  | { type: "multiDeleteConfirm"; props: MultiDeleteConfirmModalProps }
   | { type: "premium";      props?: Record<string, never> };
 
 
 export type ModalType = ModalEntry["type"];
-
-//Store
 
 interface ModalStore {
   stack: ModalEntry[];
@@ -63,8 +61,6 @@ export const useModalStore = create<ModalStore>((set) => ({
     set((state) => ({ stack: state.stack.filter((e) => e.type !== type) })),
   closeAll: () => set({ stack: [] }),
 }));
-
-//Helpers para usar fuera de componentes
 
 export const openModal  = (entry: ModalEntry) => useModalStore.getState().open(entry);
 export const closeModal = ()                   => useModalStore.getState().close();

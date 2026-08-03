@@ -49,7 +49,7 @@ export const ManagerSkeleton = () => {
   }, []);
   return (
     <>
-      <div className={styles.container}>
+      <div className={`${styles.container} ${styles.skeletonContainer}`}>
         <section className={styles.section1} ref={section1Ref}>
           <div className={styles.header}>
             <div className={styles.listContainer}>

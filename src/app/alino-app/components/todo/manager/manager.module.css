@@ -47,8 +47,6 @@
   align-items: center;
 }
 
-/* ///////HOME////// */
-
 .homeContainer {
   position: relative;
   width: 100%;
@@ -72,11 +70,9 @@
   position: relative;
   font-size: 30px;
   font-weight: 900;
-  background: -webkit-linear-gradient(
-    45deg,
-    rgb(173, 243, 255) 0%,
-    rgb(106, 195, 255)
-  );
+  background: -webkit-linear-gradient(45deg,
+      rgb(173, 243, 255) 0%,
+      rgb(106, 195, 255));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -100,9 +96,7 @@
   text-align: start;
 }
 
-/* //////////////// */
 .configSection {
-  /* width: 50px; */
   height: 75px;
   display: flex;
   justify-content: center;
@@ -274,11 +268,9 @@
 .trashBannerGlow {
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    ellipse at 20% 50%,
-    hsla(340, 85%, 65%, 0.08) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(ellipse at 20% 50%,
+      hsla(340, 85%, 65%, 0.08) 0%,
+      transparent 70%);
   pointer-events: none;
 }
 
@@ -380,4 +372,15 @@
 
 .checkButton:hover {
   background-color: var(--background-over-container-hover);
+}
+
+.skeletonContainer {
+  opacity: 0;
+  animation: fadeIn 0.2s ease-out 0.25s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
 }

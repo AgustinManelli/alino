@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { WindowComponent } from "@/components/ui/WindowComponent";
 
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 
 import styles from "./AccountConfigSection.module.css";
 import { customToast } from "@/lib/toasts";
@@ -15,7 +16,13 @@ interface props {
 }
 
 export function ConfigModal({ handleCloseConfig }: props) {
-  const { animations, toggleAnimations } = useUserPreferencesStore();
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
+  const {
+    animations,
+    toggleAnimations,
+    sidebarPosition,
+    setSidebarPosition,
+  } = useUserPreferencesStore();
 
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -133,6 +140,24 @@ export function ConfigModal({ handleCloseConfig }: props) {
             },
           ]}
         />
+
+        {!isMobile && (
+          <SectionContainer
+            sectionTitle="Barra lateral"
+            configElements={[
+              {
+                text: <>Posición a la derecha</>,
+                elementAction: (
+                  <Switch
+                    value={sidebarPosition === "right"}
+                    action={() => setSidebarPosition(sidebarPosition === "left" ? "right" : "left")}
+                    width={40}
+                  />
+                ),
+              },
+            ]}
+          />
+        )}
 
         <SectionContainer
           sectionTitle="Notificaciones push"
