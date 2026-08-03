@@ -1,0 +1,30 @@
+.tooltip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+  white-space: nowrap;
+}
+
+.tooltip.visible {
+  opacity: 1;
+  transform: translateX(0px);
+}
+
+.label {
+  display: block;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 10px;
+  box-shadow:
+    rgba(12, 20, 66, 0.06) 0px 4px 12px,
+    rgba(12, 20, 66, 0.12) 0px 8px 30px;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}

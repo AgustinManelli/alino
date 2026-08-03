@@ -4,8 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 
 import { HomeIcon2 } from "@/components/ui/icons/icons";
+import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
 
 import styles from "./HomeCard.module.css";
 
@@ -17,6 +20,8 @@ export const HomeCard = () => {
   );
 
   const pathname = usePathname();
+  const sidebarCollapsed = useUserPreferencesStore((state) => state.sidebarCollapsed);
+  const isMobile = usePlatformInfoStore((state) => state.isMobile);
 
   const isActive = pathname === APP_PATH;
 
@@ -24,13 +29,12 @@ export const HomeCard = () => {
     setNavbarStatus(false);
   };
 
-  return (
+  const link = (
     <Link
       className={`${styles.container} ${isActive ? styles.containerActive : ""}`}
       href={APP_PATH}
       onClick={handleCloseNavbar}
       aria-current={isActive ? "page" : undefined}
-      prefetch={false}
     >
       <div
         className={`${styles.cardFx} ${isActive ? styles.cardFxActive : ""}`}
@@ -45,4 +49,24 @@ export const HomeCard = () => {
       </div>
     </Link>
   );
+
+  if (sidebarCollapsed && !isMobile) {
+    return (
+      <SidebarTooltip label="Home">
+        {({ triggerRef, onMouseEnter, onMouseLeave }) => (
+          <div
+            ref={(node) => {
+              (triggerRef as React.MutableRefObject<HTMLElement | null>).current = node;
+            }}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+          >
+            {link}
+          </div>
+        )}
+      </SidebarTooltip>
+    );
+  }
+
+  return link;
 };

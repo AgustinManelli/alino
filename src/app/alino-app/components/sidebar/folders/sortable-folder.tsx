@@ -23,6 +23,8 @@ import { useDeleteFolderWithContents } from "@/hooks/todo/folders/useDeleteFolde
 import { useFetchListsPage } from "@/hooks/todo/lists/useFetchListsPage";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { useSidebarSelectionStore } from "@/store/useSidebarSelectionStore";
 
 import { ListCard } from "../list-card";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
@@ -34,6 +36,7 @@ import { variants } from "../draggable-board/animations/variants";
 import { useModalStore } from "@/store/useModalStore";
 
 import { DeleteIcon, Edit, LoadingIcon } from "@/components/ui/icons/icons";
+import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
 import styles from "./SortableFolder.module.css";
 
 const EDIT_ICON = <Edit className={styles.iconAction} />;
@@ -42,24 +45,22 @@ const DELETE_ICON = <DeleteIcon className={styles.iconAction} />;
 interface SortableFolderProps {
   folder: FolderType;
   lists: ListsType[] | null;
-  isDragging: boolean;
+  isDragging?: boolean;
   dropAllowed?: boolean;
 }
 
 export const SortableFolder = memo(function SortableFolder({
   folder,
   lists,
-  isDragging,
+  isDragging = false,
   dropAllowed = true,
 }: SortableFolderProps) {
   const [open, setOpen] = useState<boolean>(false);
-  const [containsOver, setContainsOver] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string | null>(
-    folder.folder_color,
+    folder.folder_color
   );
 
-  const isHoveringRef = useRef<boolean>(false);
   const divRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -68,6 +69,20 @@ export const SortableFolder = memo(function SortableFolder({
   const { deleteFolderWithContents } = useDeleteFolderWithContents();
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const animations = useUserPreferencesStore((state) => state.animations);
+  const sidebarCollapsed = useUserPreferencesStore(
+    (state) => state.sidebarCollapsed
+  );
+
+  const isSelectionMode = useSidebarSelectionStore((s) => s.isSelectionMode);
+  const selectedItems = useSidebarSelectionStore((s) => s.selectedItems);
+  const toggleItemSelection = useSidebarSelectionStore(
+    (s) => s.toggleItemSelection
+  );
+  const startSelectionMode = useSidebarSelectionStore(
+    (s) => s.startSelectionMode
+  );
+
+  const isSelected = selectedItems.some((x) => x.id === folder.folder_id);
 
   const { fetchListsPage } = useFetchListsPage();
   const fetchListsPageRef = useRef(fetchListsPage);
@@ -76,18 +91,11 @@ export const SortableFolder = memo(function SortableFolder({
   }, [fetchListsPage]);
 
   const folderPagination = useTodoDataStore(
-    (state) => state.listsPagination[folder.folder_id],
+    (state) => state.listsPagination[folder.folder_id]
   );
   const isFetchingFolderLists = useTodoDataStore(
-    (state) => state.fetchingListsQueue[folder.folder_id],
+    (state) => state.fetchingListsQueue[folder.folder_id]
   );
-
-  const listIdsSet = useMemo(
-    () => new Set(lists?.map((list) => list.list_id) || []),
-    [lists],
-  );
-
-  const listIds = useMemo(() => Array.from(listIdsSet), [listIdsSet]);
 
   const hasFetched = !!folderPagination;
 
@@ -96,6 +104,60 @@ export const SortableFolder = memo(function SortableFolder({
       ? folder.memberships[0].count
       : 0;
   }, [folder.memberships]);
+
+  const listIds = useMemo(
+    () => lists?.map((item) => item.list_id),
+    [lists]
+  );
+
+  const isHoveringRef = useRef(false);
+  const [containsOver, setContainsOver] = useState(false);
+
+  useDndMonitor({
+    onDragOver: (event) => {
+      const isOver = event.over?.id === `folder-${folder.folder_id}-dropzone`;
+      if (isOver && !isHoveringRef.current) {
+        isHoveringRef.current = true;
+        setContainsOver(true);
+      } else if (!isOver && isHoveringRef.current) {
+        isHoveringRef.current = false;
+        setContainsOver(false);
+      }
+    },
+    onDragEnd: () => {
+      isHoveringRef.current = false;
+      setContainsOver(false);
+    },
+    onDragCancel: () => {
+      isHoveringRef.current = false;
+      setContainsOver(false);
+    },
+  });
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setSortableNodeRef,
+    transform,
+    transition,
+    isDragging: isCurrentlyDraggingThis,
+  } = useSortable({
+    id: folder.folder_id,
+    disabled: isNameChange || isSelectionMode,
+    data: {
+      type: "folder",
+      item: folder,
+    },
+  });
+
+  const { setNodeRef: setDroppableNodeRef } = useDroppable({
+    id: `folder-${folder.folder_id}-dropzone`,
+    data: {
+      type: "folder-dropzone",
+      accepts: ["item"],
+      folderId: folder.folder_id,
+    },
+  });
 
   useEffect(() => {
     if (open && !folderPagination) {
@@ -135,54 +197,6 @@ export const SortableFolder = memo(function SortableFolder({
     };
   }, [open, hasFetched, folder.folder_id]);
 
-  useDndMonitor({
-    onDragOver: (event) => {
-      const overId = event.over?.id as string | undefined;
-
-      const isOver =
-        !!overId &&
-        (listIdsSet.has(overId) ||
-          overId === `folder-${folder.folder_id}-dropzone`);
-
-      if (isHoveringRef.current !== isOver) {
-        isHoveringRef.current = isOver;
-        setContainsOver(isOver);
-      }
-    },
-    onDragEnd: () => {
-      isHoveringRef.current = false;
-      setContainsOver(false);
-    },
-    onDragCancel: () => {
-      isHoveringRef.current = false;
-      setContainsOver(false);
-    },
-  });
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef: setSortableNodeRef,
-    transform,
-    transition,
-    isDragging: isCurrentlyDraggingThis,
-  } = useSortable({
-    id: folder.folder_id,
-    data: {
-      type: "folder",
-      item: folder,
-    },
-  });
-
-  const { setNodeRef: setDroppableNodeRef } = useDroppable({
-    id: `folder-${folder.folder_id}-dropzone`,
-    data: {
-      type: "folder-dropzone",
-      accepts: ["item"],
-      folderId: folder.folder_id,
-    },
-  });
-
   const dynamicStyle = useMemo(() => {
     let borderColor = "var(--border-container-color)";
     if (containsOver && !isCurrentlyDraggingThis) {
@@ -197,6 +211,7 @@ export const SortableFolder = memo(function SortableFolder({
       opacity: isCurrentlyDraggingThis ? 0.3 : 1,
       border: `1px solid ${borderColor}`,
       "--bgColor": colorTemp ?? "transparent",
+      overflow: sidebarCollapsed && open ? "visible" : undefined,
     };
   }, [
     transform,
@@ -205,6 +220,8 @@ export const SortableFolder = memo(function SortableFolder({
     dropAllowed,
     containsOver,
     colorTemp,
+    sidebarCollapsed,
+    open,
   ]);
 
   useEffect(() => {
@@ -251,6 +268,14 @@ export const SortableFolder = memo(function SortableFolder({
     setIsNameChange(true);
   }, []);
 
+  const handleStartMultiDelete = useCallback(() => {
+    startSelectionMode({
+      id: folder.folder_id,
+      kind: "folder",
+      name: folder.folder_name,
+    });
+  }, [startSelectionMode, folder]);
+
   const configOptions = useMemo(() => {
     return [
       {
@@ -260,13 +285,21 @@ export const SortableFolder = memo(function SortableFolder({
         enabled: true,
       },
       {
+        name: "Eliminar múltiple",
+        icon: DELETE_ICON,
+        action: handleStartMultiDelete,
+        enabled: true,
+        variant: "critical" as const,
+      },
+      {
         name: "Eliminar",
         icon: DELETE_ICON,
         action: handleConfirm,
         enabled: true,
+        variant: "critical" as const,
       },
     ].filter((bs) => bs.enabled);
-  }, [handleInfoEdit, handleConfirm]);
+  }, [handleInfoEdit, handleConfirm, handleStartMultiDelete]);
 
   useEffect(() => {
     if (isNameChange) {
@@ -289,11 +322,19 @@ export const SortableFolder = memo(function SortableFolder({
   const toggleOpen = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
+      if (isSelectionMode) {
+        toggleItemSelection({
+          id: folder.folder_id,
+          kind: "folder",
+          name: folder.folder_name,
+        });
+        return;
+      }
       if (!isNameChange) {
         setOpen((prev) => !prev);
       }
     },
-    [isNameChange],
+    [isNameChange, isSelectionMode, folder, toggleItemSelection]
   );
 
   return (
@@ -318,35 +359,96 @@ export const SortableFolder = memo(function SortableFolder({
         ref={divRef}
         onClick={toggleOpen}
       >
-        <div className={styles.infoEditContainer}>
-          <FolderInfoEdit
-            folder={folder}
-            isNameChange={isNameChange}
-            setIsNameChange={setIsNameChange}
-            colorTemp={colorTemp}
-            setColorTemp={setColorTemp}
-            folderOpen={open}
-          />
-        </div>
+        <AnimatePresence>
+          {isSelectionMode && (
+            <motion.div
+              initial={{ width: 0, opacity: 0, marginRight: -7 }}
+              animate={{ width: 24, opacity: 1, marginRight: 0 }}
+              exit={{ width: 0, opacity: 0, marginRight: -7 }}
+              transition={{ type: "spring", stiffness: 500, damping: 32 }}
+              style={{ overflow: "hidden", flexShrink: 0 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                toggleItemSelection({
+                  id: folder.folder_id,
+                  kind: "folder",
+                  name: folder.folder_name,
+                });
+              }}
+            >
+              <div className={styles.checkboxContainer}>
+                <Checkbox status={isSelected} handleUpdateStatus={() => { }} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {sidebarCollapsed && !isMobile ? (
+          <SidebarTooltip label={folder.folder_name}>
+            {({ triggerRef, onMouseEnter, onMouseLeave }) => (
+              <div
+                ref={(node) => {
+                  (triggerRef as React.MutableRefObject<HTMLElement | null>).current =
+                    node;
+                }}
+                onMouseEnter={onMouseEnter}
+                onMouseLeave={onMouseLeave}
+                className={styles.infoEditContainer}
+              >
+                <FolderInfoEdit
+                  folder={folder}
+                  isNameChange={isNameChange}
+                  setIsNameChange={setIsNameChange}
+                  colorTemp={colorTemp}
+                  setColorTemp={setColorTemp}
+                  folderOpen={open}
+                  hideText={true}
+                />
+              </div>
+            )}
+          </SidebarTooltip>
+        ) : (
+          <div className={styles.infoEditContainer}>
+            <FolderInfoEdit
+              folder={folder}
+              isNameChange={isNameChange}
+              setIsNameChange={setIsNameChange}
+              colorTemp={colorTemp}
+              setColorTemp={setColorTemp}
+              folderOpen={open}
+              hideText={!isMobile && sidebarCollapsed}
+            />
+          </div>
+        )}
         {!isNameChange && (
           <section className={styles.buttonsContainer}>
             {isMobile ? (
               <section className={styles.rightButtonsMobile}>
-                <div className={styles.moreConfigMenuMobile}>
-                  <ConfigMenu
-                    iconWidth="23px"
-                    configOptions={configOptions}
-                    idScrollArea="list-container"
-                    uniqueId={`folder-config-${folder.folder_id}`}
-                  />
-                </div>
+                {!isSelectionMode && (
+                  <div className={styles.moreConfigMenuMobile}>
+                    <ConfigMenu
+                      iconWidth="23px"
+                      configOptions={configOptions}
+                      idScrollArea="list-container"
+                      uniqueId={`folder-config-${folder.folder_id}`}
+                    />
+                  </div>
+                )}
                 <div className={styles.counterMobile}>
                   <CounterAnimation tasksLength={listsCount} />
                 </div>
               </section>
             ) : (
               <>
-                <div className={styles.moreConfigMenu}>
+                <div
+                  className={styles.moreConfigMenu}
+                  style={
+                    isSelectionMode
+                      ? { pointerEvents: "none", opacity: 0 }
+                      : undefined
+                  }
+                >
                   <ConfigMenu
                     iconWidth="23px"
                     configOptions={configOptions}
@@ -354,7 +456,10 @@ export const SortableFolder = memo(function SortableFolder({
                     uniqueId={`folder-config-${folder.folder_id}`}
                   />
                 </div>
-                <div className={styles.counter}>
+                <div
+                  className={styles.counter}
+                  style={isSelectionMode ? { opacity: 1 } : undefined}
+                >
                   <CounterAnimation tasksLength={listsCount} />
                 </div>
               </>
@@ -367,11 +472,12 @@ export const SortableFolder = memo(function SortableFolder({
         <motion.div
           key={`folder-lists-${folder.folder_id}`}
           ref={scrollContainerRef}
-          layout="size"
+          layout="position"
           layoutDependency={open}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className={`${styles.listWrapper} ${isDragging ? styles.draggingActive : ""}`}
-          style={{ maxHeight: "250px" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className={`${styles.listWrapper} ${isDragging ? styles.draggingActive : ""
+            }`}
+          style={{ maxHeight: sidebarCollapsed ? "none" : "250px" }}
         >
           <SortableContext
             items={hasFetched ? listIds || [] : []}
@@ -404,16 +510,14 @@ export const SortableFolder = memo(function SortableFolder({
                         initial="initial"
                         animate="visible"
                         exit="exit"
-                        layout={!isDragging}
+                        layout={!isDragging ? "position" : false}
                         className={styles.motionListWrapper}
                       >
                         <ListCard list={list} />
                       </motion.div>
                     ))
                   ) : !isFetchingFolderLists ? (
-                    <p className={styles.emptyIndicator}>
-                      Arrastra una lista aquí
-                    </p>
+                    <p className={styles.emptyIndicator}>Arrastra una lista aquí</p>
                   ) : null}
 
                   {isFetchingFolderLists && (

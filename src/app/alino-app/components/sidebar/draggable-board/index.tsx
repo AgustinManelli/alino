@@ -44,7 +44,7 @@ export const DraggableBoard = () => {
   const { sensors, measuring, adjustForLayoutPadding } = useDndSensors();
 
   // Handlers
-  const { draggedItem, handleDragStart, handleDragEnd, onDragCancel } =
+  const { draggedItem, handleDragStart, handleDragEnd, onDragCancel, handleDragOver } =
     useDragHandlers({
       combinedItems,
       lists,
@@ -74,7 +74,7 @@ export const DraggableBoard = () => {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={onDragCancel}
-        // onDragOver={handleDragOver}
+        onDragOver={handleDragOver}
       >
         <SortableContext
           items={combinedIds}

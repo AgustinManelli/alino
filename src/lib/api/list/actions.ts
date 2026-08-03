@@ -879,3 +879,42 @@ export const removeListMember = async (
     return { error: UNKNOWN_ERROR_MESSAGE };
   }
 };
+
+export const deleteMultipleItems = async (
+  listIds: string[],
+  folderOptions: { folderId: string; option: "keep_lists" | "delete_contents" }[]
+): Promise<{ success?: boolean; error?: string }> => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    for (const { folderId, option } of folderOptions) {
+      if (option === "delete_contents") {
+        const { error } = await supabase.rpc("delete_folder_with_lists", {
+          p_folder_id: folderId,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("list_folders")
+          .delete()
+          .eq("folder_id", folderId)
+          .eq("user_id", user.id);
+        if (error) throw error;
+      }
+    }
+
+    if (listIds.length > 0) {
+      const { error } = await supabase
+        .from("lists")
+        .delete()
+        .in("list_id", listIds)
+        .eq("owner_id", user.id);
+      if (error) throw error;
+    }
+
+    return { success: true };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};

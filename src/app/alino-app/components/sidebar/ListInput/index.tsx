@@ -24,8 +24,12 @@ const SPRING_TRANSITION = {
 export const ListInput = () => {
   const [activeInput, setActiveInput] = useState(false);
 
-  const animations = useUserPreferencesStore(
-    useShallow((state) => state.animations),
+  const { animations, sidebarCollapsed, setSidebarCollapsed } = useUserPreferencesStore(
+    useShallow((state) => ({
+      animations: state.animations,
+      sidebarCollapsed: state.sidebarCollapsed,
+      setSidebarCollapsed: state.setSidebarCollapsed,
+    })),
   );
 
   const motionProps = useMemo(
@@ -154,7 +158,12 @@ export const ListInput = () => {
         ) : (
           <motion.button
             key="trigger"
-            onClick={() => setActiveInput(true)}
+            onClick={() => {
+              if (sidebarCollapsed) {
+                setSidebarCollapsed(false);
+              }
+              setActiveInput(true);
+            }}
             className={styles.button}
             transition={SPRING_TRANSITION}
             {...motionProps}

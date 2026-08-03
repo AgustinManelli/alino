@@ -5,6 +5,7 @@ import { ConfirmationModal } from "../ConfirmationModal";
 import { SplitTaskModal } from "../SplitTaskModal";
 import { PremiumModal } from "../PremiumModal";
 import ListInformation from "@/app/alino-app/components/list-information";
+import { MultiDeleteConfirmModal } from "../MultiDeleteConfirmModal";
 
 export const ModalRenderer = () => {
   const stack = useModalStore((s) => s.stack);
@@ -35,6 +36,15 @@ export const ModalRenderer = () => {
                 key={i}
                 handleCloseConfig={onClose}
                 list={entry.props.list}
+              />
+            );
+
+          case "multiDeleteConfirm":
+            return (
+              <MultiDeleteConfirmModal
+                key={i}
+                {...entry.props}
+                onClose={onClose}
               />
             );
 

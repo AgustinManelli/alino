@@ -9,7 +9,7 @@ export default function HomePage() {
 }
 
 const Style = {
-  width: "100%",
+  flex: "1",
   height: "100%",
   display: "flex",
   flexDirection: "column",

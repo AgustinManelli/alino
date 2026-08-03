@@ -8,7 +8,12 @@ import { readFolderMembershipCount, makeMembershipCountPayload, handleError } fr
 export function useUpdateIndexList() {
   const [isPending, setIsPending] = useState(false);
 
-  const handleUpdateIndexList = useCallback(async (list_id: string, folder_id: string | null, rank: string) => {
+  const handleUpdateIndexList = useCallback(async (
+    list_id: string,
+    folder_id: string | null,
+    rank: string,
+    explicitPreviousFolder?: string | null
+  ) => {
     setIsPending(true);
     const store = useTodoDataStore.getState();
     const originalList = store.lists.find((list) => list.list_id === list_id);
@@ -16,7 +21,7 @@ export function useUpdateIndexList() {
       setIsPending(false);
       return;
     }
-    const previousFolder = originalList.folder;
+    const previousFolder = explicitPreviousFolder !== undefined ? explicitPreviousFolder : originalList.folder;
     const previousRank = originalList.rank;
 
     try {

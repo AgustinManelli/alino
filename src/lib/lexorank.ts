@@ -17,6 +17,67 @@ export interface LexorankItem extends Omit<NormalizedItem, 'index'> {
 }
 
 /**
+ * Intenta parsear un rank. Retorna null si el valor no es un LexoRank válido.
+ */
+export function parseRank(rank: string | null | undefined): ReturnType<typeof LexoRank.parse> | null {
+  if (!rank) return null;
+  try {
+    return LexoRank.parse(rank);
+  } catch {
+    return null;
+  }
+}
+
+/** Alias interno */
+function tryParse(rank: string | null | undefined): ReturnType<typeof LexoRank.parse> | null {
+  return parseRank(rank);
+}
+
+/**
+ * Comparador determinístico por rank (LexoRank) con desempate por id.
+ */
+export function compareRanks(
+  a: { rank?: string | null; id?: string },
+  b: { rank?: string | null; id?: string }
+): number {
+  const rankA = tryParse(a.rank);
+  const rankB = tryParse(b.rank);
+
+  if (rankA && rankB) {
+    const cmp = rankA.compareTo(rankB);
+    if (cmp !== 0) return cmp;
+  } else if (rankA && !rankB) {
+    return -1;
+  } else if (!rankA && rankB) {
+    return 1;
+  }
+
+  return (a.id ?? "").localeCompare(b.id ?? "");
+}
+
+/**
+ * Garantiza que todos los ítems de un array tengan un LexoRank válido y ordenado.
+ */
+export function sanitizeRanks<T extends { rank?: string | null; id?: string }>(
+  items: T[]
+): (T & { rank: string })[] {
+  let currentRank = LexoRank.middle();
+  return items.map((item, idx) => {
+    const valid = tryParse(item.rank);
+    if (!valid) {
+      if (idx === 0) {
+        currentRank = LexoRank.middle();
+      } else {
+        currentRank = currentRank.genNext();
+      }
+      return { ...item, rank: currentRank.toString() };
+    }
+    currentRank = valid;
+    return { ...item, rank: valid.toString() };
+  });
+}
+
+/**
  * Genera un rank inicial (primera inserción)
  */
 export function getInitialRank(): string {
@@ -24,36 +85,59 @@ export function getInitialRank(): string {
 }
 
 /**
- * Calcula el nuevo rank para una posición en el array
+ * Calcula el nuevo LexoRank para insertar en un índice específico dentro de un array ordenado.
  */
-export function calcNewRank(arr: LexorankItem[], newIndex: number): string {
-  const prev = arr[newIndex - 1]?.rank ?? null;
-  const next = arr[newIndex + 1]?.rank ?? null;
-
-  // Primera inserción
-  if (prev === null && next === null) {
+export function calcRankForInsertion(
+  sortedItems: { rank?: string | null; id?: string }[],
+  insertIndex: number
+): string {
+  if (sortedItems.length === 0) {
     return LexoRank.middle().toString();
   }
 
-  // Insertar al inicio
-  if (prev === null && next !== null) {
-    const nextRank = tryParse(next);
-    if (!nextRank) return LexoRank.middle().toString();
+  const sanitized = sanitizeRanks(sortedItems);
+  const clampedIndex = Math.max(0, Math.min(insertIndex, sanitized.length));
+
+  const prevItem = sanitized[clampedIndex - 1] ?? null;
+  const nextItem = sanitized[clampedIndex] ?? null;
+
+  const prevRank = prevItem ? tryParse(prevItem.rank) : null;
+  const nextRank = nextItem ? tryParse(nextItem.rank) : null;
+
+  if (!prevRank && !nextRank) {
+    return LexoRank.middle().toString();
+  }
+
+  if (!prevRank && nextRank) {
     return nextRank.genPrev().toString();
   }
 
-  // Insertar al final
-  if (next === null && prev !== null) {
-    const prevRank = tryParse(prev);
-    if (!prevRank) return LexoRank.middle().toString();
+  if (prevRank && !nextRank) {
     return prevRank.genNext().toString();
   }
 
-  // Insertar en el medio
-  const prevRank = tryParse(prev!);
-  const nextRank = tryParse(next!);
-  if (!prevRank || !nextRank) return LexoRank.middle().toString();
-  return prevRank.between(nextRank).toString();
+  if (prevRank && nextRank) {
+    if (prevRank.compareTo(nextRank) >= 0) {
+      return prevRank.genNext().toString();
+    }
+    try {
+      return prevRank.between(nextRank).toString();
+    } catch {
+      return prevRank.genNext().toString();
+    }
+  }
+
+  return LexoRank.middle().toString();
+}
+
+/**
+ * Calcula el nuevo rank para una posición en el array
+ */
+export function calcNewRank(
+  arr: { rank?: string | null; id?: string }[],
+  newIndex: number
+): string {
+  return calcRankForInsertion(arr, newIndex);
 }
 
 /**
@@ -96,23 +180,6 @@ export function calcNewItemRankFromMultipleLists(
   }, validItems[0].rank);
 
   return tryParse(maxRank)!.genNext().toString();
-}
-
-/**
- * Intenta parsear un rank. Retorna null si el valor no es un LexoRank válido.
- * Esto protege contra ranks legacy, UUIDs, o valores corruptos en la DB.
- */
-export function parseRank(rank: string): ReturnType<typeof LexoRank.parse> | null {
-  try {
-    return LexoRank.parse(rank);
-  } catch {
-    return null;
-  }
-}
-
-/** Alias interno */
-function tryParse(rank: string): ReturnType<typeof LexoRank.parse> | null {
-  return parseRank(rank);
 }
 
 /**

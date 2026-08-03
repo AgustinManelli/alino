@@ -224,6 +224,19 @@
   opacity: 1 !important;
 }
 
+.selectionMode:hover .configButtonContainerDesktop {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.container:hover .counterDesktop {
+  opacity: 0 !important;
+}
+
+.selectionMode:hover .counterDesktop {
+  opacity: 1 !important;
+}
+
 .counter,
 .counterDesktop {
   transition: opacity 0.2s ease-in-out;
@@ -248,9 +261,6 @@
   border-radius: 5px;
 }
 
-.container:hover .counterDesktop {
-  opacity: 0 !important;
-}
 
 .Desktop {
   position: absolute;
@@ -276,3 +286,32 @@
     opacity: 0 !important;
   }
 } */
+
+@media only screen and (min-width: 851px) {
+
+  :global(.collapsed) .textContainer,
+  :global(.collapsed) .listManagerContainer {
+    display: none !important;
+  }
+
+  :global(.collapsed) .container {
+    justify-content: center !important;
+    padding: 7px 0 !important;
+    gap: 0 !important;
+    border-radius: 10px !important;
+  }
+
+  :global(.collapsed) .colorPickerContainer {
+    width: 100% !important;
+    justify-content: center !important;
+    min-width: unset !important;
+  }
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  flex-shrink: 0;
+}

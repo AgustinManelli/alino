@@ -18,15 +18,16 @@
 }
 
 .navbarContainer {
-  width: 25vw;
+  width: 20vw;
   min-width: 400px;
+  flex-shrink: 0;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 100;
   transform: translateX(0%);
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out, width 0.2s ease-in-out, min-width 0.2s ease-in-out;
   padding-bottom: calc(env(safe-area-inset-bottom) + 15px);
 }
 
@@ -55,7 +56,7 @@
 .navbar::before {
   content: "";
   position: absolute;
-  top: 55px;
+  top: 75px;
   width: 100%;
   height: 20px;
   overflow: hidden;
@@ -121,5 +122,237 @@
 
   .active {
     left: initial;
+  }
+}
+
+.navbarHeader {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+  height: 40px;
+  flex-shrink: 0;
+  margin-bottom: 10px;
+}
+
+.logoContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: fit-content;
+  opacity: 0.2;
+}
+
+.collapseButton {
+  position: absolute;
+  right: 15px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-not-available);
+  opacity: 0.4;
+  transition: opacity 0.2s ease-in-out, color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.collapseButton[data-sidebar-position="right"] {
+  right: auto;
+  left: 15px;
+}
+
+.collapseButton:hover {
+  opacity: 1;
+  color: var(--text);
+  background-color: var(--background-over-container);
+}
+
+.collapseButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.collapsedHeaderButton {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background-color: transparent;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.collapsedLogo {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.4;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  transform: scale(1);
+}
+
+.collapsedExpandIcon {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  transform: scale(0.85);
+  color: var(--text);
+}
+
+.collapsedExpandIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.collapsedHeaderButton:hover {
+  background-color: var(--background-over-container);
+}
+
+.collapsedHeaderButton:hover .collapsedLogo {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.collapsedHeaderButton:hover .collapsedExpandIcon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media only screen and (min-width: 851px) {
+  :global(.collapsed) .navbarContainer {
+    width: 75px !important;
+    min-width: 75px !important;
+  }
+
+  :global(.collapsed) .logoContainer {
+    display: none !important;
+  }
+
+  :global(.collapsed) .inputContainer {
+    padding: 0 8px !important;
+    width: 100% !important;
+  }
+
+  :global(.collapsed) .elementsSection {
+    padding: 30px 8px 20px 8px !important;
+  }
+
+  :global(.collapsed) .navbarHeader {
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+
+  :global(.collapsed) .selectionBar {
+    flex-direction: column !important;
+    height: auto !important;
+    gap: 8px !important;
+    padding: 10px 4px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border-radius: 10px !important;
+  }
+
+  :global(.collapsed) .selectionButtons {
+    flex-direction: column !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  :global(.collapsed) .selectionCancelButton,
+  :global(.collapsed) .selectionDeleteButton {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+  }
+}
+
+.selectionBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--background-over-container);
+  padding: 7px 10px;
+  border-radius: 15px;
+  height: 45px;
+  width: 100%;
+  animation: slideUp 0.2s ease-out;
+}
+
+.selectionCount {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.selectionButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.selectionCancelButton,
+.selectionDeleteButton {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selectionCancelButton {
+  color: var(--text-not-available);
+  background-color: var(--background-container);
+}
+
+.selectionCancelButton:hover {
+  color: var(--text);
+  background-color: var(--background-over-container-hover);
+}
+
+.selectionDeleteButton {
+  color: #fff;
+  background-color: var(--button-critical);
+}
+
+.selectionDeleteButton:hover:not(:disabled) {
+  background-color: var(--button-critical-hover);
+}
+
+.selectionDeleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
