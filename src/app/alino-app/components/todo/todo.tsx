@@ -23,9 +23,10 @@ export const Todo = ({ list }: { list: string }) => {
     (state) => state.setPendingListId,
   );
 
-  const [isValidating, setIsValidating] = useState(
-    () => pendingListId !== list,
-  );
+  const [isValidating, setIsValidating] = useState(() => {
+    if (pendingListId === list) return false;
+    return !useTodoDataStore.getState().lists.some((l) => l.list_id === list);
+  });
   const { verifyAndFetchList } = useVerifyAndFetchList();
 
   useEffect(() => {

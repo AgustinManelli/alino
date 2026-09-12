@@ -1,5 +1,6 @@
 "use server";
 
+import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
 import {
   PredefinedWidget,
@@ -11,12 +12,12 @@ import { AppUpdatesType, DashboardData } from "@/lib/schemas/database.types";
 
 const UNKNOWN_ERROR = "Error desconocido.";
 
-const getAuth = async () => {
+const getAuth = cache(async () => {
   const supabase = createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) throw new Error("Not authenticated");
   return { supabase, user: data.user };
-};
+});
 
 export async function loadDashboardFull(): Promise<{
   data?: DashboardFullPayload;
@@ -144,7 +145,7 @@ export async function getWidgetLimits(): Promise<{
   error?: string;
 }> {
   try {
-    const { supabase } = await getAuth();
+    const supabase = createClient();
     const { data, error } = await supabase.rpc("get_widget_limits");
     if (error) throw new Error(error.message);
     return { data: data as WidgetLimits };

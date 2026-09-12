@@ -1,7 +1,10 @@
-"use client"
+"use client";
 
 import { useState, useCallback } from "react";
-import { setUsernameFirstTime as setUsernameFirstTimeAction } from "@/lib/api/user/actions";
+import {
+  setUsernameFirstTime as setUsernameFirstTimeAction,
+  updateUserProfile as updateUserProfileAction,
+} from "@/lib/api/user/actions";
 import { globalUserStore } from "@/store/useUserDataStore";
 import { useSyncStore } from "@/store/useSyncStore";
 import { customToast } from "@/lib/toasts";
@@ -12,7 +15,7 @@ export function useSetUsernameFirstTime() {
   const removeLoading = useSyncStore((state) => state.removeLoading);
 
   const setUsernameFirstTime = useCallback(
-    async (username: string) => {
+    async (username: string, avatarUrl?: string | null) => {
       addLoading();
       setIsPending(true);
       try {
@@ -24,10 +27,24 @@ export function useSetUsernameFirstTime() {
           return { error: res.error };
         }
 
+        let effectiveAvatarUrl = avatarUrl;
+        if (avatarUrl !== undefined) {
+          const updateRes = await updateUserProfileAction({
+            avatar_url: avatarUrl || "",
+          });
+          if (updateRes.error) {
+            return { error: updateRes.error };
+          }
+          if (updateRes.data?.avatar_url) {
+            effectiveAvatarUrl = updateRes.data.avatar_url;
+          }
+        }
+
         const store = globalUserStore?.getState();
         if (store?.user) {
           store.updateUser({
             username,
+            ...(effectiveAvatarUrl !== undefined ? { avatar_url: effectiveAvatarUrl } : {}),
             user_private: store.user.user_private
               ? {
                   ...store.user.user_private,
@@ -37,8 +54,10 @@ export function useSetUsernameFirstTime() {
           });
         }
         return { error: null };
-      } catch (err) {
-        customToast.error((err as Error).message || "Error desconocido");
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error ? err.message : "Error desconocido";
+        customToast.error(msg);
         return { error: "Error desconocido." };
       } finally {
         setIsPending(false);

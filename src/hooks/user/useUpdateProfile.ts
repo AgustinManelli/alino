@@ -32,8 +32,10 @@ export function useUpdateProfile() {
         }
 
         return { error: null };
-      } catch (err: any) {
-        return { error: err.message || "Error al actualizar perfil." };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Error al actualizar perfil.";
+        return { error: message };
       } finally {
         setIsPending(false);
         removeLoading();

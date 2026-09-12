@@ -22,9 +22,11 @@ export function useUploadAvatar() {
           globalUserStore?.getState().updateUser({ avatar_url: res.data.avatar_url });
         }
 
-        return { error: null };
-      } catch (err: any) {
-        return { error: err.message || "Error al subir avatar." };
+        return { error: null, data: res.data };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Error al subir avatar.";
+        return { error: message };
       } finally {
         setIsPending(false);
         removeLoading();

@@ -1,0 +1,327 @@
+.avatarSelectorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.previewWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 104px;
+}
+
+.avatarRing {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: 1px solid var(--border-container-color);
+  background-color: var(--background-container);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.avatarRing:hover {
+  border-color: var(--alino-secondary-color);
+  transform: scale(1.02);
+}
+
+.avatarCircle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background-container);
+  position: relative;
+  --mo-track-travel: 3.5px;
+}
+
+.avatarCircle svg,
+.avatarCircle :global(.mo-root),
+.avatarCircle :global(.mo-eyes) {
+  --mo-track-travel: 3.5px !important;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.providerBadge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--background-over-container-solid);
+  border: 1px solid var(--border-container-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.diceButton {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--background-over-container-solid);
+  border: 1.5px solid var(--alino-secondary-color);
+  color: var(--alino-secondary-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  padding: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.diceButton:hover {
+  border-color: var(--alino-secondary-color);
+  color: var(--alino-secondary-color);
+  background-color: var(--hover-over-container);
+  transform: scale(1.08);
+}
+
+.editCustomPhotoButton {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--background-over-container-solid);
+  border: 1.5px solid var(--alino-secondary-color);
+  color: var(--alino-secondary-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.editCustomPhotoButton:hover {
+  background-color: var(--hover-over-container);
+  transform: scale(1.08);
+}
+
+.editCustomPhotoButton input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 4;
+}
+
+.uploadTrigger {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background-color: var(--background-over-container);
+  cursor: pointer;
+  position: relative;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  user-select: none;
+}
+
+.uploadTrigger:hover {
+  background-color: var(--background-over-container-hover);
+}
+
+.uploadTrigger input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.uploadTriggerIcon {
+  width: 22px;
+  height: 22px;
+  stroke: var(--placeholder-text-color);
+  transition: stroke 0.2s ease;
+}
+
+.uploadTrigger:hover .uploadTriggerIcon {
+  stroke: var(--alino-secondary-color);
+}
+
+.uploadTriggerLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--placeholder-text-color);
+  transition: color 0.2s ease;
+}
+
+.uploadTrigger:hover .uploadTriggerLabel {
+  color: var(--text);
+}
+
+.tabsWrapper {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  justify-content: center;
+}
+
+.cropperModalWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  padding: 10px;
+}
+
+.cropperContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background-color: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.cropperControls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 0 5px;
+}
+
+.controlGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.controlLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-not-available);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--background-over-container);
+  outline: none;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 2px solid var(--background-container);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.cropperActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.btnAction {
+  background-color: transparent;
+  border: 1px solid var(--border-container-color);
+  color: var(--text);
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  height: 34px;
+}
+
+.btnAction:hover:not(:disabled) {
+  background-color: var(--background-over-container-hover);
+}
+
+.btnPrimary {
+  background-color: var(--alino-primary-color);
+  border: 1px solid var(--alino-primary-color);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background-color: var(--alino-primary-color);
+  filter: brightness(1.08);
+}
+
+.btnAction:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.loaderIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

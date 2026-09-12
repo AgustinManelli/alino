@@ -7,6 +7,7 @@ import { RoleDropdown } from "../RoleDropdown";
 
 import styles from "./MemberRow.module.css";
 import { Cross, LoadingIcon, TickIcon } from "@/components/ui/icons/icons";
+import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
 
 interface MemberRowProps {
   user: UserWithMembershipRole | null;
@@ -115,8 +116,10 @@ export function MemberRow({
 
   return (
     <div className={styles.memberRow}>
-      <img
-        src={user.avatar_url || "/default-avatar.png"}
+      <UserAvatar
+        avatarUrl={user.avatar_url}
+        username={user.username}
+        size={36}
         alt={user.display_name || "Avatar"}
         className={styles.avatar}
       />

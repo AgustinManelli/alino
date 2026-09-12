@@ -9,7 +9,7 @@ import {
   memo,
   useCallback,
 } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSortable } from "@dnd-kit/sortable";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
@@ -82,9 +82,14 @@ export const ListCard = memo(({ list }: ListCardProps) => {
   const setNavbarStatus = useSidebarStateStore(
     (state) => state.setNavbarStatus,
   );
+  const pendingListId = useSidebarStateStore(
+    (state) => state.pendingListId,
+  );
   const setPendingListId = useSidebarStateStore(
     (state) => state.setPendingListId,
   );
+
+  const router = useRouter();
 
   const isSelectionMode = useSidebarSelectionStore((s) => s.isSelectionMode);
   const selectedItems = useSidebarSelectionStore((s) => s.selectedItems);
@@ -195,6 +200,8 @@ export const ListCard = memo(({ list }: ListCardProps) => {
   });
 
   const isActive = pathname === `/alino-app/${list.list_id}`;
+  const isPending = pendingListId === list.list_id;
+  const isCurrentOrPending = isActive || isPending;
 
   const style = useMemo<CSSProperties>(
     () => ({
@@ -204,11 +211,11 @@ export const ListCard = memo(({ list }: ListCardProps) => {
       zIndex: isDragging ? 99 : 1,
       opacity: isDragging ? 0.3 : 1,
       backgroundColor:
-        isActive || isMoreOptions || isNameChange
+        isCurrentOrPending || isMoreOptions || isNameChange
           ? "var(--background-over-container)"
           : "transparent",
     }),
-    [transform, transition, isDragging, isActive, isMoreOptions, isNameChange],
+    [transform, transition, isDragging, isCurrentOrPending, isMoreOptions, isNameChange],
   );
 
   if (!list?.list) return null;
@@ -282,6 +289,11 @@ export const ListCard = memo(({ list }: ListCardProps) => {
         <Link
           className={`${styles.container}${isSelectionMode ? " " + styles.selectionMode : ""}`}
           href={isSelectionMode || isNameChange || isDragging ? "#" : `/alino-app/${list.list_id}`}
+          onMouseEnter={() => {
+            if (!isSelectionMode && !isNameChange && !isDragging) {
+              router.prefetch(`/alino-app/${list.list_id}`);
+            }
+          }}
           onClick={(e) => {
             if (isSelectionMode) {
               e.preventDefault();
@@ -307,7 +319,7 @@ export const ListCard = memo(({ list }: ListCardProps) => {
           style={{ ...style, "--color": colorTemp } as React.CSSProperties}
         >
           <div
-            className={`${styles.cardFx} ${isActive ? styles.cardFxActive : ""}`}
+            className={`${styles.cardFx} ${isCurrentOrPending ? styles.cardFxActive : ""}`}
           ></div>
 
           <AnimatePresence>

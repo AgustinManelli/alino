@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 
 import { getUser } from "@/lib/api/user/actions";
 import { UserStoreProvider } from "@/components/providers/UserStoreProvider";
+import { type UserPreferences } from "@/store/useUserPreferencesStore";
 
 import { AppContent } from "./AppContent";
 import { TopBlurEffect } from "@/components/ui/top-blur-effect";
@@ -14,20 +15,26 @@ export default async function AlinoAppLayout({
 }: {
   children?: React.ReactNode;
 }) {
-  const userPrivateResult = await getUser();
+  const userResult = await getUser();
 
-  if (userPrivateResult.error || !userPrivateResult.data?.user) {
+  if (userResult.error || !userResult.data?.user) {
     redirect("/sign-in");
   }
 
-  const user = userPrivateResult.data.user;
+  const user = userResult.data.user;
   const cookieStore = cookies();
 
-  const initialSidebarCollapsed = cookieStore.get("sidebar-collapsed")?.value === "true";
+  const initialSidebarCollapsed =
+    cookieStore.get("sidebar-collapsed")?.value === "true";
 
-  const cookiePosition = cookieStore.get("sidebar-position")?.value as "left" | "right" | undefined;
-  const dbPosition = (user?.user_private?.preferences as any)?.sidebarPosition as "left" | "right" | undefined;
-  const initialSidebarPosition: "left" | "right" = cookiePosition ?? dbPosition ?? "left";
+  const cookiePosition = cookieStore.get("sidebar-position")?.value as
+    | "left"
+    | "right"
+    | undefined;
+
+  const dbPrefs = user.user_private?.preferences as Partial<UserPreferences> | null;
+  const initialSidebarPosition: "left" | "right" =
+    cookiePosition ?? dbPrefs?.sidebarPosition ?? "left";
 
   return (
     <section className={styles.alinoAppLayoutContainer}>

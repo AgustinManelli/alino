@@ -22,6 +22,19 @@ export async function updateSession(request: NextRequest) {
     request: { headers: request.headers },
   });
 
+  const refParam = request.nextUrl.searchParams.get("ref");
+  if (refParam) {
+    supabaseResponse.cookies.set(
+      "alino_referral_code",
+      refParam.trim().toUpperCase().replace(/^@/, ""),
+      {
+        maxAge: 60 * 60 * 24 * 30,
+        path: "/",
+        sameSite: "lax",
+      },
+    );
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -42,26 +55,33 @@ export async function updateSession(request: NextRequest) {
   );
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const user = session?.user;
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const redirectWithCookies = (url: URL) => {
+    const redirectResponse = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    return redirectResponse;
+  };
 
   if (pathname === "/") {
     const url = request.nextUrl.clone();
     url.pathname = user ? "/alino-app" : "/sign-in";
-    return NextResponse.redirect(url);
+    return redirectWithCookies(url);
   }
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = "/sign-in";
-    return NextResponse.redirect(url);
+    return redirectWithCookies(url);
   }
 
   if (user && pathname.startsWith("/sign-in")) {
     const url = request.nextUrl.clone();
     url.pathname = "/alino-app";
-    return NextResponse.redirect(url);
+    return redirectWithCookies(url);
   }
 
   return supabaseResponse;

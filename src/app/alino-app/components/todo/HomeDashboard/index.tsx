@@ -97,15 +97,10 @@ export const HomeDashboard = () => {
     if (initRef.current) return;
     initRef.current = true;
     const init = async () => {
-      await loadDashboard();
-      const currentActive = useDashboardStore.getState().activeWidgets;
-      const needsData =
-        currentActive.includes("summary") ||
-        currentActive.includes("upcoming-tasks");
-      const needsUpdates = currentActive.includes("new-features");
       await Promise.all([
-        needsData ? fetchDashboardData() : Promise.resolve(),
-        needsUpdates ? fetchAppUpdates() : Promise.resolve(),
+        loadDashboard(),
+        fetchDashboardData(),
+        fetchAppUpdates(),
       ]);
     };
     init();
