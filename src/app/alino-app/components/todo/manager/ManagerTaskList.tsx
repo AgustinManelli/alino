@@ -7,6 +7,7 @@ import { useSyncStore } from "@/store/useSyncStore";
 import { useUpdateTaskRank } from "@/hooks/todo/tasks/useUpdateTaskRank";
 import { useFetchTasksPage } from "@/hooks/todo/tasks/useFetchTasksPage";
 import { useFetchCompletedTasksPage } from "@/hooks/todo/tasks/useFetchCompletedTasksPage";
+import { useDeferredLoading } from "@/hooks/useDeferredLoading";
 import {
   DndContext,
   DragOverlay,
@@ -51,6 +52,7 @@ export const ManagerTaskList = memo(function ManagerTaskList({
   const { tasks, completedTasks, hasMoreTasks, hasMoreCompletedTasks } =
     useTodoDataStore();
   const loadingQueue = useSyncStore((state) => state.loadingQueue);
+  const showDeferredSkeleton = useDeferredLoading(loadingQueue > 0, 150);
   const { updateTaskRank } = useUpdateTaskRank();
   const { fetchTasksPage } = useFetchTasksPage();
   const { fetchCompletedTasksPage } = useFetchCompletedTasksPage();
@@ -257,6 +259,9 @@ export const ManagerTaskList = memo(function ManagerTaskList({
   }
 
   if (loadingQueue > 0) {
+    if (!showDeferredSkeleton) {
+      return <div className={styles.tasks} />;
+    }
     return (
       <div className={styles.tasks}>
         {Array(3)

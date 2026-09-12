@@ -1,10 +1,18 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { WindowComponent } from "@/components/ui/WindowComponent";
 import styles from "./ConfigUser.module.css";
-import { Edit, UserIcon } from "@/components/ui/icons/icons";
-import { IAStars } from "@/components/ui/icons/icons";
+import {
+  Edit,
+  UserIcon,
+  IAStars,
+  TeamCollaborationIcon,
+  CopyToClipboardIcon,
+  Check,
+  ShareIcon,
+} from "@/components/ui/icons/icons";
+import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useFetchProfileStats } from "@/hooks/user/useFetchProfileStats";
 import { useFetchAIUsage } from "@/hooks/user/useFetchAIUsage";
@@ -13,12 +21,17 @@ import { useUpdateProfile } from "@/hooks/user/useUpdateProfile";
 import {
   getActiveSubscription,
   cancelSubscriptionAction,
+  applyReferralCodeAction,
+  getUserReferralStatsAction,
+  claimReferralMilestoneAction,
+  UserReferralStats,
 } from "@/lib/api/user/actions";
 import { useModalStore } from "@/store/useModalStore";
 import { WindowModal } from "@/components/ui/WindowModal";
 import Cropper, { Area, Point } from "react-easy-crop";
 import { getCroppedImg } from "@/lib/utils/imageCrop";
 import { customToast } from "@/lib/toasts";
+import { ActiveSubscription } from "@/lib/schemas/user.types";
 
 export default function ConfigUser() {
   const [isUploading, setIsUploading] = useState(false);
@@ -39,7 +52,7 @@ export default function ConfigUser() {
   const [completedCrop, setCompletedCrop] = useState<Area | null>(null);
 
   const isFreeTier = !user?.tier || user.tier === "free";
-  const [activeSub, setActiveSub] = useState<any>(null);
+  const [activeSub, setActiveSub] = useState<ActiveSubscription | null>(null);
   const [loadingSub, setLoadingSub] = useState(false);
   const [loadingCancel, setLoadingCancel] = useState(false);
 
@@ -73,7 +86,7 @@ export default function ConfigUser() {
             customToast.error(error);
           } else {
             data && customToast.success(data);
-            setActiveSub((prev: any) =>
+            setActiveSub((prev) =>
               prev
                 ? { ...prev, cancel_at_period_end: true, status: "canceled" }
                 : null,
@@ -129,8 +142,10 @@ export default function ConfigUser() {
 
       customToast.success("Foto de perfil actualizada correctamente.");
       setImageToCrop(null);
-    } catch (error: any) {
-      customToast.error(error.message || "Error al subir la imagen.");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Error al subir la imagen.";
+      customToast.error(message);
     } finally {
       setIsUploading(false);
     }
@@ -164,24 +179,13 @@ export default function ConfigUser() {
         transition={{ duration: 0.3 }}
       >
         <section className={styles.userHeaderSection}>
-          <div
-            className={styles.configUserIcon}
-            style={{
-              backgroundImage: user?.avatar_url
-                ? `url('${user.avatar_url}')`
-                : "none",
-            }}
-          >
-            {!user?.avatar_url && (
-              <UserIcon
-                style={{
-                  stroke: "var(--icon-colorv2)",
-                  strokeWidth: "1.5",
-                  width: "60%",
-                  height: "60%",
-                }}
-              />
-            )}
+          <div className={styles.configUserIcon}>
+            <UserAvatar
+              avatarUrl={user?.avatar_url}
+              username={user?.username}
+              size={96}
+              style={{ borderRadius: "23px" }}
+            />
             <div className={styles.configUserIconEditorButton}>
               <input
                 type="file"
@@ -353,6 +357,10 @@ export default function ConfigUser() {
         <div className={styles.sectionDivider} />
 
         <AICreditsSection aiUsage={aiUsage} userTier={user?.tier} index={3} />
+
+        <div className={styles.sectionDivider} />
+
+        <ReferralProgramSection index={4} />
       </motion.div>
 
       <AnimatePresence mode="wait">
@@ -726,3 +734,252 @@ const EditionSection = ({
     </motion.section>
   );
 };
+
+function ReferralProgramSection({ index }: { index: number }) {
+  const [stats, setStats] = useState<UserReferralStats | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [codeToRedeem, setCodeToRedeem] = useState("");
+  const [isRedeeming, setIsRedeeming] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const user = useUserDataStore((s) => s.user);
+  const updateUser = useUserDataStore((s) => s.updateUser);
+  const { fetchAIUsage } = useFetchAIUsage();
+
+  const loadStats = useCallback(async () => {
+    setIsLoading(true);
+    const res = await getUserReferralStatsAction();
+    if (res.data) setStats(res.data);
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
+
+  const effectiveCode = stats?.referral_code || (user as { referral_code?: string | null })?.referral_code || "";
+  const referralUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/?ref=${effectiveCode}`
+      : `https://alino.app/?ref=${effectiveCode}`;
+
+  const milestoneTarget = stats?.milestone_target ?? 10;
+  const milestoneRewardDays = stats?.milestone_reward_days ?? 30;
+  const rewardDaysReferred = stats?.reward_days_referred ?? 7;
+  const currentProgress = stats?.current_progress ?? 0;
+  const progressPercent = Math.min(100, Math.round((currentProgress / (milestoneTarget || 1)) * 100));
+
+  const handleCopyLink = async () => {
+    if (!referralUrl) return;
+    try {
+      await navigator.clipboard.writeText(referralUrl);
+      setCopied(true);
+      customToast.success("Enlace de referido copiado.");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      customToast.error("No se pudo copiar el enlace.");
+    }
+  };
+
+  const handleShare = async () => {
+    const shareText = `¡Únete a Alino con mi código ${effectiveCode} y recibe ${rewardDaysReferred} días de Plan Pro gratis con créditos de IA!`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Únete a Alino",
+          text: shareText,
+          url: referralUrl,
+        });
+      } catch {
+        return;
+      }
+    } else {
+      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareText} ${referralUrl}`)}`;
+      window.open(waUrl, "_blank");
+    }
+  };
+
+  const handleRedeem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = codeToRedeem.trim().toUpperCase().replace(/^@/, "");
+    if (!clean) return;
+    setIsRedeeming(true);
+    const res = await applyReferralCodeAction(clean);
+    setIsRedeeming(false);
+    if (res.error) {
+      customToast.error(res.error);
+    } else {
+      customToast.success(res.data?.message || "¡Código aplicado con éxito!");
+      setCodeToRedeem("");
+      updateUser({ tier: "pro" });
+      fetchAIUsage();
+      loadStats();
+    }
+  };
+
+  const handleClaimMilestone = async () => {
+    setIsClaiming(true);
+    const res = await claimReferralMilestoneAction();
+    setIsClaiming(false);
+    if (res.error) {
+      customToast.error(res.error);
+    } else {
+      customToast.success(res.data?.message || "¡Recompensa reclamada con éxito!");
+      updateUser({ tier: "pro" });
+      fetchAIUsage();
+      loadStats();
+    }
+  };
+
+  return (
+    <motion.section
+      className={styles.referralSection}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 * (index + 3) }}
+    >
+      <div className={styles.referralHeader}>
+        <div className={styles.referralHeaderLeft}>
+          <TeamCollaborationIcon
+            style={{
+              width: "16px",
+              height: "16px",
+              color: "var(--alino-secondary-color)",
+            }}
+          />
+          <h4 className={styles.referralTitle}>Programa de Referidos</h4>
+        </div>
+        <span className={styles.referralBadge}>
+          +{milestoneRewardDays}d Pro cada {milestoneTarget} amigos
+        </span>
+      </div>
+
+      <p className={styles.referralDesc}>
+        Invita a tus amigos con tu código único. Tu amigo recibirá {rewardDaysReferred} días de
+        Plan Pro gratis al unirse, y tú acumulas amigos para reclamar {milestoneRewardDays} días de
+        Plan Pro gratis cada {milestoneTarget} amigos que se unan.
+      </p>
+
+      <div className={styles.referralShareBox}>
+        {effectiveCode && (
+          <div className={styles.referralCodeBadge} title="Tu código único de referido">
+            {effectiveCode}
+          </div>
+        )}
+        <input
+          type="text"
+          readOnly
+          value={referralUrl}
+          className={styles.referralLinkInput}
+          onClick={(e) => (e.target as HTMLInputElement).select()}
+        />
+        <button
+          type="button"
+          className={styles.referralBtnCopy}
+          onClick={handleCopyLink}
+        >
+          {copied ? (
+            <>
+              <Check style={{ width: "13px", height: "13px" }} />
+              <span>Copiado</span>
+            </>
+          ) : (
+            <>
+              <CopyToClipboardIcon style={{ width: "13px", height: "13px" }} />
+              <span>Copiar</span>
+            </>
+          )}
+        </button>
+        <button
+          type="button"
+          className={styles.referralBtnShare}
+          onClick={handleShare}
+          title="Compartir"
+        >
+          <ShareIcon style={{ width: "14px", height: "14px" }} />
+        </button>
+      </div>
+
+      <div className={styles.referralMilestoneCard}>
+        <div className={styles.referralMilestoneHeader}>
+          <span className={styles.referralMilestoneTitle}>Progreso del hito actual</span>
+          <span className={styles.referralMilestoneRatio}>
+            {currentProgress} / {milestoneTarget} amigos
+          </span>
+        </div>
+        <div className={styles.referralProgressBarTrack}>
+          <div
+            className={styles.referralProgressBarFill}
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <div className={styles.referralMilestoneFooter}>
+          <span className={styles.referralMilestoneHint}>
+            {stats?.can_claim
+              ? `¡Meta alcanzada! Tienes ${milestoneRewardDays} días de Plan Pro listos para reclamar.`
+              : `Te faltan ${Math.max(0, milestoneTarget - currentProgress)} amigo(s) para reclamar ${milestoneRewardDays} días de Plan Pro.`}
+          </span>
+          {stats?.can_claim && (
+            <button
+              type="button"
+              className={styles.referralClaimBtn}
+              onClick={handleClaimMilestone}
+              disabled={isClaiming}
+            >
+              <IAStars style={{ width: "13px", height: "13px" }} />
+              <span>{isClaiming ? "Reclamando..." : `Reclamar ${milestoneRewardDays}d Pro`}</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className={styles.referralMetricsGrid}>
+        <div className={styles.referralMetricCard}>
+          <span className={styles.referralMetricLabel}>
+            Amigos que se unieron
+          </span>
+          <span className={styles.referralMetricValue}>
+            {isLoading ? "..." : (stats?.total_referrals ?? 0)}
+          </span>
+        </div>
+        <div className={styles.referralMetricCard}>
+          <span className={styles.referralMetricLabel}>
+            Días Pro reclamados
+          </span>
+          <span className={styles.referralMetricValue}>
+            {isLoading ? "..." : `${stats?.total_days_earned ?? 0}d`}
+          </span>
+        </div>
+      </div>
+
+      {!stats?.has_been_referred ? (
+        <form onSubmit={handleRedeem} className={styles.referralRedeemForm}>
+          <input
+            type="text"
+            className={styles.referralRedeemInput}
+            placeholder="Código único de tu amigo (ej. ALN7K9X)"
+            value={codeToRedeem}
+            onChange={(e) => {
+              const raw = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+              setCodeToRedeem(raw);
+            }}
+            disabled={isRedeeming}
+            maxLength={12}
+          />
+          <button
+            type="submit"
+            className={styles.referralRedeemBtn}
+            disabled={isRedeeming || !codeToRedeem.trim()}
+          >
+            {isRedeeming ? "..." : "Canjear"}
+          </button>
+        </form>
+      ) : (
+        <div className={styles.referralAlreadyReferredBadge}>
+          <Check style={{ width: "13px", height: "13px", color: "var(--alino-secondary-color)" }} />
+          <span>Ya has canjeado tu beneficio de referido</span>
+        </div>
+      )}
+    </motion.section>
+  );
+}

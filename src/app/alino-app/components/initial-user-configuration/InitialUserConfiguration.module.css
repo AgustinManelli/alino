@@ -7,44 +7,55 @@
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 10;
+  pointer-events: none;
 }
 
 .container {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: left;
-  gap: 20px;
-  /* padding: 25px 0; */
-  padding-top: 20px;
+  align-items: center;
+  gap: 22px;
+  padding-top: 10px;
   padding-bottom: 10px;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .textsContainer {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   font-weight: 300;
-  font-size: 15px;
+  font-size: 14.5px;
+  text-align: center;
+  line-height: 1.5;
 }
 
 .subtitle {
   color: var(--text);
+  margin: 0;
 }
 
-.glow {
-  position: absolute;
-  width: auto;
-  height: 150%;
-  aspect-ratio: 1 / 1;
+.celebrationWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
   user-select: none;
 }
 
 .initialText {
-  color: var(--background-container);
+  color: var(--text);
   font-size: 40px;
   font-weight: 900;
   z-index: 1;
   user-select: none;
   text-align: center;
+  letter-spacing: -0.5px;
+  pointer-events: auto;
 }

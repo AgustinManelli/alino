@@ -11,6 +11,7 @@ import {
   Alert,
   DeleteIcon,
 } from "@/components/ui/icons/icons";
+import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
 import {
   Notification,
   getNotificationDisplay,
@@ -93,15 +94,11 @@ export const NotificationsSection = () => {
     if (notification.type === "list_invitation") {
       return (
         <div className={styles.avatarWrap}>
-          {notification.metadata?.inviter_avatar_url ? (
-            <img
-              src={notification.metadata.inviter_avatar_url}
-              alt="avatar"
-              className={styles.avatarImg}
-            />
-          ) : (
-            <UserIcon style={{ width: "55%", height: "55%" }} />
-          )}
+          <UserAvatar
+            avatarUrl={notification.metadata?.inviter_avatar_url}
+            size={32}
+            className={styles.avatarImg}
+          />
         </div>
       );
     }

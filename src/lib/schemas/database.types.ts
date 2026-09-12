@@ -958,6 +958,44 @@ export type Database = {
           },
         ]
       }
+      user_onboarding_surveys: {
+        Row: {
+          created_at: string
+          goal: string | null
+          referral: string | null
+          referral_detail: string | null
+          role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          goal?: string | null
+          referral?: string | null
+          referral_detail?: string | null
+          role?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          goal?: string | null
+          referral?: string | null
+          referral_detail?: string | null
+          role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_onboarding_surveys_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_private: {
         Row: {
           active_widgets: Json | null
@@ -1042,6 +1080,98 @@ export type Database = {
           },
           {
             foreignKeyName: "user_promo_codes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      user_referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          referral_code: string
+          referred_id: string
+          referred_rewarded: boolean
+          referrer_id: string
+          referrer_rewarded: boolean
+          reward_amount: number
+          reward_type: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_id: string
+          referred_rewarded?: boolean
+          referrer_id: string
+          referrer_rewarded?: boolean
+          reward_amount?: number
+          reward_type?: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_id?: string
+          referred_rewarded?: boolean
+          referrer_id?: string
+          referrer_rewarded?: boolean
+          reward_amount?: number
+          reward_type?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      user_referral_claims: {
+        Row: {
+          claimed_at: string
+          id: string
+          milestone_number: number
+          referrals_consumed: number
+          reward_days: number
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          id?: string
+          milestone_number: number
+          referrals_consumed: number
+          reward_days: number
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          id?: string
+          milestone_number?: number
+          referrals_consumed?: number
+          reward_days?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_referral_claims_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -1242,6 +1372,7 @@ export type Database = {
           biography: string | null
           created_at: string
           display_name: string
+          referral_code: string | null
           updated_at: string | null
           user_id: string
           username: string
@@ -1251,6 +1382,7 @@ export type Database = {
           biography?: string | null
           created_at?: string
           display_name: string
+          referral_code?: string | null
           updated_at?: string | null
           user_id?: string
           username: string
@@ -1260,6 +1392,7 @@ export type Database = {
           biography?: string | null
           created_at?: string
           display_name?: string
+          referral_code?: string | null
           updated_at?: string | null
           user_id?: string
           username?: string
@@ -1342,11 +1475,19 @@ export type Database = {
       }
       ch_edit_or_insert_task: { Args: { p_list_id: string }; Returns: boolean }
       ch_is_list_admin: { Args: { p_list_id: string }; Returns: boolean }
+      apply_referral_code: {
+        Args: { p_code: string }
+        Returns: Json
+      }
       ch_is_list_member: { Args: { p_list_id: string }; Returns: boolean }
       ch_is_list_owner: { Args: { p_list_id: string }; Returns: boolean }
       check_trial_eligibility: { Args: never; Returns: Json }
       check_user_trial_eligibility_admin: {
         Args: { p_user_id: string }
+        Returns: Json
+      }
+      claim_referral_milestone_reward: {
+        Args: never
         Returns: Json
       }
       compare_ranks: { Args: { rank1: string; rank2: string }; Returns: string }
@@ -1561,6 +1702,10 @@ export type Database = {
         }[]
       }
       get_user_profile_stats: { Args: never; Returns: Json }
+      get_user_referral_stats: {
+        Args: never
+        Returns: Json
+      }
       get_user_stats: {
         Args: { p_user_id: string }
         Returns: {

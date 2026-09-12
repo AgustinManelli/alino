@@ -13,6 +13,7 @@ import { ProfileStats, FeatureUsage, ActiveSubscription } from "@/lib/schemas/us
 import { UserType } from "@/lib/schemas/database.types";
 
 import { fileTypeFromBuffer } from "file-type";
+import { blobatar } from "blobatar";
 
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
@@ -116,14 +117,48 @@ export const updateUserProfile = async (updates: {
   username?: string;
   biography?: string;
   avatar_url?: string;
-}): Promise<{ data?: { old_avatar_url?: string }; error?: string }> => {
+}): Promise<{
+  data?: { old_avatar_url?: string; avatar_url?: string };
+  error?: string;
+}> => {
   try {
-    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    let avatarToSave = updates.avatar_url;
+
+    if (avatarToSave && avatarToSave.startsWith("blobatar:")) {
+      const seed =
+        avatarToSave.slice("blobatar:".length) ||
+        user.user_metadata?.username ||
+        "alino";
+
+      try {
+        const svgString = blobatar(seed);
+        const filePath = `${user.id}/blobatar-${encodeURIComponent(seed)}.svg`;
+
+        const { error: uploadErr } = await supabase.storage
+          .from("avatars")
+          .upload(filePath, svgString, {
+            upsert: true,
+            contentType: "image/svg+xml",
+          });
+
+        if (!uploadErr) {
+          const { data: publicUrlData } = supabase.storage
+            .from("avatars")
+            .getPublicUrl(filePath);
+          avatarToSave = publicUrlData.publicUrl;
+        }
+      } catch {
+        avatarToSave = updates.avatar_url;
+      }
+    }
+
     const { data, error } = await supabase.rpc("update_user_profile", {
       p_display_name: updates.display_name || null,
       p_username: updates.username || null,
       p_biography: updates.biography !== undefined ? updates.biography : null,
-      p_avatar_url: updates.avatar_url || null,
+      p_avatar_url: avatarToSave !== undefined ? avatarToSave : null,
     });
     if (error) {
       if (error.message.includes("MAX_USERNAME_CHANGE_PER_MONTH"))
@@ -132,11 +167,33 @@ export const updateUserProfile = async (updates: {
         };
       return { error: error.message };
     }
-    return { data: { old_avatar_url: (data as any)?.old_avatar_url || null } };
+    revalidatePath("/alino-app", "layout");
+    const oldAvatar = (data as { old_avatar_url?: string } | null)?.old_avatar_url;
+
+    if (oldAvatar && avatarToSave && oldAvatar !== avatarToSave) {
+      const oldPath = extractStoragePath(oldAvatar, "avatars");
+      const newPath = extractStoragePath(avatarToSave, "avatars");
+      if (oldPath && oldPath !== newPath) {
+        supabase.storage.from("avatars").remove([oldPath]);
+      }
+    }
+
+    return {
+      data: {
+        old_avatar_url: oldAvatar || undefined,
+        avatar_url: avatarToSave,
+      },
+    };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
     return { error: "Ocurrió un error desconocido." };
   }
+};
+
+export const saveBlobatarAvatarAction = async (
+  seed: string,
+): Promise<{ data?: { avatar_url?: string }; error?: string }> => {
+  return updateUserProfile({ avatar_url: `blobatar:${seed}` });
 };
 
 
@@ -298,8 +355,9 @@ export const cancelSubscriptionAction = async (): Promise<{
     }
     
     return { error: "No se puede cancelar esta suscripción." };
-  } catch (error: any) {
-    return { error: error.message || "Error al cancelar la suscripción." };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: "Error al cancelar la suscripción." };
   }
 };
 
@@ -336,7 +394,14 @@ export const redeemPromoCodeAction = async (
       p_code: code.trim().toUpperCase(),
     });
     if (error) return { error: error.message };
-    return { data: data as any };
+    return {
+      data: data as {
+        message: string;
+        granted_tier: string;
+        new_end_date: string;
+        duration: number;
+      },
+    };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
     return { error: "Error al canjear el código." };
@@ -360,7 +425,13 @@ export const getSubscriptionByExternalId = async (
       }
     );
     if (error) return { error: error.message };
-    return { data: data as any };
+    return {
+      data: data as {
+        tier: string;
+        status: string;
+        current_period_end?: string;
+      },
+    };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
     return { error: "Error desconocido." };
@@ -429,7 +500,7 @@ export const getFeatureUsageAction = async (
   }
 };
 
-export const updateUserPreferences = async (preferences: Record<string, any>) => {
+export const updateUserPreferences = async (preferences: Record<string, unknown>) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
     
@@ -442,7 +513,7 @@ export const updateUserPreferences = async (preferences: Record<string, any>) =>
     if (readError) throw readError;
 
     const mergedPreferences = {
-      ...(currentPrivate?.preferences as Record<string, any> || {}),
+      ...((currentPrivate?.preferences as Record<string, unknown>) || {}),
       ...preferences,
     };
 
@@ -464,3 +535,194 @@ export const updateUserPreferences = async (preferences: Record<string, any>) =>
     return { error: UNKNOWN_ERROR_MESSAGE };
   }
 };
+
+export interface UserOnboardingSurveyData {
+  goal: string | null;
+  role: string | null;
+  referral: string | null;
+  referral_detail?: string | null;
+  referral_code?: string | null;
+}
+
+export const saveUserOnboardingSurvey = async (
+  surveyData: UserOnboardingSurveyData,
+) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase
+      .from("user_onboarding_surveys")
+      .upsert(
+        {
+          user_id: user.id,
+          goal: surveyData.goal,
+          role: surveyData.role,
+          referral: surveyData.referral,
+          referral_detail: surveyData.referral_detail ?? null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      )
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export interface ApplyReferralCodeResult {
+  success: boolean;
+  referrer_code?: string;
+  reward_days?: number;
+  message?: string;
+  error?: string;
+}
+
+export const applyReferralCodeAction = async (
+  code: string,
+): Promise<{ data?: ApplyReferralCodeResult; error?: string }> => {
+  try {
+    if (!code?.trim()) return { error: "El código no puede estar vacío." };
+    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { data, error } = await supabase.rpc("apply_referral_code", {
+      p_code: code.trim().toUpperCase(),
+    });
+
+    if (error) return { error: error.message };
+
+    const parsed = data as {
+      success: boolean;
+      error?: string;
+      message?: string;
+      referrer_code?: string;
+      reward_days?: number;
+    };
+
+    if (!parsed.success) {
+      return { error: parsed.error || "No se pudo aplicar el código de referido." };
+    }
+
+    revalidatePath("/alino-app", "layout");
+    return { data: parsed };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export interface ReferredUserSummary {
+  user_id: string;
+  username: string;
+  display_name: string;
+  avatar_url: string | null;
+  created_at: string;
+}
+
+export interface UserReferralStats {
+  referral_code: string;
+  total_referrals: number;
+  claimed_milestones: number;
+  current_progress: number;
+  milestone_target: number;
+  milestone_reward_days: number;
+  reward_days_referred: number;
+  total_days_earned: number;
+  can_claim: boolean;
+  has_been_referred: boolean;
+  recent_referrals: ReferredUserSummary[];
+}
+
+export const getUserReferralStatsAction = async (): Promise<{
+  data?: UserReferralStats;
+  error?: string;
+}> => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { data, error } = await supabase.rpc("get_user_referral_stats");
+
+    if (error) return { error: error.message };
+
+    const parsed = data as {
+      success: boolean;
+      error?: string;
+      referral_code: string;
+      total_referrals: number;
+      claimed_milestones: number;
+      current_progress: number;
+      milestone_target: number;
+      milestone_reward_days: number;
+      reward_days_referred: number;
+      total_days_earned: number;
+      can_claim: boolean;
+      has_been_referred: boolean;
+      recent_referrals: ReferredUserSummary[];
+    };
+
+    if (!parsed.success) {
+      return { error: parsed.error || "Error al obtener estadísticas de referidos." };
+    }
+
+    return {
+      data: {
+        referral_code: parsed.referral_code,
+        total_referrals: parsed.total_referrals,
+        claimed_milestones: parsed.claimed_milestones,
+        current_progress: parsed.current_progress,
+        milestone_target: parsed.milestone_target,
+        milestone_reward_days: parsed.milestone_reward_days,
+        reward_days_referred: parsed.reward_days_referred,
+        total_days_earned: parsed.total_days_earned,
+        can_claim: parsed.can_claim,
+        has_been_referred: parsed.has_been_referred,
+        recent_referrals: parsed.recent_referrals || [],
+      },
+    };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export interface ClaimMilestoneResult {
+  success: boolean;
+  reward_days?: number;
+  claimed_milestones?: number;
+  message?: string;
+  error?: string;
+}
+
+export const claimReferralMilestoneAction = async (): Promise<{
+  data?: ClaimMilestoneResult;
+  error?: string;
+}> => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { data, error } = await supabase.rpc("claim_referral_milestone_reward");
+
+    if (error) return { error: error.message };
+
+    const parsed = data as {
+      success: boolean;
+      error?: string;
+      message?: string;
+      reward_days?: number;
+      claimed_milestones?: number;
+    };
+
+    if (!parsed.success) {
+      return { error: parsed.error || "No se pudo reclamar la recompensa de referidos." };
+    }
+
+    revalidatePath("/alino-app", "layout");
+    return { data: parsed };
+  } catch (error: unknown) {
+    if (error instanceof Error) return { error: error.message };
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+

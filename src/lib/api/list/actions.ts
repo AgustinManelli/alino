@@ -1,5 +1,6 @@
 "use server";
 
+import { cache } from "react";
 import { createClient as createClientServer } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -19,7 +20,7 @@ interface AuthClient {
   user: User;
 }
 
-const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
+const getAuthenticatedSupabaseClient = cache(async (): Promise<AuthClient> => {
   const supabase = createClientServer();
   const { data: sessionData, error: sessionError } =
     await supabase.auth.getUser();
@@ -29,7 +30,7 @@ const getAuthenticatedSupabaseClient = async (): Promise<AuthClient> => {
   } else {
     return { supabase, user: sessionData.user };
   }
-};
+});
 
 interface SidebarListPayload {
   folder: string | null;

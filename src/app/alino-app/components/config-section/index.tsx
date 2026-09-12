@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/icons/icons";
 import styles from "./ConfigSection.module.css";
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
 
 export const ConfigSection = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -37,7 +38,7 @@ export const ConfigSection = () => {
   const avatar_url = user?.avatar_url;
   const display_name = user?.display_name;
   const username = user?.username;
-  const tier = (user as any)?.tier || "free";
+  const tier = (user as { tier?: string } | null)?.tier || "free";
 
   const logout = () => {
     signOutLocal();
@@ -93,24 +94,12 @@ export const ConfigSection = () => {
           onClick={handleToggle}
           ref={iconRef}
         >
-          <div
-            className={styles.configUserIcon}
-            style={{
-              backgroundImage: avatar_url ? `url('${avatar_url}')` : "",
-              opacity: avatar_url ? 1 : 0.3,
-            }}
-          >
-            {!avatar_url && (
-              <UserIcon
-                style={{
-                  stroke: "var(--icon-colorv2)",
-                  strokeWidth: "1.5",
-                  width: "60%",
-                  height: "60%",
-                }}
-              />
-            )}
-          </div>
+          <UserAvatar
+            avatarUrl={avatar_url}
+            username={username}
+            size={36}
+            style={{ borderRadius: "15px" }}
+          />
         </div>
         {isOpen && (
           <ModalBox

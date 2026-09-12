@@ -9,19 +9,29 @@ import styles from "./UsernameInput.module.css";
 type Props = {
   initialValue?: string;
   onSubmit?: (username: string) => Promise<string | null>;
+  onChangeValue?: (username: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  externalError?: string | null;
 };
 
 export const UsernameInput = ({
   initialValue = "",
   onSubmit,
+  onChangeValue,
   placeholder = "Elige un nombre de usuario",
   disabled = false,
+  externalError = null,
 }: Props) => {
   const [username, setUsername] = useState<string>(initialValue);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(externalError);
   const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    if (externalError) {
+      setError(externalError);
+    }
+  }, [externalError]);
 
   const validate = (value: string) => {
     const v = value.trim().toLowerCase();
@@ -77,7 +87,9 @@ export const UsernameInput = ({
             className={styles.alinoInputField}
             value={username}
             onChange={(ev) => {
-              setUsername(ev.target.value);
+              const val = ev.target.value;
+              setUsername(val);
+              onChangeValue?.(val);
               if (error) setError(null);
             }}
             onKeyDown={handleKeyDown}
