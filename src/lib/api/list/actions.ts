@@ -11,6 +11,12 @@ import {
   TaskCountPayload,
   UserWithMembershipRole,
 } from "@/lib/schemas/database.types";
+import {
+  insertListSchema,
+  insertFolderSchema,
+  updateListSchema,
+  updateFolderSchema,
+} from "@/lib/schemas/list/validation";
 
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
@@ -364,17 +370,30 @@ export const insertList = async (
   index: number
 ) => {
   try {
+    const validation = insertListSchema.safeParse({
+      list_id,
+      list_name,
+      color,
+      icon,
+      rank,
+      index,
+    });
+
+    if (!validation.success) {
+      return { error: validation.error.errors[0].message };
+    }
+
     const { supabase } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase.rpc(
       "create_list_and_owner_membership",
       {
-        p_list_id: list_id,
-        p_list_name: list_name,
-        p_color: color,
-        p_icon: icon,
-        p_rank: rank,
-        p_index: index,
+        p_list_id: validation.data.list_id,
+        p_list_name: validation.data.list_name,
+        p_color: validation.data.color ?? "#87189d",
+        p_icon: validation.data.icon ?? null,
+        p_rank: validation.data.rank,
+        p_index: validation.data.index,
       }
     );
 
@@ -402,15 +421,27 @@ export const insertFolder = async (
   rank: string
 ) => {
   try {
-    const { supabase, user } = await getAuthenticatedSupabaseClient();
-
-    const { data, error } = await supabase.from("list_folders").insert({
+    const validation = insertFolderSchema.safeParse({
       folder_id,
-      user_id: user.id,
       folder_name,
       folder_color,
       index,
       rank,
+    });
+
+    if (!validation.success) {
+      return { error: validation.error.errors[0].message };
+    }
+
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase.from("list_folders").insert({
+      folder_id: validation.data.folder_id,
+      user_id: user.id,
+      folder_name: validation.data.folder_name,
+      folder_color: validation.data.folder_color ?? "#87189d",
+      index: validation.data.index,
+      rank: validation.data.rank,
     });
 
     if (error) {
@@ -431,12 +462,17 @@ export const insertFolder = async (
 
 export const deleteList = async (list_id: string) => {
   try {
+    const idValidation = z.string().uuid().safeParse(list_id);
+    if (!idValidation.success) {
+      return { error: "ID de lista inválida." };
+    }
+
     const { supabase } = await getAuthenticatedSupabaseClient();
 
     const { error } = await supabase
       .from("lists")
       .delete()
-      .eq("list_id", list_id);
+      .eq("list_id", idValidation.data);
 
     if (error) {
       throw new Error(
@@ -454,12 +490,17 @@ export const deleteList = async (list_id: string) => {
 
 export const deleteFolder = async (folder_id: string) => {
   try {
+    const idValidation = z.string().uuid().safeParse(folder_id);
+    if (!idValidation.success) {
+      return { error: "ID de carpeta inválida." };
+    }
+
     const { supabase } = await getAuthenticatedSupabaseClient();
 
     const { error } = await supabase
       .from("list_folders")
       .delete()
-      .eq("folder_id", folder_id);
+      .eq("folder_id", idValidation.data);
 
     if (error) {
       throw new Error(
@@ -539,16 +580,27 @@ export const updateDataList = async (
   icon: string | null
 ) => {
   try {
+    const validation = updateListSchema.safeParse({
+      list_id,
+      list_name,
+      color,
+      icon,
+    });
+
+    if (!validation.success) {
+      return { error: validation.error.errors[0].message };
+    }
+
     const { supabase } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("lists")
       .update({
-        list_name,
-        color,
-        icon,
+        list_name: validation.data.list_name,
+        color: validation.data.color ?? "#87189d",
+        icon: validation.data.icon ?? null,
       })
-      .eq("list_id", list_id);
+      .eq("list_id", validation.data.list_id);
 
     if (error) {
       throw new Error(
@@ -572,15 +624,25 @@ export const updateDataFolder = async (
   folder_color: string | null
 ) => {
   try {
+    const validation = updateFolderSchema.safeParse({
+      folder_id,
+      folder_name,
+      folder_color,
+    });
+
+    if (!validation.success) {
+      return { error: validation.error.errors[0].message };
+    }
+
     const { supabase } = await getAuthenticatedSupabaseClient();
 
     const { data, error } = await supabase
       .from("list_folders")
       .update({
-        folder_name,
-        folder_color,
+        folder_name: validation.data.folder_name,
+        folder_color: validation.data.folder_color,
       })
-      .eq("folder_id", folder_id);
+      .eq("folder_id", validation.data.folder_id);
 
     if (error) {
       throw new Error(
