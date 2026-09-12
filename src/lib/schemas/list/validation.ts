@@ -38,3 +38,48 @@ export const ListSchema = z.object({
   pinned: z.boolean(),
 });
 
+export const insertListSchema = z.object({
+  list_id: z.string().uuid("ID de lista inválida."),
+  list_name: z
+    .string()
+    .trim()
+    .min(1, "El nombre de la lista debe tener al menos 1 carácter.")
+    .max(30, "El nombre de la lista debe tener como máximo 30 caracteres."),
+  color: hexColorSchema.optional(),
+  icon: shortcodeEmojiSchema.optional(),
+  rank: z.string().min(1, "El rank es requerido."),
+  index: z.number().int().min(0),
+});
+
+export const insertFolderSchema = z.object({
+  folder_id: z.string().uuid("ID de carpeta inválida."),
+  folder_name: z
+    .string()
+    .trim()
+    .min(1, "El nombre de la carpeta debe tener al menos 1 carácter.")
+    .max(30, "El nombre de la carpeta debe tener como máximo 30 caracteres."),
+  folder_color: hexColorSchema.optional(),
+  index: z.number().int().min(0),
+  rank: z.string().min(1, "El rank es requerido."),
+});
+
+export const updateListSchema = z.object({
+  list_id: z.string().uuid("ID de lista inválida."),
+  list_name: z
+    .string()
+    .trim()
+    .min(1, "El nombre de la lista debe tener al menos 1 carácter.")
+    .max(30, "El nombre de la lista debe tener como máximo 30 caracteres."),
+  color: hexColorSchema.optional(),
+  icon: shortcodeEmojiSchema.optional(),
+});
+
+export const updateFolderSchema = z.object({
+  folder_id: z.string().uuid("ID de carpeta inválida."),
+  folder_name: z
+    .string()
+    .trim()
+    .min(1, "El nombre de la carpeta debe tener al menos 1 carácter.")
+    .max(30, "El nombre de la carpeta debe tener como máximo 30 caracteres."),
+  folder_color: hexColorSchema.optional(),
+});
