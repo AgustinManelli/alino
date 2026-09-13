@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { arrayMove } from "@dnd-kit/sortable";
 import type {
   DragStartEvent,
   DragEndEvent,
@@ -9,7 +8,7 @@ import type {
 } from "@dnd-kit/core";
 import type { ListsType, FolderType } from "@/lib/schemas/database.types";
 import type { NormalizedItem } from "../utils/types";
-import { calcNewRank } from "@/lib/lexorank";
+import { calcRankForInsertion, compareRanks, parseRank } from "@/lib/lexorank";
 import { LexoRank } from "lexorank";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 
@@ -19,7 +18,12 @@ type Params = {
   folders: FolderType[];
   setLists: (ls: ListsType[]) => void;
   setFolders: (fs: FolderType[]) => void;
-  updateIndexList: (id: string, folder: string | null, rank: string) => void;
+  updateIndexList: (
+    id: string,
+    folder: string | null,
+    rank: string,
+    explicitPreviousFolder?: string | null
+  ) => void;
   updateIndexFolders: (id: string, rank: string) => void;
 };
 
@@ -27,8 +31,6 @@ export function useDragHandlers({
   combinedItems,
   lists,
   folders,
-  setLists,
-  setFolders,
   updateIndexList,
   updateIndexFolders,
 }: Params) {
@@ -39,219 +41,203 @@ export function useDragHandlers({
 
   const [draggedItem, setDraggedItem] = useState<NormalizedItem | null>(null);
 
-  const handleDragOver = useCallback(
-    (event: DragOverEvent) => {
-      const { active, over } = event;
-      if (!over) return;
-
-      const activeId = active.id as string;
-      // const overId = over.id as string;
-
-      if (active.data?.current?.type !== "item") return;
-
-      const activeItem = lists.find((l) => l.list_id === activeId);
-
-      if (!activeItem) return;
-
-      const activeContainer = activeItem.folder;
-
-      let overContainer: string | null = null;
-
-      if (over.data?.current?.type === "item") {
-        overContainer = over.data.current.parentId;
-      }else{
-        overContainer = null
-      }
-
-      if (activeContainer !== overContainer) {
-        const activeListIndex = lists.findIndex((l) => l.list_id === activeId);
-
-        if (activeListIndex !== -1) {
-          const updatedLists = [...lists];
-          updatedLists[activeListIndex] = {
-            ...updatedLists[activeListIndex],
-            folder: overContainer,
-          };
-
-          setLists(updatedLists);
-        }
-      }
-    },
-    [lists, setLists]
-  );
-
-  const handleDragStart = useCallback(
-    (event: DragStartEvent) => {
-      const { active } = event;
-      const current = combinedRef.current.find(
-        (it) => it.id === (active.id as string)
-      );
-      if (!current) return;
-
-      setDraggedItem(current);
-    },
-    [lists]
-  );
-
-  function getItemsInContext(
-    allItems: NormalizedItem[],
-    targetFolderId: string | null,
-    itemType: "list" | "folder" | "root"
-  ): NormalizedItem[] {
-    if (itemType === "folder") {
-      return allItems.filter((item) => item.kind === "folder");
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const { active } = event;
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try {
+        navigator.vibrate(15);
+      } catch { }
     }
+    const current = combinedRef.current.find(
+      (it) => it.id === (active.id as string)
+    );
+    if (!current) return;
+    setDraggedItem(current);
+  }, []);
 
-    return allItems.filter((item) => {
-      if (item.kind !== "list") return false;
-      const listData = item.data as ListsType;
-      if (listData.pinned === true) return false;
-      return listData.folder === targetFolderId;
-    });
-  }
+  const handleDragOver = useCallback((_event: DragOverEvent) => { }, []);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
-      const currentItems = combinedRef.current;
 
-      if (active.id === over?.id) {
+      if (!over || active.id === over.id) {
         setDraggedItem(null);
         return;
       }
 
-      let newIndex = -1;
+      const activeId = active.id as string;
+      const activeType = active.data?.current?.type as string | undefined;
 
-      if (over?.data?.current?.type !== "folder-dropzone") {
-        newIndex = currentItems.findIndex((it) => it.id === over?.id);
-      } else {
-        const targetFolderId = over.data.current.folderId;
-        const lastInFolder = currentItems.findLastIndex(
-          (item) =>
-            item.kind === "list" &&
-            (item.data as ListsType).folder === targetFolderId
+      if (activeType === "folder") {
+        const targetId =
+          over.data?.current?.type === "folder-dropzone"
+            ? (over.data.current.folderId as string)
+            : (over.id as string);
+
+        const rootPeers = combinedRef.current.filter(
+          (it) =>
+            it.kind === "folder" ||
+            (it.kind === "list" &&
+              (it.data as ListsType).folder == null &&
+              !(it.data as ListsType).pinned)
         );
-        newIndex =
-          lastInFolder !== -1
-            ? lastInFolder
-            : currentItems.findIndex((item) => item.id === targetFolderId);
-      }
 
-      if (newIndex === -1) {
-        newIndex = currentItems.length - 1;
-      }
+        const oldIndex = rootPeers.findIndex((it) => it.id === activeId);
+        const overIndex = rootPeers.findIndex((it) => it.id === targetId);
 
-      const oldIndex = currentItems.findIndex(
-        (it) => it.id === (active.id as string)
-      );
-      if (oldIndex === -1 || newIndex === -1) {
+        if (oldIndex === -1 || overIndex === -1 || oldIndex === overIndex) {
+          setDraggedItem(null);
+          return;
+        }
+
+        const remaining = rootPeers.filter((it) => it.id !== activeId);
+        const targetIndexInRemaining = remaining.findIndex(
+          (it) => it.id === targetId
+        );
+        const insertIndex =
+          oldIndex < overIndex
+            ? targetIndexInRemaining + 1
+            : targetIndexInRemaining;
+
+        const computedRank = calcRankForInsertion(remaining, insertIndex);
+        updateIndexFolders(activeId, computedRank);
         setDraggedItem(null);
         return;
       }
 
-      const newOrder = arrayMove(currentItems.slice(), oldIndex, newIndex);
-      const moved = newOrder[newIndex];
-      const activeType = active.data?.current?.type;
-      if (over) {
-        if (
-          over.data?.current?.type === "folder-dropzone" ||
-          over.data?.current?.parentId
-        ) {
-          if (activeType === "item") {
-            const movedList = { ...(moved.data as ListsType) };
+      if (activeType === "item") {
+        const sourceList = lists.find((l) => l.list_id === activeId);
+        if (!sourceList) {
+          setDraggedItem(null);
+          return;
+        }
+        const sourceFolderId = sourceList.folder ?? null;
 
-            const targetFolderId =
-              over.data.current.parentId ?? over.data.current.folderId;
+        let targetFolderId: string | null = null;
+        let targetItemId: string | null = null;
 
-            const contextItems = getItemsInContext(
-              newOrder,
-              targetFolderId,
-              "list"
+        if (over.data?.current?.type === "folder-dropzone") {
+          targetFolderId = (over.data.current.folderId as string) ?? null;
+          targetItemId = null;
+        } else if (over.data?.current?.type === "folder") {
+          targetFolderId = over.id as string;
+          targetItemId = null;
+        } else if (over.data?.current?.type === "item") {
+          targetFolderId =
+            (over.data.current.parentId as string | null) ?? null;
+          targetItemId = over.id as string;
+        }
+
+        if (targetFolderId !== null) {
+          const folderLists = lists
+            .filter((l) => l.folder === targetFolderId && !l.pinned)
+            .sort((a, b) =>
+              compareRanks(
+                { rank: a.rank, id: a.list_id },
+                { rank: b.rank, id: b.list_id }
+              )
             );
 
-            const targetFolder = folders.find(
-              (f) => f.folder_id === targetFolderId
-            );
-            const maxRankDB = targetFolder ? (targetFolder as any).max_rank : null;
-            const paginationCheck = useTodoDataStore.getState().listsPagination[targetFolderId];
-            const hasMore = !paginationCheck || paginationCheck.hasMore;
+          const remaining = folderLists.filter((l) => l.list_id !== activeId);
 
-            const contextIndex = contextItems.findIndex(
-              (item) => item.id === moved.id
+          let insertIndex = remaining.length;
+          if (targetItemId !== null) {
+            const overIndexInRemaining = remaining.findIndex(
+              (l) => l.list_id === targetItemId
             );
-
-            let computedRank;
-            
-            if (contextIndex === contextItems.length - 1 && hasMore && maxRankDB) {
-              const localPrev = contextItems[contextIndex - 1]?.rank;
-              let highestRank = LexoRank.parse(maxRankDB);
-              
-              if (localPrev) {
-                const localRankParsed = LexoRank.parse(localPrev);
-                if (localRankParsed.compareTo(highestRank) > 0) {
-                  highestRank = localRankParsed;
+            if (overIndexInRemaining !== -1) {
+              if (sourceFolderId === targetFolderId) {
+                const oldIndex = folderLists.findIndex(
+                  (l) => l.list_id === activeId
+                );
+                const overIndexInOriginal = folderLists.findIndex(
+                  (l) => l.list_id === targetItemId
+                );
+                if (oldIndex === overIndexInOriginal) {
+                  setDraggedItem(null);
+                  return;
                 }
+                insertIndex =
+                  oldIndex < overIndexInOriginal
+                    ? overIndexInRemaining + 1
+                    : overIndexInRemaining;
+              } else {
+                insertIndex = overIndexInRemaining;
               }
-              
-              computedRank = highestRank.genNext().toString();
-            } else {
-              computedRank = calcNewRank(contextItems, contextIndex);
             }
-            movedList.folder = targetFolderId;
-            movedList.rank = computedRank;
-
-            newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
-            updateIndexList(
-              movedList.list_id,
-              movedList.folder ?? null,
-              computedRank
-            );
           }
-        } else {
-          if (activeType === "item") {
-            const movedList = { ...(moved.data as ListsType) };
 
-            const computedRank = calcNewRank(newOrder, newIndex);
+          const targetFolder = folders.find(
+            (f) => f.folder_id === targetFolderId
+          );
+          const maxRankDB = targetFolder?.max_rank ?? null;
+          const paginationCheck =
+            useTodoDataStore.getState().listsPagination[targetFolderId];
+          const hasMore = !paginationCheck || paginationCheck.hasMore;
 
-            movedList.folder = null;
-            movedList.rank = computedRank;
-            newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
-            updateIndexList(movedList.list_id, null, computedRank);
+          let computedRank: string;
+          if (insertIndex >= remaining.length && hasMore && maxRankDB) {
+            const localPrev =
+              remaining.length > 0 ? remaining[remaining.length - 1].rank : null;
+            let highestRank = parseRank(maxRankDB) ?? LexoRank.middle();
+            if (localPrev) {
+              const localRankParsed = parseRank(localPrev);
+              if (localRankParsed && localRankParsed.compareTo(highestRank) > 0) {
+                highestRank = localRankParsed;
+              }
+            }
+            computedRank = highestRank.genNext().toString();
+          } else {
+            computedRank = calcRankForInsertion(remaining, insertIndex);
           }
-          if (activeType === "folder") {
-            const movedFolder = { ...(moved.data as FolderType) };
-            const computedRank = calcNewRank(newOrder, newIndex);
-            movedFolder.rank = computedRank;
-            newOrder[newIndex] = { ...newOrder[newIndex], data: movedFolder };
-            updateIndexFolders(movedFolder.folder_id, computedRank);
+
+          updateIndexList(activeId, targetFolderId, computedRank, sourceFolderId);
+          setDraggedItem(null);
+          return;
+        }
+
+        const rootItems = combinedRef.current.filter(
+          (it) =>
+            it.kind === "folder" ||
+            (it.kind === "list" &&
+              (it.data as ListsType).folder == null &&
+              !(it.data as ListsType).pinned)
+        );
+
+        const remaining = rootItems.filter((it) => it.id !== activeId);
+
+        let insertIndex = remaining.length;
+        if (targetItemId !== null) {
+          const overIndexInRemaining = remaining.findIndex(
+            (it) => it.id === targetItemId
+          );
+          if (overIndexInRemaining !== -1) {
+            if (sourceFolderId === null) {
+              const oldIndex = rootItems.findIndex((it) => it.id === activeId);
+              const overIndexInOriginal = rootItems.findIndex(
+                (it) => it.id === targetItemId
+              );
+              if (oldIndex === overIndexInOriginal) {
+                setDraggedItem(null);
+                return;
+              }
+              insertIndex =
+                oldIndex < overIndexInOriginal
+                  ? overIndexInRemaining + 1
+                  : overIndexInRemaining;
+            } else {
+              insertIndex = overIndexInRemaining;
+            }
           }
         }
-      } else {
-        if (activeType === "item" && active.data?.current?.parentId) {
-          const movedList = { ...(moved.data as ListsType) };
-          const computedRank = calcNewRank(newOrder, newIndex);
-          movedList.folder = null;
-          movedList.rank = computedRank;
-          newOrder[newIndex] = { ...newOrder[newIndex], data: movedList };
-          updateIndexList(movedList.list_id, null, computedRank);
-        }
+
+        const computedRank = calcRankForInsertion(remaining, insertIndex);
+        updateIndexList(activeId, null, computedRank, sourceFolderId);
+        setDraggedItem(null);
       }
-
-      // const finalFolders = newOrder
-      //   .filter((item) => item.kind === "folder")
-      //   .map((item) => item.data as FolderType);
-
-      // const finalLists = newOrder
-      //   .filter((item) => item.kind === "list")
-      //   .map((item) => item.data as ListsType);
-
-      // setLists(finalLists);
-      // setFolders(finalFolders);
-
-      // estado UI
-      setDraggedItem(null);
     },
-    [lists, folders, setLists, setFolders, updateIndexList, updateIndexFolders]
+    [lists, folders, updateIndexList, updateIndexFolders]
   );
 
   const onDragCancel = useCallback(() => {
