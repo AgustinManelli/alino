@@ -3,6 +3,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 25px;
+  min-width: 25px;
+  max-width: 25px;
+  flex-shrink: 0;
   height: 100%;
 }
 
@@ -14,6 +18,20 @@
   flex: 1;
   min-width: 0;
   height: 100%;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(.collapsed) .textContainer {
+  opacity: 0 !important;
+  transform: translateX(-8px) !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  flex: 0 0 0px !important;
+  overflow: hidden !important;
+  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .listName {

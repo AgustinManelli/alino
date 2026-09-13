@@ -2,7 +2,7 @@
   position: relative;
   border-radius: 15px;
   padding: 5px;
-  transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out, padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 45px;
   max-height: 300px;
   cursor: pointer;
@@ -47,6 +47,7 @@
   transform: none !important;
   z-index: 2;
   touch-action: pan-y;
+  transition: padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .infoEditContainer {
@@ -66,7 +67,7 @@
   overflow-x: hidden;
   min-height: 45px;
   margin-top: 5px;
-  padding: 4px;
+  padding: 0;
   scrollbar-gutter: stable;
   z-index: 2;
   display: flex;
@@ -123,6 +124,9 @@
   gap: 5px;
   flex-shrink: 0;
   min-width: 23px;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .button {
@@ -326,29 +330,49 @@
 }
 
 @media only screen and (min-width: 851px) {
-  :global(.collapsed) .folderHeader {
-    justify-content: center !important;
-    padding: 0 !important;
+  :global(.collapsed) .folderContainer {
+    width: 45px !important;
+    min-height: 45px !important;
+    padding: 5px !important;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 0.2s ease-in-out;
   }
 
-  :global(.collapsed) .infoEditContainer {
-    flex: none !important;
-    width: 100% !important;
-    justify-content: center !important;
+  :global(.collapsed) .folderContainer[data-open="false"] {
+    height: 45px !important;
+    max-height: 45px !important;
+  }
+
+  :global(.collapsed) .folderContainer[data-open="true"] {
+    height: auto !important;
+    max-height: 280px !important;
+  }
+
+  :global(.collapsed) .folderHeader {
+    padding: 0 4px !important;
+    height: 33px !important;
+    min-height: 33px !important;
+    border-radius: 8px !important;
+    gap: 0 !important;
   }
 
   :global(.collapsed) .folderHeader .buttonsContainer {
-    display: none !important;
+    opacity: 0 !important;
+    transform: translateX(-8px) !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    right: 0 !important;
+    transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   :global(.collapsed) .listWrapper {
     display: flex !important;
     flex-direction: column !important;
-    gap: 4px !important;
-    padding: 4px 4px !important;
-    max-height: 200px !important;
+    gap: 5px !important;
+    padding: 0 !important;
+    margin-top: 5px !important;
+    max-height: 220px !important;
     min-height: unset !important;
-    margin-top: 4px !important;
     scrollbar-width: none !important;
   }
 
@@ -356,8 +380,21 @@
     display: none !important;
   }
 
-  :global(.collapsed) .folderContainer {
-    padding: 5px 4px !important;
+  :global(.collapsed) .listWrapper :global(.allContainer) {
+    width: 100% !important;
+  }
+
+  :global(.collapsed) .listWrapper a,
+  :global(.collapsed) .listWrapper [data-in-folder="true"] {
+    height: 33px !important;
+    min-height: 33px !important;
+    padding: 0 4px !important;
+    border-radius: 8px !important;
+    gap: 0 !important;
+  }
+
+  :global(.collapsed) .emptyIndicator {
+    display: none !important;
   }
 }
 

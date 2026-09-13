@@ -11,6 +11,7 @@ interface Props {
   setActiveInput: (value: boolean) => void;
   DEFAULT_COLOR: string;
   DEFAULT_FOLDER_COLOR: null;
+  onClose?: () => void;
 }
 
 export const useInputActions = ({
@@ -18,6 +19,7 @@ export const useInputActions = ({
   setActiveInput,
   DEFAULT_COLOR,
   DEFAULT_FOLDER_COLOR,
+  onClose,
 }: Props) => {
   const [color, setColor] = useState<string | null>(DEFAULT_COLOR);
   const [emoji, setEmoji] = useState<string | null>(null);
@@ -33,7 +35,8 @@ export const useInputActions = ({
     setColor(DEFAULT_COLOR);
     setEmoji(null);
     setIsList(true);
-  }, [setActiveInput, DEFAULT_COLOR]);
+    onClose?.();
+  }, [setActiveInput, DEFAULT_COLOR, onClose]);
 
   const handleToggleType = useCallback((newListType: boolean) => {
     setIsList(newListType);

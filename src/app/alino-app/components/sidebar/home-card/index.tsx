@@ -50,23 +50,19 @@ export const HomeCard = () => {
     </Link>
   );
 
-  if (sidebarCollapsed && !isMobile) {
-    return (
-      <SidebarTooltip label="Home">
-        {({ triggerRef, onMouseEnter, onMouseLeave }) => (
-          <div
-            ref={(node) => {
-              (triggerRef as React.MutableRefObject<HTMLElement | null>).current = node;
-            }}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-          >
-            {link}
-          </div>
-        )}
-      </SidebarTooltip>
-    );
-  }
-
-  return link;
+  return (
+    <SidebarTooltip label="Home" enabled={sidebarCollapsed && !isMobile}>
+      {({ triggerRef, onMouseEnter, onMouseLeave }) => (
+        <div
+          ref={(node) => {
+            (triggerRef as React.MutableRefObject<HTMLElement | null>).current = node;
+          }}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+        >
+          {link}
+        </div>
+      )}
+    </SidebarTooltip>
+  );
 };

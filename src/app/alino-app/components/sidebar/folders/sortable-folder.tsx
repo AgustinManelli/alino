@@ -62,6 +62,7 @@ export const SortableFolder = memo(function SortableFolder({
   );
 
   const divRef = useRef<HTMLDivElement | null>(null);
+  const folderContainerRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const openConfirmationModal = useModalStore((s) => s.open);
@@ -206,12 +207,11 @@ export const SortableFolder = memo(function SortableFolder({
     return {
       transform: `translate3d(${transform?.x || 0}px, ${transform?.y || 0}px, 0)`,
       transition,
-      pointerEvents: isCurrentlyDraggingThis ? "none" : ("auto" as any),
+      pointerEvents: (isCurrentlyDraggingThis ? "none" : "auto") as React.CSSProperties["pointerEvents"],
       zIndex: isCurrentlyDraggingThis ? 99 : 1,
       opacity: isCurrentlyDraggingThis ? 0.3 : 1,
       border: `1px solid ${borderColor}`,
       "--bgColor": colorTemp ?? "transparent",
-      overflow: sidebarCollapsed && open ? "visible" : undefined,
     };
   }, [
     transform,
@@ -220,8 +220,6 @@ export const SortableFolder = memo(function SortableFolder({
     dropAllowed,
     containsOver,
     colorTemp,
-    sidebarCollapsed,
-    open,
   ]);
 
   useEffect(() => {
@@ -339,7 +337,11 @@ export const SortableFolder = memo(function SortableFolder({
 
   return (
     <div
-      ref={setSortableNodeRef}
+      ref={(node) => {
+        setSortableNodeRef(node);
+        folderContainerRef.current = node;
+      }}
+      data-folder-container="true"
       className={styles.folderContainer}
       style={dynamicStyle}
       data-open={open}
@@ -352,121 +354,110 @@ export const SortableFolder = memo(function SortableFolder({
         style={{ pointerEvents: isDragging ? "auto" : "none" }}
       />
 
-      <motion.div
-        className={styles.folderHeader}
-        {...listeners}
-        {...attributes}
-        ref={divRef}
-        onClick={toggleOpen}
+      <SidebarTooltip
+        label={folder.folder_name}
+        enabled={sidebarCollapsed && !isMobile}
+        containerRef={folderContainerRef}
       >
-        <AnimatePresence>
-          {isSelectionMode && (
-            <motion.div
-              initial={{ width: 0, opacity: 0, marginRight: -7 }}
-              animate={{ width: 24, opacity: 1, marginRight: 0 }}
-              exit={{ width: 0, opacity: 0, marginRight: -7 }}
-              transition={{ type: "spring", stiffness: 500, damping: 32 }}
-              style={{ overflow: "hidden", flexShrink: 0 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                toggleItemSelection({
-                  id: folder.folder_id,
-                  kind: "folder",
-                  name: folder.folder_name,
-                });
-              }}
-            >
-              <div className={styles.checkboxContainer}>
-                <Checkbox status={isSelected} handleUpdateStatus={() => { }} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {sidebarCollapsed && !isMobile ? (
-          <SidebarTooltip label={folder.folder_name}>
-            {({ triggerRef, onMouseEnter, onMouseLeave }) => (
-              <div
-                ref={(node) => {
-                  (triggerRef as React.MutableRefObject<HTMLElement | null>).current =
-                    node;
-                }}
-                onMouseEnter={onMouseEnter}
-                onMouseLeave={onMouseLeave}
-                className={styles.infoEditContainer}
-              >
-                <FolderInfoEdit
-                  folder={folder}
-                  isNameChange={isNameChange}
-                  setIsNameChange={setIsNameChange}
-                  colorTemp={colorTemp}
-                  setColorTemp={setColorTemp}
-                  folderOpen={open}
-                  hideText={true}
-                />
-              </div>
-            )}
-          </SidebarTooltip>
-        ) : (
-          <div className={styles.infoEditContainer}>
-            <FolderInfoEdit
-              folder={folder}
-              isNameChange={isNameChange}
-              setIsNameChange={setIsNameChange}
-              colorTemp={colorTemp}
-              setColorTemp={setColorTemp}
-              folderOpen={open}
-              hideText={!isMobile && sidebarCollapsed}
-            />
-          </div>
-        )}
-        {!isNameChange && (
-          <section className={styles.buttonsContainer}>
-            {isMobile ? (
-              <section className={styles.rightButtonsMobile}>
-                {!isSelectionMode && (
-                  <div className={styles.moreConfigMenuMobile}>
-                    <ConfigMenu
-                      iconWidth="23px"
-                      configOptions={configOptions}
-                      idScrollArea="list-container"
-                      uniqueId={`folder-config-${folder.folder_id}`}
-                    />
+        {({ triggerRef, onMouseEnter, onMouseLeave }) => (
+          <motion.div
+            className={styles.folderHeader}
+            {...listeners}
+            {...attributes}
+            ref={(node) => {
+              (triggerRef as React.MutableRefObject<HTMLElement | null>).current =
+                node;
+              divRef.current = node;
+            }}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            onClick={toggleOpen}
+          >
+            <AnimatePresence>
+              {isSelectionMode && (
+                <motion.div
+                  initial={{ width: 0, opacity: 0, marginRight: -7 }}
+                  animate={{ width: 24, opacity: 1, marginRight: 0 }}
+                  exit={{ width: 0, opacity: 0, marginRight: -7 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 32 }}
+                  style={{ overflow: "hidden", flexShrink: 0 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    toggleItemSelection({
+                      id: folder.folder_id,
+                      kind: "folder",
+                      name: folder.folder_name,
+                    });
+                  }}
+                >
+                  <div className={styles.checkboxContainer}>
+                    <Checkbox status={isSelected} handleUpdateStatus={() => { }} />
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className={styles.infoEditContainer}>
+              <FolderInfoEdit
+                folder={folder}
+                isNameChange={isNameChange}
+                setIsNameChange={setIsNameChange}
+                colorTemp={colorTemp}
+                setColorTemp={setColorTemp}
+                folderOpen={open}
+                hideText={!isMobile && sidebarCollapsed}
+              />
+            </div>
+
+            {!isNameChange && (
+              <section className={styles.buttonsContainer}>
+                {isMobile ? (
+                  <section className={styles.rightButtonsMobile}>
+                    {!isSelectionMode && (
+                      <div className={styles.moreConfigMenuMobile}>
+                        <ConfigMenu
+                          iconWidth="23px"
+                          configOptions={configOptions}
+                          idScrollArea="list-container"
+                          uniqueId={`folder-config-${folder.folder_id}`}
+                        />
+                      </div>
+                    )}
+                    <div className={styles.counterMobile}>
+                      <CounterAnimation tasksLength={listsCount} />
+                    </div>
+                  </section>
+                ) : (
+                  <>
+                    <div
+                      className={styles.moreConfigMenu}
+                      style={
+                        isSelectionMode
+                          ? { pointerEvents: "none", opacity: 0 }
+                          : undefined
+                      }
+                    >
+                      <ConfigMenu
+                        iconWidth="23px"
+                        configOptions={configOptions}
+                        idScrollArea="list-container"
+                        uniqueId={`folder-config-${folder.folder_id}`}
+                      />
+                    </div>
+                    <div
+                      className={styles.counter}
+                      style={isSelectionMode ? { opacity: 1 } : undefined}
+                    >
+                      <CounterAnimation tasksLength={listsCount} />
+                    </div>
+                  </>
                 )}
-                <div className={styles.counterMobile}>
-                  <CounterAnimation tasksLength={listsCount} />
-                </div>
               </section>
-            ) : (
-              <>
-                <div
-                  className={styles.moreConfigMenu}
-                  style={
-                    isSelectionMode
-                      ? { pointerEvents: "none", opacity: 0 }
-                      : undefined
-                  }
-                >
-                  <ConfigMenu
-                    iconWidth="23px"
-                    configOptions={configOptions}
-                    idScrollArea="list-container"
-                    uniqueId={`folder-config-${folder.folder_id}`}
-                  />
-                </div>
-                <div
-                  className={styles.counter}
-                  style={isSelectionMode ? { opacity: 1 } : undefined}
-                >
-                  <CounterAnimation tasksLength={listsCount} />
-                </div>
-              </>
             )}
-          </section>
+          </motion.div>
         )}
-      </motion.div>
+      </SidebarTooltip>
 
       {open && (
         <motion.div
@@ -477,7 +468,7 @@ export const SortableFolder = memo(function SortableFolder({
           transition={{ duration: 0.2, ease: "easeOut" }}
           className={`${styles.listWrapper} ${isDragging ? styles.draggingActive : ""
             }`}
-          style={{ maxHeight: sidebarCollapsed ? "none" : "250px" }}
+          style={{ maxHeight: sidebarCollapsed ? "220px" : "250px" }}
         >
           <SortableContext
             items={hasFetched ? listIds || [] : []}
@@ -513,7 +504,7 @@ export const SortableFolder = memo(function SortableFolder({
                         layout={!isDragging ? "position" : false}
                         className={styles.motionListWrapper}
                       >
-                        <ListCard list={list} />
+                        <ListCard list={list} inFolder />
                       </motion.div>
                     ))
                   ) : !isFetchingFolderLists ? (

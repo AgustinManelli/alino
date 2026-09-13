@@ -47,6 +47,7 @@ import { openModal, useModalStore } from "@/store/useModalStore";
 
 interface ListCardProps {
   list: ListsType;
+  inFolder?: boolean;
 }
 
 const EDIT_ICON = <Edit className={styles.iconStyle} />;
@@ -57,7 +58,7 @@ const DELETE_ICON = <DeleteIcon className={styles.iconStyle} />;
 const LOGOUT_ICON = <LogOut className={styles.iconStyle} />;
 const INFO_ICON = <Information className={styles.iconStyle} />;
 
-export const ListCard = memo(({ list }: ListCardProps) => {
+export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
   const [isMoreOptions, setIsMoreOptions] = useState<boolean>(false);
   const [isNameChange, setIsNameChange] = useState<boolean>(false);
   const [colorTemp, setColorTemp] = useState<string>(
@@ -288,6 +289,7 @@ export const ListCard = memo(({ list }: ListCardProps) => {
       <div {...attributes} {...listeners} ref={divRef}>
         <Link
           className={`${styles.container}${isSelectionMode ? " " + styles.selectionMode : ""}`}
+          data-in-folder={inFolder || !!list.folder}
           href={isSelectionMode || isNameChange || isDragging ? "#" : `/alino-app/${list.list_id}`}
           onMouseEnter={() => {
             if (!isSelectionMode && !isNameChange && !isDragging) {
@@ -423,23 +425,19 @@ export const ListCard = memo(({ list }: ListCardProps) => {
     </div>
   );
 
-  if (sidebarCollapsed && !isMobile) {
-    return (
-      <SidebarTooltip label={listName}>
-        {({ triggerRef, onMouseEnter, onMouseLeave }) => (
-          <div
-            ref={(node) => {
-              (triggerRef as React.MutableRefObject<HTMLElement | null>).current = node;
-            }}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-          >
-            {card}
-          </div>
-        )}
-      </SidebarTooltip>
-    );
-  }
-
-  return card;
+  return (
+    <SidebarTooltip label={listName} enabled={sidebarCollapsed && !isMobile}>
+      {({ triggerRef, onMouseEnter, onMouseLeave }) => (
+        <div
+          ref={(node) => {
+            (triggerRef as React.MutableRefObject<HTMLElement | null>).current = node;
+          }}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+        >
+          {card}
+        </div>
+      )}
+    </SidebarTooltip>
+  );
 });

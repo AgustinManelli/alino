@@ -23,6 +23,7 @@ const SPRING_TRANSITION = {
 
 export const ListInput = () => {
   const [activeInput, setActiveInput] = useState(false);
+  const wasCollapsedRef = useRef<boolean>(false);
 
   const { animations, sidebarCollapsed, setSidebarCollapsed } = useUserPreferencesStore(
     useShallow((state) => ({
@@ -31,6 +32,13 @@ export const ListInput = () => {
       setSidebarCollapsed: state.setSidebarCollapsed,
     })),
   );
+
+  const handleClose = useCallback(() => {
+    if (wasCollapsedRef.current) {
+      setSidebarCollapsed(true);
+      wasCollapsedRef.current = false;
+    }
+  }, [setSidebarCollapsed]);
 
   const motionProps = useMemo(
     () =>
@@ -63,6 +71,7 @@ export const ListInput = () => {
     setActiveInput,
     DEFAULT_COLOR,
     DEFAULT_FOLDER_COLOR,
+    onClose: handleClose,
   });
 
   useOnClickOutside(
@@ -159,6 +168,7 @@ export const ListInput = () => {
           <motion.button
             key="trigger"
             onClick={() => {
+              wasCollapsedRef.current = sidebarCollapsed;
               if (sidebarCollapsed) {
                 setSidebarCollapsed(false);
               }

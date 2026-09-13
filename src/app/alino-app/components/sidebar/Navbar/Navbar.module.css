@@ -27,7 +27,7 @@
   align-items: center;
   z-index: 100;
   transform: translateX(0%);
-  transition: transform 0.2s ease-in-out, width 0.2s ease-in-out, min-width 0.2s ease-in-out;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   padding-bottom: calc(env(safe-area-inset-bottom) + 15px);
 }
 
@@ -243,12 +243,7 @@
   }
 
   :global(.collapsed) .inputContainer {
-    padding: 0 8px !important;
     width: 100% !important;
-  }
-
-  :global(.collapsed) .elementsSection {
-    padding: 30px 8px 20px 8px !important;
   }
 
   :global(.collapsed) .navbarHeader {
