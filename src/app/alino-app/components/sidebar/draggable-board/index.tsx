@@ -16,6 +16,7 @@ import { useUpdateIndexFolders } from "@/hooks/todo/folders/useUpdateIndexFolder
 import { useCombinedItems } from "./hooks/useCombinedItems";
 import { useDndSensors } from "./hooks/useDndSensors";
 import { useDragHandlers } from "./hooks/useDragHandlers";
+import { customHierarchicalCollisionDetection } from "./utils/collisionDetection";
 
 import { PinnedLists } from "./parts/PinnedLists";
 import { RootItems } from "./parts/RootItems";
@@ -71,6 +72,7 @@ export const DraggableBoard = () => {
       <DndContext
         sensors={sensors}
         measuring={measuring}
+        collisionDetection={customHierarchicalCollisionDetection}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={onDragCancel}

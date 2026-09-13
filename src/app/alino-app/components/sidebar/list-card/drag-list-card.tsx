@@ -1,15 +1,13 @@
 "use client";
 
+import React, { CSSProperties } from "react";
 import { motion } from "motion/react";
+import type { Variants } from "motion/react";
 
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
-
 import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
-
 import { ListsType } from "@/lib/schemas/database.types";
-
-import type { Variants } from "motion/react";
 import {
   Colaborate,
   MoreVertical,
@@ -17,6 +15,7 @@ import {
   SquircleIcon,
 } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
+import listInfoStyles from "@/components/ui/list-info-edit/ListInfoEdit.module.css";
 
 const variants: Variants = {
   hidden: { opacity: 1 },
@@ -36,11 +35,28 @@ const variants: Variants = {
 export function DragListCard({ list }: { list: ListsType }) {
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const animations = useUserPreferencesStore((state) => state.animations);
+  const sidebarCollapsed = useUserPreferencesStore(
+    (state) => state.sidebarCollapsed
+  );
+  const isCollapsed = !isMobile && sidebarCollapsed;
+  const inFolder = !!list.folder;
 
   const taskCount =
     Array.isArray(list.list?.tasks) && list.list.tasks.length > 0
       ? list.list.tasks[0].count
       : 0;
+
+  const dragStyles: CSSProperties = {
+    "--color": list.list.color,
+    width: isCollapsed ? (inFolder ? "33px" : "45px") : "100%",
+    height: isCollapsed && inFolder ? "33px" : "45px",
+    minHeight: isCollapsed && inFolder ? "33px" : "45px",
+    borderRadius: isCollapsed && inFolder ? "8px" : "15px",
+    padding: isCollapsed && inFolder ? "0 4px" : "7px 10px",
+    backgroundColor: "var(--background-card-dragged)",
+    boxShadow: "0px 0px 30px 0px rgba(0, 0, 0, 0.15)",
+    zIndex: 99,
+  } as CSSProperties;
 
   return (
     <motion.section
@@ -49,60 +65,75 @@ export function DragListCard({ list }: { list: ListsType }) {
       initial="hidden"
       animate="visible"
       exit="hidden"
-      style={{ "--color": list.list.color } as React.CSSProperties}
+      style={dragStyles}
     >
-      <div className={`${styles.cardFx} ${styles.cardFxActive}`}></div>
+      <div className={`${styles.cardFx} ${styles.cardFxActive}`} />
 
-      <div className={styles.colorPickerContainer}>
+      <div className={listInfoStyles.colorPickerContainer}>
         {list.list.icon ? (
-          <div className={styles.emojiContainer}>
+          <div className={listInfoStyles.emojiContainer}>
             <EmojiMartComponent shortcodes={list.list.icon} size={16} />
           </div>
         ) : (
-          <SquircleIcon className={styles.squircleIcon} />
+          <div className={listInfoStyles.emojiContainer}>
+            <SquircleIcon
+              style={{
+                fill: list.list.color,
+                width: "12px",
+                height: "12px",
+              }}
+            />
+          </div>
         )}
       </div>
 
-      <div className={styles.textContainer}>
-        <p className={styles.listName}>{list.list.list_name}</p>
-      </div>
+      {!isCollapsed && (
+        <div className={listInfoStyles.textContainer}>
+          <span className={listInfoStyles.listName}>
+            {list.list.list_name}
+          </span>
+        </div>
+      )}
 
-      <div className={styles.listManagerContainer}>
-        {list.list.is_shared && (
-          <div className={styles.pinContainer}>
-            <Colaborate className={styles.colaborateIcon} />
-          </div>
-        )}
+      {!isCollapsed && (
+        <div className={styles.listManagerContainer}>
+          {list.list.is_shared && (
+            <div className={styles.pinContainer}>
+              <Colaborate className={styles.colaborateIcon} />
+            </div>
+          )}
 
-        {list.pinned && (
-          <div className={styles.pinContainer}>
-            <Pin className={styles.pinIcon} />
-          </div>
-        )}
+          {list.pinned && (
+            <div className={styles.pinContainer}>
+              <Pin className={styles.pinIcon} />
+            </div>
+          )}
 
-        {isMobile ? (
-          <>
-            <div className={styles.configsContainer}>
-              <div
-                className={`${styles.configButtonContainer} ${styles.Mobile}`}
-              >
+          {isMobile ? (
+            <div className={styles.configsContainerMobile}>
+              <div className={`${styles.configButtonContainer} ${styles.Mobile}`}>
                 <div className={styles.moreOptions}>
-                  <MoreVertical className={styles.moreVerticalIcon} />
+                  <MoreVertical
+                    style={{
+                      width: "14px",
+                      height: "14px",
+                      stroke: "var(--text)",
+                      strokeWidth: 2,
+                    }}
+                  />
                 </div>
               </div>
+              <p className={`${styles.counter} ${styles.Mobile}`}>{taskCount}</p>
             </div>
+          ) : (
             <div className={styles.configsContainer}>
-              <p className={`${styles.counter} ${styles.Mobile}`}>
+              <p className={`${styles.counterDesktop} ${styles.Desktop}`}>
                 {taskCount}
               </p>
             </div>
-          </>
-        ) : (
-          <div className={styles.configsContainer}>
-            <p className={`${styles.counter} ${styles.Desktop}`}>{taskCount}</p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </motion.section>
   );
 }

@@ -2028,6 +2028,7 @@ export type InvitationRow =
 
 export type FolderType = Database["public"]["Tables"]["list_folders"]["Row"] & {
   memberships?: MembershipCountPayload;
+  max_rank?: string | null;
 };
 
 export type AppUpdatesType = Database["public"]["Tables"]["app_updates"]["Row"];

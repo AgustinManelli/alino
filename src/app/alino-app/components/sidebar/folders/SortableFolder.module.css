@@ -2,6 +2,7 @@
   position: relative;
   border-radius: 15px;
   padding: 5px;
+  width: 100%;
   transition: background-color 0.2s ease-in-out, padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 45px;
   max-height: 300px;
@@ -47,7 +48,7 @@
   transform: none !important;
   z-index: 2;
   touch-action: pan-y;
-  transition: padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: padding 0.25s cubic-bezier(0.4, 0, 0.2, 1), gap 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .infoEditContainer {
@@ -200,6 +201,11 @@
   min-height: 45px;
 }
 
+.folderContainer[data-open="true"] .folderDropOverlay {
+  height: 43px;
+  bottom: auto;
+}
+
 .iconAction {
   width: 14px;
   height: auto;
@@ -331,11 +337,9 @@
 
 @media only screen and (min-width: 851px) {
   :global(.collapsed) .folderContainer {
-    width: 45px !important;
+    width: 100% !important;
     min-height: 45px !important;
     padding: 5px !important;
-    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                background-color 0.2s ease-in-out;
   }
 
   :global(.collapsed) .folderContainer[data-open="false"] {

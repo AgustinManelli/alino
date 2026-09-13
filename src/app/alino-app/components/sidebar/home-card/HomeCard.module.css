@@ -124,7 +124,7 @@
 }
 
 @media only screen and (min-width: 851px) {
-  :global(.collapsed) .textContainer {
+  :global(.collapsed) :global(#navbar-all-container) .textContainer {
     opacity: 0 !important;
     transform: translateX(-8px) !important;
     pointer-events: none !important;

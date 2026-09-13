@@ -15,7 +15,7 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
         .filter((ls) => ls.folder === f.folder_id)
         .map((ls) => ({ ...ls, _sortId: ls.list_id }))
         .sort((a, b) => compareRanks({ rank: a.rank, id: a.list_id }, { rank: b.rank, id: b.list_id })),
-      rank: (f as any).rank ?? null,
+      rank: f.rank ?? "",
     }));
 
     const listsNorm: NormalizedItem[] = (lists ?? []).map((l) => ({
@@ -23,7 +23,7 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
       kind: "list" as const,
       data: l,
       childrens: null,
-      rank: (l as any).rank ?? null,
+      rank: l.rank ?? "",
     }));
 
     return [...foldersNorm, ...listsNorm].sort((a, b) => compareRanks(a, b));

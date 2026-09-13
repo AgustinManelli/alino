@@ -206,7 +206,7 @@ export const SortableFolder = memo(function SortableFolder({
 
     return {
       transform: `translate3d(${transform?.x || 0}px, ${transform?.y || 0}px, 0)`,
-      transition,
+      transition: isCurrentlyDraggingThis || transform ? transition : undefined,
       pointerEvents: (isCurrentlyDraggingThis ? "none" : "auto") as React.CSSProperties["pointerEvents"],
       zIndex: isCurrentlyDraggingThis ? 99 : 1,
       opacity: isCurrentlyDraggingThis ? 0.3 : 1,
@@ -227,7 +227,7 @@ export const SortableFolder = memo(function SortableFolder({
 
     const timer = setTimeout(() => {
       setOpen(true);
-    }, 1000);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [containsOver, isCurrentlyDraggingThis]);
