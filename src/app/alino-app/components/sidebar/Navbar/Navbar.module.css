@@ -62,6 +62,7 @@
   overflow: hidden;
   z-index: 100;
   background: linear-gradient(var(--background-container) 50%, transparent);
+  pointer-events: none;
 }
 
 .navbar::after {
@@ -73,6 +74,7 @@
   overflow: hidden;
   z-index: 100;
   background: linear-gradient(transparent, var(--background-container) 50%);
+  pointer-events: none;
 }
 
 .logoContainer {
@@ -109,6 +111,7 @@
 .inputContainer {
   position: relative;
   padding: 0 15px;
+  z-index: 101;
 }
 
 @media only screen and (max-width: 850px) {
