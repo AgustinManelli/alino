@@ -5,7 +5,8 @@ import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 export function useSidebarItemTooltip(
   triggerRef: RefObject<HTMLElement>,
   tooltipRef: RefObject<HTMLElement>,
-  visible: boolean
+  visible: boolean,
+  containerRef?: RefObject<HTMLElement>
 ) {
   const sidebarPosition = useUserPreferencesStore((state) => state.sidebarPosition);
   const rafRef = useRef<number | null>(null);
@@ -21,6 +22,8 @@ export function useSidebarItemTooltip(
     if (!trigger || !tooltip) return;
 
     const triggerRect = trigger.getBoundingClientRect();
+    const container = containerRef?.current ?? trigger.closest<HTMLElement>('[data-folder-container="true"]');
+    const containerRect = container ? container.getBoundingClientRect() : triggerRect;
     const tooltipHeight = tooltip.offsetHeight;
     const vh = window.innerHeight;
     const vw = window.innerWidth;
@@ -33,9 +36,9 @@ export function useSidebarItemTooltip(
     let newRight = "auto";
 
     if (sidebarPosition === "right") {
-      newRight = `${vw - triggerRect.left + gap}px`;
+      newRight = `${vw - containerRect.left + gap}px`;
     } else {
-      newLeft = `${triggerRect.right + gap}px`;
+      newLeft = `${containerRect.right + gap}px`;
     }
 
     const last = lastPosRef.current;

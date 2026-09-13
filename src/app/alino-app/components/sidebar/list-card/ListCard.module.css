@@ -13,7 +13,7 @@
   align-items: center;
   padding: 7px 10px;
   gap: 7px;
-  transition: background-color 0.3s ease-in-out;
+  transition: background-color 0.3s ease-in-out, height 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   content-visibility: auto;
   contain-intrinsic-size: auto 45px;
   -webkit-user-select: none;
@@ -168,6 +168,10 @@
   gap: 5px;
   width: fit-content;
   height: 100%;
+  flex-shrink: 0;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pinContainer {
@@ -288,23 +292,21 @@
 } */
 
 @media only screen and (min-width: 851px) {
-
-  :global(.collapsed) .textContainer,
-  :global(.collapsed) .listManagerContainer {
-    display: none !important;
-  }
-
-  :global(.collapsed) .container {
-    justify-content: center !important;
-    padding: 7px 0 !important;
+  :global(.collapsed) .container[data-in-folder="true"] {
+    height: 33px !important;
+    min-height: 33px !important;
+    padding: 0 4px !important;
+    border-radius: 8px !important;
     gap: 0 !important;
-    border-radius: 10px !important;
   }
 
-  :global(.collapsed) .colorPickerContainer {
-    width: 100% !important;
-    justify-content: center !important;
-    min-width: unset !important;
+  :global(.collapsed) .listManagerContainer {
+    opacity: 0 !important;
+    transform: translateX(-8px) !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    right: 0 !important;
+    transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 

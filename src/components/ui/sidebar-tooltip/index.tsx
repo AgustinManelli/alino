@@ -7,6 +7,8 @@ import styles from "./SidebarTooltip.module.css";
 
 interface SidebarTooltipProps {
   label: string;
+  enabled?: boolean;
+  containerRef?: React.RefObject<HTMLElement>;
   children: (props: {
     triggerRef: React.RefObject<HTMLElement>;
     onMouseEnter: () => void;
@@ -14,7 +16,12 @@ interface SidebarTooltipProps {
   }) => React.ReactNode;
 }
 
-export const SidebarTooltip = ({ label, children }: SidebarTooltipProps) => {
+export const SidebarTooltip = ({
+  label,
+  children,
+  enabled = true,
+  containerRef,
+}: SidebarTooltipProps) => {
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
   const triggerRef = useRef<HTMLElement>(null);
@@ -24,14 +31,19 @@ export const SidebarTooltip = ({ label, children }: SidebarTooltipProps) => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    setVisible(false);
+  }, [enabled]);
+
   useSidebarItemTooltip(
     triggerRef as React.RefObject<HTMLElement>,
     tooltipRef as React.RefObject<HTMLElement>,
-    visible
+    visible && enabled,
+    containerRef
   );
 
   const tooltip =
-    mounted && typeof document !== "undefined"
+    mounted && enabled && typeof document !== "undefined"
       ? createPortal(
         <div
           ref={tooltipRef}
@@ -49,8 +61,12 @@ export const SidebarTooltip = ({ label, children }: SidebarTooltipProps) => {
     <>
       {children({
         triggerRef: triggerRef as React.RefObject<HTMLElement>,
-        onMouseEnter: () => setVisible(true),
-        onMouseLeave: () => setVisible(false),
+        onMouseEnter: () => {
+          if (enabled) setVisible(true);
+        },
+        onMouseLeave: () => {
+          setVisible(false);
+        },
       })}
       {tooltip}
     </>

@@ -214,32 +214,30 @@ export const ListInfoEdit = memo(function ListInfoEdit({
           )}
         </AnimatePresence>
       </div>
-      {!hideText && (
-        <div className={styles.textContainer}>
-          <AnimatePresence mode="wait">
-            {isNameChange ? (
-              <motion.input
-                style={inputStyle}
-                maxLength={30}
-                initial={motionInputInitialState}
-                animate={motionInputFinalState}
-                exit={motionInputInitialState}
-                transition={motionTransition}
-                className={styles.nameChangerInput}
-                type="text"
-                defaultValue={list.list.list_name}
-                ref={inputRef}
-                onKeyDown={handleKeyDown}
-                id={`list-info-edit-container-${uniqueId}`}
-              />
-            ) : (
-              <span className={styles.listName} style={inputStyle}>
-                {list.list.list_name}
-              </span>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
+      <div className={styles.textContainer}>
+        <AnimatePresence mode="wait">
+          {isNameChange ? (
+            <motion.input
+              style={inputStyle}
+              maxLength={30}
+              initial={motionInputInitialState}
+              animate={motionInputFinalState}
+              exit={motionInputInitialState}
+              transition={motionTransition}
+              className={styles.nameChangerInput}
+              type="text"
+              defaultValue={list.list.list_name}
+              ref={inputRef}
+              onKeyDown={handleKeyDown}
+              id={`list-info-edit-container-${uniqueId}`}
+            />
+          ) : (
+            <span className={styles.listName} style={inputStyle}>
+              {list.list.list_name}
+            </span>
+          )}
+        </AnimatePresence>
+      </div>
       {isNameChange && (
         <button onClick={handleSaveClick} className={styles.checkButton}>
           <Check className={styles.checkIconStyle} />
