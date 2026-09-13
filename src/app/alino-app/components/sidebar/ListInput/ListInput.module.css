@@ -104,3 +104,34 @@
 .formContainer {
   width: 100%;
 }
+
+.tabsAbsoluteWrapper {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  width: auto;
+  display: flex;
+  justify-content: flex-start;
+  z-index: 110;
+  pointer-events: auto;
+}
+
+.typeTabs {
+  width: fit-content !important;
+  max-width: fit-content !important;
+  background-color: var(--background-over-container-solid) !important;
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  padding: 2px;
+  gap: 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.typeTabs :global(button) {
+  flex: 0 0 auto !important;
+  padding: 3px 8px !important;
+  font-size: 11px !important;
+  height: 24px !important;
+  border-radius: 8px !important;
+  gap: 5px !important;
+}

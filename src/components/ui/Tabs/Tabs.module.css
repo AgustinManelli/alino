@@ -1,7 +1,7 @@
 .tabsContainer {
   display: flex;
   position: relative;
-  background-color: var(--background-over-container);
+  background-color: var(--background-over-container-solid);
   border-radius: 15px;
   padding: 5px;
   gap: 5px;
@@ -55,6 +55,24 @@
 
 .tab:not(.tabActive):hover {
   opacity: 0.9;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.icon svg {
+  display: block;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .activeIndicator {

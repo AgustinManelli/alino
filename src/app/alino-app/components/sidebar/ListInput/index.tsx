@@ -8,12 +8,45 @@ import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useInputActions } from "./hooks/useInputActions";
 import { ColorPicker } from "@/components/ui/ColorPicker/ListColorPicker";
 import { FolderColorPicker } from "@/components/ui/ColorPicker/FolderColorPicker";
-import { DropdownListInput } from "./parts/DropdownListInput";
-import { PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
+import { Tabs, TabOption } from "@/components/ui/Tabs/Tabs";
+import { FolderOpen, ListIcon, PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
 import styles from "./ListInput.module.css";
 
 const DEFAULT_COLOR = "#87189d";
 const DEFAULT_FOLDER_COLOR = null;
+
+const TYPE_OPTIONS: TabOption[] = [
+  {
+    id: "list",
+    label: "Lista",
+    icon: (
+      <ListIcon
+        style={{
+          width: "13px",
+          height: "13px",
+          stroke: "currentColor",
+          strokeWidth: 2,
+          display: "block",
+        }}
+      />
+    ),
+  },
+  {
+    id: "folder",
+    label: "Carpeta",
+    icon: (
+      <FolderOpen
+        style={{
+          width: "13px",
+          height: "13px",
+          stroke: "currentColor",
+          strokeWidth: 2,
+          display: "block",
+        }}
+      />
+    ),
+  },
+];
 
 const SPRING_TRANSITION = {
   type: "spring",
@@ -118,6 +151,31 @@ export const ListInput = () => {
             transition={SPRING_TRANSITION}
             {...motionProps}
           >
+            <motion.div
+              className={styles.tabsAbsoluteWrapper}
+              initial={animations ? { opacity: 0, y: 10, scale: 0.95 } : undefined}
+              animate={animations ? { opacity: 1, y: 0, scale: 1 } : undefined}
+              exit={animations ? { opacity: 0, y: 6, scale: 0.95 } : undefined}
+              transition={
+                animations
+                  ? {
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 32,
+                      delay: 0.08,
+                    }
+                  : undefined
+              }
+            >
+              <Tabs
+                options={TYPE_OPTIONS}
+                activeTab={isList ? "list" : "folder"}
+                onChange={(id) => handleToggleType(id === "list")}
+                layoutId="list-input-type-tab"
+                className={styles.typeTabs}
+              />
+            </motion.div>
+
             <div className={styles.colorPickerContainer}>
               {isList ? (
                 <ColorPicker
@@ -147,11 +205,6 @@ export const ListInput = () => {
               onChange={(e) => setInputValue(e.target.value)}
               className={styles.inputText}
               onKeyDown={handleKeyDown}
-            />
-
-            <DropdownListInput
-              isList={isList}
-              onToggleType={handleToggleType}
             />
 
             <button className={styles.sendButton} onClick={handleSend}>
