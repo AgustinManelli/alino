@@ -102,6 +102,8 @@
   --warning-color: rgb(255, 193, 7);
   --info-color: rgb(106, 195, 255);
   --success-color: rgb(76, 175, 80);
+  --button-critical: rgb(240, 80, 80);
+  --button-critical-hover: rgb(220, 60, 60);
 }
 
 /* Variables para tema oscuro */

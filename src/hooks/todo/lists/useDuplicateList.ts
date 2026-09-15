@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -6,18 +6,14 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { globalUserStore } from "@/store/useUserDataStore";
 import { calculateNewIndex, handleError, readFolderMembershipCount, makeMembershipCountPayload } from "@/store/todoUtils";
 import { calculateNewRank } from "@/lib/lexorank";
-import { insertList } from "@/lib/api/list/actions";
+import { duplicateList } from "@/lib/api/list/actions";
 import { ListsType } from "@/lib/schemas/database.types";
+import { customToast } from "@/lib/toasts";
 
-export function useInsertList() {
+export function useDuplicateList() {
   const [isPending, setIsPending] = useState(false);
 
-  const handleInsertList = useCallback(async (
-    name: string,
-    color: string,
-    icon: string | null,
-    folder_id?: string | null
-  ) => {
+  const handleDuplicateList = useCallback(async (sourceList: ListsType) => {
     setIsPending(true);
     const user = globalUserStore?.getState().user;
     const user_id = user?.user_id ?? "";
@@ -28,41 +24,42 @@ export function useInsertList() {
     const folders = store.folders;
 
     const index = calculateNewIndex(lists, folders);
-    const now = new Date().toISOString();
-
     const rank = calculateNewRank(lists, folders);
+    const now = new Date().toISOString();
+    const newName = `${sourceList.list.list_name} (copia)`;
 
     const optimistic: ListsType = {
-      folder: folder_id ?? null,
+      folder: sourceList.folder,
       index,
       list_id: optimisticId,
       pinned: false,
-      rank: rank,
+      rank,
       role: "owner",
       shared_by: null,
       shared_since: now,
       updated_at: null,
       user_id,
       list: {
-        color: color ?? "#87189d",
+        color: sourceList.list.color,
         created_at: now,
-        description: null,
-        icon: icon ?? null,
+        description: sourceList.list.description,
+        icon: sourceList.list.icon,
         list_id: optimisticId,
-        list_name: name,
+        list_name: newName,
         owner_id: user_id,
         updated_at: null,
         is_shared: false,
         non_owner_count: 0,
+        tasks: sourceList.list.tasks,
       },
     };
 
     try {
       useTodoDataStore.setState((state) => {
         let updatedFolders = state.folders;
-        if (folder_id) {
+        if (sourceList.folder) {
           updatedFolders = state.folders.map((f) => {
-            if (f.folder_id === folder_id) {
+            if (f.folder_id === sourceList.folder) {
               const currentCount = readFolderMembershipCount(f, state.lists);
               return {
                 ...f,
@@ -78,27 +75,27 @@ export function useInsertList() {
         };
       });
 
-      const { error } = await insertList(
+      const { error } = await duplicateList(
+        sourceList.list_id,
         optimisticId,
-        name,
-        color,
-        icon,
+        newName,
         rank,
-        index,
-        folder_id
+        index
       );
 
       if (error) {
-        throw new Error(error || "No se recibieron datos del servidor.");
+        throw new Error(error);
       }
+
+      customToast.success("Lista duplicada");
       setIsPending(false);
       return { error: null, list_id: optimisticId };
     } catch (err) {
       useTodoDataStore.setState((state) => {
         let updatedFolders = state.folders;
-        if (folder_id) {
+        if (sourceList.folder) {
           updatedFolders = state.folders.map((f) => {
-            if (f.folder_id === folder_id) {
+            if (f.folder_id === sourceList.folder) {
               const currentCount = readFolderMembershipCount(f, state.lists);
               return {
                 ...f,
@@ -120,5 +117,5 @@ export function useInsertList() {
     }
   }, []);
 
-  return { insertList: handleInsertList, isPending };
+  return { duplicateList: handleDuplicateList, isPending };
 }

@@ -294,12 +294,19 @@ export const DeleteIcon = ({
   );
 };
 
-export const PlusBoxIcon = ({ style }: { style?: React.CSSProperties }) => {
+export const PlusBoxIcon = ({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
+      className={className}
       style={style}
     >
       <path
@@ -313,8 +320,10 @@ export const PlusBoxIcon = ({ style }: { style?: React.CSSProperties }) => {
 };
 
 export const CopyToClipboardIcon = ({
+  className,
   style,
 }: {
+  className?: string;
   style?: React.CSSProperties;
 }) => {
   return (
@@ -322,6 +331,7 @@ export const CopyToClipboardIcon = ({
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
+      className={className}
       style={style}
     >
       <path

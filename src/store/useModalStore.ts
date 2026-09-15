@@ -27,6 +27,10 @@ export interface ListInformationModalProps {
   list: ListsType;
 }
 
+export interface MoveListModalProps {
+  list: ListsType;
+}
+
 export interface MultiDeleteConfirmModalProps {
   selectedItems: { id: string; kind: "list" | "folder"; parentFolderId?: string | null; name: string }[];
   onConfirm: (folderOptions: { folderId: string; option: "keep_lists" | "delete_contents" }[]) => void;
@@ -37,6 +41,7 @@ export type ModalEntry =
   | { type: "splitTask";    props: SplitTaskModalProps }
   | { type: "editTask";     props: EditTaskModalProps }
   | { type: "listInformation"; props: ListInformationModalProps }
+  | { type: "moveList";     props: MoveListModalProps }
   | { type: "multiDeleteConfirm"; props: MultiDeleteConfirmModalProps }
   | { type: "premium";      props?: Record<string, never> };
 

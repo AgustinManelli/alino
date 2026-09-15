@@ -40,11 +40,18 @@ export function useUpdatePinnedList() {
             });
           }
 
+          const now = new Date().toISOString();
           return {
             folders: updatedFolders,
             lists: state.lists.map((currentItem) =>
               currentItem.list_id === list_id
-                ? { ...currentItem, pinned, folder: null }
+                ? {
+                    ...currentItem,
+                    pinned,
+                    folder: null,
+                    updated_at: now,
+                    pinned_at: now,
+                  }
                 : currentItem
             ),
           };

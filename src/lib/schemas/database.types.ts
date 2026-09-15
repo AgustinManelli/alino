@@ -161,6 +161,8 @@ export type Database = {
           folder_id: string
           folder_name: string
           index: number
+          pinned: boolean
+          pinned_at?: string | null
           rank: string | null
           updated_at: string | null
           user_id: string
@@ -172,6 +174,8 @@ export type Database = {
           folder_id?: string
           folder_name: string
           index?: number
+          pinned?: boolean
+          pinned_at?: string | null
           rank?: string | null
           updated_at?: string | null
           user_id: string
@@ -183,6 +187,8 @@ export type Database = {
           folder_id?: string
           folder_name?: string
           index?: number
+          pinned?: boolean
+          pinned_at?: string | null
           rank?: string | null
           updated_at?: string | null
           user_id?: string
@@ -346,6 +352,7 @@ export type Database = {
           index: number
           list_id: string
           pinned: boolean
+          pinned_at?: string | null
           rank: string | null
           role: Database["public"]["Enums"]["roles_types"]
           shared_by: string | null
@@ -358,6 +365,7 @@ export type Database = {
           index?: number
           list_id: string
           pinned?: boolean
+          pinned_at?: string | null
           rank?: string | null
           role?: Database["public"]["Enums"]["roles_types"]
           shared_by?: string | null
@@ -370,6 +378,7 @@ export type Database = {
           index?: number
           list_id?: string
           pinned?: boolean
+          pinned_at?: string | null
           rank?: string | null
           role?: Database["public"]["Enums"]["roles_types"]
           shared_by?: string | null

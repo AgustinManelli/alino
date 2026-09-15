@@ -73,6 +73,7 @@ interface SidebarFolderPayload {
   updated_at: string | null;
   created_at: string;
   index: number;
+  pinned?: boolean;
   rank: string | null;
   memberships: MembershipCountPayload;
   max_rank: string | null;
@@ -154,10 +155,16 @@ export async function getLists(): Promise<{
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const [pinnedResult, mixedResult] = await Promise.all([
+    const [pinnedResult, pinnedFoldersResult, mixedResult] = await Promise.all([
       supabase
         .from("list_memberships")
         .select(`*, list: lists (*, tasks(count))`)
+        .eq("user_id", user.id)
+        .eq("pinned", true)
+        .order("rank", { ascending: true }),
+      supabase
+        .from("list_folders")
+        .select(`*`)
         .eq("user_id", user.id)
         .eq("pinned", true)
         .order("rank", { ascending: true }),
@@ -181,22 +188,44 @@ export async function getLists(): Promise<{
 
     const folders: FolderType[] = [];
     const unpinnedLists: ListsType[] = [];
+    const seenFolderIds = new Set<string>();
+
+    (pinnedFoldersResult.data ?? []).forEach((p) => {
+      seenFolderIds.add(p.folder_id);
+      folders.push({
+        folder_id: p.folder_id,
+        folder_name: p.folder_name,
+        folder_color: p.folder_color,
+        folder_description: p.folder_description,
+        user_id: p.user_id,
+        updated_at: p.updated_at,
+        created_at: p.created_at,
+        index: p.index,
+        pinned: true,
+        rank: p.rank,
+        memberships: [{ count: 0 }],
+      });
+    });
 
     rows.forEach((item) => {
       if (item.item_type === "folder") {
         const p = item.payload as SidebarFolderPayload;
-        folders.push({
-          folder_id: p.folder_id,
-          folder_name: p.folder_name,
-          folder_color: p.folder_color,
-          folder_description: p.folder_description,
-          user_id: p.user_id,
-          updated_at: p.updated_at,
-          created_at: p.created_at,
-          index: p.index,
-          rank: p.rank,
-          memberships: p.memberships ?? [{ count: 0 }],
-        });
+        if (!seenFolderIds.has(p.folder_id)) {
+          seenFolderIds.add(p.folder_id);
+          folders.push({
+            folder_id: p.folder_id,
+            folder_name: p.folder_name,
+            folder_color: p.folder_color,
+            folder_description: p.folder_description,
+            user_id: p.user_id,
+            updated_at: p.updated_at,
+            created_at: p.created_at,
+            index: p.index,
+            pinned: p.pinned ?? false,
+            rank: p.rank,
+            memberships: p.memberships ?? [{ count: 0 }],
+          });
+        }
       } else if (item.item_type === "list") {
         unpinnedLists.push(item.payload as ListsType);
       }
@@ -286,6 +315,7 @@ export const getPaginatedLists = async (
             updated_at: p.updated_at,
             created_at: p.created_at,
             index: p.index,
+            pinned: p.pinned ?? false,
             rank: p.rank,
             memberships: p.memberships ?? [{ count: 0 }],
           };
@@ -367,7 +397,8 @@ export const insertList = async (
   color: string | null,
   icon: string | null,
   rank: string,
-  index: number
+  index: number,
+  folder?: string | null
 ) => {
   try {
     const validation = insertListSchema.safeParse({
@@ -385,16 +416,21 @@ export const insertList = async (
 
     const { supabase } = await getAuthenticatedSupabaseClient();
 
+    const rpcParams: Record<string, unknown> = {
+      p_list_id: validation.data.list_id,
+      p_list_name: validation.data.list_name,
+      p_color: validation.data.color ?? "#87189d",
+      p_icon: validation.data.icon ?? null,
+      p_rank: validation.data.rank,
+      p_index: validation.data.index,
+    };
+    if (folder) {
+      rpcParams.p_folder = folder;
+    }
+
     const { data, error } = await supabase.rpc(
       "create_list_and_owner_membership",
-      {
-        p_list_id: validation.data.list_id,
-        p_list_name: validation.data.list_name,
-        p_color: validation.data.color ?? "#87189d",
-        p_icon: validation.data.icon ?? null,
-        p_rank: validation.data.rank,
-        p_index: validation.data.index,
-      }
+      rpcParams
     );
 
     if (error) {
@@ -403,12 +439,86 @@ export const insertList = async (
       );
     }
 
+    if (folder) {
+      await supabase
+        .from("list_memberships")
+        .update({ folder })
+        .eq("list_id", validation.data.list_id);
+    }
+
     return { data: data ?? null };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };
     }
 
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const updatePinnedFolder = async (
+  folder_id: string,
+  pinned: boolean,
+  rank?: string | null
+) => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    const now = new Date().toISOString();
+    const updatePayload: { pinned: boolean; rank?: string; updated_at: string } = {
+      pinned,
+      updated_at: now,
+    };
+    if (rank !== undefined && rank !== null) {
+      updatePayload.rank = rank;
+    }
+    const { data, error } = await supabase
+      .from("list_folders")
+      .update(updatePayload)
+      .eq("folder_id", folder_id)
+      .eq("user_id", user.id);
+
+    if (error) {
+      throw new Error(
+        error.message ||
+          "No se pudo actualizar el estado de fijado de la carpeta."
+      );
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
+export const duplicateList = async (
+  source_list_id: string,
+  new_list_id: string,
+  new_name: string,
+  rank: string,
+  index: number
+) => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+    const { data, error } = await supabase.rpc("duplicate_list", {
+      p_source_list_id: source_list_id,
+      p_new_list_id: new_list_id,
+      p_new_name: new_name,
+      p_rank: rank,
+      p_index: index,
+    });
+
+    if (error) {
+      throw new Error(error.message || "No se pudo duplicar la lista.");
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
     return { error: UNKNOWN_ERROR_MESSAGE };
   }
 };
@@ -682,7 +792,8 @@ export const updatePinnedList = async (
 
     if (error) {
       throw new Error(
-        "No se pudo actualizar la lista. Intentalo nuevamente o contacta con soporte."
+        error.message ||
+          "No se pudo actualizar la lista. Intentalo nuevamente o contacta con soporte."
       );
     }
 

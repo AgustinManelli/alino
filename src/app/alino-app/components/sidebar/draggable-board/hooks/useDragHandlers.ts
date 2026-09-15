@@ -77,7 +77,7 @@ export function useDragHandlers({
 
         const rootPeers = combinedRef.current.filter(
           (it) =>
-            it.kind === "folder" ||
+            (it.kind === "folder" && !(it.data as FolderType).pinned) ||
             (it.kind === "list" &&
               (it.data as ListsType).folder == null &&
               !(it.data as ListsType).pinned)
@@ -199,7 +199,7 @@ export function useDragHandlers({
 
         const rootItems = combinedRef.current.filter(
           (it) =>
-            it.kind === "folder" ||
+            (it.kind === "folder" && !(it.data as FolderType).pinned) ||
             (it.kind === "list" &&
               (it.data as ListsType).folder == null &&
               !(it.data as ListsType).pinned)
