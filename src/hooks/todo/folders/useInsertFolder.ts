@@ -34,6 +34,7 @@ export function useInsertFolder() {
       folder_color,
       folder_description: null,
       index,
+      pinned: false,
       rank,
       user_id,
       updated_at: null,

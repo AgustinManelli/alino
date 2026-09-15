@@ -7,6 +7,8 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useSetTaskSort } from "@/hooks/todo/tasks/useSetTaskSort";
 import { useDeleteList } from "@/hooks/todo/lists/useDeleteList";
 import { useLeaveList } from "@/hooks/todo/lists/useLeaveList";
+import { useDuplicateList } from "@/hooks/todo/lists/useDuplicateList";
+import { useClearCompletedTasks } from "@/hooks/todo/tasks/useClearCompletedTasks";
 import { useModalStore } from "@/store/useModalStore";
 import { ListsType } from "@/lib/schemas/database.types";
 import { ConfigMenu, ConfigOption } from "@/components/ui/ConfigMenu";
@@ -25,6 +27,8 @@ import {
   AlphaDescSortIcon,
   DragIcon,
   TaskDoneIcon,
+  CopyToClipboardIcon,
+  FolderClosed,
 } from "@/components/ui/icons/icons";
 import styles from "./manager.module.css";
 
@@ -38,6 +42,9 @@ const SORT_OPTIONS = [
 
 const EDIT_ICON = <Edit className={styles.iconStyle} />;
 const REORDER_ICON = <DragIcon className={styles.iconStyle} />;
+const DUPLICATE_ICON = <CopyToClipboardIcon className={styles.iconStyle} />;
+const MOVE_ICON = <FolderClosed className={styles.iconStyle} />;
+const CLEAR_COMPLETED_ICON = <Check className={styles.iconStyle} />;
 const DELETE_ICON = <DeleteIcon className={styles.iconStyle} />;
 const LOGOUT_ICON = <LogOut className={styles.iconStyle} />;
 const INFO_ICON = <Information className={styles.iconStyle} />;
@@ -64,6 +71,8 @@ export const ManagerConfig = memo(function ManagerConfig({
   const { setTaskSort } = useSetTaskSort();
   const { deleteList } = useDeleteList();
   const { leaveList } = useLeaveList();
+  const { duplicateList } = useDuplicateList();
+  const { clearCompletedTasks } = useClearCompletedTasks();
   const openModal = useModalStore((s) => s.open);
 
   const { canDelete, canEdit, isNotOwner } = useMemo(() => {
@@ -100,6 +109,31 @@ export const ManagerConfig = memo(function ManagerConfig({
       },
     });
   }, [openModal, setList, leaveList]);
+
+  const handleDuplicate = useCallback(() => {
+    if (setList) {
+      duplicateList(setList);
+    }
+  }, [duplicateList, setList]);
+
+  const handleMoveTo = useCallback(() => {
+    if (setList) {
+      openModal({ type: "moveList", props: { list: setList } });
+    }
+  }, [openModal, setList]);
+
+  const handleClearCompleted = useCallback(() => {
+    if (!setList) return;
+    openModal({
+      type: "confirmation",
+      props: {
+        text: `¿Limpiar tareas completadas?`,
+        additionalText: `Se eliminarán todas las tareas completadas de "${setList.list.list_name}". Esta acción no se puede deshacer.`,
+        actionButton: "Limpiar",
+        onConfirm: () => clearCompletedTasks(setList.list_id),
+      },
+    });
+  }, [openModal, setList, clearCompletedTasks]);
 
   const configOptions = useMemo((): ConfigOption[] => {
     return [
@@ -139,18 +173,24 @@ export const ManagerConfig = memo(function ManagerConfig({
       //     },
       //   ],
       // },
-      // {
-      //   name: "Gestionar lista",
-      //   icon: "",
-      //   children: [
-      //     {
-      //       name: "Duplicar lista",
-      //       icon: "",
-      //       action: () => {},
-      //       enabled: canDelete,
-      //     },
-      //   ],
-      // },
+      {
+        name: "Duplicar lista",
+        icon: DUPLICATE_ICON,
+        action: handleDuplicate,
+        enabled: true,
+      },
+      {
+        name: "Mover a...",
+        icon: MOVE_ICON,
+        action: handleMoveTo,
+        enabled: canEdit,
+      },
+      {
+        name: "Limpiar completadas",
+        icon: CLEAR_COMPLETED_ICON,
+        action: handleClearCompleted,
+        enabled: canEdit,
+      },
       {
         name: "Salir de la lista",
         icon: LOGOUT_ICON,
@@ -176,12 +216,18 @@ export const ManagerConfig = memo(function ManagerConfig({
   }, [
     canEdit,
     canDelete,
+    isNotOwner,
     isReordering,
     taskSort,
     showCompleted,
     handleConfirmDelete,
     handleConfirmLeave,
+    handleDuplicate,
+    handleMoveTo,
+    handleClearCompleted,
     setIsReordering,
+    setList,
+    openModal,
   ]);
 
   return (

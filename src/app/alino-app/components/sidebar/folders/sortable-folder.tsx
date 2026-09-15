@@ -31,16 +31,23 @@ import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { CounterAnimation } from "@/components/ui/CounterAnimation";
 import { FolderInfoEdit } from "@/components/ui/folder-info-edit";
 
+import { useUpdatePinnedFolder } from "@/hooks/todo/folders/useUpdatePinnedFolder";
+import { useInsertList } from "@/hooks/todo/lists/useInsertList";
+
 import { FolderType, ListsType } from "@/lib/schemas/database.types";
 import { variants } from "../draggable-board/animations/variants";
 import { useModalStore } from "@/store/useModalStore";
 
-import { DeleteIcon, Edit, LoadingIcon } from "@/components/ui/icons/icons";
+import { DeleteIcon, Edit, LoadingIcon, Pin, Unpin, PlusBoxIcon, Check } from "@/components/ui/icons/icons";
 import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
+import { compareRanks } from "@/lib/lexorank";
 import styles from "./SortableFolder.module.css";
 
 const EDIT_ICON = <Edit className={styles.iconAction} />;
 const DELETE_ICON = <DeleteIcon className={styles.iconAction} />;
+const PIN_ICON = <Pin className={styles.iconAction} />;
+const UNPIN_ICON = <Unpin className={styles.iconAction} />;
+const NEW_LIST_ICON = <PlusBoxIcon className={styles.iconAction} />;
 
 interface SortableFolderProps {
   folder: FolderType;
@@ -106,13 +113,57 @@ export const SortableFolder = memo(function SortableFolder({
       : 0;
   }, [folder.memberships]);
 
+  const sortedLists = useMemo(() => {
+    if (!lists || lists.length === 0) return lists;
+    return [...lists].sort((a, b) =>
+      compareRanks(
+        { rank: a.rank, id: a.list_id },
+        { rank: b.rank, id: b.list_id }
+      )
+    );
+  }, [lists]);
+
   const listIds = useMemo(
-    () => lists?.map((item) => item.list_id),
-    [lists]
+    () => sortedLists?.map((item) => item.list_id),
+    [sortedLists]
   );
 
   const isHoveringRef = useRef(false);
   const [containsOver, setContainsOver] = useState(false);
+
+  const { updatePinnedFolder } = useUpdatePinnedFolder();
+  const { insertList } = useInsertList();
+
+  const [isCreatingList, setIsCreatingList] = useState(false);
+  const [newListName, setNewListName] = useState("");
+  const newListInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handlePin = useCallback(() => {
+    updatePinnedFolder(folder.folder_id, !folder.pinned);
+  }, [updatePinnedFolder, folder.folder_id, folder.pinned]);
+
+  const handleStartNewList = useCallback(() => {
+    if (!open) {
+      setOpen(true);
+    }
+    setIsCreatingList(true);
+    setTimeout(() => {
+      newListInputRef.current?.focus();
+    }, 50);
+  }, [open, setOpen]);
+
+  const handleSaveNewList = useCallback(async () => {
+    const trimmed = newListName.trim();
+    if (!trimmed) return;
+    setIsCreatingList(false);
+    setNewListName("");
+    await insertList(trimmed, "#87189d", null, folder.folder_id);
+  }, [newListName, insertList, folder.folder_id]);
+
+  const handleCancelNewList = useCallback(() => {
+    setIsCreatingList(false);
+    setNewListName("");
+  }, []);
 
   useDndMonitor({
     onDragOver: (event) => {
@@ -144,7 +195,7 @@ export const SortableFolder = memo(function SortableFolder({
     isDragging: isCurrentlyDraggingThis,
   } = useSortable({
     id: folder.folder_id,
-    disabled: isNameChange || isSelectionMode,
+    disabled: isNameChange || isSelectionMode || folder.pinned,
     data: {
       type: "folder",
       item: folder,
@@ -180,23 +231,14 @@ export const SortableFolder = memo(function SortableFolder({
       if (!hasMore || isFetching) return;
 
       const { scrollTop, scrollHeight, clientHeight } = container;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-      if (distanceFromBottom < 60) {
-        fetchListsPageRef.current(folderId);
+      if (scrollTop + clientHeight >= scrollHeight - 40) {
+        fetchListsPage(folderId);
       }
     };
-    tryFetch();
 
     container.addEventListener("scroll", tryFetch, { passive: true });
-
-    const ro = new ResizeObserver(tryFetch);
-    ro.observe(container);
-
-    return () => {
-      container.removeEventListener("scroll", tryFetch);
-      ro.disconnect();
-    };
-  }, [open, hasFetched, folder.folder_id]);
+    return () => container.removeEventListener("scroll", tryFetch);
+  }, [open, hasFetched, fetchListsPage, folder.folder_id]);
 
   const dynamicStyle = useMemo(() => {
     let borderColor = "var(--border-container-color)";
@@ -232,25 +274,25 @@ export const SortableFolder = memo(function SortableFolder({
     return () => clearTimeout(timer);
   }, [containsOver, isCurrentlyDraggingThis]);
 
-  const handleDelete = useCallback(() => {
-    deleteFolder(folder.folder_id);
-  }, [deleteFolder, folder.folder_id]);
-
-  const handleDeleteWithContents = useCallback(() => {
+  const handleDeleteWithContents = useCallback(async () => {
     deleteFolderWithContents(folder.folder_id);
   }, [deleteFolderWithContents, folder.folder_id]);
+
+  const handleDelete = useCallback(async () => {
+    deleteFolder(folder.folder_id);
+  }, [deleteFolder, folder.folder_id]);
 
   const handleConfirm = useCallback(() => {
     openConfirmationModal({
       type: "confirmation",
       props: {
-        text: `¿Eliminar la carpeta "${folder.folder_name}"?`,
+        text: `¿Eliminar "${folder.folder_name}"?`,
         additionalText:
-          "Podés eliminar solo la carpeta (las listas quedan sueltas) o eliminarla junto con todas sus listas y tareas.",
-        actionButton: "Solo la carpeta",
+          "¿Deseas eliminar la carpeta conservando las listas o eliminar todo su contenido?",
+        actionButton: "Conservar listas",
         onConfirm: handleDelete,
         secondaryAction: {
-          label: "Carpeta y todo su contenido",
+          label: "Eliminar todo",
           onConfirm: handleDeleteWithContents,
         },
       },
@@ -277,9 +319,21 @@ export const SortableFolder = memo(function SortableFolder({
   const configOptions = useMemo(() => {
     return [
       {
+        name: "Nueva lista",
+        icon: NEW_LIST_ICON,
+        action: handleStartNewList,
+        enabled: true,
+      },
+      {
         name: "Editar",
         icon: EDIT_ICON,
         action: handleInfoEdit,
+        enabled: true,
+      },
+      {
+        name: folder.pinned ? "Desfijar" : "Fijar",
+        icon: folder.pinned ? UNPIN_ICON : PIN_ICON,
+        action: handlePin,
         enabled: true,
       },
       {
@@ -297,7 +351,14 @@ export const SortableFolder = memo(function SortableFolder({
         variant: "critical" as const,
       },
     ].filter((bs) => bs.enabled);
-  }, [handleInfoEdit, handleConfirm, handleStartMultiDelete]);
+  }, [
+    handleStartNewList,
+    handleInfoEdit,
+    handlePin,
+    folder.pinned,
+    handleConfirm,
+    handleStartMultiDelete,
+  ]);
 
   useEffect(() => {
     if (isNameChange) {
@@ -411,7 +472,12 @@ export const SortableFolder = memo(function SortableFolder({
             </div>
 
             {!isNameChange && (
-              <section className={styles.buttonsContainer}>
+              <div className={styles.buttonsContainer}>
+                {folder.pinned && (
+                  <div className={styles.pinContainer}>
+                    <Pin className={styles.pinIcon} />
+                  </div>
+                )}
                 {isMobile ? (
                   <section className={styles.rightButtonsMobile}>
                     {!isSelectionMode && (
@@ -429,7 +495,7 @@ export const SortableFolder = memo(function SortableFolder({
                     </div>
                   </section>
                 ) : (
-                  <>
+                  <div className={styles.configsContainer}>
                     <div
                       className={styles.moreConfigMenu}
                       style={
@@ -451,9 +517,9 @@ export const SortableFolder = memo(function SortableFolder({
                     >
                       <CounterAnimation tasksLength={listsCount} />
                     </div>
-                  </>
+                  </div>
                 )}
-              </section>
+              </div>
             )}
           </motion.div>
         )}
@@ -492,8 +558,47 @@ export const SortableFolder = memo(function SortableFolder({
                   animate={{ opacity: 1 }}
                   className={styles.motionListWrapper}
                 >
-                  {lists && lists.length > 0 ? (
-                    lists.map((list, index) => (
+                  {isCreatingList && (
+                    <div className={styles.newListForm}>
+                      <span className={styles.newListDot} />
+                      <input
+                        ref={newListInputRef}
+                        type="text"
+                        placeholder="Nombre de la lista..."
+                        value={newListName}
+                        onChange={(e) => setNewListName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleSaveNewList();
+                          } else if (e.key === "Escape") {
+                            e.preventDefault();
+                            handleCancelNewList();
+                          }
+                        }}
+                        className={styles.newListInput}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveNewList}
+                        disabled={!newListName.trim()}
+                        className={styles.newListActionBtn}
+                        title="Crear lista"
+                      >
+                        <Check style={{ width: "14px", height: "14px" }} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelNewList}
+                        className={styles.newListActionBtn}
+                        title="Cancelar"
+                      >
+                        <DeleteIcon style={{ width: "14px", height: "14px" }} />
+                      </button>
+                    </div>
+                  )}
+                  {sortedLists && sortedLists.length > 0 ? (
+                    sortedLists.map((list, index) => (
                       <motion.div
                         key={list.list_id}
                         custom={index}

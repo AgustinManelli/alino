@@ -19,6 +19,8 @@ import { readTaskCount } from "@/store/todoUtils";
 import { useDeleteList } from "@/hooks/todo/lists/useDeleteList";
 import { useLeaveList } from "@/hooks/todo/lists/useLeaveList";
 import { useUpdatePinnedList } from "@/hooks/todo/lists/useUpdatePinnedList";
+import { useDuplicateList } from "@/hooks/todo/lists/useDuplicateList";
+import { useClearCompletedTasks } from "@/hooks/todo/tasks/useClearCompletedTasks";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
@@ -41,6 +43,8 @@ import {
   LogOut,
   Information,
   Check,
+  CopyToClipboardIcon,
+  FolderClosed,
 } from "@/components/ui/icons/icons";
 import styles from "./ListCard.module.css";
 import { openModal, useModalStore } from "@/store/useModalStore";
@@ -53,6 +57,9 @@ interface ListCardProps {
 const EDIT_ICON = <Edit className={styles.iconStyle} />;
 const PIN_ICON = <Pin className={styles.iconStyle} />;
 const UNPIN_ICON = <Unpin className={styles.iconStyle} />;
+const DUPLICATE_ICON = <CopyToClipboardIcon className={styles.iconStyle} />;
+const MOVE_ICON = <FolderClosed className={styles.iconStyle} />;
+const CLEAR_COMPLETED_ICON = <Check className={styles.iconStyle} />;
 const CHECK_ICON = <Check className={styles.iconStyle} />;
 const DELETE_ICON = <DeleteIcon className={styles.iconStyle} />;
 const LOGOUT_ICON = <LogOut className={styles.iconStyle} />;
@@ -69,6 +76,8 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
   const { deleteList } = useDeleteList();
   const { leaveList } = useLeaveList();
   const { updatePinnedList } = useUpdatePinnedList();
+  const { duplicateList } = useDuplicateList();
+  const { clearCompletedTasks } = useClearCompletedTasks();
 
   const taskCount = useTodoDataStore(
     useCallback(
@@ -150,6 +159,29 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
   const handlePin = useCallback(() => {
     updatePinnedList(list.list_id, !list.pinned);
   }, [updatePinnedList, list.list_id, list.pinned]);
+
+  const handleDuplicate = useCallback(() => {
+    duplicateList(list);
+    setIsMoreOptions(false);
+  }, [duplicateList, list]);
+
+  const handleMoveTo = useCallback(() => {
+    setIsMoreOptions(false);
+    openModal({ type: "moveList", props: { list } });
+  }, [list]);
+
+  const handleClearCompleted = useCallback(() => {
+    setIsMoreOptions(false);
+    openConfirmationModal({
+      type: "confirmation",
+      props: {
+        text: `¿Limpiar tareas completadas?`,
+        additionalText: `Se eliminarán todas las tareas completadas de "${list.list.list_name}". Esta acción no se puede deshacer.`,
+        actionButton: "Limpiar",
+        onConfirm: () => clearCompletedTasks(list.list_id),
+      },
+    });
+  }, [list, clearCompletedTasks, openConfirmationModal]);
 
   const handleStartMultiDelete = useCallback(() => {
     startSelectionMode({
@@ -239,10 +271,28 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
         enabled: canEdit,
       },
       {
-        name: "Fijar",
+        name: list.pinned ? "Desfijar" : "Fijar",
         icon: list.pinned ? UNPIN_ICON : PIN_ICON,
         action: handlePin,
         enabled: true,
+      },
+      {
+        name: "Duplicar",
+        icon: DUPLICATE_ICON,
+        action: handleDuplicate,
+        enabled: true,
+      },
+      {
+        name: "Mover a...",
+        icon: MOVE_ICON,
+        action: handleMoveTo,
+        enabled: canEdit,
+      },
+      {
+        name: "Limpiar completadas",
+        icon: CLEAR_COMPLETED_ICON,
+        action: handleClearCompleted,
+        enabled: canEdit,
       },
       {
         name: "Salir",
@@ -278,9 +328,13 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
     list.pinned,
     handleNameChange,
     handlePin,
+    handleDuplicate,
+    handleMoveTo,
+    handleClearCompleted,
     handleConfirm,
     handleConfirmLeave,
     handleStartMultiDelete,
+    list,
   ]);
 
   const card = (

@@ -21,7 +21,7 @@ import { customHierarchicalCollisionDetection } from "./utils/collisionDetection
 import { PinnedLists } from "./parts/PinnedLists";
 import { RootItems } from "./parts/RootItems";
 import { DragOverlayView } from "./parts/DragOverlayView";
-import { ListsType } from "@/lib/schemas/database.types";
+import { ListsType, FolderType } from "@/lib/schemas/database.types";
 
 export const DraggableBoard = () => {
   // Zustand selectors
@@ -38,13 +38,11 @@ export const DraggableBoard = () => {
   const animations = useUserPreferencesStore(useShallow((s) => s.animations));
 
   // Derivados
-  const { combinedItems, topLevelItems, combinedIds, pinnedLists } =
+  const { combinedItems, topLevelItems, combinedIds, pinnedItems } =
     useCombinedItems(lists, folders);
 
-  // DnD infra
   const { sensors, measuring, adjustForLayoutPadding } = useDndSensors();
 
-  // Handlers
   const { draggedItem, handleDragStart, handleDragEnd, onDragCancel, handleDragOver } =
     useDragHandlers({
       combinedItems,
@@ -67,35 +65,34 @@ export const DraggableBoard = () => {
   }, []);
 
   return (
-    <>
-      <PinnedLists pinned={pinnedLists} animations={animations} />
-      <DndContext
-        sensors={sensors}
-        measuring={measuring}
-        collisionDetection={customHierarchicalCollisionDetection}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragCancel={onDragCancel}
-        onDragOver={handleDragOver}
+    <DndContext
+      sensors={sensors}
+      measuring={measuring}
+      collisionDetection={customHierarchicalCollisionDetection}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={onDragCancel}
+      onDragOver={handleDragOver}
+    >
+      <PinnedLists pinnedItems={pinnedItems} allLists={lists} draggedItem={draggedItem} animations={animations} />
+      <SortableContext
+        items={combinedIds}
+        strategy={verticalListSortingStrategy}
       >
-        <SortableContext
-          items={combinedIds}
-          strategy={verticalListSortingStrategy}
-        >
-          <RootItems
-            items={topLevelItems.filter(
-              (item) =>
-                item.kind !== "list" || !(item.data as ListsType).pinned,
-            )}
-            draggedItem={draggedItem}
-            animations={animations}
-          />
-          <DragOverlayView
-            draggedItem={draggedItem}
-            modifiers={[adjustForLayoutPadding]}
-          />
-        </SortableContext>
-      </DndContext>
-    </>
+        <RootItems
+          items={topLevelItems.filter(
+            (item) =>
+              !(item.kind === "list" && (item.data as ListsType).pinned) &&
+              !(item.kind === "folder" && (item.data as FolderType).pinned),
+          )}
+          draggedItem={draggedItem}
+          animations={animations}
+        />
+        <DragOverlayView
+          draggedItem={draggedItem}
+          modifiers={[adjustForLayoutPadding]}
+        />
+      </SortableContext>
+    </DndContext>
   );
 };

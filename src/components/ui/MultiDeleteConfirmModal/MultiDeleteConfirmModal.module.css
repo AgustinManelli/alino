@@ -15,130 +15,189 @@
 
 .modalContainer {
   background-color: var(--background-container);
-  border: 1.5px solid var(--border-container);
-  border-radius: 20px;
+  border: 1px solid var(--border-container-color);
+  border-radius: 28px;
   width: 100%;
-  max-width: 500px;
+  max-width: 440px;
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  gap: 16px;
+  box-shadow:
+    rgba(12, 20, 66, 0.02) 0px 4px 12px,
+    rgba(12, 20, 66, 0.08) 0px 30px 80px;
   max-height: 85vh;
 }
 
-.modalText {
+.modalHeader {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .modalTitle {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text);
   margin: 0;
 }
 
 .modalSubtitle {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-not-available);
-  margin: 0 0 10px 0;
+  margin: 0;
 }
 
 .itemsListContainer {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: 250px;
+  gap: 8px;
+  max-height: 240px;
   overflow-y: auto;
-  padding-right: 5px;
+  padding-right: 4px;
 }
 
 .itemsListContainer::-webkit-scrollbar {
   width: 6px;
 }
 
+.itemsListContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .itemsListContainer::-webkit-scrollbar-thumb {
-  background-color: var(--border-container);
+  background-color: var(--border-container-color);
   border-radius: 3px;
 }
 
-.itemRow {
+.itemCard {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: var(--background-over-container);
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--border-container);
-  gap: 15px;
+  padding: 0 12px;
+  height: 42px;
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid var(--border-container-color);
+  gap: 10px;
+  user-select: none;
 }
 
-.itemInfo {
+.itemMain {
   display: flex;
   align-items: center;
-  gap: 8px;
-  overflow: hidden;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
 }
 
-.itemIcon {
-  font-size: 16px;
+.iconBox {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
 .itemName {
   font-size: 14px;
+  font-weight: 500;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.select {
-  background: var(--background-container);
-  color: var(--text);
-  border: 1px solid var(--border-container);
-  padding: 6px 12px;
-  border-radius: 8px;
-  outline: none;
-  font-size: 12px;
-  cursor: pointer;
-  transition: border-color 0.2s ease-in-out;
+.selectWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.select:focus {
-  border-color: var(--accent-color);
+.selectWrapper:hover {
+  background-color: var(--background-over-container-hover);
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  color: var(--text);
+  border: none;
+  padding: 6px 26px 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+}
+
+.select option {
+  background-color: var(--background-container);
+  color: var(--text);
+}
+
+.selectChevron {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  width: 12px;
+  height: 12px;
+  color: var(--text-not-available);
+  transition: color 0.2s ease;
+}
+
+.selectWrapper:hover .selectChevron {
+  color: var(--text);
 }
 
 .modalButtons {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
 }
 
 .modalButton {
-  border-radius: 12px;
+  flex: 1;
+  height: 40px;
+  border-radius: 14px;
   font-size: 14px;
-  padding: 10px 20px;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.2s ease;
-  border: none;
+  transition: background-color 0.2s ease, filter 0.2s ease;
+  border: 1px solid var(--border-container-color);
   background-color: var(--background-over-container);
   color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modalButton:hover {
   background-color: var(--background-over-container-hover);
 }
 
-.modalButton.delete {
-  background-color: var(--button-critical);
+.deleteButton {
+  background-color: var(--button-critical, rgb(240, 80, 80));
   color: #fff;
+  border: 1px solid transparent;
 }
 
-.modalButton.delete:hover {
-  background-color: var(--button-critical-hover);
+.deleteButton:hover {
+  background-color: var(--button-critical-hover, rgb(220, 60, 60));
+}
+
+@media only screen and (max-width: 850px) and (display-mode: standalone) {
+  .modalBackground {
+    height: 100vh;
+  }
 }

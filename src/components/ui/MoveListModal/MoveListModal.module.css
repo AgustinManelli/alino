@@ -1,0 +1,73 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-not-available);
+  margin: 0;
+}
+
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.optionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background-color: var(--background-over-container-solid);
+  border: 1px solid var(--border-container-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.optionItem:hover {
+  background-color: var(--background-over-container-hover);
+  border-color: var(--hover-over-container);
+}
+
+.optionActive {
+  border-color: var(--primary-color);
+  background-color: var(--background-over-container-hover);
+}
+
+.optionLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rootIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-not-available);
+}
+
+.folderIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.optionName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}

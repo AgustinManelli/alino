@@ -6,6 +6,7 @@ import { SplitTaskModal } from "../SplitTaskModal";
 import { PremiumModal } from "../PremiumModal";
 import ListInformation from "@/app/alino-app/components/list-information";
 import { MultiDeleteConfirmModal } from "../MultiDeleteConfirmModal";
+import { MoveListModal } from "../MoveListModal";
 
 export const ModalRenderer = () => {
   const stack = useModalStore((s) => s.stack);
@@ -36,6 +37,15 @@ export const ModalRenderer = () => {
                 key={i}
                 handleCloseConfig={onClose}
                 list={entry.props.list}
+              />
+            );
+
+          case "moveList":
+            return (
+              <MoveListModal
+                key={i}
+                list={entry.props.list}
+                onClose={onClose}
               />
             );
 

@@ -2,34 +2,86 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { ListCard } from "../../list-card";
-import type { ListsType } from "@/lib/schemas/database.types";
+import { SortableFolder } from "../../folders/sortable-folder";
+import type { ListsType, FolderType } from "@/lib/schemas/database.types";
+import type { PinnedItem } from "../hooks/useCombinedItems";
+import type { NormalizedItem } from "../utils/types";
+import { compareRanks } from "@/lib/lexorank";
 import { variants } from "../animations/variants";
 
 export function PinnedLists({
-  pinned,
+  pinnedItems,
+  pinned = [],
+  pinnedFolders = [],
+  allLists = [],
+  draggedItem,
   animations,
 }: {
-  pinned: ListsType[];
+  pinnedItems?: PinnedItem[];
+  pinned?: ListsType[];
+  pinnedFolders?: FolderType[];
+  allLists?: ListsType[];
+  draggedItem?: NormalizedItem | null;
   animations: boolean;
 }) {
+  const itemsToRender: PinnedItem[] =
+    pinnedItems ?? [
+      ...pinnedFolders.map((f) => ({ kind: "folder" as const, id: f.folder_id, data: f })),
+      ...pinned.map((l) => ({ kind: "list" as const, id: l.list_id, data: l })),
+    ];
+
+  const hasPinned = itemsToRender.length > 0;
+
   return (
     <AnimatePresence mode="popLayout">
-      {pinned.map((list) => (
-        <motion.div
-          layout="position"
-          variants={animations ? variants : undefined}
-          initial="initial"
-          animate="visible"
-          exit="exit"
-          key={`list-${list.list_id}`}
-          id={`pinned-${list.list_id}`}
-          style={{ zIndex: 10 }}
-        >
-          <ListCard list={list} />
-        </motion.div>
-      ))}
+      {itemsToRender.map((item) => {
+        if (item.kind === "folder") {
+          const folder = item.data;
+          const folderLists =
+            ("childrens" in item && item.childrens
+              ? item.childrens
+              : allLists.filter((l) => l.folder === folder.folder_id)
+            ).slice().sort((a, b) => compareRanks({ rank: a.rank, id: a.list_id }, { rank: b.rank, id: b.list_id }));
 
-      {pinned.length > 0 && (
+          return (
+            <motion.div
+              layout="position"
+              variants={animations ? variants : undefined}
+              initial="initial"
+              animate="visible"
+              exit="exit"
+              key={`folder-${folder.folder_id}`}
+              id={`pinned-folder-${folder.folder_id}`}
+              style={{ zIndex: 10 }}
+            >
+              <SortableFolder
+                folder={folder}
+                lists={folderLists}
+                isDragging={!!draggedItem}
+                dropAllowed={draggedItem?.kind === "list"}
+              />
+            </motion.div>
+          );
+        } else {
+          const list = item.data;
+          return (
+            <motion.div
+              layout="position"
+              variants={animations ? variants : undefined}
+              initial="initial"
+              animate="visible"
+              exit="exit"
+              key={`list-${list.list_id}`}
+              id={`pinned-${list.list_id}`}
+              style={{ zIndex: 10 }}
+            >
+              <ListCard list={list} />
+            </motion.div>
+          );
+        }
+      })}
+
+      {hasPinned && (
         <motion.div
           layout="position"
           initial={{ opacity: 0, height: 0, marginBottom: 0 }}

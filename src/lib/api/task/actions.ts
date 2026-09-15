@@ -137,6 +137,30 @@ export const deleteTask = async (task_id: string) => {
   }
 };
 
+export const clearCompletedTasks = async (list_id: string) => {
+  try {
+    const { supabase } = await getAuthenticatedSupabaseClient();
+
+    const { data, error } = await supabase
+      .from("tasks")
+      .delete()
+      .eq("list_id", list_id)
+      .eq("completed", true);
+
+    if (error) {
+      throw new Error("No se pudieron eliminar las tareas completadas.");
+    }
+
+    return { data };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: UNKNOWN_ERROR_MESSAGE };
+  }
+};
+
 export const updateCompletedTask = async (
   task_id: string,
   completed: boolean
