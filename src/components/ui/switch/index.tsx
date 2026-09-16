@@ -1,36 +1,48 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useState } from "react";
+import React from "react";
 
 interface Props {
   value: boolean;
   action: () => void;
-  width: number;
+  width?: number;
   disabled?: boolean;
 }
 
 export function Switch({ value, action, width = 40, disabled = false }: Props) {
-  const [isPressed, setIsPressed] = useState(false);
-
-  const toggleSwitch = () => action();
-
   const height = width * 0.6;
-  const squeezed = (height - (width / 20) * 2) * 1.3;
+  const padding = width / 20;
+  const knobSize = height - padding * 2;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!disabled) {
+      action();
+    }
+  };
 
   return (
     <motion.button
+      type="button"
+      role="switch"
+      aria-checked={value}
+      disabled={disabled}
+      onClick={handleClick}
+      whileTap={{ scale: disabled ? 1 : 0.92 }}
       style={{
         position: "relative",
         aspectRatio: "1.5 / 1",
         height: `${height}px`,
-        borderRadius: `${width / 1.6 / 2}px`,
-        cursor: "pointer",
+        borderRadius: `${height / 2}px`,
+        cursor: disabled ? "not-allowed" : "pointer",
         display: "flex",
+        alignItems: "center",
         border: "none",
-        justifyContent: "flex-" + (value ? "end" : "start"),
+        justifyContent: value ? "flex-end" : "flex-start",
         width: `${width}px`,
-        padding: `${width / 20}px`,
+        padding: `${padding}px`,
         backgroundColor: value
           ? "#2FD159"
           : "var(--background-over-container-hover)",
@@ -38,26 +50,22 @@ export function Switch({ value, action, width = 40, disabled = false }: Props) {
         WebkitTapHighlightColor: "transparent",
         touchAction: "manipulation",
         opacity: disabled ? "0.4" : "1",
+        transition: "background-color 0.2s ease, opacity 0.2s ease",
       }}
-      onClick={toggleSwitch}
-      onTapStart={() => setIsPressed(true)}
-      onTap={() => setIsPressed(false)}
-      onTapCancel={() => setIsPressed(false)}
-      disabled={disabled}
     >
       <motion.div
         layout
         style={{
-          width: `${isPressed ? squeezed : height - (width / 20) * 2}px`,
-          height: "100%",
+          width: `${knobSize}px`,
+          height: `${knobSize}px`,
           backgroundColor: "#fff",
-          borderRadius: `${(width - width / 20) / 2}px`,
-          boxShadow: "-5px 0px 10px rgb(0, 0, 0, 0.1)",
+          borderRadius: "50%",
+          boxShadow: "-1px 2px 4px rgba(0, 0, 0, 0.15)",
         }}
         transition={{
           type: "spring",
-          visualDuration: 0.2,
-          bounce: 0.2,
+          stiffness: 500,
+          damping: 32,
         }}
       />
     </motion.button>

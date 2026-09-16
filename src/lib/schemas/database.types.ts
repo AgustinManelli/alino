@@ -1385,6 +1385,9 @@ export type Database = {
           updated_at: string | null
           user_id: string
           username: string
+          is_private: boolean | null
+          allow_list_invites: boolean | null
+          show_activity_status: boolean | null
         }
         Insert: {
           avatar_url?: string | null
@@ -1395,6 +1398,9 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           username: string
+          is_private?: boolean | null
+          allow_list_invites?: boolean | null
+          show_activity_status?: boolean | null
         }
         Update: {
           avatar_url?: string | null
@@ -1405,6 +1411,9 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           username?: string
+          is_private?: boolean | null
+          allow_list_invites?: boolean | null
+          show_activity_status?: boolean | null
         }
         Relationships: []
       }

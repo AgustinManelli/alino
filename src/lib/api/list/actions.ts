@@ -914,6 +914,14 @@ export const createListInvitation = async (
       if (errorMsg.includes("lista no existe") || error.code === "LSTNF") {
         return { error: "La lista no existe o hubo un error inesperado." };
       }
+      if (
+        errorMsg.includes("no acepta invitaciones") ||
+        error.code === "NOINV"
+      ) {
+        return {
+          error: "Este usuario no acepta invitaciones a listas compartidas.",
+        };
+      }
       return {
         error: "Ocurrió un error inesperado. Por favor, intenta de nuevo.",
       };

@@ -8,9 +8,15 @@ import { createClient } from "@/utils/supabase/client";
 import { ListsRow, MembershipRow } from "@/lib/schemas/database.types";
 import { Notification } from "@/lib/schemas/notification.types";
 import { customToast } from "@/lib/toasts";
+import { useUserDataStore } from "@/store/useUserDataStore";
+import { usePresenceStore } from "@/store/usePresenceStore";
 
 export const RealtimeProvider = () => {
   const supabase = createClient();
+  const user = useUserDataStore((s) => s.user);
+  const setOnlineUserIds = usePresenceStore((s) => s.setOnlineUserIds);
+  const addOnlineUser = usePresenceStore((s) => s.addOnlineUser);
+  const removeOnlineUser = usePresenceStore((s) => s.removeOnlineUser);
 
   const {
     onAddList,
@@ -151,6 +157,73 @@ export const RealtimeProvider = () => {
     onDeleteTask,
     addNotificationToStore,
   ]);
+
+  useEffect(() => {
+    if (!user?.user_id) return;
+
+    const presenceChannel = supabase.channel("online-presence", {
+      config: {
+        presence: {
+          key: user.user_id,
+        },
+      },
+    });
+
+    presenceChannel
+      .on("presence", { event: "sync" }, () => {
+        const state = presenceChannel.presenceState();
+        const ids = new Set<string>();
+        for (const key of Object.keys(state)) {
+          ids.add(key);
+        }
+        setOnlineUserIds(ids);
+      })
+      .on("presence", { event: "join" }, ({ key }) => {
+        if (key) addOnlineUser(key);
+      })
+      .on("presence", { event: "leave" }, ({ key }) => {
+        if (key) removeOnlineUser(key);
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          if (user.show_activity_status !== false) {
+            await presenceChannel.track({
+              user_id: user.user_id,
+              online_at: new Date().toISOString(),
+            });
+          }
+        }
+      });
+
+    return () => {
+      presenceChannel.untrack();
+      supabase.removeChannel(presenceChannel);
+    };
+  }, [
+    user?.user_id,
+    supabase,
+    setOnlineUserIds,
+    addOnlineUser,
+    removeOnlineUser,
+  ]);
+
+  useEffect(() => {
+    if (!user?.user_id) return;
+    const channels = supabase.getChannels();
+    const presenceChannel = channels.find(
+      (ch) => ch.topic === "realtime:online-presence",
+    );
+    if (!presenceChannel) return;
+
+    if (user.show_activity_status === false) {
+      presenceChannel.untrack();
+    } else {
+      presenceChannel.track({
+        user_id: user.user_id,
+        online_at: new Date().toISOString(),
+      });
+    }
+  }, [user?.show_activity_status, user?.user_id, supabase]);
 
   return null;
 };

@@ -27,7 +27,6 @@ export function WpaDownloadModal() {
       open={open}
       onOpenChange={(o) => {
         setOpen(o);
-        if (!o) toggleUxPwaPrompt();
       }}
     />
   );

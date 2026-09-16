@@ -527,8 +527,6 @@ export const updateUserPreferences = async (preferences: Record<string, unknown>
 
     if (updateError) throw updateError;
 
-    revalidatePath("/alino-app", "layout");
-
     return { data: mergedPreferences };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
@@ -725,4 +723,130 @@ export const claimReferralMilestoneAction = async (): Promise<{
     return { error: UNKNOWN_ERROR_MESSAGE };
   }
 };
+
+export const updateUserSecuritySettingsAction = async (settings: {
+  is_private?: boolean;
+  allow_list_invites?: boolean;
+  show_activity_status?: boolean;
+}): Promise<{ error: string | null }> => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    if (!user?.id) return { error: "Usuario no autenticado." };
+
+    const { error } = await supabase
+      .from("users")
+      .update(settings as Record<string, unknown>)
+      .eq("user_id", user.id);
+
+    if (error) {
+      // Fallback a guardar en preferencias de user_private si las columnas aún no existen en users
+      const { data: priv } = await supabase
+        .from("user_private")
+        .select("preferences")
+        .eq("user_id", user.id)
+        .single();
+
+      const existingPrefs = (priv?.preferences as Record<string, unknown>) || {};
+      await supabase
+        .from("user_private")
+        .update({ preferences: { ...existingPrefs, ...settings } })
+        .eq("user_id", user.id);
+    }
+
+    return { error: null };
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE;
+    return { error: msg };
+  }
+};
+
+export const exportUserDataAction = async (): Promise<{
+  data?: Record<string, unknown>;
+  error?: string;
+}> => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    if (!user?.id) return { error: "Usuario no autenticado." };
+
+    const [userData, listsData, tasksData, widgetsData] = await Promise.all([
+      supabase.from("users").select("*").eq("user_id", user.id).single(),
+      supabase.from("lists").select("*").eq("user_id", user.id),
+      supabase.from("tasks").select("*").eq("user_id", user.id),
+      supabase.from("user_widgets").select("*").eq("user_id", user.id),
+    ]);
+
+    const backupData = {
+      export_version: "1.0",
+      app: "Alino",
+      exported_at: new Date().toISOString(),
+      user: userData.data || null,
+      lists: listsData.data || [],
+      tasks: tasksData.data || [],
+      widgets: widgetsData.data || [],
+    };
+
+    return { data: backupData };
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE;
+    return { error: msg };
+  }
+};
+
+export const deleteAccountAction = async (
+  confirmationUsername: string
+): Promise<{ error: string | null }> => {
+  try {
+    const { supabase, user } = await getAuthenticatedSupabaseClient();
+    if (!user?.id) return { error: "Usuario no autenticado." };
+
+    const { data: dbUser } = await supabase
+      .from("users")
+      .select("username")
+      .eq("user_id", user.id)
+      .single();
+
+    if (
+      !dbUser ||
+      dbUser.username.trim().toLowerCase() !==
+        confirmationUsername.trim().toLowerCase()
+    ) {
+      return { error: "El nombre de usuario ingresado no coincide." };
+    }
+
+    // 1. Eliminar datos en la base de datos pública (cascada a tareas, listas, etc.)
+    const { error: dbError } = await supabase
+      .from("users")
+      .delete()
+      .eq("user_id", user.id);
+
+    if (dbError) {
+      return {
+        error: `No se pudo eliminar la información de la cuenta: ${dbError.message}`,
+      };
+    }
+
+    // 2. Si existe la clave de servicio, eliminar el usuario de auth.users
+    if (
+      process.env.SUPABASE_SERVICE_ROLE_KEY &&
+      process.env.NEXT_PUBLIC_SUPABASE_URL
+    ) {
+      try {
+        const { createClient: createAdminClient } = await import(
+          "@supabase/supabase-js"
+        );
+        const admin = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+        await admin.auth.admin.deleteUser(user.id);
+      } catch {}
+    }
+
+    return { error: null };
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE;
+    return { error: msg };
+  }
+};
+
 

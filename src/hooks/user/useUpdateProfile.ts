@@ -18,6 +18,7 @@ export function useUpdateProfile() {
       username?: string;
       biography?: string;
       website_url?: string;
+      avatar_url?: string;
     }) => {
       addLoading();
       setIsPending(true);
@@ -25,7 +26,11 @@ export function useUpdateProfile() {
         const res = await updateUserProfileAction(updates);
         if (res.error) return { error: res.error };
 
-        globalUserStore?.getState().updateUser(updates);
+        const savedAvatarUrl = res.data?.avatar_url || updates.avatar_url;
+        globalUserStore?.getState().updateUser({
+          ...updates,
+          ...(savedAvatarUrl ? { avatar_url: savedAvatarUrl } : {}),
+        });
 
         if (updates.username) {
           await fetchProfileStats();

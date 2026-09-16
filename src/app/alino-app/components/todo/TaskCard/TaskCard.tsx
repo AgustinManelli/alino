@@ -20,6 +20,7 @@ import Link from "next/link";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import { TimeLimitBox } from "@/components/ui/time-limit-box";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { playTaskCompletionSound } from "@/lib/utils/taskSound";
 import { linkifyWithIcon } from "@/utils/linkify";
 import { WavyStrikethrough } from "@/components/ui/WavyStrikethrough";
 import {
@@ -123,6 +124,9 @@ export const TaskCardStatic = memo(
     const handleUpdateStatus = useCallback(() => {
       const next = !completed;
       setCompleted(next);
+      if (next) {
+        playTaskCompletionSound();
+      }
       if (!animations) {
         updateTaskCompleted(task.task_id, next);
         return;

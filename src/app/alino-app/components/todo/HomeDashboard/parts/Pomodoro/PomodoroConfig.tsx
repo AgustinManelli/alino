@@ -8,15 +8,12 @@ import { Switch } from "@/components/ui/switch";
 import styles from "./PomodoroConfig.module.css";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { PlayIcon, StopIcon } from "@/components/ui/icons/icons";
+import { getSoundsByUsage } from "@/lib/sounds/soundCatalog";
 
-const soundOptions = [
-  { value: "bell-notification-1", label: "Campana 1" },
-  { value: "bell-notification-2", label: "Campana 2" },
-  { value: "timer-terminer", label: "Temporizador" },
-  { value: "relax-notification", label: "Relax" },
-  { value: "marimba-notification", label: "Marimba" },
-  { value: "system-notification", label: "Sistema" },
-];
+const soundOptions = getSoundsByUsage("pomodoro").map((sound) => ({
+  value: sound.id,
+  label: sound.name,
+}));
 
 export const PomodoroConfig = () => {
   const { settings, cycles, updateSettings, updateCycles, resetSettings } =

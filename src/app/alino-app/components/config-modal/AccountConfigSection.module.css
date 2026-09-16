@@ -20,6 +20,17 @@
   padding: 0 15px;
 }
 
+.themeSelectorContainer {
+  position: relative;
+  width: 100%;
+  background-color: var(--background-over-container);
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .sectionContent {
   position: relative;
   width: 100%;
@@ -27,7 +38,7 @@
   flex-direction: column;
   gap: 10px;
   background-color: var(--background-over-container);
-  border-radius: 10px;
+  border-radius: 15px;
   padding: 10px 15px;
 }
 
@@ -65,6 +76,186 @@
   justify-content: center;
   align-items: center;
   height: 100%;
+}
+
+.pillGroup {
+  display: flex;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.pillBtn {
+  border: none;
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-not-available);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pillBtnActive {
+  background-color: var(--background-over-container-hover);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.shortcutList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.shortcutHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.resetBtn {
+  background-color: transparent;
+  border: 1px solid var(--border-container-color);
+  color: var(--text-not-available);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resetBtn:hover {
+  color: var(--text);
+  background-color: var(--background-over-container-hover);
+  border-color: var(--border-container-color);
+}
+
+.shortcutItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 12px;
+  padding: 10px 14px;
+  gap: 12px;
+}
+
+.shortcutInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.shortcutLabel {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.shortcutDescription {
+  font-size: 11px;
+  color: var(--text-not-available);
+}
+
+.shortcutBtn {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  background-color: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.shortcutBtn:hover:not(.shortcutBtnRecording) {
+  border-color: var(--alino-secondary-color);
+  background-color: var(--background-over-container-hover);
+}
+
+.shortcutBtnRecording {
+  border-color: var(--alino-secondary-color);
+  color: var(--alino-secondary-color);
+  background-color: var(--background-over-container-hover);
+}
+
+.infoCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.infoSubtext {
+  font-size: 12px;
+  color: var(--text-not-available);
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.infoValue {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #2fd159;
+  flex-shrink: 0;
+}
+
+.versionBadge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-not-available);
+  background-color: var(--background-over-container-solid);
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+.actionBtn {
+  background-color: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionBtn:hover {
+  background-color: var(--background-over-container-hover);
 }
 
 @media only screen and (max-width: 850px) {
