@@ -8,6 +8,7 @@ import { RoleDropdown } from "../RoleDropdown";
 import styles from "./MemberRow.module.css";
 import { Cross, LoadingIcon, TickIcon } from "@/components/ui/icons/icons";
 import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
+import { usePresenceStore } from "@/store/usePresenceStore";
 
 interface MemberRowProps {
   user: UserWithMembershipRole | null;
@@ -71,6 +72,10 @@ export function MemberRow({
   const [loadingRemove, setLoadingRemove] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
 
+  const isOnline = usePresenceStore((s) =>
+    user ? s.onlineUserIds.has(user.user_id) : false,
+  );
+
   if (!user) {
     return (
       <div className={styles.memberRow}>
@@ -116,19 +121,31 @@ export function MemberRow({
 
   return (
     <div className={styles.memberRow}>
-      <UserAvatar
-        avatarUrl={user.avatar_url}
-        username={user.username}
-        size={36}
-        alt={user.display_name || "Avatar"}
-        className={styles.avatar}
-      />
+      <div className={styles.avatarWrapper}>
+        <UserAvatar
+          avatarUrl={user.avatar_url}
+          username={user.username}
+          size={32}
+          alt={user.display_name || "Avatar"}
+          className={styles.avatar}
+        />
+        <span
+          className={`${styles.statusDot} ${
+            isOnline ? styles.statusOnline : styles.statusOffline
+          }`}
+          title={isOnline ? "En línea" : "Desconectado"}
+          aria-label={isOnline ? "En línea" : "Desconectado"}
+        />
+      </div>
 
       <div className={styles.userInfo}>
-        <p className={styles.displayName}>
-          {user.display_name}
-          {isCurrentUser && <span className={styles.selfTag}> (tú)</span>}
-        </p>
+        <div className={styles.nameRow}>
+          <p className={styles.displayName}>
+            {user.display_name}
+            {isCurrentUser && <span className={styles.selfTag}> (tú)</span>}
+          </p>
+          {isOnline && <span className={styles.onlineBadge}>En línea</span>}
+        </div>
         <p className={styles.username}>@{user.username}</p>
       </div>
 

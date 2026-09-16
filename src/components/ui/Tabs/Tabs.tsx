@@ -11,13 +11,21 @@ export interface TabOption {
 }
 
 
-interface TabsProps {
+export interface TabsProps {
   options: TabOption[];
   activeTab: string;
   onChange: (id: string) => void;
   className?: string;
   disabled?: boolean;
   layoutId?: string;
+  style?: React.CSSProperties;
+  backgroundColor?: string;
+  indicatorColor?: string;
+  indicatorHoverColor?: string;
+  indicatorShadow?: string;
+  textColor?: string;
+  activeTextColor?: string;
+  hoverTextColor?: string;
 }
 
 export const Tabs: React.FC<TabsProps> = ({
@@ -27,10 +35,30 @@ export const Tabs: React.FC<TabsProps> = ({
   className,
   disabled,
   layoutId = "active-tab",
+  style,
+  backgroundColor,
+  indicatorColor,
+  indicatorHoverColor,
+  indicatorShadow,
+  textColor,
+  activeTextColor,
+  hoverTextColor,
 }) => {
+  const dynamicStyles: React.CSSProperties = {
+    ...(backgroundColor ? { ["--tabs-bg" as string]: backgroundColor } : {}),
+    ...(indicatorColor ? { ["--tabs-indicator-bg" as string]: indicatorColor } : {}),
+    ...(indicatorHoverColor ? { ["--tabs-indicator-hover-bg" as string]: indicatorHoverColor } : {}),
+    ...(indicatorShadow ? { ["--tabs-indicator-shadow" as string]: indicatorShadow } : {}),
+    ...(textColor ? { ["--tabs-text-color" as string]: textColor } : {}),
+    ...(activeTextColor ? { ["--tabs-active-text-color" as string]: activeTextColor } : {}),
+    ...(hoverTextColor ? { ["--tabs-hover-text-color" as string]: hoverTextColor } : {}),
+    ...style,
+  };
+
   return (
     <div
       className={`${styles.tabsContainer} ${className || ""} ${disabled ? styles.disabled : ""}`}
+      style={dynamicStyles}
     >
       {options.map((option) => {
         const isActive = activeTab === option.id;

@@ -39,6 +39,14 @@
   height: 80%;
   min-width: 300px;
   max-width: 600px;
+  transition: max-width 0.3s ease, width 0.3s ease;
+}
+
+.windowModalWithSidebar {
+  width: 75%;
+  max-width: 860px;
+  min-width: 320px;
+  min-height: 520px;
 }
 
 .windowHeader {
@@ -108,7 +116,8 @@
   height: 100%;
 }
 
-.windowContent :global(.simplebar-track.simplebar-vertical) {
+.windowContent :global(.simplebar-track.simplebar-vertical),
+.windowMainContent :global(.simplebar-track.simplebar-vertical) {
   width: 7px;
   background-color: transparent;
   right: 9px;
@@ -116,7 +125,8 @@
   top: 0;
 }
 
-.windowContent :global(.simplebar-scrollbar::before) {
+.windowContent :global(.simplebar-scrollbar::before),
+.windowMainContent :global(.simplebar-scrollbar::before) {
   background-color: var(--background-over-container);
   border-radius: 999px;
   opacity: 0.4;
@@ -129,38 +139,202 @@
   bottom: 0;
 }
 
-.windowContent :global(.simplebar-scrollbar.simplebar-visible::before) {
+.windowContent :global(.simplebar-scrollbar.simplebar-visible::before),
+.windowMainContent :global(.simplebar-scrollbar.simplebar-visible::before) {
   opacity: 0.6;
 }
 
-.windowContent
-  :global(
-    .simplebar-track.simplebar-vertical:hover .simplebar-scrollbar::before
-  ) {
+.windowContent :global(.simplebar-track.simplebar-vertical:hover .simplebar-scrollbar::before),
+.windowMainContent :global(.simplebar-track.simplebar-vertical:hover .simplebar-scrollbar::before) {
   opacity: 1;
   background-color: var(--text-not-available);
+}
+
+.windowBodyWithSidebar {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.windowSidebarContainer {
+  width: 210px;
+  min-width: 210px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-container-color);
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.windowSidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  width: 100%;
+}
+
+.sidebarItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-not-available);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  outline: none;
+  font-family: inherit;
+  user-select: none;
+}
+
+.sidebarItem:hover {
+  color: var(--text);
+  background-color: var(--background-over-container-hover);
+}
+
+.sidebarItemActive {
+  background-color: var(--background-over-container);
+  color: var(--text);
+  font-weight: 600;
+  border-color: var(--border-container-color);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.sidebarItemMain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sidebarItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.sidebarItemLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebarItemBadge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background-color: var(--background-over-container-hover);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.windowMainContent {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.windowMainContent :global(.simplebar-content) {
+  padding: 0 25px 25px 25px !important;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 @media only screen and (max-width: 850px) {
   .windowModal {
     width: 100%;
-    height: 80%;
+    height: 85%;
     min-width: initial;
     max-width: initial;
     padding: 20px 0 0 0;
+  }
+
+  .windowModalWithSidebar {
+    width: 100%;
+    height: 88%;
+    max-width: 100%;
+    min-height: initial;
   }
 
   .windowHeader {
     padding: 0 15px 15px 15px;
   }
 
-  .windowContent :global(.simplebar-content) {
+  .windowContent :global(.simplebar-content),
+  .windowMainContent :global(.simplebar-content) {
     padding: 0 15px 15px 15px !important;
   }
 
-  .windowContent :global(.simplebar-track.simplebar-vertical) {
+  .windowContent :global(.simplebar-track.simplebar-vertical),
+  .windowMainContent :global(.simplebar-track.simplebar-vertical) {
     right: 4px;
     bottom: 15px;
+  }
+
+  .windowBodyWithSidebar {
+    flex-direction: column;
+  }
+
+  .windowSidebarContainer {
+    width: 100%;
+    min-width: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border-container-color);
+    overflow-x: auto;
+    overflow-y: hidden;
+    background-color: transparent;
+  }
+
+  .windowSidebarNav {
+    flex-direction: row;
+    padding: 8px 15px;
+    width: max-content;
+    gap: 6px;
+  }
+
+  .sidebarItem {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    width: auto;
+  }
+
+  .sidebarItemActive {
+    background-color: var(--background-over-container);
+    border-color: var(--border-container-color);
+    color: var(--text);
+  }
+
+  .windowSidebarMobileTabsWrapper {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    display: flex;
+    padding: 8px 15px;
+  }
+
+  .windowSidebarMobileTabsWrapper::-webkit-scrollbar {
+    display: none;
   }
 }
 

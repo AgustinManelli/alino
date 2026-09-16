@@ -9,13 +9,23 @@ export interface UserPreferences {
   uxPwaPrompt: boolean;
   sidebarCollapsed: boolean;
   sidebarPosition: "left" | "right";
-  
+  soundEffects: boolean;
+  taskCompletionSound: string;
+  confirmDelete: boolean;
+  firstDayOfWeek: "monday" | "sunday";
+  compactView: boolean;
+
   initializePreferences: (prefs: any) => void;
   loadFallbackPreferences: () => void;
   toggleAnimations: () => void;
   toggleUxPwaPrompt: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   setSidebarPosition: (position: "left" | "right") => void;
+  toggleSoundEffects: () => void;
+  setTaskCompletionSound: (soundId: string) => void;
+  toggleConfirmDelete: () => void;
+  setFirstDayOfWeek: (day: "monday" | "sunday") => void;
+  toggleCompactView: () => void;
 }
 
 export const UserPreferencesContext = createContext<StoreApi<UserPreferences> | undefined>(undefined);
@@ -28,14 +38,30 @@ const setCookie = (name: string, value: string) => {
   }
 };
 
+export let globalPrefsStore: StoreApi<UserPreferences> | undefined = undefined;
+
 export const createUserPreferencesStore = (initialState: Partial<UserPreferences> = {}) => {
+  let localStored: Partial<UserPreferences> = {};
+  if (typeof window !== "undefined") {
+    try {
+      localStored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    } catch (_) { }
+  }
+
+  const merged = {
+    ...localStored,
+    ...initialState,
+  };
+
   const persistToLocalStorage = (prefs: Partial<UserPreferences>) => {
     if (typeof window !== "undefined") {
-      const currentStored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ ...currentStored, ...prefs })
-      );
+      try {
+        const currentStored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ ...currentStored, ...prefs })
+        );
+      } catch (_) { }
     }
   };
 
@@ -47,42 +73,88 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
     }
   };
 
-  return createStore<UserPreferences>()((set, get) => ({
-    animations: initialState.animations ?? true,
-    uxPwaPrompt: initialState.uxPwaPrompt ?? true,
-    sidebarCollapsed: initialState.sidebarCollapsed ?? false,
-    sidebarPosition: initialState.sidebarPosition ?? "left",
+  const store = createStore<UserPreferences>()((set, get) => ({
+    animations: merged.animations ?? true,
+    uxPwaPrompt: merged.uxPwaPrompt ?? true,
+    sidebarCollapsed: merged.sidebarCollapsed ?? false,
+    sidebarPosition: (merged.sidebarPosition as "left" | "right") ?? "left",
+    soundEffects: merged.soundEffects ?? false,
+    taskCompletionSound: (merged.taskCompletionSound as string) ?? "check-1",
+    confirmDelete: merged.confirmDelete ?? true,
+    firstDayOfWeek: (merged.firstDayOfWeek as "monday" | "sunday") ?? "monday",
+    compactView: merged.compactView ?? false,
 
-    initializePreferences: () => {},
-    loadFallbackPreferences: () => {},
+    initializePreferences: (prefs: Partial<UserPreferences>) => {
+      set((state) => ({ ...state, ...prefs }));
+    },
+    loadFallbackPreferences: () => { },
 
     toggleAnimations: () => {
       const nextVal = !get().animations;
+      set({ animations: nextVal });
       persistToLocalStorage({ animations: nextVal });
       syncWithDatabase({ animations: nextVal });
-      set({ animations: nextVal });
     },
 
     toggleUxPwaPrompt: () => {
       const nextVal = !get().uxPwaPrompt;
+      set({ uxPwaPrompt: nextVal });
       persistToLocalStorage({ uxPwaPrompt: nextVal });
       syncWithDatabase({ uxPwaPrompt: nextVal });
-      set({ uxPwaPrompt: nextVal });
     },
 
     setSidebarCollapsed: (collapsed: boolean) => {
+      set({ sidebarCollapsed: collapsed });
       persistToLocalStorage({ sidebarCollapsed: collapsed });
       setCookie("sidebar-collapsed", String(collapsed));
-      set({ sidebarCollapsed: collapsed });
     },
 
     setSidebarPosition: (position: "left" | "right") => {
+      set({ sidebarPosition: position });
       persistToLocalStorage({ sidebarPosition: position });
       setCookie("sidebar-position", position);
       syncWithDatabase({ sidebarPosition: position });
-      set({ sidebarPosition: position });
+    },
+
+    toggleSoundEffects: () => {
+      const nextVal = !get().soundEffects;
+      set({ soundEffects: nextVal });
+      persistToLocalStorage({ soundEffects: nextVal });
+      syncWithDatabase({ soundEffects: nextVal });
+    },
+
+    setTaskCompletionSound: (soundId: string) => {
+      set({ taskCompletionSound: soundId });
+      persistToLocalStorage({ taskCompletionSound: soundId });
+      syncWithDatabase({ taskCompletionSound: soundId });
+    },
+
+    toggleConfirmDelete: () => {
+      const nextVal = !get().confirmDelete;
+      set({ confirmDelete: nextVal });
+      persistToLocalStorage({ confirmDelete: nextVal });
+      syncWithDatabase({ confirmDelete: nextVal });
+    },
+
+    setFirstDayOfWeek: (day: "monday" | "sunday") => {
+      set({ firstDayOfWeek: day });
+      persistToLocalStorage({ firstDayOfWeek: day });
+      syncWithDatabase({ firstDayOfWeek: day });
+    },
+
+    toggleCompactView: () => {
+      const nextVal = !get().compactView;
+      set({ compactView: nextVal });
+      persistToLocalStorage({ compactView: nextVal });
+      syncWithDatabase({ compactView: nextVal });
     },
   }));
+
+  if (typeof window !== "undefined") {
+    globalPrefsStore = store;
+  }
+
+  return store;
 };
 
 let fallbackStore: StoreApi<UserPreferences> | undefined;
@@ -96,6 +168,11 @@ const getFallbackStore = () => {
     let initialPosition: "left" | "right" = "left";
     let initialAnimations = true;
     let initialUxPwaPrompt = true;
+    let initialSoundEffects = false;
+    let initialTaskCompletionSound = "check-1";
+    let initialConfirmDelete = true;
+    let initialFirstDayOfWeek: "monday" | "sunday" = "monday";
+    let initialCompactView = false;
 
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
@@ -103,13 +180,23 @@ const getFallbackStore = () => {
       initialPosition = stored.sidebarPosition ?? "left";
       initialAnimations = stored.animations ?? true;
       initialUxPwaPrompt = stored.uxPwaPrompt ?? true;
-    } catch (_) {}
+      initialSoundEffects = stored.soundEffects ?? false;
+      initialTaskCompletionSound = stored.taskCompletionSound ?? "check-1";
+      initialConfirmDelete = stored.confirmDelete ?? true;
+      initialFirstDayOfWeek = stored.firstDayOfWeek ?? "monday";
+      initialCompactView = stored.compactView ?? false;
+    } catch (_) { }
 
     fallbackStore = createUserPreferencesStore({
       sidebarCollapsed: initialCollapsed,
       sidebarPosition: initialPosition,
       animations: initialAnimations,
       uxPwaPrompt: initialUxPwaPrompt,
+      soundEffects: initialSoundEffects,
+      taskCompletionSound: initialTaskCompletionSound,
+      confirmDelete: initialConfirmDelete,
+      firstDayOfWeek: initialFirstDayOfWeek,
+      compactView: initialCompactView,
     });
   }
   return fallbackStore;

@@ -1,13 +1,16 @@
 .tabsContainer {
   display: flex;
   position: relative;
-  background-color: var(--background-over-container-solid);
+  background-color: var(
+    --tabs-bg,
+    var(--tabs-background, var(--background-over-container-solid))
+  );
   border-radius: 15px;
   padding: 5px;
   gap: 5px;
   width: 100%;
   height: fit-content;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
   overflow-x: auto;
   scroll-behavior: smooth;
   scrollbar-width: none;
@@ -31,12 +34,12 @@
   padding: 7px 10px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--text);
+  color: var(--tabs-text-color, var(--text));
   border: none;
   background: transparent;
   cursor: pointer;
   z-index: 1;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, opacity 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,24 +48,35 @@
 }
 
 .tabActive {
-  color: var(--text);
+  color: var(
+    --tabs-active-text-color,
+    var(--tabs-text-color, var(--text))
+  );
   font-weight: 600;
+  opacity: 1;
 }
 
 .tab:not(.tabActive) {
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .tab:not(.tabActive):hover {
-  opacity: 0.9;
+  opacity: 1;
+  color: var(
+    --tabs-hover-text-color,
+    var(--tabs-text-color, var(--text))
+  );
 }
 
 .icon {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 0;
   flex-shrink: 0;
+  pointer-events: none;
 }
 
 .icon svg {
@@ -70,9 +84,12 @@
 }
 
 .label {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   line-height: 1;
+  pointer-events: none;
 }
 
 .activeIndicator {
@@ -81,10 +98,31 @@
   bottom: 0px;
   left: 0px;
   right: 0px;
-  background-color: var(--background-over-container-hover);
+  background-color: var(
+    --tabs-indicator-bg,
+    var(--tabs-indicator-color, var(--background-over-container-hover))
+  );
+  box-shadow: var(--tabs-indicator-shadow, none);
   border-radius: 10px;
   z-index: 0;
   height: 100%;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tabActive:hover .activeIndicator {
+  background-color: var(
+    --tabs-indicator-hover-bg,
+    var(
+      --tabs-indicator-hover-color,
+      var(
+        --tabs-indicator-hover,
+        var(
+          --tabs-indicator-bg,
+          var(--tabs-indicator-color, var(--background-over-container-hover))
+        )
+      )
+    )
+  );
 }
 
 @media (max-width: 600px) {

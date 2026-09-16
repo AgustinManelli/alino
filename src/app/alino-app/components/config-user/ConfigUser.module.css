@@ -10,6 +10,33 @@
   display: none;
 }
 
+.tabContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 20px;
+}
+
+.tabHeaderBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tabSectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.tabSectionSubtitle {
+  font-size: 13px;
+  color: var(--text-not-available);
+  margin: 0;
+}
+
 .userHeaderSection {
   display: flex;
   flex-direction: column;
@@ -46,10 +73,8 @@
 .ringPro {
   border: 2px solid transparent;
   background-image:
-    linear-gradient(
-      var(--background-over-container),
-      var(--background-over-container)
-    ),
+    linear-gradient(var(--background-over-container),
+      var(--background-over-container)),
     linear-gradient(135deg, #8b5cf6, #ec4899);
   background-origin: border-box;
   background-clip: padding-box, border-box;
@@ -159,6 +184,7 @@
   color: var(--text-not-available);
   border: 1px solid var(--border-container-color);
 }
+
 .tierStudent {
   background-color: rgba(59, 130, 246, 0.15);
   color: #3b82f6;
@@ -166,11 +192,9 @@
 }
 
 .tierPro {
-  background: linear-gradient(
-    135deg,
-    rgba(139, 92, 246, 0.2),
-    rgba(236, 72, 153, 0.2)
-  );
+  background: linear-gradient(135deg,
+      rgba(139, 92, 246, 0.2),
+      rgba(236, 72, 153, 0.2));
   color: #a855f7;
   border: 1px solid rgba(168, 85, 247, 0.4);
   box-shadow: 0 4px 15px rgba(168, 85, 247, 0.15);
@@ -183,11 +207,9 @@
   gap: 10px;
   padding: 12px 16px;
   border-radius: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(139, 92, 246, 0.08),
-    rgba(236, 72, 153, 0.08)
-  );
+  background: linear-gradient(135deg,
+      rgba(139, 92, 246, 0.08),
+      rgba(236, 72, 153, 0.08));
   border: 1px solid rgba(168, 85, 247, 0.25);
 }
 
@@ -228,22 +250,18 @@
   white-space: nowrap;
   flex-shrink: 0;
   color: #a855f7;
-  background: linear-gradient(
-    135deg,
-    rgba(139, 92, 246, 0.15),
-    rgba(236, 72, 153, 0.15)
-  );
+  background: linear-gradient(135deg,
+      rgba(139, 92, 246, 0.15),
+      rgba(236, 72, 153, 0.15));
   border: 1px solid rgba(168, 85, 247, 0.35);
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
 .upgradeBannerBtn:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(139, 92, 246, 0.25),
-    rgba(236, 72, 153, 0.25)
-  );
+  background: linear-gradient(135deg,
+      rgba(139, 92, 246, 0.25),
+      rgba(236, 72, 153, 0.25));
   border-color: rgba(168, 85, 247, 0.5);
 }
 
@@ -263,7 +281,7 @@
 .editionContainer {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: end;
   background-color: var(--background-over-container);
   padding: 12px 18px;
   border-radius: 18px;
@@ -302,7 +320,7 @@
   border: 1px solid transparent;
   height: 30px;
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -320,7 +338,6 @@
   line-height: 1;
   outline: none;
   width: 100%;
-  transition: all 0.2s ease;
   font-family: inherit;
   display: block;
   height: 30px;
@@ -348,7 +365,7 @@
 }
 
 .btnAction {
-  background-color: transparent;
+  background-color: var(--background-over-container);
   border: 1px solid var(--border-container-color);
   color: var(--text);
   padding: 6px 14px;
@@ -369,8 +386,39 @@
 }
 
 .btnPrimary {
-  background-color: var(--background-over-container);
-  border: 1px solid var(--border-container-color);
+  background-color: var(--alino-primary-color);
+  color: #ffffff;
+  border: 1px solid var(--alino-primary-color);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background-color: var(--alino-primary-color);
+  opacity: 0.9;
+  color: #ffffff;
+}
+
+.btnCritical {
+  background-color: var(--button-critical);
+  color: #ffffff;
+  border: 1px solid var(--button-critical);
+}
+
+.btnCritical:hover:not(:disabled) {
+  background-color: var(--button-critical);
+  opacity: 0.9;
+  color: #ffffff;
+}
+
+.btnCriticalOutline {
+  background-color: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: var(--button-critical);
+}
+
+.btnCriticalOutline:hover:not(:disabled) {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: var(--button-critical);
+  color: var(--button-critical);
 }
 
 .btnAction:disabled {
@@ -404,12 +452,10 @@
 .sectionDivider {
   width: 100%;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--border-container-color),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      var(--border-container-color),
+      transparent);
   margin: 5px 0;
 }
 
@@ -944,8 +990,198 @@
   padding: 4px 0;
 }
 
+.featuresSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.featureCard {
+  background-color: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.featureCard:hover {
+  background-color: var(--background-over-container-hover);
+}
+
+.featureIconBox {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--alino-secondary-color);
+}
+
+.featureContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.featureTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.featureDesc {
+  font-size: 12px;
+  color: var(--text-not-available);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.promoSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  background-color: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.promoHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.promoTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.promoForm {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.promoInput {
+  flex: 1;
+  height: 36px;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  font-family: monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease;
+}
+
+.promoInput:focus {
+  border-color: var(--alino-primary-color);
+}
+
+.promoBtn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.promoBtn:hover:not(:disabled) {
+  background-color: var(--background-over-container-hover);
+  border-color: var(--alino-primary-color);
+  color: var(--alino-primary-color);
+}
+
+.promoBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.faqSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.faqItem {
+  background-color: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.faqQuestion {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.faqAnswer {
+  font-size: 12px;
+  color: var(--text-not-available);
+  line-height: 1.4;
+  margin: 0;
+}
+
 @media only screen and (max-width: 850px) {
   .configModalContainer {
     padding-bottom: 15px;
   }
+
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.avatarModalContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  padding: 14px 22px 20px 22px;
+}
+
+.avatarModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
 }

@@ -2,12 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
+import { useUserDataStore } from "@/store/useUserDataStore";
 import { useNotifications } from "@/hooks/notifications/useNotifications";
 import { ModalBox } from "@/components/ui/modal-options-box";
 import { WindowModal } from "@/components/ui/WindowModal";
 import {
   LoadingIcon,
-  UserIcon,
   Alert,
   DeleteIcon,
 } from "@/components/ui/icons/icons";
@@ -20,12 +20,27 @@ import { formatRelativeTime, formatFullDate } from "@/utils/FormatRelativeTime";
 import styles from "./NotificationsSection.module.css";
 import { customToast } from "@/lib/toasts";
 
+const getEffectiveNotificationDate = (
+  notification: Notification,
+  userCreatedAt?: string | null,
+): string => {
+  if (notification.is_global && userCreatedAt) {
+    const notifTime = new Date(notification.created_at).getTime();
+    const userTime = new Date(userCreatedAt).getTime();
+    if (notifTime < userTime) {
+      return userCreatedAt;
+    }
+  }
+  return notification.created_at;
+};
+
 export const NotificationsSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAppUpdate, setSelectedAppUpdate] =
     useState<Notification | null>(null);
   const iconRef = useRef<HTMLDivElement>(null);
+  const user = useUserDataStore((s) => s.user);
 
   const {
     notifications,
@@ -188,6 +203,10 @@ export const NotificationsSection = () => {
               notification.metadata?.invitation_status == null);
           const isAppUpdate = notification.type === "app_update";
           const isUnread = !notification.read;
+          const effectiveDate = getEffectiveNotificationDate(
+            notification,
+            user?.created_at,
+          );
 
           return (
             <li
@@ -208,9 +227,9 @@ export const NotificationsSection = () => {
                     <span className={styles.itemTitle}>{display.title}</span>
                     <time
                       className={styles.itemTime}
-                      title={formatFullDate(notification.created_at)}
+                      title={formatFullDate(effectiveDate)}
                     >
-                      {formatRelativeTime(notification.created_at)}{" "}
+                      {formatRelativeTime(effectiveDate)}{" "}
                       {isUnread && <span className={styles.unreadDot} />}
                     </time>
                   </div>
@@ -221,40 +240,42 @@ export const NotificationsSection = () => {
               </div>
 
               <div className={styles.actions}>
-                {isInvitationPending && (
-                  <>
-                    <button
-                      className={`${styles.actionBtn} ${styles.btnDecline}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeclineInvitation(notification);
-                      }}
-                    >
-                      Rechazar
-                    </button>
-                    <button
-                      className={`${styles.actionBtn} ${styles.btnAccept}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAcceptInvitation(notification);
-                      }}
-                    >
-                      Aceptar
-                    </button>
-                  </>
-                )}
+                <div className={styles.actionsLeft}>
+                  {isInvitationPending && (
+                    <>
+                      <button
+                        className={`${styles.actionBtn} ${styles.btnDecline}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeclineInvitation(notification);
+                        }}
+                      >
+                        Rechazar
+                      </button>
+                      <button
+                        className={`${styles.actionBtn} ${styles.btnAccept}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAcceptInvitation(notification);
+                        }}
+                      >
+                        Aceptar
+                      </button>
+                    </>
+                  )}
 
-                {!isInvitation && isUnread && (
-                  <button
-                    className={`${styles.actionBtn} ${styles.btnRead}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleMarkRead(notification);
-                    }}
-                  >
-                    Marcar leída
-                  </button>
-                )}
+                  {!isInvitation && isUnread && (
+                    <button
+                      className={`${styles.actionBtn} ${styles.btnRead}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMarkRead(notification);
+                      }}
+                    >
+                      Marcar leída
+                    </button>
+                  )}
+                </div>
 
                 <button
                   className={`${styles.actionBtn} ${styles.btnDelete}`}
