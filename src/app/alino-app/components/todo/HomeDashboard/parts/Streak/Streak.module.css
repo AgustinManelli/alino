@@ -46,7 +46,8 @@
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  background: var(--bg-secondary);
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
   border-radius: 10px;
   width: fit-content;
 }
@@ -54,7 +55,7 @@
 .protectorIcon {
   width: 18px;
   height: 18px;
-  color: #eab308;
+  color: var(--warning-color);
   flex-shrink: 0;
 }
 
@@ -127,12 +128,10 @@
 
 .circleProtected {
   background: linear-gradient(135deg, #60a5fa, #2563eb);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
 }
 
 .circleLost {
   background: linear-gradient(135deg, #f87171, #dc2626);
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
 }
 
 .circleMissed {
@@ -147,7 +146,7 @@
 }
 
 .circleSkeleton {
-  background: var(--bg-secondary, #f1f5f9);
+  background: var(--background-over-container);
   animation: skeletonPulse 1.4s ease-in-out infinite;
 }
 

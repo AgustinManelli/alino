@@ -91,6 +91,11 @@ export const StreakWidget = () => {
     streakGroups.push(currentGroup);
   }
 
+  const yesterday = weekDays.length >= 2 ? weekDays[weekDays.length - 2] : null;
+  const wasYesterdayProtected = Boolean(
+    yesterday?.event_type.startsWith("protected_"),
+  );
+
   let status: FlameStatus = "off";
   if (isActiveToday) {
     status = "active";
@@ -98,20 +103,28 @@ export const StreakWidget = () => {
     const lastDate = new Date(streak.last_completion_date + "T12:00:00");
     const today = new Date();
     today.setHours(12, 0, 0, 0);
-    const diffDays = Math.floor(
+    const diffDays = Math.round(
       (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24),
     );
-    if (diffDays === 1) {
-      status = "off";
-    } else if (diffDays > 1 && protectorsCount > 0) {
+    if (wasYesterdayProtected || (diffDays > 1 && protectorsCount > 0)) {
       status = "frozen";
+    } else {
+      status = "off";
     }
   }
 
   const now = new Date();
-  const hoursLeft = 24 - now.getHours();
+  const endOfDay = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1,
+  );
+  const hoursLeft = Math.max(
+    0,
+    (endOfDay.getTime() - now.getTime()) / (1000 * 60 * 60),
+  );
   const isEndingSoon = hoursLeft <= 4;
-  const showWarning = status === "off" && isEndingSoon;
+  const showWarning = currentStreak > 0 && status === "off" && isEndingSoon;
 
   return (
     <div className={styles.streakContainer}>
@@ -125,39 +138,26 @@ export const StreakWidget = () => {
         </div>
         <div className={styles.countWrapper}>
           <span className={styles.currentStreak}>{currentStreak}</span>
-          <span className={styles.streakLabel}>DÍAS</span>
+          <span className={styles.streakLabel}>
+            {currentStreak === 1 ? "DÍA" : "DÍAS"}
+          </span>
         </div>
       </div>
 
-      {/* Protectores disponibles */}
-      {/* <div className={styles.protectorsInfo}>
-        <ProtectorIcon className={styles.protectorIcon} />
-        <span className={styles.protectorsCount}>
-          {protectorsCount} Protector{protectorsCount !== 1 ? "es" : ""}
-        </span>
-        {!isPreview && streak && (
-          <span className={styles.protectorsBreakdown}>
-            ({Math.max(freeLeft, 0)} gratis · {purchasedCount} comprado
-            {purchasedCount !== 1 ? "s" : ""})
-          </span>
-        )}
-      </div> */}
-
-      {/* Historial de los últimos 7 días */}
       {weekDays.length > 0 && (
         <div className={styles.weekHistory}>
           <div className={styles.barsContainer}>
             {streakGroups.map((g) => {
-              const getCenterCalc = (i: number) =>
-                `calc(${i} * ((100% - 12px) / 7) + ${i} * 2px + ((100% - 12px) / 14))`;
-              const left = `calc(${getCenterCalc(g.start)} - 14px)`;
-              const width = `calc(${getCenterCalc(g.end)} - ${getCenterCalc(g.start)} + 28px)`;
+              const startPercent = ((g.start + 0.5) / 7) * 100;
+              const endPercent = ((g.end + 0.5) / 7) * 100;
+              const left = `calc(${startPercent}% - 14px)`;
+              const width = `calc(${endPercent - startPercent}% + 28px)`;
               return (
                 <motion.div
                   key={g.start}
                   initial={{ width: "28px" }}
                   animate={{ width }}
-                  transition={{ type: "spring", stiffness: 120, damping: 15 }}
+                  transition={{ type: "spring", stiffness: 140, damping: 18 }}
                   className={styles.animatedBar}
                   style={{ left }}
                 />

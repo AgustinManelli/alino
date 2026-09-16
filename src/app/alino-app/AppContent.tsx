@@ -12,6 +12,7 @@ import { ConfigSection } from "./components/config-section";
 import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import { StreakSection } from "./components/streak-section";
+import { ShopSection } from "./components/shop-section";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import dynamic from "next/dynamic";
 
@@ -106,6 +107,7 @@ export const AppContent = ({ children }: Props) => {
       {isPomodoroInstalled && <MiniIndicator />}
       <section className={styles.topButtons}>
         <StreakSection />
+        <ShopSection />
         <NotificationsSection />
         <ConfigSection />
       </section>
