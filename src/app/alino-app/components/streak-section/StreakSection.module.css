@@ -11,7 +11,7 @@
   padding: 0 10px;
   border-radius: 15px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
   user-select: none;
   background-color: var(--background-over-container);
 }
@@ -27,20 +27,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-.panel {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-}
-
 .headerSlot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px 10px 10px 10px;
-  flex-shrink: 0;
+  padding: 14px 14px 6px 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .title {
@@ -49,11 +42,33 @@
   color: var(--text);
 }
 
+.maxStreakBadge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-not-available);
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 320px;
+  box-sizing: border-box;
+}
+
 .mainInfo {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  text-align: center;
 }
 
 .countWrapper {
@@ -67,69 +82,35 @@
   font-weight: 900;
   line-height: 1;
   color: var(--text);
+  font-variant-numeric: tabular-nums;
 }
 
 .streakLabel {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-not-available);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
-.protectorsSection {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-}
-
-.protectorRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  width: 100%;
-  gap: 10px;
-}
-
-.protectorInfo {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.protectorIcon {
-  width: 18px;
-  height: 18px;
-  color: #eab308;
-}
-
-.protectorsTitle {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.protectorCount {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--text);
+.streakStatusMessage {
+  font-size: 12px;
+  color: var(--text-not-available);
+  font-weight: 500;
+  max-width: 240px;
+  line-height: 1.35;
 }
 
 .historySection {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .historyTitle {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text);
 }
 
@@ -147,15 +128,16 @@
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
+  width: 100%;
   height: 28px;
   z-index: 0;
+  pointer-events: none;
 }
 
 .animatedBar {
   position: absolute;
   top: 0;
-  bottom: 0;
+  height: 28px;
   border-radius: 14px;
   background: linear-gradient(135deg, #f97316, #ea580c);
   z-index: 0;
@@ -198,13 +180,16 @@
 
 .circleToday {
   border: 2px dashed var(--text-not-available);
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .dayCircleContent {
   font-size: 12px;
-  color: white;
+  color: #ffffff;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dayLabel {
@@ -216,4 +201,236 @@
 
 .dayLabelToday {
   color: var(--text);
+}
+
+.protectorsSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--background-over-container);
+  border-radius: 10px;
+  border: 1px solid var(--border-container-color);
+  padding: 12px 14px;
+  box-sizing: border-box;
+}
+
+.protectorRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.protectorInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.protectorIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--warning-color);
+  flex-shrink: 0;
+}
+
+.protectorsTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.protectorCount {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.protectorsSubtitle {
+  font-size: 11px;
+  color: var(--text-not-available);
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.purchaseSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.purchaseHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.purchaseTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.purchaseGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.packageCard {
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 96px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  text-align: left;
+}
+
+.packageCard:hover:not(:disabled) {
+  background: var(--background-over-container-hover);
+  border-color: var(--alino-secondary-color);
+}
+
+.packageCard:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.packageCard:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 4px;
+}
+
+.cardIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--warning-color);
+  flex-shrink: 0;
+}
+
+.cardBadgeHeader,
+.cardBadgeInline {
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--alino-secondary-color);
+  background: rgba(106, 195, 255, 0.12);
+  border: 1px solid rgba(106, 195, 255, 0.25);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.cardBadgeInline {
+  display: none;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardSubtitle {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-not-available);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.priceChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--background-over-container-hover);
+  border: 1px solid var(--border-container-color);
+  padding: 2px 7px;
+  border-radius: 6px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.packageCard:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: 10px 12px;
+  gap: 10px;
+}
+
+.packageCard:last-child:nth-child(odd) .cardHeader {
+  width: auto;
+  flex-shrink: 0;
+}
+
+.packageCard:last-child:nth-child(odd) .cardBadgeHeader {
+  display: none;
+}
+
+.packageCard:last-child:nth-child(odd) .cardBadgeInline {
+  display: inline-flex;
+}
+
+.packageCard:last-child:nth-child(odd) .cardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.packageCard:last-child:nth-child(odd) .cardFooter {
+  width: auto;
+  flex-shrink: 0;
 }

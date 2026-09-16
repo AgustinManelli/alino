@@ -50,7 +50,7 @@ export function useUpdateTaskCompleted() {
       handleError(error);
       useTodoDataStore.setState({ tasks: prevTasks, completedTasks: prevCompletedTasks });
     } else if (completed) {
-      fetchStreak();
+      fetchStreak(true);
     }
 
     setIsPending(false);

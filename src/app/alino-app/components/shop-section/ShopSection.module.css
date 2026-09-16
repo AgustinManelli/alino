@@ -1,0 +1,259 @@
+.container {
+  position: relative;
+  z-index: 100;
+}
+
+.triggerBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  user-select: none;
+  background-color: var(--background-over-container);
+}
+
+.triggerBtn:hover {
+  background-color: var(--background-over-container-hover);
+}
+
+.shopIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.coinsCount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.headerSlot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 6px 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.balanceBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.panel {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 320px;
+  box-sizing: border-box;
+}
+
+.promoSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.sectionSubtitle {
+  font-size: 11px;
+  color: var(--text-not-available);
+}
+
+.promoForm {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.promoInputWrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  padding: 0 10px;
+  height: 38px;
+  transition: border-color 0.2s ease;
+}
+
+.promoInputWrapper:focus-within {
+  border-color: var(--alino-primary-color);
+}
+
+.promoInput {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.promoInput::placeholder {
+  color: var(--placeholder-text-color);
+  font-weight: 400;
+  text-transform: none;
+}
+
+.redeemBtn {
+  border: none;
+  outline: none;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: var(--alino-primary-color);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+}
+
+.redeemBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.redeemBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.packsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.packsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.packCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  gap: 10px;
+  opacity: 0.85;
+}
+
+.packLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.packInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.packNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.packName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.packTag {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--alino-primary-color);
+  background: rgba(135, 24, 157, 0.1);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.packCoins {
+  font-size: 11px;
+  color: var(--text-not-available);
+  font-weight: 500;
+}
+
+.packRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.packPrice {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.soonBadge {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-not-available);
+  background: var(--background-over-container-hover);
+  padding: 2px 6px;
+  border-radius: 4px;
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { DayHistory } from "@/hooks/dashboard/useStreak";
-import { TickIcon } from "@/components/ui/icons/icons";
+import { TickIcon, FreezeDayIcon } from "@/components/ui/icons/icons";
 import React from "react";
 
 export const SPANISH_DAY_ABBREV = ["D", "L", "M", "X", "J", "V", "S"];
@@ -13,7 +13,7 @@ export const getDayAbbrev = (dateStr: string): string => {
 
 export const getDayCircleClass = (
   eventType: DayHistory["event_type"],
-  styles: { [key: string]: string },
+  styles: Record<string, string>,
 ): string => {
   switch (eventType) {
     case "extended":
@@ -41,13 +41,17 @@ export const getDayCircleContent = (
     case "started":
       return (
         <TickIcon
-          style={{ width: 14, height: 14, color: "#fff", strokeWidth: 4 }}
+          style={{ width: 14, height: 14, color: "#ffffff", strokeWidth: 4 }}
         />
       );
     case "protected_free":
     case "protected_purchased":
     case "protected_mixed":
-      return "❄";
+      return (
+        <FreezeDayIcon
+          style={{ width: 16, height: 16 }}
+        />
+      );
     default:
       return null;
   }
