@@ -250,7 +250,7 @@ export async function getStreakData(timezone?: string): Promise<{
 }
 
 export async function updateStreak(): Promise<{
-  data?: any;
+  data?: unknown;
   error?: string;
 }> {
   try {
@@ -260,6 +260,114 @@ export async function updateStreak(): Promise<{
     });
     if (error) throw new Error(error.message);
     return { data };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : UNKNOWN_ERROR };
+  }
+}
+
+export interface GetWidgetsCatalogParams {
+  search?: string;
+  category?: string;
+  tier?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PaginatedWidgetsCatalog {
+  widgets: PredefinedWidget[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  categoryCounts: Record<string, number>;
+}
+
+export async function getWidgetsCatalogPaginated(
+  params: GetWidgetsCatalogParams,
+): Promise<{
+  data?: PaginatedWidgetsCatalog;
+  error?: string;
+}> {
+  try {
+    const supabase = createClient();
+    const page = Math.max(params.page ?? 1, 1);
+    const pageSize = Math.max(params.pageSize ?? 8, 1);
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
+      .from("predefined_widgets")
+      .select("*", { count: "exact" })
+      .eq("is_active", true);
+
+    if (params.category && params.category !== "all") {
+      query = query.eq("category", params.category);
+    }
+
+    if (params.tier && params.tier !== "all") {
+      query = query.eq("tier_required", params.tier);
+    }
+
+    if (params.search && params.search.trim()) {
+      const term = params.search.trim();
+      query = query.or(`name.ilike.%${term}%,description.ilike.%${term}%`);
+    }
+
+    query = query.order("sort_order", { ascending: true }).range(from, to);
+
+    const [listResult, categoriesResult] = await Promise.all([
+      query,
+      supabase
+        .from("predefined_widgets")
+        .select("category")
+        .eq("is_active", true),
+    ]);
+
+    if (listResult.error) throw new Error(listResult.error.message);
+
+    const totalCount = listResult.count ?? 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    const categoryCounts: Record<string, number> = {
+      all: categoriesResult.data?.length ?? 0,
+    };
+    if (categoriesResult.data) {
+      for (const row of categoriesResult.data) {
+        const cat = (row as { category: string }).category;
+        if (cat) {
+          categoryCounts[cat] = (categoryCounts[cat] ?? 0) + 1;
+        }
+      }
+    }
+
+    const widgets: PredefinedWidget[] = (listResult.data ?? []).map(
+      (w: Record<string, unknown>) => ({
+        id: w.id as string,
+        name: w.name as string,
+        description: w.description as string | null,
+        category: w.category as string,
+        tierRequired: w.tier_required as PredefinedWidget["tierRequired"],
+        isActive: w.is_active as boolean,
+        isResizable: w.is_resizable as boolean,
+        componentKey: (w.component_key ?? w.id) as string,
+        defaultLayoutLg:
+          w.default_layout_lg as PredefinedWidget["defaultLayoutLg"],
+        defaultLayoutMd:
+          w.default_layout_md as PredefinedWidget["defaultLayoutMd"],
+        defaultLayoutXs:
+          w.default_layout_xs as PredefinedWidget["defaultLayoutXs"],
+        sortOrder: w.sort_order as number,
+      }),
+    );
+
+    return {
+      data: {
+        widgets,
+        totalCount,
+        currentPage: page,
+        totalPages,
+        categoryCounts,
+      },
+    };
   } catch (e) {
     return { error: e instanceof Error ? e.message : UNKNOWN_ERROR };
   }

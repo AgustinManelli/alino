@@ -7,13 +7,12 @@ import { useDashboardStore } from "@/store/useDashboardStore";
 import { useUIStore } from "@/store/useUIStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useLoadDashboard } from "@/hooks/dashboard/useLoadDashboard";
-import { useFetchDashboardData } from "@/hooks/dashboard/useFetchDashboardData";
-import { useFetchAppUpdates } from "@/hooks/dashboard/useFetchAppUpdates";
 import { useDashboardLayoutActions } from "@/hooks/dashboard/useDashboardLayoutActions";
 import { useSaveWidgetLayouts } from "@/hooks/dashboard/useSaveWidgetLayouts";
+import { useUninstallWidget } from "@/hooks/dashboard/useUninstallWidget";
 
 import { tierSatisfies } from "@/config/widgets.registry";
-import WIDGET_COMPONENTS from "@/config/widgetComponents";
+import { getWidgetComponent } from "@/config/widgetRegistry";
 import WIDGET_UI_META from "@/config/widgetUiMeta";
 
 import { UpgradePlaceholder } from "./parts/UpgradePlaceholder";
@@ -76,10 +75,9 @@ export const HomeDashboard = () => {
     useDashboardStore();
 
   const { autoSortLayout } = useDashboardLayoutActions();
+  const { uninstallWidget } = useUninstallWidget();
 
   const { loadDashboard } = useLoadDashboard();
-  const { fetchDashboardData } = useFetchDashboardData();
-  const { fetchAppUpdates } = useFetchAppUpdates();
 
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [tempLayout, setTempLayout] = useState<ResponsiveLayouts>({});
@@ -97,14 +95,10 @@ export const HomeDashboard = () => {
     if (initRef.current) return;
     initRef.current = true;
     const init = async () => {
-      await Promise.all([
-        loadDashboard(),
-        fetchDashboardData(),
-        fetchAppUpdates(),
-      ]);
+      await loadDashboard();
     };
     init();
-  }, [loadDashboard, fetchDashboardData, fetchAppUpdates]);
+  }, [loadDashboard]);
 
   useEffect(() => {
     if (isConfigLoaded) {
@@ -122,7 +116,7 @@ export const HomeDashboard = () => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const isBentoItem = (item: any): item is BentoItem => item !== null;
+  const isBentoItem = (item: BentoItem | null): item is BentoItem => item !== null;
 
   const bentoItems: BentoItem[] = useMemo(() => {
     return widgetInstances
@@ -130,7 +124,7 @@ export const HomeDashboard = () => {
       .map((inst): BentoItem | null => {
         if (inst.widgetSource === "predefined") {
           const key = inst.componentKey ?? inst.widgetKey;
-          const WidgetComponent = WIDGET_COMPONENTS[key];
+          const WidgetComponent = getWidgetComponent(key);
 
           if (!WidgetComponent) return null;
 
@@ -150,7 +144,7 @@ export const HomeDashboard = () => {
             icon: meta.icon,
             color: meta.color,
             content: isAllowed ? (
-              <WidgetComponent />
+              <WidgetComponent instanceId={inst.instanceId} isEdit={isEdit} />
             ) : (
               <UpgradePlaceholder widgetName={inst.pwName ?? ""} />
             ),
@@ -183,7 +177,7 @@ export const HomeDashboard = () => {
         return null;
       })
       .filter(isBentoItem);
-  }, [widgetInstances, userTier]);
+  }, [widgetInstances, userTier, isEdit]);
 
   const displayName = useMemo(
     () => user?.display_name?.split(" ")[0] ?? "Bienvenido",
@@ -339,6 +333,7 @@ export const HomeDashboard = () => {
             setIsEdit={setIsEdit}
             tempLayout={effectiveLayout}
             setTempLayout={handleSetTempLayout}
+            onDelete={uninstallWidget}
           />
         ) : (
           <section className={styles.withoutWidgetsSection}>

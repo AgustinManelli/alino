@@ -8,15 +8,44 @@ interface BentoGridItemProps {
   item: BentoItem;
   isEdit: boolean;
   isDragging: boolean;
+  onDelete?: (id: string) => void;
 }
 
 export const BentoGridItem = memo(
-  ({ item, isEdit, isDragging }: BentoGridItemProps) => {
+  ({ item, isEdit, isDragging, onDelete }: BentoGridItemProps) => {
     return (
       <div
         className={`${styles.bentoItem} ${isDragging ? styles.dragging : ""}`}
       >
         <div className={styles.bentoContent}>
+          {isEdit && onDelete && (
+            <button
+              type="button"
+              className={styles.deleteBadge}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onDelete(item.id);
+              }}
+              aria-label={`Desinstalar ${item.title}`}
+              title="Desinstalar widget"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
+
           {!(item.withoutHeader ?? false) && (
             <header className={styles.bentoHeader}>
               <div
@@ -26,8 +55,13 @@ export const BentoGridItem = memo(
                     ? {
                         backgroundColor: `color-mix(in srgb, ${item.color} 8%, transparent)`,
                         color: item.color,
+                        marginLeft: isEdit ? "26px" : "0px",
+                        transition: "margin-left 0.2s ease",
                       }
-                    : {}
+                    : {
+                        marginLeft: isEdit ? "26px" : "0px",
+                        transition: "margin-left 0.2s ease",
+                      }
                 }
               >
                 {item.icon && (

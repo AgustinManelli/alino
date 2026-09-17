@@ -2,13 +2,10 @@
 
 import React, { memo, useEffect, useMemo, useState } from "react";
 import { usePomodoroStore } from "@/store/usePomodoroStore";
+import type { CompanionProps } from "@/types/widgetContract";
 import styles from "./MiniIndicator.module.css";
 
-interface Props {
-  onClick?: () => void;
-  className?: string;
-  size?: "small" | "medium" | "large";
-}
+interface Props extends CompanionProps {}
 
 const GRACE_PERIOD_MS = 10000;
 const ANIMATION_DURATION_MS = 400;

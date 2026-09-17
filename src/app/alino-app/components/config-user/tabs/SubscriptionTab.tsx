@@ -153,7 +153,9 @@ export function SubscriptionTab({
               >
                 {loadingSub
                   ? "Cargando información..."
-                  : activeSub?.gateway === "promo" || activeSub?.gateway === "manual"
+                  : activeSub?.gateway === "promo" ||
+                    activeSub?.gateway === "manual" ||
+                    activeSub?.gateway === "referral"
                     ? `Termina el ${activeSub?.current_period_end
                       ? new Date(activeSub.current_period_end).toLocaleDateString("es-AR")
                       : ""
@@ -173,6 +175,18 @@ export function SubscriptionTab({
               </p>
             </div>
           </div>
+          {activeSub &&
+            (activeSub.gateway === "referral" ||
+              activeSub.gateway === "promo" ||
+              activeSub.gateway === "manual") && (
+              <button
+                onClick={onOpenPremiumModal}
+                className={styles.upgradeBannerBtn}
+                type="button"
+              >
+                Suscribirme
+              </button>
+            )}
           {activeSub &&
             !activeSub.cancel_at_period_end &&
             activeSub.status !== "canceled" &&

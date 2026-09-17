@@ -13,22 +13,14 @@ import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import { StreakSection } from "./components/streak-section";
 import { ShopSection } from "./components/shop-section";
-import { useDashboardStore } from "@/store/useDashboardStore";
 import dynamic from "next/dynamic";
+import { CompanionOverlayHost } from "./components/CompanionOverlayHost";
 
 const InitialUserConfiguration = dynamic(
   () =>
     import("./components/initial-user-configuration").then(
       (m) => m.InitialUserConfiguration,
     ),
-  { ssr: false },
-);
-
-const MiniIndicator = dynamic(
-  () =>
-    import(
-      "./components/todo/HomeDashboard/parts/Pomodoro/MiniIndicator"
-    ).then((m) => m.MiniIndicator),
   { ssr: false },
 );
 
@@ -57,10 +49,7 @@ export const AppContent = ({ children }: Props) => {
     setShowConfiguration(false);
   };
 
-  const widgetInstances = useDashboardStore((state) => state.widgetInstances);
-  const isPomodoroInstalled = widgetInstances.some(
-    (inst) => inst.widgetKey === "pomodoro" && inst.isInstalled,
-  );
+
 
   const pendingListId = useSidebarStateStore((state) => state.pendingListId);
   const isNavigating = useDeferredLoading(pendingListId !== null, 150);
@@ -104,7 +93,7 @@ export const AppContent = ({ children }: Props) => {
       </AnimatePresence>
       <RealtimeProvider />
       <ModalRenderer />
-      {isPomodoroInstalled && <MiniIndicator />}
+      <CompanionOverlayHost />
       <section className={styles.topButtons}>
         <StreakSection />
         <ShopSection />

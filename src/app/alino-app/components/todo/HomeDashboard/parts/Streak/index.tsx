@@ -16,33 +16,7 @@ import {
   getTooltip,
 } from "../../../../streak-section/streakUtils";
 
-const generatePreviewDays = (): DayHistory[] => {
-  const today = new Date();
-  const days: DayHistory[] = [];
-  const types: DayHistory["event_type"][] = [
-    "lost",
-    "missed",
-    "extended",
-    "extended",
-    "extended",
-    "extended",
-    "today",
-  ];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().slice(0, 10);
-    const idx = 6 - i;
-    days.push({
-      date: dateStr,
-      event_type: types[idx],
-      streak_after: idx < 5 ? 10 + idx : null,
-      free_protectors_used: types[idx] === "protected_free" ? 1 : 0,
-      purchased_protectors_used: 0,
-    });
-  }
-  return days;
-};
+import { StreakPreview } from "./StreakPreview";
 
 export const StreakWidget = () => {
   const { streak, isLoading, fetchStreak } = useStreak();
@@ -54,20 +28,18 @@ export const StreakWidget = () => {
     }
   }, [fetchStreak, isPreview]);
 
-  const currentStreak = isPreview ? 4 : (streak?.current_streak ?? 0);
-  const freeLeft = isPreview
-    ? 2
-    : streak
-      ? streak.free_protectors_limit - streak.free_protectors_used
-      : 0;
-  const purchasedCount = isPreview ? 3 : (streak?.purchased_protectors ?? 0);
-  const isActiveToday = isPreview ? false : (streak?.is_active_today ?? false);
-  const protectorsCount = isPreview
-    ? 5
-    : Math.max(freeLeft, 0) + purchasedCount;
-  const weekDays: DayHistory[] = isPreview
-    ? generatePreviewDays()
-    : (streak?.last_7_days ?? []);
+  if (isPreview) {
+    return <StreakPreview />;
+  }
+
+  const currentStreak = streak?.current_streak ?? 0;
+  const freeLeft = streak
+    ? streak.free_protectors_limit - streak.free_protectors_used
+    : 0;
+  const purchasedCount = streak?.purchased_protectors ?? 0;
+  const isActiveToday = streak?.is_active_today ?? false;
+  const protectorsCount = Math.max(freeLeft, 0) + purchasedCount;
+  const weekDays: DayHistory[] = streak?.last_7_days ?? [];
 
   const streakGroups: { start: number; end: number }[] = [];
   let currentGroup: { start: number; end: number } | null = null;

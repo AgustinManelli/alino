@@ -22,7 +22,7 @@ export interface UserAvatarProps {
 export const UserAvatar = ({
   avatarUrl,
   username,
-  size = 36,
+  size,
   animate = "always",
   className = "",
   style = {},
@@ -33,12 +33,16 @@ export const UserAvatar = ({
   }, [avatarUrl, username]);
 
   const dimensionStyle: React.CSSProperties = {
-    width: size,
-    height: size,
-    minWidth: size,
-    minHeight: size,
-    maxWidth: size,
-    maxHeight: size,
+    ...(size
+      ? {
+          width: size,
+          height: size,
+          minWidth: size,
+          minHeight: size,
+          maxWidth: size,
+          maxHeight: size,
+        }
+      : {}),
     ...style,
   };
 
@@ -50,7 +54,7 @@ export const UserAvatar = ({
       >
         <Blobatar
           name={blobatarSeed}
-          size={size}
+          size={size ?? 36}
           animate={animate}
         />
       </div>

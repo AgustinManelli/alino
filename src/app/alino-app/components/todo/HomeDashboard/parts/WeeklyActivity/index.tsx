@@ -6,6 +6,8 @@ import { useWidgetPreview } from "@/context/WidgetPreviewContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import styles from "./WeeklyActivity.module.css";
 
+import { WeeklyActivityPreview } from "./WeeklyActivityPreview";
+
 const DAYS_ES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 export const WeeklyActivity = () => {
@@ -18,23 +20,13 @@ export const WeeklyActivity = () => {
     }
   }, [fetchWeeklyActivity, isPreview]);
 
-  // Always have 7 days to show bars even while loading
+  if (isPreview) {
+    return <WeeklyActivityPreview />;
+  }
+
   const displayData = useMemo(() => {
-    if (isPreview) {
-      return [
-        { date: "1", completed_count: 2 },
-        { date: "2", completed_count: 5 },
-        { date: "3", completed_count: 3 },
-        { date: "4", completed_count: 8 },
-        { date: "5", completed_count: 4 },
-        { date: "6", completed_count: 6 },
-        { date: "7", completed_count: 7 },
-      ];
-    }
-    
     if (data.length === 7) return data;
 
-    // Generate 7 empty days if data is not yet available
     return Array.from({ length: 7 }).map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
@@ -43,7 +35,7 @@ export const WeeklyActivity = () => {
         completed_count: 0,
       };
     });
-  }, [data, isPreview]);
+  }, [data]);
 
   const maxCount = useMemo(() => {
     const max = Math.max(...displayData.map((d) => d.completed_count), 0);

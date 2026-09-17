@@ -21,6 +21,7 @@ import { useDashboardStore } from "@/store/useDashboardStore";
 import { useWidgetPreview } from "@/context/WidgetPreviewContext";
 
 import { WeatherPreview } from "./WeatherPreview";
+import type { WidgetProps } from "@/types/widgetContract";
 
 type WeatherState = {
   temperature: number | null;
@@ -193,12 +194,13 @@ function getHourlyEmoji(code: number, isDay: boolean): React.ReactNode {
   );
 }
 
-export const Weather: React.FC<{ label?: string }> = ({ label }) => {
+export const Weather: React.FC<WidgetProps> = ({ label }) => {
   const weather = useDashboardStore((state) => state.weather);
   const setWeather = useDashboardStore((state) => state.setWeather);
   const isPreview = useWidgetPreview();
 
   useEffect(() => {
+    if (isPreview) return;
     if (!weather.loading && weather.temperature !== null) return;
 
     let mounted = true;

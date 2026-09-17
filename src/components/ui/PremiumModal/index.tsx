@@ -114,7 +114,6 @@ export const PremiumModal = ({ onClose }: Props) => {
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
-  const isFree = !user?.tier || user.tier === "free";
   const offerPhaseMonths = Math.round(offerPhaseDays / 30);
 
   useEffect(() => {
@@ -139,7 +138,6 @@ export const PremiumModal = ({ onClose }: Props) => {
   }, []);
 
   useEffect(() => {
-    if (!isFree) return;
     checkTrialEligibility().then(({ data }) => {
       if (data) {
         setTrialEligible(data.eligible);
@@ -147,7 +145,7 @@ export const PremiumModal = ({ onClose }: Props) => {
         setOfferPhaseDays(data.offer_phase_days);
       }
     });
-  }, [isFree]);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -354,17 +352,6 @@ export const PremiumModal = ({ onClose }: Props) => {
                                     /mes
                                   </span>
                                 </div>
-
-                                {/* {trialEligible && pDiscount > 0 && (
-                                  <div
-                                    className={styles.planPriceContainerItem}
-                                  >
-                                    <span className={styles.planNormalPrice}>
-                                      Luego $ {pNormal.toLocaleString("es-AR")}
-                                      /mes
-                                    </span>
-                                  </div>
-                                )} */}
                               </div>
                             </div>
                           );
@@ -452,7 +439,6 @@ export const PremiumModal = ({ onClose }: Props) => {
                     placeholder="tucorreo@ejemplo.com"
                   />
 
-                  {/* Resumen de lo que va a pagar */}
                   {trialEligible && selectedPlan && (
                     <div className={styles.paymentSummary}>
                       {trialDays > 0 && (
