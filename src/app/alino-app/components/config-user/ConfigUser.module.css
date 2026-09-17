@@ -4,6 +4,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-top: 20px;
 }
 
 .configModalContainer::-webkit-scrollbar {
@@ -1184,4 +1185,169 @@
   gap: 10px;
   width: 100%;
   margin-top: 10px;
+}
+
+.levelDisplayRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.levelText {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cosmeticsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.cosmeticsHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cosmeticsTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.cosmeticsSubtitle {
+  font-size: 12px;
+  color: var(--text-not-available);
+  margin: 0;
+}
+
+.cosmeticsTabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cosmeticTabBtn {
+  padding: 6px 14px;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-not-available);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cosmeticTabBtn:hover {
+  background: var(--background-over-container-hover);
+  color: var(--text);
+}
+
+.cosmeticTabBtnActive {
+  background: var(--button-bg);
+  border-color: var(--button-bg);
+  color: #FFFFFF;
+}
+
+.cosmeticsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.cosmeticCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  text-align: center;
+}
+
+.cosmeticCard:hover {
+  background: var(--background-over-container-hover);
+  border-color: var(--border-container-hover);
+}
+
+.cosmeticCardEquipped {
+  border-color: #30D158;
+  background: rgba(48, 209, 88, 0.05);
+}
+
+.cosmeticCardLocked {
+  opacity: 0.55;
+}
+
+.cosmeticPreviewWrap {
+  width: 54px;
+  height: 54px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cosmeticName {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.cosmeticBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--background-secondary);
+  color: var(--text-not-available);
+}
+
+.cosmeticBadgeEquipped {
+  background: rgba(48, 209, 88, 0.15);
+  color: #30D158;
+}
+
+.cosmeticBadgeLocked {
+  background: rgba(255, 69, 58, 0.1);
+  color: #FF453A;
+}
+
+.cosmeticCardNone {
+  border-style: dashed;
+}
+
+.cosmeticBadgePro {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+}
+
+.emptyInventoryNotice {
+  grid-column: 1 / -1;
+  padding: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-not-available);
+  background: var(--background-over-container);
+  border: 1px dashed var(--border-container-color);
+  border-radius: 12px;
+  line-height: 1.4;
 }

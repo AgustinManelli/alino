@@ -1388,6 +1388,11 @@ export type Database = {
           is_private: boolean | null
           allow_list_invites: boolean | null
           show_activity_status: boolean | null
+          alino_coins: number | null
+          xp: number | null
+          level: number | null
+          equipped_frame_id: string | null
+          equipped_overlay_id: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -1401,6 +1406,11 @@ export type Database = {
           is_private?: boolean | null
           allow_list_invites?: boolean | null
           show_activity_status?: boolean | null
+          alino_coins?: number | null
+          xp?: number | null
+          level?: number | null
+          equipped_frame_id?: string | null
+          equipped_overlay_id?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -1414,6 +1424,11 @@ export type Database = {
           is_private?: boolean | null
           allow_list_invites?: boolean | null
           show_activity_status?: boolean | null
+          alino_coins?: number | null
+          xp?: number | null
+          level?: number | null
+          equipped_frame_id?: string | null
+          equipped_overlay_id?: string | null
         }
         Relationships: []
       }
@@ -1607,6 +1622,9 @@ export type Database = {
           shared_since: string
           user_id: string
           username: string
+          level?: number | null
+          equipped_frame_id?: string | null
+          equipped_overlay_id?: string | null
         }[]
       }
       get_list_pending_invitations: {
@@ -1797,6 +1815,9 @@ export type Database = {
           display_name: string
           user_id: string
           username: string
+          level?: number | null
+          equipped_frame_id?: string | null
+          equipped_overlay_id?: string | null
         }[]
       }
       set_username_first_time: {
@@ -2026,7 +2047,7 @@ export type ListsType = MembershipRow & {
 export type TaskRow = Database["public"]["Tables"]["tasks"]["Row"];
 export type UserProfile = Pick<
   Database["public"]["Tables"]["users"]["Row"],
-  "user_id" | "display_name" | "username" | "avatar_url"
+  "user_id" | "display_name" | "username" | "avatar_url" | "level" | "equipped_frame_id" | "equipped_overlay_id"
 >;
 export type TaskType = Omit<TaskRow, "created_by"> & {
   created_by: UserProfile | null;
@@ -2076,3 +2097,100 @@ export type StatsData = {
   completed_tasks: number;
   overdue_tasks: number;
 };
+
+export type AchievementCategory = "productivity" | "streaks" | "organization" | "special";
+
+export interface AchievementItem {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  category: AchievementCategory;
+  target_value: number;
+  metric_type: string;
+  reward_coins: number;
+  reward_xp: number;
+  cosmetic_reward_id: string | null;
+  sort_order: number;
+  current_progress: number;
+  is_completed: boolean;
+  is_claimed: boolean;
+  completed_at: string | null;
+  claimed_at: string | null;
+}
+
+export interface LevelRewardCosmetic {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  type: CosmeticType;
+  rarity: CosmeticRarity;
+}
+
+export interface LevelItem {
+  level: number;
+  title: string;
+  description: string;
+  min_xp: number;
+  max_xp: number;
+  badge_color: string;
+  accent_color: string;
+  icon_name: string;
+  reward_coins: number;
+  reward_cosmetics: LevelRewardCosmetic[];
+}
+
+export interface AchievementsOverview {
+  total_count: number;
+  completed_count: number;
+  claimed_count: number;
+  completion_percentage: number;
+  xp: number;
+  level: number;
+  achievements: AchievementItem[];
+  levels?: LevelItem[];
+}
+
+export type CosmeticType = "frame" | "overlay" | "badge";
+export type CosmeticRarity = "common" | "rare" | "epic" | "legendary";
+
+export interface CosmeticItem {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  type: CosmeticType;
+  min_level: number;
+  coins_price: number;
+  is_for_sale: boolean;
+  rarity: CosmeticRarity;
+  sort_order: number;
+  is_active: boolean;
+  is_unlocked?: boolean;
+  is_equipped?: boolean;
+  tier_required?: "free" | "student" | "pro" | "ultra" | null;
+}
+
+export interface UserCosmeticsOverview {
+  equipped_frame_id: string | null;
+  equipped_overlay_id: string | null;
+  cosmetics: CosmeticItem[];
+}
+
+export interface ClaimRewardResult {
+  success: boolean;
+  coins_reward: number;
+  xp_reward: number;
+  new_coins: number;
+  new_xp: number;
+  old_level: number;
+  new_level: number;
+  leveled_up: boolean;
+  unlocked_cosmetics: Array<{
+    id: string;
+    name: string;
+    type: CosmeticType;
+  }>;
+  error?: string;
+}

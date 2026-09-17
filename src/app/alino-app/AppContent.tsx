@@ -13,6 +13,8 @@ import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import { StreakSection } from "./components/streak-section";
 import { ShopSection } from "./components/shop-section";
+import { AchievementsSection } from "./components/achievements-section";
+import { AchievementsGalleryModal } from "./components/achievements-gallery";
 import dynamic from "next/dynamic";
 import { CompanionOverlayHost } from "./components/CompanionOverlayHost";
 
@@ -93,10 +95,12 @@ export const AppContent = ({ children }: Props) => {
       </AnimatePresence>
       <RealtimeProvider />
       <ModalRenderer />
+      <AchievementsGalleryModal />
       <CompanionOverlayHost />
       <section className={styles.topButtons}>
         <StreakSection />
         <ShopSection />
+        <AchievementsSection />
         <NotificationsSection />
         <ConfigSection />
       </section>

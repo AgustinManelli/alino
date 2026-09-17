@@ -20,7 +20,7 @@ type ListsRow = Database["public"]["Tables"]["lists"]["Row"];
 type ListsType = MembershipRow & { list: ListsRow };
 type UserProfile = Pick<
   Database["public"]["Tables"]["users"]["Row"],
-  "user_id" | "display_name" | "username" | "avatar_url"
+  "user_id" | "display_name" | "username" | "avatar_url" | "level" | "equipped_frame_id" | "equipped_overlay_id"
 >;
 type MembershipInfo = Pick<MembershipRow, "role" | "shared_since">;
 export type UserWithMembershipRole = UserProfile & MembershipInfo;

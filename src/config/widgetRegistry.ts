@@ -63,6 +63,13 @@ export const WIDGET_COMPONENTS: WidgetComponentMap = {
       ).then((m) => m.StreakWidget),
     { ssr: false },
   ),
+  achievements: dynamic(
+    () =>
+      import(
+        "@/app/alino-app/components/todo/HomeDashboard/parts/UpcomingAchievements"
+      ).then((m) => m.UpcomingAchievementsWidget),
+    { ssr: false },
+  ),
 };
 
 export const WIDGET_COMPANIONS: CompanionComponentMap = {
@@ -130,6 +137,13 @@ export const WIDGET_PREVIEWS: PreviewComponentMap = {
       import(
         "@/app/alino-app/components/todo/HomeDashboard/parts/Streak/StreakPreview"
       ).then((m) => m.StreakPreview),
+    { ssr: false },
+  ),
+  achievements: dynamic(
+    () =>
+      import(
+        "@/app/alino-app/components/todo/HomeDashboard/parts/UpcomingAchievements/UpcomingAchievementsPreview"
+      ).then((m) => m.UpcomingAchievementsPreview),
     { ssr: false },
   ),
 };

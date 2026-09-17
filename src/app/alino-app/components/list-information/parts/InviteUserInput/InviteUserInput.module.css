@@ -306,6 +306,13 @@
   min-width: 0;
 }
 
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 .resultName {
   font-size: 13px;
   font-weight: 500;

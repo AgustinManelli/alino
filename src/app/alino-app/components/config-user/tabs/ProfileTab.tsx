@@ -6,13 +6,20 @@ import { WindowModal } from "@/components/ui/WindowModal";
 import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
 import { Edit } from "@/components/ui/icons/icons";
 import { customToast } from "@/lib/toasts";
-import { UserType } from "@/lib/schemas/database.types";
+import { UserType, CosmeticItem } from "@/lib/schemas/database.types";
 import { ProfileStats } from "@/lib/schemas/user.types";
+import { LevelBadge, getLevelInfo } from "@/config/levelBadges";
+import {
+  getUserCosmeticsCatalogAction,
+  equipCosmeticAction,
+} from "@/lib/api/cosmetics/actions";
+import { globalUserStore } from "@/store/useUserDataStore";
 import {
   AvatarSelector,
   AvatarSourceType,
 } from "@/app/alino-app/components/initial-user-configuration/avatar-selector";
 import { createClient } from "@/utils/supabase/client";
+import { Tabs } from "@/components/ui/Tabs/Tabs";
 import styles from "../ConfigUser.module.css";
 
 interface ProfileTabProps {
@@ -42,6 +49,61 @@ export function ProfileTab({
   const [oauthProvider, setOauthProvider] = useState<string | null>(null);
   const [customAvatar, setCustomAvatar] = useState<string | null>(null);
   const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+  const [cosmetics, setCosmetics] = useState<CosmeticItem[]>([]);
+  const [activeCosmeticTab, setActiveCosmeticTab] = useState<"frame" | "overlay">("frame");
+  const [isEquipping, setIsEquipping] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    getUserCosmeticsCatalogAction().then((res) => {
+      if (isMounted && res.data) {
+        setCosmetics(res.data.cosmetics);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleEquipToggle = async (item: CosmeticItem | null, type?: "frame" | "overlay") => {
+    if (isEquipping) return;
+    setIsEquipping(true);
+
+    const cosmeticType = item ? (item.type as "frame" | "overlay") : type!;
+    const isCurrentlyEquipped = item ? item.is_equipped : false;
+    const newEquippedId = isCurrentlyEquipped || !item ? null : item.id;
+
+    try {
+      const res = await equipCosmeticAction(newEquippedId, cosmeticType);
+      if (res.success) {
+        setCosmetics((prev) =>
+          prev.map((c) => {
+            if (c.type !== cosmeticType) return c;
+            return {
+              ...c,
+              is_equipped: c.id === newEquippedId,
+            };
+          })
+        );
+
+        if (globalUserStore) {
+          if (cosmeticType === "frame") {
+            globalUserStore.getState().updateUser({ equipped_frame_id: newEquippedId });
+          } else {
+            globalUserStore.getState().updateUser({ equipped_overlay_id: newEquippedId });
+          }
+        }
+
+        customToast.success(
+          newEquippedId ? "¡Cosmético equipado!" : "Cosmético desequipado"
+        );
+      } else {
+        customToast.error(res.error || "No se pudo actualizar el cosmético.");
+      }
+    } finally {
+      setIsEquipping(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -205,6 +267,12 @@ export function ProfileTab({
             {user?.display_name || "Usuario"}
           </h1>
           <p className={styles.username}>@{user?.username || "usuario"}</p>
+          <div className={styles.levelDisplayRow}>
+            <LevelBadge level={user?.level ?? 1} size={20} />
+            <span className={styles.levelText}>
+              Nivel {user?.level ?? 1} • {getLevelInfo(user?.level ?? 1).title}
+            </span>
+          </div>
           <motion.div
             className={`${styles.tierBadge} ${determineTierClass(user?.tier)}`}
             initial={{ scale: 0.9, opacity: 0 }}
@@ -261,6 +329,117 @@ export function ProfileTab({
           index={2}
         />
       </div>
+
+      <div className={styles.sectionDivider} />
+
+      <section className={styles.cosmeticsSection}>
+        <div className={styles.cosmeticsHeader}>
+          <h2 className={styles.cosmeticsTitle}>Inventario de Cosméticos</h2>
+          <p className={styles.cosmeticsSubtitle}>
+            Personalizá tu avatar con los marcos y accesorios obtenidos en tus logros, la tienda o tu plan PRO.
+          </p>
+        </div>
+
+        <div className={styles.cosmeticsTabs}>
+          <Tabs
+            options={[
+              { id: "frame", label: "Marcos" },
+              { id: "overlay", label: "Accesorios" },
+            ]}
+            activeTab={activeCosmeticTab}
+            onChange={(id) => setActiveCosmeticTab(id as "frame" | "overlay")}
+            layoutId="profile-cosmetics-tabs"
+          />
+        </div>
+
+        <div className={styles.cosmeticsGrid}>
+          {(() => {
+            const activeCosmetics = cosmetics.filter((c) => c.type === activeCosmeticTab);
+            const isEquippedSlot =
+              activeCosmeticTab === "frame"
+                ? !!user?.equipped_frame_id
+                : !!user?.equipped_overlay_id;
+
+            return (
+              <>
+                <div
+                  className={`${styles.cosmeticCard} ${styles.cosmeticCardNone} ${!isEquippedSlot ? styles.cosmeticCardEquipped : ""
+                    }`}
+                  onClick={() => handleEquipToggle(null, activeCosmeticTab)}
+                  title="Desequipar y no mostrar cosmético"
+                >
+                  <div className={styles.cosmeticPreviewWrap}>
+                    <UserAvatar
+                      avatarUrl={user?.avatar_url}
+                      username={user?.username}
+                      size={44}
+                      style={{ borderRadius: "10px" }}
+                      equippedFrameId={null}
+                      equippedOverlayId={null}
+                    />
+                  </div>
+                  <span className={styles.cosmeticName}>Ninguno</span>
+                  <span
+                    className={`${styles.cosmeticBadge} ${!isEquippedSlot ? styles.cosmeticBadgeEquipped : ""
+                      }`}
+                  >
+                    {!isEquippedSlot ? "Activo" : "Quitar"}
+                  </span>
+                </div>
+
+                {activeCosmetics.map((item) => {
+                  const isProItem =
+                    item.id === "overlay_pro_crown" ||
+                    item.code === "overlay_pro_crown" ||
+                    item.tier_required === "pro";
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`${styles.cosmeticCard} ${item.is_equipped ? styles.cosmeticCardEquipped : ""
+                        }`}
+                      onClick={() => handleEquipToggle(item)}
+                      title={item.description}
+                    >
+                      <div className={styles.cosmeticPreviewWrap}>
+                        <UserAvatar
+                          avatarUrl={user?.avatar_url}
+                          username={user?.username}
+                          size={44}
+                          style={{ borderRadius: "10px" }}
+                          equippedFrameId={item.type === "frame" ? item.id : null}
+                          equippedOverlayId={item.type === "overlay" ? item.id : null}
+                        />
+                      </div>
+                      <span className={styles.cosmeticName}>{item.name}</span>
+                      <span
+                        className={`${styles.cosmeticBadge} ${item.is_equipped
+                            ? styles.cosmeticBadgeEquipped
+                            : isProItem
+                              ? styles.cosmeticBadgePro
+                              : ""
+                          }`}
+                      >
+                        {item.is_equipped
+                          ? "Equipado"
+                          : isProItem
+                            ? "PRO"
+                            : "Equipar"}
+                      </span>
+                    </div>
+                  );
+                })}
+
+                {/* {activeCosmetics.length === 0 && (
+                  <div className={styles.emptyInventoryNotice}>
+                    No tienes {activeCosmeticTab === "frame" ? "marcos" : "accesorios"} desbloqueados aún. Subí de nivel completando tareas o visitá la Alino Shop para conseguirlos.
+                  </div>
+                )} */}
+              </>
+            );
+          })()}
+        </div>
+      </section>
 
       <AnimatePresence mode="wait">
         {isAvatarModalOpen && (

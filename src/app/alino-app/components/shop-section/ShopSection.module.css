@@ -257,3 +257,149 @@
   padding: 2px 6px;
   border-radius: 4px;
 }
+
+.cosmeticsShopSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cosmeticsShopList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cosmeticShopCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: all 0.2s ease;
+}
+
+.cosmeticShopCard:hover {
+  background: var(--background-over-container-hover);
+  border-color: var(--border-container-hover);
+}
+
+.cosmeticShopLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.cosmeticShopPreviewWrap {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.cosmeticShopInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cosmeticShopNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cosmeticShopName {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cosmeticTypeBadge {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-not-available);
+  background: var(--background-secondary);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.cosmeticShopDesc {
+  font-size: 11px;
+  color: var(--text-not-available);
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cosmeticShopRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.cosmeticShopPrice {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cosmeticBuyBtn {
+  border: none;
+  outline: none;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--alino-primary-color);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.cosmeticBuyBtn:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.cosmeticBuyBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ownedBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #30D158;
+  background: rgba(48, 209, 88, 0.12);
+  border: 1px solid rgba(48, 209, 88, 0.25);
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}

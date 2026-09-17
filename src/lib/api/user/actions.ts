@@ -79,6 +79,9 @@ interface SearchUsersResult {
   username: string;
   display_name: string;
   avatar_url: string | null;
+  level?: number | null;
+  equipped_frame_id?: string | null;
+  equipped_overlay_id?: string | null;
 }
 interface SearchUsersResponse {
   data?: SearchUsersResult[];
