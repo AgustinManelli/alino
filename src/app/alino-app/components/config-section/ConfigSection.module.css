@@ -17,7 +17,7 @@
   transition: background-color 0.2s;
   background-color: var(--background-over-container);
   -webkit-tap-highlight-color: transparent;
-  overflow: hidden;
+  /* overflow: hidden; */
   padding: 2px;
   z-index: 0;
   border-radius: 17px;
@@ -159,10 +159,12 @@
 .streakIcon.active {
   color: #f97316;
 }
+
 .streakIcon.off {
   color: var(--text-not-available);
   opacity: 0.5;
 }
+
 .streakIcon.protector {
   color: #eab308;
 }

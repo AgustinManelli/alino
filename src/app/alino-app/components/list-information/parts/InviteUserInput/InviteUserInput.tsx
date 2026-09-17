@@ -15,6 +15,8 @@ import {
   LoadingIcon,
   SendIcon,
 } from "@/components/ui/icons/icons";
+import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
+import { LevelBadge } from "@/config/levelBadges";
 import styles from "./InviteUserInput.module.css";
 
 interface Props {
@@ -186,10 +188,13 @@ export function InviteUserInput({ list_id, onInviteSuccess }: Props) {
         <div className={styles.inputRow}>
           {selectedUsers.map((user) => (
             <div key={user.user_id} className={styles.chip}>
-              <img
-                src={user.avatar_url || "/default-avatar.png"}
-                alt={user.display_name}
-                className={styles.chipAvatar}
+              <UserAvatar
+                avatarUrl={user.avatar_url}
+                username={user.username}
+                size={20}
+                equippedFrameId={user.equipped_frame_id}
+                equippedOverlayId={user.equipped_overlay_id}
+                style={{ borderRadius: "6px" }}
               />
               <span className={styles.chipName}>{user.display_name}</span>
               <button
@@ -313,16 +318,24 @@ export function InviteUserInput({ list_id, onInviteSuccess }: Props) {
                     }}
                   >
                     <div className={styles.resultAvatarWrap}>
-                      <img
-                        src={user.avatar_url || "/default-avatar.png"}
-                        alt={user.display_name}
-                        className={styles.resultAvatar}
+                      <UserAvatar
+                        avatarUrl={user.avatar_url}
+                        username={user.username}
+                        size={34}
+                        equippedFrameId={user.equipped_frame_id}
+                        equippedOverlayId={user.equipped_overlay_id}
+                        style={{ borderRadius: "10px" }}
                       />
                     </div>
                     <div className={styles.resultInfo}>
-                      <span className={styles.resultName}>
-                        {user.display_name}
-                      </span>
+                      <div className={styles.nameRow}>
+                        <span className={styles.resultName}>
+                          {user.display_name}
+                        </span>
+                        {user.level ? (
+                          <LevelBadge level={user.level} size={15} />
+                        ) : null}
+                      </div>
                       <span className={styles.resultUsername}>
                         @{user.username}
                       </span>

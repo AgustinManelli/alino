@@ -2,17 +2,26 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import { useShopStore } from "@/store/useShopStore";
+import { useUserDataStore } from "@/store/useUserDataStore";
 import { ModalBox } from "@/components/ui/modal-options-box";
-import { ShopBagIcon } from "@/components/ui/icons/icons";
 import { AlinoCoinIcon } from "@/components/ui/alino-coins-icon";
+import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
+import {
+  getShopCosmeticsCatalogAction,
+  buyCosmeticAction,
+} from "@/lib/api/cosmetics/actions";
+import { CosmeticItem } from "@/lib/schemas/database.types";
 import { toast } from "sonner";
 import styles from "./ShopSection.module.css";
 
 export const ShopSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [promoCode, setPromoCode] = useState("");
+  const [shopCosmetics, setShopCosmetics] = useState<CosmeticItem[]>([]);
+  const [isPurchasingCosmeticId, setIsPurchasingCosmeticId] = useState<string | null>(null);
   const iconRef = useRef<HTMLDivElement>(null);
 
+  const currentUser = useUserDataStore((state) => state.user);
   const {
     coins,
     coinPacks,
@@ -26,12 +35,21 @@ export const ShopSection = () => {
     fetchShopData();
   }, [fetchShopData]);
 
+  const loadCosmetics = () => {
+    getShopCosmeticsCatalogAction().then((res) => {
+      if (res.data) {
+        setShopCosmetics(res.data.cosmetics);
+      }
+    });
+  };
+
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsOpen((prev) => {
       const next = !prev;
       if (next) {
         fetchShopData(true);
+        loadCosmetics();
       }
       return next;
     });
@@ -53,6 +71,29 @@ export const ShopSection = () => {
       setPromoCode("");
     } else {
       toast.error(res.error || "No se pudo canjear el código.");
+    }
+  };
+
+  const handleBuyCosmetic = async (item: CosmeticItem) => {
+    if (coins < item.coins_price) {
+      toast.error("Monedas insuficientes para adquirir este cosmético.");
+      return;
+    }
+
+    setIsPurchasingCosmeticId(item.id);
+    try {
+      const res = await buyCosmeticAction(item.id);
+      if (res.success && typeof res.new_balance === "number") {
+        useShopStore.getState().setCoins(res.new_balance);
+        setShopCosmetics((prev) =>
+          prev.map((c) => (c.id === item.id ? { ...c, is_unlocked: true } : c))
+        );
+        toast.success(`¡${item.name} adquirido! Se ha añadido a tu inventario.`);
+      } else {
+        toast.error(res.error || "No se pudo realizar la compra.");
+      }
+    } finally {
+      setIsPurchasingCosmeticId(null);
     }
   };
 
@@ -167,6 +208,68 @@ export const ShopSection = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            </section>
+
+            <section className={styles.cosmeticsShopSection}>
+              <div className={styles.sectionHeader}>
+                <span className={styles.sectionTitle}>Cosméticos exclusivos</span>
+                <span className={styles.sectionSubtitle}>Personalizá tu avatar</span>
+              </div>
+
+              <div className={styles.cosmeticsShopList}>
+                {shopCosmetics.map((item) => (
+                  <div key={item.id} className={styles.cosmeticShopCard}>
+                    <div className={styles.cosmeticShopLeft}>
+                      <div className={styles.cosmeticShopPreviewWrap}>
+                        <UserAvatar
+                          avatarUrl={currentUser?.avatar_url}
+                          username={currentUser?.username}
+                          size={40}
+                          style={{ borderRadius: "11px" }}
+                          equippedFrameId={item.type === "frame" ? item.id : null}
+                          equippedOverlayId={item.type === "overlay" ? item.id : null}
+                        />
+                      </div>
+                      <div className={styles.cosmeticShopInfo}>
+                        <div className={styles.cosmeticShopNameRow}>
+                          <span className={styles.cosmeticShopName}>{item.name}</span>
+                          <span className={styles.cosmeticTypeBadge}>
+                            {item.type === "frame" ? "Marco" : "Accesorio"}
+                          </span>
+                        </div>
+                        <p className={styles.cosmeticShopDesc}>{item.description}</p>
+                      </div>
+                    </div>
+
+                    <div className={styles.cosmeticShopRight}>
+                      <div className={styles.cosmeticShopPrice}>
+                        <AlinoCoinIcon amount={item.coins_price} size={14} />
+                        <span>{item.coins_price}</span>
+                      </div>
+
+                      {item.is_unlocked ? (
+                        <span className={styles.ownedBadge}>En inventario</span>
+                      ) : (
+                        <button
+                          type="button"
+                          className={styles.cosmeticBuyBtn}
+                          disabled={
+                            isPurchasingCosmeticId === item.id ||
+                            coins < item.coins_price
+                          }
+                          onClick={() => handleBuyCosmetic(item)}
+                        >
+                          {isPurchasingCosmeticId === item.id
+                            ? "Comprando..."
+                            : coins < item.coins_price
+                            ? "Faltan monedas"
+                            : "Comprar"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
           </div>

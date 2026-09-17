@@ -54,6 +54,9 @@ export const SearchUserSchema = z.object({
     username: z.string(),
     display_name: z.string(),
     avatar_url: z.string().nullable(),
+    level: z.number().nullish(),
+    equipped_frame_id: z.string().nullish(),
+    equipped_overlay_id: z.string().nullish(),
 });
 
 export const SearchTermSchema = z.string()

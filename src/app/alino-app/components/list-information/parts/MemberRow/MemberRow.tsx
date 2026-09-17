@@ -8,6 +8,7 @@ import { RoleDropdown } from "../RoleDropdown";
 import styles from "./MemberRow.module.css";
 import { Cross, LoadingIcon, TickIcon } from "@/components/ui/icons/icons";
 import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
+import { LevelBadge } from "@/config/levelBadges";
 import { usePresenceStore } from "@/store/usePresenceStore";
 
 interface MemberRowProps {
@@ -128,6 +129,9 @@ export function MemberRow({
           size={32}
           alt={user.display_name || "Avatar"}
           className={styles.avatar}
+          equippedFrameId={user.equipped_frame_id}
+          equippedOverlayId={user.equipped_overlay_id}
+          style={{ borderRadius: "10px" }}
         />
         <span
           className={`${styles.statusDot} ${
@@ -144,6 +148,7 @@ export function MemberRow({
             {user.display_name}
             {isCurrentUser && <span className={styles.selfTag}> (tú)</span>}
           </p>
+          {user.level ? <LevelBadge level={user.level} size={15} /> : null}
           {isOnline && <span className={styles.onlineBadge}>En línea</span>}
         </div>
         <p className={styles.username}>@{user.username}</p>

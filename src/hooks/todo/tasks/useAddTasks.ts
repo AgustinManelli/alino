@@ -36,6 +36,9 @@ export function useAddTasks() {
       display_name: user.display_name,
       username: user.username,
       avatar_url: user.avatar_url,
+      level: user.level ?? 1,
+      equipped_frame_id: user.equipped_frame_id ?? null,
+      equipped_overlay_id: user.equipped_overlay_id ?? null,
     };
 
     const primaryListId = tasksData[0]?.list_id;

@@ -1,0 +1,196 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  gap: 8px;
+  justify-content: space-between;
+  user-select: none;
+  cursor: pointer;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+
+.unclaimedBadge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #FFD60A, #FF9F0A);
+  color: #000000;
+}
+
+.featuredCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.featuredCard:hover {
+  background: var(--background-over-container-hover);
+  border-color: var(--border-container-hover);
+}
+
+.featuredCardReady {
+  border-color: rgba(255, 214, 10, 0.45);
+  background: rgba(255, 214, 10, 0.05);
+}
+
+.featuredIconWrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.featuredInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.featuredTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.featuredTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.featuredPercent {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--button-bg);
+}
+
+.featuredTrack {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.featuredFill {
+  height: 100%;
+  background: var(--button-bg);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.featuredFillReady {
+  background: #30D158;
+}
+
+.compactList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.compactItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.compactLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.compactTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compactRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.compactMiniTrack {
+  width: 40px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.compactMiniFill {
+  height: 100%;
+  background: var(--button-bg);
+  border-radius: 99px;
+}
+
+.compactMiniFillReady {
+  background: #30D158;
+}
+
+.compactRewardTag {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-not-available);
+}
+
+.claimBtnSmall {
+  padding: 3px 8px;
+  background: linear-gradient(135deg, #FFD60A, #FF9F0A);
+  color: #000000;
+  font-size: 10px;
+  font-weight: 800;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}

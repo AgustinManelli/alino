@@ -34,6 +34,9 @@ export function useAddTask() {
       display_name: user.display_name,
       username: user.username,
       avatar_url: user.avatar_url,
+      level: user.level ?? 1,
+      equipped_frame_id: user.equipped_frame_id ?? null,
+      equipped_overlay_id: user.equipped_overlay_id ?? null,
     };
 
     const listTasks = store.tasks.filter((t) => t.list_id === list_id);
