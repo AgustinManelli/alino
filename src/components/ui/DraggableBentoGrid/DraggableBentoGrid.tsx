@@ -38,10 +38,18 @@ interface Props {
   setIsEdit: (value: boolean) => void;
   tempLayout: ResponsiveLayouts;
   setTempLayout: (value: ResponsiveLayouts) => void;
+  onDelete?: (id: string) => void;
 }
 
 export const DraggableBentoGrid = memo(
-  ({ items, isEdit, setIsEdit, tempLayout, setTempLayout }: Props) => {
+  ({
+    items,
+    isEdit,
+    setIsEdit,
+    tempLayout,
+    setTempLayout,
+    onDelete,
+  }: Props) => {
     const { width, containerRef, mounted } = useContainerWidth();
     const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
     const [isInitializing, setIsInitializing] = useState(true);
@@ -141,6 +149,7 @@ export const DraggableBentoGrid = memo(
                   item={item}
                   isEdit={isEdit}
                   isDragging={draggingItemId === item.id}
+                  onDelete={onDelete}
                 />
               </div>
             ))}

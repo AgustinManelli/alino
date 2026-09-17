@@ -1,7 +1,10 @@
-"use client"
+"use client";
 
 import { useState, useCallback } from "react";
-import { loadDashboardFull, getWidgetLimits } from "@/lib/api/dashboard/actions";
+import {
+  loadDashboardFull,
+  getWidgetLimits,
+} from "@/lib/api/dashboard/actions";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { buildLayoutsFromInstances } from "@/store/dashboardUtils";
 import { useSyncStore } from "@/store/useSyncStore";
@@ -33,7 +36,12 @@ export function useLoadDashboard() {
       useDashboardStore.setState({
         predefinedWidgets: catalog,
         widgetInstances: instances,
-        widgetLimits: limitsResult.data ?? { free: 1, student: 3, pro: 99, ultra: 99 },
+        widgetLimits: limitsResult.data ?? {
+          free: 1,
+          student: 3,
+          pro: 99,
+          ultra: 99,
+        },
         layout,
         activeWidgets,
         isConfigLoaded: true,

@@ -114,6 +114,34 @@
   color: var(--text);
 }
 
+.deleteBadge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 10;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  background-color: rgba(239, 68, 68, 0.9);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+  transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.15s ease;
+}
+
+.deleteBadge:hover {
+  background-color: rgb(220, 38, 38);
+  transform: scale(1.1);
+}
+
+.deleteBadge:active {
+  transform: scale(0.95);
+}
+
 .bentoBody {
   flex: 1;
   display: flex;

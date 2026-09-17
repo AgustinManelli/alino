@@ -13,6 +13,8 @@ import { useWidgetPreview } from "@/context/WidgetPreviewContext";
 
 import { AIAssistantWidgetPreview } from "./AIAssistantWidgetPreview";
 
+import { tierSatisfies } from "@/config/widgets.registry";
+
 export default function AIAssistantWidget() {
   const isPreview = useWidgetPreview();
   const [prompt, setPrompt] = useState("");
@@ -28,7 +30,7 @@ export default function AIAssistantWidget() {
   const user = useUserDataStore((state) => state.user);
 
   const canGenerateTasks = useMemo(
-    () => user?.tier === "pro" || user?.tier === "student",
+    () => tierSatisfies(user?.tier ?? "free", "student"),
     [user?.tier],
   );
 
