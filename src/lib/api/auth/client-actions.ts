@@ -6,6 +6,7 @@ export const loginWithOAuth = async (
 ) => {
   try {
     const supabase = createClient();
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: providerType,
       options: {

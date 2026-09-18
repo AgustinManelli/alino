@@ -695,7 +695,6 @@ export type Database = {
       subscription_plans: {
         Row: {
           created_at: string
-          currency: string
           discount_percentage: number | null
           features: string[] | null
           id: string
@@ -703,12 +702,12 @@ export type Database = {
           mp_plan_id: string | null
           mp_reason: string
           name: string
-          price: number
+          regional_prices: Json | null
+          sort_order: number
           tier: Database["public"]["Enums"]["subscription_tier"]
         }
         Insert: {
           created_at?: string
-          currency?: string
           discount_percentage?: number | null
           features?: string[] | null
           id?: string
@@ -716,12 +715,12 @@ export type Database = {
           mp_plan_id?: string | null
           mp_reason: string
           name: string
-          price: number
+          regional_prices?: Json | null
+          sort_order?: number
           tier: Database["public"]["Enums"]["subscription_tier"]
         }
         Update: {
           created_at?: string
-          currency?: string
           discount_percentage?: number | null
           features?: string[] | null
           id?: string
@@ -729,7 +728,8 @@ export type Database = {
           mp_plan_id?: string | null
           mp_reason?: string
           name?: string
-          price?: number
+          regional_prices?: Json | null
+          sort_order?: number
           tier?: Database["public"]["Enums"]["subscription_tier"]
         }
         Relationships: []
@@ -1008,6 +1008,7 @@ export type Database = {
       user_private: {
         Row: {
           active_widgets: Json | null
+          country_code: string | null
           created_at: string
           dashboard_layout: Json | null
           initial_guide_show: boolean
@@ -1018,6 +1019,7 @@ export type Database = {
         }
         Insert: {
           active_widgets?: Json | null
+          country_code?: string | null
           created_at?: string
           dashboard_layout?: Json | null
           initial_guide_show?: boolean
@@ -1028,6 +1030,7 @@ export type Database = {
         }
         Update: {
           active_widgets?: Json | null
+          country_code?: string | null
           created_at?: string
           dashboard_layout?: Json | null
           initial_guide_show?: boolean

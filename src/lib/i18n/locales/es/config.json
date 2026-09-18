@@ -1,0 +1,38 @@
+{
+  "title": "Configuración",
+  "language": {
+    "title": "Idioma de la aplicación",
+    "beta": "Beta",
+    "description": "Selecciona el idioma preferido para la interfaz, catálogo de cosméticos y tienda.",
+    "updated": "Idioma actualizado correctamente."
+  },
+  "tabs": {
+    "appearance": "Apariencia",
+    "behavior": "Productividad",
+    "notifications": "Notificaciones",
+    "shortcuts": "Atajos",
+    "about": "Acerca de"
+  },
+  "theme": {
+    "title": "Tema de la interfaz",
+    "description": "Elige entre tema claro, oscuro o sincronizado automáticamente con tu sistema operativo.",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Automático"
+  },
+  "animations": {
+    "title": "Animaciones",
+    "description": "Desactiva las animaciones si experimentas lentitud o prefieres transiciones instantáneas.",
+    "label": "Animaciones de la UI"
+  },
+  "sidebar": {
+    "title": "Barra lateral",
+    "description": "Posiciona la barra lateral en el lado izquierdo o derecho de la pantalla.",
+    "right": "Ubicación en la derecha"
+  },
+  "pwa": {
+    "title": "Aplicación instalable (PWA)",
+    "description": "Controla si deseas ver avisos de instalación en tus navegadores compatibles.",
+    "label": "Sugerir instalación de la aplicación"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "title": "Settings",
+  "language": {
+    "title": "App Language",
+    "beta": "Beta",
+    "description": "Select your preferred language for the interface, cosmetic catalog, and shop.",
+    "updated": "Language updated successfully."
+  },
+  "tabs": {
+    "appearance": "Appearance",
+    "behavior": "Productivity",
+    "notifications": "Notifications",
+    "shortcuts": "Shortcuts",
+    "about": "About"
+  },
+  "theme": {
+    "title": "Interface Theme",
+    "description": "Choose between light, dark, or automatically sync with your operating system.",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "Auto"
+  },
+  "animations": {
+    "title": "Animations",
+    "description": "Turn off animations if you experience slowness or prefer instant transitions.",
+    "label": "UI Animations"
+  },
+  "sidebar": {
+    "title": "Sidebar",
+    "description": "Position the sidebar on the left or right side of the screen.",
+    "right": "Align to right"
+  },
+  "pwa": {
+    "title": "Installable App (PWA)",
+    "description": "Control whether you want to see installation prompts in supported browsers.",
+    "label": "Prompt app installation"
+  }
+}

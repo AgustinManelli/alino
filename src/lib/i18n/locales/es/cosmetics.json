@@ -1,0 +1,56 @@
+{
+  "types": {
+    "frame": "Marco",
+    "overlay": "Accesorio"
+  },
+  "items": {
+    "frame_bronze": {
+      "name": "Borde Bronce",
+      "description": "Marco metálico con brillo bronce forjado para iniciados."
+    },
+    "overlay_focus_cap": {
+      "name": "Gorra de Enfoque",
+      "description": "Accesorio de visera deportiva ideal para sesiones intensas."
+    },
+    "frame_silver": {
+      "name": "Borde Plateado",
+      "description": "Marco plateado reflectante para usuarios perseverantes."
+    },
+    "overlay_pro_crown": {
+      "name": "Corona PRO",
+      "description": "Accesorio exclusivo para suscriptores de Alino PRO."
+    },
+    "frame_emerald": {
+      "name": "Borde Esmeralda",
+      "description": "Marco con gemas esmeralda pulsantes y resplandor verde."
+    },
+    "overlay_wizard_hat": {
+      "name": "Gorro Arcano",
+      "description": "Sombrero mágico decorado con estrellas arcanas."
+    },
+    "frame_neon_cyan": {
+      "name": "Borde Neón Cyber",
+      "description": "Marco futurista de neón cian pulsante con energía digital."
+    },
+    "overlay_sunglasses": {
+      "name": "Gafas Retro VIP",
+      "description": "Gafas oscuras estilizadas con montura dorada."
+    },
+    "overlay_halo": {
+      "name": "Aureola Celestial",
+      "description": "Aureola etérea con partículas doradas flotantes."
+    },
+    "frame_celestial": {
+      "name": "Borde Mítico Cósmico",
+      "description": "Marco supremo con gradiente estelar cósmico animado."
+    },
+    "frame_gold_luxury": {
+      "name": "Borde Forja Dorada",
+      "description": "Marco forjado en oro pulido con relieves hexagonales."
+    },
+    "overlay_cyber_visor": {
+      "name": "Visor Holográfico",
+      "description": "Visor futurista con proyección holográfica y HUD digital."
+    }
+  }
+}

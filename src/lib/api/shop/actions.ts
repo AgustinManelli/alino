@@ -2,13 +2,15 @@
 
 import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
+import { resolveRegionalPrice, FormattedRegionalPrice } from "@/config/regionalPricing";
 
 export interface CoinPack {
   id: string;
   code: string;
   name: string;
   coins_amount: number;
-  price_usd: number;
+  regional_prices?: Record<string, { currency: string; amount: number }>;
+  resolved_price?: FormattedRegionalPrice;
   tag: string | null;
   is_available: boolean;
   is_active: boolean;
@@ -78,9 +80,36 @@ export async function getShopCatalogAction(): Promise<{
 }> {
   try {
     const supabase = createClient();
+    const { data: authData } = await supabase.auth.getUser();
+    let countryCode = "AR";
+
+    if (authData?.user) {
+      const { data: priv } = await supabase
+        .from("user_private")
+        .select("country_code")
+        .eq("user_id", authData.user.id)
+        .maybeSingle();
+
+      if (priv?.country_code) {
+        countryCode = priv.country_code;
+      }
+    }
+
     const { data, error } = await supabase.rpc("get_shop_catalog");
     if (error) throw new Error(error.message);
-    return { data: (data as ShopCatalogPayload) ?? { coin_packs: [], streak_packages: [] } };
+    const catalog = (data as ShopCatalogPayload) ?? { coin_packs: [], streak_packages: [] };
+
+    const resolvedCoinPacks = catalog.coin_packs.map((pack) => ({
+      ...pack,
+      resolved_price: resolveRegionalPrice(pack.regional_prices, countryCode),
+    }));
+
+    return {
+      data: {
+        ...catalog,
+        coin_packs: resolvedCoinPacks,
+      },
+    };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Error al obtener el catálogo." };
   }

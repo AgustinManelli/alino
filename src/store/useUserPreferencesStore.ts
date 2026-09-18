@@ -3,6 +3,8 @@
 import { createContext, useContext } from "react";
 import { createStore, useStore, type StoreApi } from "zustand";
 import { updateUserPreferences } from "@/lib/api/user/actions";
+import i18n from "@/lib/i18n";
+import { SupportedLanguage, DEFAULT_LANGUAGE } from "@/lib/i18n/types";
 
 export interface UserPreferences {
   animations: boolean;
@@ -14,6 +16,7 @@ export interface UserPreferences {
   confirmDelete: boolean;
   firstDayOfWeek: "monday" | "sunday";
   compactView: boolean;
+  language: SupportedLanguage;
 
   initializePreferences: (prefs: any) => void;
   loadFallbackPreferences: () => void;
@@ -26,6 +29,7 @@ export interface UserPreferences {
   toggleConfirmDelete: () => void;
   setFirstDayOfWeek: (day: "monday" | "sunday") => void;
   toggleCompactView: () => void;
+  setLanguage: (lang: SupportedLanguage) => void;
 }
 
 export const UserPreferencesContext = createContext<StoreApi<UserPreferences> | undefined>(undefined);
@@ -52,6 +56,11 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
     ...localStored,
     ...initialState,
   };
+
+  const initialLang: SupportedLanguage = (merged.language as SupportedLanguage) || DEFAULT_LANGUAGE;
+  if (typeof window !== "undefined" && i18n.language !== initialLang) {
+    i18n.changeLanguage(initialLang);
+  }
 
   const persistToLocalStorage = (prefs: Partial<UserPreferences>) => {
     if (typeof window !== "undefined") {
@@ -83,9 +92,13 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
     confirmDelete: merged.confirmDelete ?? true,
     firstDayOfWeek: (merged.firstDayOfWeek as "monday" | "sunday") ?? "monday",
     compactView: merged.compactView ?? false,
+    language: initialLang,
 
     initializePreferences: (prefs: Partial<UserPreferences>) => {
       set((state) => ({ ...state, ...prefs }));
+      if (prefs.language) {
+        i18n.changeLanguage(prefs.language);
+      }
     },
     loadFallbackPreferences: () => { },
 
@@ -148,6 +161,14 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
       persistToLocalStorage({ compactView: nextVal });
       syncWithDatabase({ compactView: nextVal });
     },
+
+    setLanguage: (lang: SupportedLanguage) => {
+      set({ language: lang });
+      persistToLocalStorage({ language: lang });
+      setCookie("user-language", lang);
+      syncWithDatabase({ language: lang });
+      i18n.changeLanguage(lang);
+    },
   }));
 
   if (typeof window !== "undefined") {
@@ -173,6 +194,7 @@ const getFallbackStore = () => {
     let initialConfirmDelete = true;
     let initialFirstDayOfWeek: "monday" | "sunday" = "monday";
     let initialCompactView = false;
+    let initialLanguage: SupportedLanguage = DEFAULT_LANGUAGE;
 
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
@@ -185,6 +207,7 @@ const getFallbackStore = () => {
       initialConfirmDelete = stored.confirmDelete ?? true;
       initialFirstDayOfWeek = stored.firstDayOfWeek ?? "monday";
       initialCompactView = stored.compactView ?? false;
+      initialLanguage = stored.language ?? DEFAULT_LANGUAGE;
     } catch (_) { }
 
     fallbackStore = createUserPreferencesStore({
@@ -197,6 +220,7 @@ const getFallbackStore = () => {
       confirmDelete: initialConfirmDelete,
       firstDayOfWeek: initialFirstDayOfWeek,
       compactView: initialCompactView,
+      language: initialLanguage,
     });
   }
   return fallbackStore;
@@ -208,4 +232,3 @@ export const useUserPreferencesStore = <T = UserPreferences,>(
   const store = useContext(UserPreferencesContext) ?? getFallbackStore();
   return useStore(store, selector);
 };
-

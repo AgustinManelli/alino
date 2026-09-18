@@ -1,0 +1,94 @@
+{
+  "title": "Alino Shop",
+  "balanceTitle": "Your Alino Coins",
+  "promo": {
+    "title": "Promo Code",
+    "subtitle": "Get free coins",
+    "placeholder": "e.g. ALINO100",
+    "button": "Redeem",
+    "redeeming": "Redeeming...",
+    "success": "Code redeemed successfully!",
+    "emptyError": "Please enter a promo code.",
+    "genericError": "Could not redeem the code."
+  },
+  "packs": {
+    "title": "Coin Packs",
+    "subtitle": "Top up",
+    "coinsUnit": "coins",
+    "defaultPackName": "Coin Pack",
+    "tags": {
+      "popular": "POPULAR",
+      "best_value": "BEST VALUE",
+      "recommended": "RECOMMENDED"
+    },
+    "items": {
+      "pack_100": {
+        "name": "Coin Pack"
+      },
+      "pack_starter": {
+        "name": "Starter Pack"
+      },
+      "pack_plus": {
+        "name": "Stack of Coins"
+      },
+      "pack_standard": {
+        "name": "Standard Pack"
+      },
+      "pack_pro": {
+        "name": "Pile of Coins"
+      }
+    }
+  },
+  "cosmetics": {
+    "title": "Exclusive Cosmetics",
+    "subtitle": "Customize your avatar",
+    "viewAll": "Explore Shop",
+    "insufficientCoins": "Insufficient coins to purchase this cosmetic.",
+    "allOwned": "You have acquired all available cosmetics!",
+    "owned": "Owned",
+    "buy": "Buy",
+    "purchasing": "Purchasing...",
+    "notEnoughCoins": "Need more coins",
+    "purchaseSuccess": "{{name}} acquired! Added to your inventory.",
+    "purchaseError": "Failed to complete purchase."
+  },
+  "gallery": {
+    "windowTitle": "Cosmetics Shop",
+    "balance": "Your balance",
+    "searchPlaceholder": "Search by name or description...",
+    "categoriesTitle": "Categories",
+    "categories": {
+      "all": "All items",
+      "frame": "Avatar frames",
+      "overlay": "Avatar accessories"
+    },
+    "filtersTitle": "Status",
+    "status": {
+      "all": "All",
+      "unowned": "To buy",
+      "owned": "Owned"
+    },
+    "rarityTitle": "Rarity",
+    "rarity": {
+      "all": "All",
+      "common": "Common",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary"
+    },
+    "sortTitle": "Sort by",
+    "sort": {
+      "newest": "Newest",
+      "price_asc": "Lowest price",
+      "price_desc": "Highest price"
+    },
+    "pagination": {
+      "page": "Page {{current}} of {{total}}",
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "empty": "No items found matching your criteria.",
+    "itemsCount": "{{count}} item",
+    "itemsCount_plural": "{{count}} items"
+  }
+}

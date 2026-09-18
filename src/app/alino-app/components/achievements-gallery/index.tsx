@@ -12,6 +12,7 @@ import { Tabs } from "@/components/ui/Tabs/Tabs";
 import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
 import { LEVEL_REWARDS } from "@/config/levelRewards";
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { getCosmeticTranslation } from "@/lib/i18n/helpers";
 import styles from "./AchievementsGallery.module.css";
 
 type FilterStatus = "all" | "unclaimed" | "in_progress" | "completed" | "levels";
@@ -197,7 +198,7 @@ export const AchievementsGalleryModal: React.FC = () => {
               const hasCosmetics = cosmetics.length > 0;
 
               const cardTitle =
-                cosmetics.map((c) => c.name).join(" + ") ||
+                cosmetics.map((c) => getCosmeticTranslation(c).name).join(" + ") ||
                 (item.reward_coins > 0
                   ? `+${item.reward_coins} Alino Coins`
                   : item.title);
@@ -261,7 +262,10 @@ export const AchievementsGalleryModal: React.FC = () => {
                   </div>
 
                   <p className={styles.cardDesc}>
-                    {cosmetics.map((c) => c.description).filter(Boolean).join(" ") ||
+                    {cosmetics
+                      .map((c) => getCosmeticTranslation(c).description)
+                      .filter(Boolean)
+                      .join(" ") ||
                       item.description ||
                       `Recompensa al alcanzar el nivel ${item.level}.`}
                   </p>

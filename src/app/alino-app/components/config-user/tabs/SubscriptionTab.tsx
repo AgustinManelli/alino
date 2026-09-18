@@ -171,14 +171,36 @@ export function SubscriptionTab({
                         ? `Renueva el ${new Date(activeSub.current_period_end).toLocaleDateString(
                           "es-AR"
                         )}`
-                        : "Tu cuenta cuenta con todos los beneficios Pro activos."}
+                        : user?.tier === "ultra"
+                          ? "Tu cuenta cuenta con el plan más alto y todos los beneficios ilimitados."
+                          : "Tu cuenta cuenta con todos los beneficios Pro activos."}
               </p>
             </div>
           </div>
+          {user?.tier === "pro" && (
+            <button
+              onClick={onOpenPremiumModal}
+              className={styles.upgradeBannerBtn}
+              type="button"
+            >
+              Mejorar a Ultra
+            </button>
+          )}
+          {user?.tier === "student" && (
+            <button
+              onClick={onOpenPremiumModal}
+              className={styles.upgradeBannerBtn}
+              type="button"
+            >
+              Mejorar plan
+            </button>
+          )}
           {activeSub &&
             (activeSub.gateway === "referral" ||
               activeSub.gateway === "promo" ||
-              activeSub.gateway === "manual") && (
+              activeSub.gateway === "manual") &&
+            user?.tier !== "ultra" &&
+            user?.tier !== "pro" && (
               <button
                 onClick={onOpenPremiumModal}
                 className={styles.upgradeBannerBtn}
