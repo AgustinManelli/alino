@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useShopStore } from "@/store/useShopStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { ModalBox } from "@/components/ui/modal-options-box";
@@ -11,11 +12,15 @@ import {
   buyCosmeticAction,
 } from "@/lib/api/cosmetics/actions";
 import { CosmeticItem } from "@/lib/schemas/database.types";
+import { getCosmeticTranslation, getCoinPackTranslation } from "@/lib/i18n/helpers";
+import { ShopGalleryModal } from "@/app/alino-app/components/shop-gallery-modal";
 import { toast } from "sonner";
 import styles from "./ShopSection.module.css";
 
 export const ShopSection = () => {
+  const { t } = useTranslation(["shop", "common"]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [shopCosmetics, setShopCosmetics] = useState<CosmeticItem[]>([]);
   const [isPurchasingCosmeticId, setIsPurchasingCosmeticId] = useState<string | null>(null);
@@ -61,22 +66,22 @@ export const ShopSection = () => {
     e.preventDefault();
     const cleanCode = promoCode.trim();
     if (!cleanCode) {
-      toast.error("Ingresa un código promocional.");
+      toast.error(t("shop:promo.emptyError"));
       return;
     }
 
     const res = await redeemPromoCode(cleanCode);
     if (res.success) {
-      toast.success(res.message || "¡Código canjeado con éxito!");
+      toast.success(res.message || t("shop:promo.success"));
       setPromoCode("");
     } else {
-      toast.error(res.error || "No se pudo canjear el código.");
+      toast.error(res.error || t("shop:promo.genericError"));
     }
   };
 
   const handleBuyCosmetic = async (item: CosmeticItem) => {
     if (coins < item.coins_price) {
-      toast.error("Monedas insuficientes para adquirir este cosmético.");
+      toast.error(t("shop:cosmetics.insufficientCoins"));
       return;
     }
 
@@ -88,39 +93,34 @@ export const ShopSection = () => {
         setShopCosmetics((prev) =>
           prev.map((c) => (c.id === item.id ? { ...c, is_unlocked: true } : c))
         );
-        toast.success(`¡${item.name} adquirido! Se ha añadido a tu inventario.`);
+        const trans = getCosmeticTranslation(item);
+        toast.success(t("shop:cosmetics.purchaseSuccess", { name: trans.name }));
       } else {
-        toast.error(res.error || "No se pudo realizar la compra.");
+        toast.error(res.error || t("shop:cosmetics.purchaseError"));
       }
     } finally {
       setIsPurchasingCosmeticId(null);
     }
   };
 
-  const headerSlot = (
-    <div className={styles.headerSlot}>
-      <span className={styles.title}>Alino Shop</span>
-      <div className={styles.balanceBadge} title="Tus Alino Coins">
-        <AlinoCoinIcon amount={coins} size={15} />
-        <span>{coins}</span>
-      </div>
-    </div>
-  );
+  const previewCosmetics = useMemo(() => {
+    return shopCosmetics
+      .filter((item) => !item.is_unlocked)
+      .sort((a, b) => b.sort_order - a.sort_order)
+      .slice(0, 4);
+  }, [shopCosmetics]);
 
   return (
     <div className={styles.container}>
       <div
-        className={styles.triggerBtn}
-        onClick={handleToggle}
         ref={iconRef}
-        title="Alino Shop"
-        style={{
-          backgroundColor: isOpen
-            ? "var(--background-over-container-hover)"
-            : "var(--background-over-container)",
-        }}
+        onClick={handleToggle}
+        className={styles.triggerBtn}
+        aria-label="Abrir Tienda"
+        role="button"
+        tabIndex={0}
       >
-        <AlinoCoinIcon amount={coins} size={22} />
+        <AlinoCoinIcon amount={coins} size={15} />
         <span className={styles.coinsCount}>{coins}</span>
       </div>
 
@@ -128,26 +128,31 @@ export const ShopSection = () => {
         <ModalBox
           onClose={handleClose}
           iconRef={iconRef}
-          headerSlot={headerSlot}
+          headerSlot={
+            <div className={styles.headerSlot}>
+              <span className={styles.title}>{t("shop:title")}</span>
+              <div className={styles.balanceBadge}>
+                <AlinoCoinIcon amount={coins} size={22} />
+                <span>{coins}</span>
+              </div>
+            </div>
+          }
         >
           <div className={styles.panel}>
             <section className={styles.promoSection}>
               <div className={styles.sectionHeader}>
-                <span className={styles.sectionTitle}>Código promocional</span>
-                <span className={styles.sectionSubtitle}>Obtené monedas</span>
+                <span className={styles.sectionTitle}>{t("shop:promo.title")}</span>
+                <span className={styles.sectionSubtitle}>{t("shop:promo.subtitle")}</span>
               </div>
-              <form className={styles.promoForm} onSubmit={handleRedeem}>
+              <form onSubmit={handleRedeem} className={styles.promoForm}>
                 <div className={styles.promoInputWrapper}>
                   <input
                     type="text"
-                    className={styles.promoInput}
-                    placeholder="Ej. ALINO100"
+                    placeholder={t("shop:promo.placeholder")}
                     value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    className={styles.promoInput}
                     disabled={isRedeeming}
-                    maxLength={30}
-                    autoComplete="off"
-                    spellCheck={false}
                   />
                 </div>
                 <button
@@ -155,56 +160,62 @@ export const ShopSection = () => {
                   className={styles.redeemBtn}
                   disabled={isRedeeming || !promoCode.trim()}
                 >
-                  {isRedeeming ? "Canjeando..." : "Canjear"}
+                  {isRedeeming ? t("shop:promo.redeeming") : t("shop:promo.button")}
                 </button>
               </form>
             </section>
 
             <section className={styles.packsSection}>
               <div className={styles.sectionHeader}>
-                <span className={styles.sectionTitle}>Packs de monedas</span>
-                <span className={styles.sectionSubtitle}>Recargas</span>
+                <span className={styles.sectionTitle}>{t("shop:packs.title")}</span>
+                <span className={styles.sectionSubtitle}>{t("shop:packs.subtitle")}</span>
               </div>
 
               <div className={styles.packsList}>
-                {coinPacks.map((pack) => (
-                  <div key={pack.id} className={styles.packCard}>
-                    <div className={styles.packLeft}>
-                      <AlinoCoinIcon amount={pack.coins_amount} size={22} />
-                      <div className={styles.packInfo}>
-                        <div className={styles.packNameRow}>
-                          <span className={styles.packName}>{pack.name}</span>
-                          {pack.tag && (
-                            <span className={styles.packTag}>{pack.tag}</span>
-                          )}
+                {coinPacks.map((pack) => {
+                  const packTrans = getCoinPackTranslation(pack);
+                  const priceFormatted = pack.resolved_price?.formatted || "";
+                  return (
+                    <div key={pack.id} className={styles.packCard}>
+                      <div className={styles.packLeft}>
+                        <AlinoCoinIcon amount={pack.coins_amount} size={22} />
+                        <div className={styles.packInfo}>
+                          <div className={styles.packNameRow}>
+                            <span className={styles.packName}>{packTrans.name}</span>
+                            {packTrans.tag && (
+                              <span className={styles.packTag}>{packTrans.tag}</span>
+                            )}
+                          </div>
+                          <span className={styles.packCoins}>
+                            {pack.coins_amount} {t("shop:packs.coinsUnit")}
+                          </span>
                         </div>
-                        <span className={styles.packCoins}>
-                          {pack.coins_amount} monedas
+                      </div>
+
+                      <div className={styles.packRight}>
+                        <span className={styles.packPrice}>
+                          {priceFormatted}
                         </span>
+                        <span className={styles.soonBadge}>{t("common:comingSoon")}</span>
                       </div>
                     </div>
-
-                    <div className={styles.packRight}>
-                      <span className={styles.packPrice}>
-                        USD ${Number(pack.price_usd).toFixed(2)}
-                      </span>
-                      <span className={styles.soonBadge}>Próximamente</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {coinPacks.length === 0 && !isLoading && (
                   <div className={styles.packCard}>
                     <div className={styles.packLeft}>
                       <AlinoCoinIcon amount={100} size={22} />
                       <div className={styles.packInfo}>
-                        <span className={styles.packName}>Pack Monedas</span>
-                        <span className={styles.packCoins}>100 monedas</span>
+                        <span className={styles.packName}>{t("shop:packs.defaultPackName")}</span>
+                        <span className={styles.packCoins}>100 {t("shop:packs.coinsUnit")}</span>
                       </div>
                     </div>
                     <div className={styles.packRight}>
-                      <span className={styles.packPrice}>USD $1.99</span>
-                      <span className={styles.soonBadge}>Próximamente</span>
+                      <span className={styles.packPrice}>
+                        $1.99
+                      </span>
+                      <span className={styles.soonBadge}>{t("common:comingSoon")}</span>
                     </div>
                   </div>
                 )}
@@ -213,68 +224,102 @@ export const ShopSection = () => {
 
             <section className={styles.cosmeticsShopSection}>
               <div className={styles.sectionHeader}>
-                <span className={styles.sectionTitle}>Cosméticos exclusivos</span>
-                <span className={styles.sectionSubtitle}>Personalizá tu avatar</span>
+                <span className={styles.sectionTitle}>{t("shop:cosmetics.title")}</span>
+                <span className={styles.sectionSubtitle}>{t("shop:cosmetics.subtitle")}</span>
               </div>
 
               <div className={styles.cosmeticsShopList}>
-                {shopCosmetics.map((item) => (
-                  <div key={item.id} className={styles.cosmeticShopCard}>
-                    <div className={styles.cosmeticShopLeft}>
-                      <div className={styles.cosmeticShopPreviewWrap}>
-                        <UserAvatar
-                          avatarUrl={currentUser?.avatar_url}
-                          username={currentUser?.username}
-                          size={40}
-                          style={{ borderRadius: "11px" }}
-                          equippedFrameId={item.type === "frame" ? item.id : null}
-                          equippedOverlayId={item.type === "overlay" ? item.id : null}
-                        />
-                      </div>
-                      <div className={styles.cosmeticShopInfo}>
-                        <div className={styles.cosmeticShopNameRow}>
-                          <span className={styles.cosmeticShopName}>{item.name}</span>
-                          <span className={styles.cosmeticTypeBadge}>
-                            {item.type === "frame" ? "Marco" : "Accesorio"}
-                          </span>
-                        </div>
-                        <p className={styles.cosmeticShopDesc}>{item.description}</p>
-                      </div>
-                    </div>
-
-                    <div className={styles.cosmeticShopRight}>
-                      <div className={styles.cosmeticShopPrice}>
-                        <AlinoCoinIcon amount={item.coins_price} size={14} />
-                        <span>{item.coins_price}</span>
-                      </div>
-
-                      {item.is_unlocked ? (
-                        <span className={styles.ownedBadge}>En inventario</span>
-                      ) : (
-                        <button
-                          type="button"
-                          className={styles.cosmeticBuyBtn}
-                          disabled={
-                            isPurchasingCosmeticId === item.id ||
-                            coins < item.coins_price
-                          }
-                          onClick={() => handleBuyCosmetic(item)}
-                        >
-                          {isPurchasingCosmeticId === item.id
-                            ? "Comprando..."
-                            : coins < item.coins_price
-                            ? "Faltan monedas"
-                            : "Comprar"}
-                        </button>
-                      )}
-                    </div>
+                {previewCosmetics.length === 0 ? (
+                  <div className={styles.emptyCosmetics}>
+                    <span>{t("shop:cosmetics.allOwned")}</span>
                   </div>
-                ))}
+                ) : (
+                  previewCosmetics.map((item) => {
+                    const cosmeticTrans = getCosmeticTranslation(item);
+                    return (
+                      <div key={item.id} className={styles.cosmeticShopCard}>
+                        <div className={styles.cosmeticShopLeft}>
+                          <div className={styles.cosmeticShopPreviewWrap}>
+                            <UserAvatar
+                              avatarUrl={currentUser?.avatar_url}
+                              username={currentUser?.username}
+                              size={40}
+                              style={{ borderRadius: "11px" }}
+                              equippedFrameId={item.type === "frame" ? item.id : null}
+                              equippedOverlayId={item.type === "overlay" ? item.id : null}
+                            />
+                          </div>
+                          <div className={styles.cosmeticShopInfo}>
+                            <div className={styles.cosmeticShopNameRow}>
+                              <span className={styles.cosmeticShopName}>{cosmeticTrans.name}</span>
+                              <span className={styles.cosmeticTypeBadge}>
+                                {cosmeticTrans.typeLabel}
+                              </span>
+                            </div>
+                            <p className={styles.cosmeticShopDesc}>{cosmeticTrans.description}</p>
+                          </div>
+                        </div>
+
+                        <div className={styles.cosmeticShopRight}>
+                          <div className={styles.cosmeticShopPrice}>
+                            <AlinoCoinIcon amount={item.coins_price} size={14} />
+                            <span>{item.coins_price}</span>
+                          </div>
+
+                          <button
+                            type="button"
+                            className={styles.cosmeticBuyBtn}
+                            disabled={
+                              isPurchasingCosmeticId === item.id ||
+                              coins < item.coins_price
+                            }
+                            onClick={() => handleBuyCosmetic(item)}
+                          >
+                            {isPurchasingCosmeticId === item.id
+                              ? t("shop:cosmetics.purchasing")
+                              : coins < item.coins_price
+                              ? t("shop:cosmetics.notEnoughCoins")
+                              : t("shop:cosmetics.buy")}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+
+                <button
+                  type="button"
+                  className={styles.viewGalleryBtn}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setIsGalleryOpen(true);
+                  }}
+                >
+                  <span>{t("shop:cosmetics.viewAll")}</span>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </button>
               </div>
             </section>
           </div>
         </ModalBox>
       )}
+
+      <ShopGalleryModal
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+      />
     </div>
   );
 };

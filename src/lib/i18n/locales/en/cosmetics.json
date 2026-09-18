@@ -1,0 +1,56 @@
+{
+  "types": {
+    "frame": "Frame",
+    "overlay": "Accessory"
+  },
+  "items": {
+    "frame_bronze": {
+      "name": "Bronze Border",
+      "description": "Metallic frame with forged bronze shine for initiates."
+    },
+    "overlay_focus_cap": {
+      "name": "Focus Cap",
+      "description": "Sporty visor cap accessory ideal for deep focus sessions."
+    },
+    "frame_silver": {
+      "name": "Silver Border",
+      "description": "Reflective silver frame for perseverant users."
+    },
+    "overlay_pro_crown": {
+      "name": "PRO Crown",
+      "description": "Exclusive accessory for Alino PRO subscribers."
+    },
+    "frame_emerald": {
+      "name": "Emerald Border",
+      "description": "Frame with pulsing emerald gems and green glow."
+    },
+    "overlay_wizard_hat": {
+      "name": "Arcane Hat",
+      "description": "Magical hat decorated with arcane stars."
+    },
+    "frame_neon_cyan": {
+      "name": "Cyber Neon Border",
+      "description": "Futuristic neon cyan frame pulsing with digital energy."
+    },
+    "overlay_sunglasses": {
+      "name": "VIP Retro Shades",
+      "description": "Stylish dark shades with golden rims."
+    },
+    "overlay_halo": {
+      "name": "Celestial Halo",
+      "description": "Ethereal halo with floating golden particles."
+    },
+    "frame_celestial": {
+      "name": "Cosmic Mythic Border",
+      "description": "Supreme frame with animated cosmic stellar gradient."
+    },
+    "frame_gold_luxury": {
+      "name": "Golden Forge Border",
+      "description": "Frame forged in polished gold with hexagonal inlays."
+    },
+    "overlay_cyber_visor": {
+      "name": "Holographic Visor",
+      "description": "Futuristic visor with holographic HUD projection."
+    }
+  }
+}

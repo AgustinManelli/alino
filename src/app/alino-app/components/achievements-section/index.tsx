@@ -11,6 +11,7 @@ import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
 import { getNextLevelReward } from "@/config/levelRewards";
 import { showAchievementToast } from "@/components/ui/toaster/achievement-toaster";
 import { AchievementItem } from "@/lib/schemas/database.types";
+import { getCosmeticTranslation } from "@/lib/i18n/helpers";
 import styles from "./AchievementsSection.module.css";
 
 export const AchievementsSection: React.FC = () => {
@@ -84,7 +85,7 @@ export const AchievementsSection: React.FC = () => {
       const cosmetics = nextLevelItem.reward_cosmetics || [];
       const frame = cosmetics.find((c) => c.type === "frame");
       const overlay = cosmetics.find((c) => c.type === "overlay");
-      const cosmeticNames = cosmetics.map((c) => c.name).join(" + ");
+      const cosmeticNames = cosmetics.map((c) => getCosmeticTranslation(c).name).join(" + ");
 
       let badgeLabel = "Monedas";
       if (frame && overlay) {
@@ -102,7 +103,7 @@ export const AchievementsSection: React.FC = () => {
           : nextLevelItem.title);
 
       const description =
-        cosmetics.map((c) => c.description).filter(Boolean).join(" ") ||
+        cosmetics.map((c) => getCosmeticTranslation(c).description).filter(Boolean).join(" ") ||
         nextLevelItem.description ||
         `Recompensa por alcanzar el nivel ${nextLevelItem.level}.`;
 

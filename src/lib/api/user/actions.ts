@@ -14,6 +14,7 @@ import { UserType } from "@/lib/schemas/database.types";
 
 import { fileTypeFromBuffer } from "file-type";
 import { blobatar } from "blobatar";
+import { resolvePlanPrice } from "@/config/regionalPricing";
 
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
@@ -443,15 +444,36 @@ export const getSubscriptionByExternalId = async (
 
 export const getAvailablePlansAction = async () => {
   try {
-    const { supabase } = await getAuthenticatedSupabaseClient();
+    const supabase = createClientServer();
+    const { data: authData } = await supabase.auth.getUser();
+    let countryCode = "AR";
+
+    if (authData?.user) {
+      const { data: priv } = await supabase
+        .from("user_private")
+        .select("country_code")
+        .eq("user_id", authData.user.id)
+        .maybeSingle();
+
+      if (priv?.country_code) {
+        countryCode = priv.country_code;
+      }
+    }
+
     const { data, error } = await supabase
       .from("subscription_plans")
       .select("*")
       .eq("is_active", true)
-      .order("price", { ascending: true });
+      .order("sort_order", { ascending: true });
 
     if (error) return { error: error.message };
-    return { data };
+
+    const resolved = (data || []).map((plan) => ({
+      ...plan,
+      resolved_price: resolvePlanPrice(plan, countryCode),
+    }));
+
+    return { data: resolved };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
     return { error: "Error desconocido." };

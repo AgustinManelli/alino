@@ -7,6 +7,7 @@ import {
 } from "mercadopago";
 import { createClient } from "@supabase/supabase-js";
 import { createHmac } from "crypto";
+import { cancelMPSubscription } from "@/lib/api/user/payments";
 
 const GATEWAY = "mercadopago" as const;
 
@@ -274,6 +275,26 @@ export async function POST(req: Request) {
       if (error) throw new Error(error.message);
 
       if (status === "active" || status === "trialing") {
+        const { data: previousActiveSubs } = await supabaseAdmin
+          .from("subscriptions")
+          .select("subscription_id")
+          .eq("user_id", userId)
+          .eq("gateway", GATEWAY)
+          .in("status", ["active", "trialing"])
+          .neq("subscription_id", String(sub.id));
+
+        if (previousActiveSubs && previousActiveSubs.length > 0) {
+          for (const prev of previousActiveSubs) {
+            if (prev.subscription_id) {
+              try {
+                await cancelMPSubscription(prev.subscription_id);
+              } catch (cancelErr) {
+                console.error(`[MP] Error cancelando sub previa ${prev.subscription_id}:`, cancelErr);
+              }
+            }
+          }
+        }
+
         await supabaseAdmin.rpc("complete_checkout_session", {
           p_external_sub_id: String(sub.id),
           p_gateway: GATEWAY,
@@ -292,8 +313,10 @@ export async function POST(req: Request) {
             .select("value")
             .eq("setting", "OFFER_PHASE_DAYS")
             .single();
-          const offerPhaseDays =
-            (phaseSetting?.value ?? 90) + (session.trial_days_applied ?? 0);
+
+          const offerPhaseDays = session.trial_days_applied && session.trial_days_applied > 0
+            ? (phaseSetting?.value ?? 90) + session.trial_days_applied
+            : 30;
 
           await supabaseAdmin.rpc("activate_offer_phase", {
             p_subscription_id: String(sub.id),

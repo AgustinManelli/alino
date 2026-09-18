@@ -201,6 +201,15 @@
   box-shadow: 0 4px 15px rgba(168, 85, 247, 0.15);
 }
 
+.tierUltra {
+  background: linear-gradient(135deg,
+      rgba(236, 72, 153, 0.25),
+      rgba(245, 158, 11, 0.25));
+  color: #ec4899;
+  border: 1px solid rgba(236, 72, 153, 0.45);
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.2);
+}
+
 .upgradeBanner {
   display: flex;
   align-items: center;
@@ -282,7 +291,7 @@
 .editionContainer {
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: flex-end;
   background-color: var(--background-over-container);
   padding: 12px 18px;
   border-radius: 18px;

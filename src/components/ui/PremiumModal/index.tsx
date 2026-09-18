@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useShallow } from "zustand/shallow";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
@@ -10,11 +10,19 @@ import {
   getAvailablePlansAction,
   checkTrialEligibility,
 } from "@/lib/api/user/actions";
+import { formatCurrencyValue } from "@/config/regionalPricing";
 import { ClientOnlyPortal } from "../ClientOnlyPortal";
 import styles from "./PremiumModal.module.css";
 import { AlinoLogo } from "../icons/icons";
 import { createClient } from "@/utils/supabase/client";
 import { customToast } from "@/lib/toasts";
+
+const TIER_WEIGHT: Record<string, number> = {
+  free: 0,
+  student: 1,
+  pro: 2,
+  ultra: 3,
+};
 
 const XIcon = () => (
   <svg
@@ -30,6 +38,7 @@ const XIcon = () => (
     <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
+
 const CheckIcon = () => (
   <svg
     width="14"
@@ -44,6 +53,7 @@ const CheckIcon = () => (
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
+
 const SpinnerIcon = () => (
   <svg
     width="16"
@@ -58,6 +68,7 @@ const SpinnerIcon = () => (
     <path d="M21 12a9 9 0 1 1-6.219-8.56" />
   </svg>
 );
+
 const AlertIcon = () => (
   <svg
     width="20"
@@ -74,6 +85,7 @@ const AlertIcon = () => (
     <line x1="12" y1="17" x2="12.01" y2="17" />
   </svg>
 );
+
 const GiftIcon = () => (
   <svg
     width="14"
@@ -115,6 +127,10 @@ export const PremiumModal = ({ onClose }: Props) => {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   const offerPhaseMonths = Math.round(offerPhaseDays / 30);
+  const currentTier = user?.tier || "free";
+  const currentTierWeight = TIER_WEIGHT[currentTier] ?? 0;
+  const isUltraUser = currentTierWeight >= 3;
+  const isProUser = currentTierWeight === 2;
 
   useEffect(() => {
     const fetchAuthEmail = async () => {
@@ -129,13 +145,20 @@ export const PremiumModal = ({ onClose }: Props) => {
 
   useEffect(() => {
     getAvailablePlansAction().then(({ data }) => {
-      if (data) {
+      if (data && data.length > 0) {
         setPlans(data);
-        if (data.length > 0) setSelectedPlanId(data[0].id);
+        if (isProUser) {
+          const ultra = data.find((p: any) => p.tier === "ultra");
+          if (ultra) setSelectedPlanId(ultra.id);
+          else setSelectedPlanId(data[0].id);
+        } else if (!isUltraUser) {
+          const pro = data.find((p: any) => p.tier === "pro");
+          setSelectedPlanId(pro ? pro.id : data[0].id);
+        }
       }
       setLoadingPlans(false);
     });
-  }, []);
+  }, [isProUser, isUltraUser]);
 
   useEffect(() => {
     checkTrialEligibility().then(({ data }) => {
@@ -157,6 +180,25 @@ export const PremiumModal = ({ onClose }: Props) => {
 
   useOnClickOutside(ref, onClose);
 
+  const proPlan = useMemo(() => plans.find((p) => p.tier === "pro"), [plans]);
+  const ultraPlan = useMemo(() => plans.find((p) => p.tier === "ultra"), [plans]);
+  const selectedPlan = useMemo(() => plans.find((p) => p.id === selectedPlanId), [plans, selectedPlanId]);
+
+  const userCountry = user?.user_private?.country_code || undefined;
+
+  const proAmount = proPlan?.resolved_price?.amount ?? 2000;
+  const ultraAmount = ultraPlan?.resolved_price?.amount ?? 3500;
+  const planCurrency = ultraPlan?.resolved_price?.currency || proPlan?.resolved_price?.currency || "ARS";
+  const upgradeDifference = Math.max(ultraAmount - proAmount, 1);
+  const upgradeFormatted = formatCurrencyValue(upgradeDifference, planCurrency, userCountry);
+
+  const normalPrice = selectedPlan ? (selectedPlan.resolved_price?.amount ?? 0) : 0;
+  const discountPct = selectedPlan?.discount_percentage || 0;
+  const offerPrice =
+    trialEligible && discountPct > 0
+      ? Number((normalPrice * (1 - discountPct / 100)).toFixed(0))
+      : normalPrice;
+
   const handleApplyCode = async () => {
     if (!promoCode.trim()) return;
     setLoadingCode(true);
@@ -175,6 +217,10 @@ export const PremiumModal = ({ onClose }: Props) => {
   };
 
   const handleNextStep = () => {
+    if (isUltraUser) {
+      customToast.error("Ya posees el plan máximo disponible.");
+      return;
+    }
     if (!selectedPlanId) {
       customToast.error("Por favor, seleccioná un plan primero.");
       return;
@@ -208,15 +254,6 @@ export const PremiumModal = ({ onClose }: Props) => {
       setLoadingPrimary(false);
     }
   };
-
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId);
-
-  const normalPrice = selectedPlan ? Number(selectedPlan.price) : 0;
-  const discountPct = selectedPlan?.discount_percentage || 0;
-  const offerPrice =
-    trialEligible && discountPct > 0
-      ? Number((normalPrice * (1 - discountPct / 100)).toFixed(0))
-      : normalPrice;
 
   return (
     <ClientOnlyPortal>
@@ -253,7 +290,7 @@ export const PremiumModal = ({ onClose }: Props) => {
             </button>
             <div className={styles.proLogoContainer}>
               <AlinoLogo style={{ width: "100px", height: "auto" }} />
-              <p>pro</p>
+              <p>{isUltraUser ? "ultra" : "pro"}</p>
             </div>
             <p className={styles.subtitle}>
               Lleva tu productividad al siguiente nivel.
@@ -268,6 +305,15 @@ export const PremiumModal = ({ onClose }: Props) => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20, transition: { duration: 0.15 } }}
               >
+                {isUltraUser && (
+                  <div style={{ padding: "16px 24px 0" }}>
+                    <div className={styles.maxTierNotice}>
+                      <span>✦</span>
+                      <span>Ya posees el plan máximo (Alino Ultra). Cuentas con todas las funciones y tokens ilimitados activos.</span>
+                    </div>
+                  </div>
+                )}
+
                 <ul className={styles.featureList}>
                   {selectedPlan?.features?.map((f: string) => (
                     <li key={f} className={styles.featureItem}>
@@ -279,7 +325,7 @@ export const PremiumModal = ({ onClose }: Props) => {
                   ))}
                 </ul>
 
-                {trialEligible && discountPct > 0 && (
+                {!isProUser && !isUltraUser && trialEligible && discountPct > 0 && (
                   <div className={styles.offerBanner}>
                     <GiftIcon />
                     <div className={styles.offerBannerText}>
@@ -291,8 +337,22 @@ export const PremiumModal = ({ onClose }: Props) => {
                         {offerPhaseMonths} meses al {discountPct}% de descuento
                       </span>
                       <span className={styles.offerBannerSub}>
-                        Luego ${normalPrice.toLocaleString("es-AR")} / mes ·
+                        Luego {selectedPlan?.resolved_price?.formatted || `$${normalPrice.toLocaleString("es-AR")}`} / mes ·
                         Cancelá cuando quieras
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {isProUser && (
+                  <div className={styles.offerBanner}>
+                    <span style={{ fontSize: "16px" }}>✦</span>
+                    <div className={styles.offerBannerText}>
+                      <span className={styles.offerBannerTitle}>
+                        Mejora de Pro a Ultra
+                      </span>
+                      <span className={styles.offerBannerSub}>
+                        Abona únicamente la diferencia de {upgradeFormatted} este primer ciclo. Se reemplaza tu suscripción actual automáticamente.
                       </span>
                     </div>
                   </div>
@@ -314,10 +374,16 @@ export const PremiumModal = ({ onClose }: Props) => {
                     ) : (
                       <div className={styles.plansContainer}>
                         {plans.map((plan) => {
-                          const pNormal = Number(plan.price);
+                          const planWeight = TIER_WEIGHT[plan.tier] ?? 0;
+                          const isCurrent = plan.tier === currentTier;
+                          const isLower = planWeight < currentTierWeight;
+                          const isDisabled = isUltraUser || isCurrent || isLower;
+                          const isUpgradeTarget = isProUser && plan.tier === "ultra";
+
+                          const pNormal = plan.resolved_price?.amount ?? 0;
                           const pDiscount = plan.discount_percentage || 0;
                           const pOffer =
-                            trialEligible && pDiscount > 0
+                            !isProUser && trialEligible && pDiscount > 0
                               ? Number(
                                   (pNormal * (1 - pDiscount / 100)).toFixed(0),
                                 )
@@ -327,29 +393,45 @@ export const PremiumModal = ({ onClose }: Props) => {
                           return (
                             <div
                               key={plan.id}
-                              className={`${styles.planCard} ${isSelected ? styles.planCardActive : ""}`}
-                              onClick={() => setSelectedPlanId(plan.id)}
+                              className={`${styles.planCard} ${isSelected ? styles.planCardActive : ""} ${isDisabled ? styles.planCardDisabled : ""}`}
+                              onClick={() => {
+                                if (!isDisabled) setSelectedPlanId(plan.id);
+                              }}
                             >
                               <div className={styles.planHeader}>
                                 <span className={styles.planName}>
                                   {plan.name}
                                 </span>
-                                {trialEligible && pDiscount > 0 && (
+                                {isCurrent ? (
+                                  <span className={styles.currentBadge}>
+                                    Plan actual
+                                  </span>
+                                ) : isUpgradeTarget ? (
+                                  <span className={styles.upgradeBadge}>
+                                    Mejora
+                                  </span>
+                                ) : isLower ? (
+                                  <span className={styles.discountBadge} style={{ background: "var(--background-over-container)", color: "var(--text-not-available)" }}>
+                                    Inferior
+                                  </span>
+                                ) : !isProUser && trialEligible && pDiscount > 0 ? (
                                   <span className={styles.discountBadge}>
                                     -{pDiscount}%
                                   </span>
-                                )}
+                                ) : null}
                               </div>
                               <div className={styles.planPriceContainer}>
                                 <div className={styles.planPriceContainerItem}>
                                   <span className={styles.planCurrency}>
-                                    {plan.currency}
+                                    {plan.resolved_price?.currency || "ARS"}
                                   </span>
                                   <span className={styles.planPrice}>
-                                    ${pOffer.toLocaleString("es-AR")}
+                                    {isUpgradeTarget
+                                      ? upgradeFormatted
+                                      : plan.resolved_price?.formatted || `$${pOffer.toLocaleString("es-AR")}`}
                                   </span>
                                   <span className={styles.planPeriod}>
-                                    /mes
+                                    {isUpgradeTarget ? "/diferencia" : "/mes"}
                                   </span>
                                 </div>
                               </div>
@@ -360,15 +442,19 @@ export const PremiumModal = ({ onClose }: Props) => {
                     )}
 
                     <button
-                      className={`${styles.primaryButton} ${trialEligible ? styles.primaryButtonTrial : ""}`}
+                      className={`${styles.primaryButton} ${!isProUser && trialEligible ? styles.primaryButtonTrial : ""}`}
                       onClick={handleNextStep}
-                      disabled={loadingPlans}
+                      disabled={loadingPlans || isUltraUser || !selectedPlanId}
                     >
-                      {trialEligible && trialDays > 0
-                        ? `Probar ${trialDays} días gratis`
-                        : trialEligible && discountPct > 0
-                          ? `Empezar con ${discountPct}% de descuento`
-                          : "Continuar"}
+                      {isUltraUser
+                        ? "Plan máximo activo"
+                        : isProUser
+                          ? `Mejorar a Ultra · ${upgradeFormatted}`
+                          : trialEligible && trialDays > 0
+                            ? `Probar ${trialDays} días gratis`
+                            : trialEligible && discountPct > 0
+                              ? `Empezar con ${discountPct}% de descuento`
+                              : "Continuar"}
                     </button>
                     <p className={styles.infoBottomText}>
                       Podés cancelar antes de que se facture el siguiente mes.
@@ -439,7 +525,22 @@ export const PremiumModal = ({ onClose }: Props) => {
                     placeholder="tucorreo@ejemplo.com"
                   />
 
-                  {trialEligible && selectedPlan && (
+                  {isProUser ? (
+                    <div className={styles.paymentSummary}>
+                      <div className={styles.paymentSummaryRow}>
+                        <span>Hoy (diferencia de plan)</span>
+                        <span className={styles.paymentSummaryFree}>
+                          {upgradeFormatted}
+                        </span>
+                      </div>
+                      <div className={styles.paymentSummaryRow}>
+                        <span>Próximas renovaciones</span>
+                        <span>
+                          {ultraPlan?.resolved_price?.formatted || `$${ultraAmount.toLocaleString("es-AR")}`} / mes
+                        </span>
+                      </div>
+                    </div>
+                  ) : trialEligible && selectedPlan ? (
                     <div className={styles.paymentSummary}>
                       {trialDays > 0 && (
                         <div className={styles.paymentSummaryRow}>
@@ -453,14 +554,23 @@ export const PremiumModal = ({ onClose }: Props) => {
                         <div className={styles.paymentSummaryRow}>
                           <span>Primeros {offerPhaseMonths} meses</span>
                           <span>
-                            ${offerPrice.toLocaleString("es-AR")} / mes
+                            {selectedPlan.resolved_price?.formatted || `$${offerPrice.toLocaleString("es-AR")}`} / mes
                           </span>
                         </div>
                       )}
                       <div className={styles.paymentSummaryRow}>
                         <span>Luego</span>
                         <span>
-                          ${normalPrice.toLocaleString("es-AR")} / mes
+                          {selectedPlan.resolved_price?.formatted || `$${normalPrice.toLocaleString("es-AR")}`} / mes
+                        </span>
+                      </div>
+                    </div>
+                  ) : selectedPlan && (
+                    <div className={styles.paymentSummary}>
+                      <div className={styles.paymentSummaryRow}>
+                        <span>Monto mensual</span>
+                        <span>
+                          {selectedPlan.resolved_price?.formatted || `$${normalPrice.toLocaleString("es-AR")}`} / mes
                         </span>
                       </div>
                     </div>
@@ -474,6 +584,8 @@ export const PremiumModal = ({ onClose }: Props) => {
                   >
                     {loadingPrimary ? (
                       <SpinnerIcon />
+                    ) : isProUser ? (
+                      "Mejorar a Ultra en Mercado Pago"
                     ) : (
                       "Ir a pagar en Mercado Pago"
                     )}

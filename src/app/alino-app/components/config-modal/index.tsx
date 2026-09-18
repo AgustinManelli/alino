@@ -26,6 +26,7 @@ import {
 } from "@/hooks/useKeyboardShortcuts";
 import { customToast } from "@/lib/toasts";
 import { SoundDropdown } from "@/components/ui/SoundDropdown";
+import { SUPPORTED_LANGUAGES, SupportedLanguage } from "@/lib/i18n/types";
 import styles from "./AccountConfigSection.module.css";
 
 type ConfigTab =
@@ -62,6 +63,8 @@ export function ConfigModal({ handleCloseConfig }: Props) {
     setFirstDayOfWeek,
     compactView,
     toggleCompactView,
+    language,
+    setLanguage,
   } = useUserPreferencesStore();
 
   const {
@@ -262,6 +265,15 @@ Versión: v0.1.0 (pre-alpha)`;
     [],
   );
 
+  const languageOptions: TabOption[] = useMemo(
+    () =>
+      SUPPORTED_LANGUAGES.map((lang) => ({
+        id: lang.id,
+        label: lang.label,
+      })),
+    [],
+  );
+
   return (
     <WindowComponent
       windowTitle={"Configuración"}
@@ -376,6 +388,38 @@ Versión: v0.1.0 (pre-alpha)`;
                 </div>
                 <p className={styles.sectionDescription}>
                   Elige entre tema claro, oscuro o sincronizado automáticamente con tu sistema operativo.
+                </p>
+              </section>
+
+              <section className={styles.sectionContainer}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <p className={styles.sectionTitle}>Idioma de la aplicación</p>
+                  <span className={styles.betaBadge}>Beta</span>
+                </div>
+                <div style={{ width: "100%", marginTop: "4px" }}>
+                  <Tabs
+                    options={languageOptions}
+                    activeTab={language || "es"}
+                    onChange={(id) => {
+                      setLanguage(id as SupportedLanguage);
+                      customToast.success(
+                        id === "en"
+                          ? "Language updated to English"
+                          : "Idioma cambiado a Español"
+                      );
+                    }}
+                    layoutId="config-language-tabs"
+                    backgroundColor="var(--background-over-container)"
+                    indicatorColor="var(--background-over-container)"
+                    indicatorHoverColor="var(--background-over-container-hover)"
+                    indicatorShadow="0 1px 3px rgba(0, 0, 0, 0.08)"
+                    textColor="var(--text-not-available)"
+                    activeTextColor="var(--text)"
+                    hoverTextColor="var(--text)"
+                  />
+                </div>
+                <p className={styles.sectionDescription}>
+                  Selecciona el idioma preferido para la interfaz, catálogo de cosméticos y tienda.
                 </p>
               </section>
 

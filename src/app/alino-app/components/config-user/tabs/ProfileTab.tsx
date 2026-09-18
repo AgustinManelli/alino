@@ -20,6 +20,7 @@ import {
 } from "@/app/alino-app/components/initial-user-configuration/avatar-selector";
 import { createClient } from "@/utils/supabase/client";
 import { Tabs } from "@/components/ui/Tabs/Tabs";
+import { getCosmeticTranslation } from "@/lib/i18n/helpers";
 import styles from "../ConfigUser.module.css";
 
 interface ProfileTabProps {
@@ -209,6 +210,8 @@ export function ProfileTab({
 
   const determineTierClass = (tier?: string) => {
     switch (tier) {
+      case "ultra":
+        return styles.tierUltra;
       case "pro":
         return styles.tierPro;
       case "student":
@@ -392,6 +395,7 @@ export function ProfileTab({
                     item.id === "overlay_pro_crown" ||
                     item.code === "overlay_pro_crown" ||
                     item.tier_required === "pro";
+                  const trans = getCosmeticTranslation(item);
 
                   return (
                     <div
@@ -399,7 +403,7 @@ export function ProfileTab({
                       className={`${styles.cosmeticCard} ${item.is_equipped ? styles.cosmeticCardEquipped : ""
                         }`}
                       onClick={() => handleEquipToggle(item)}
-                      title={item.description}
+                      title={trans.description}
                     >
                       <div className={styles.cosmeticPreviewWrap}>
                         <UserAvatar
@@ -411,7 +415,7 @@ export function ProfileTab({
                           equippedOverlayId={item.type === "overlay" ? item.id : null}
                         />
                       </div>
-                      <span className={styles.cosmeticName}>{item.name}</span>
+                      <span className={styles.cosmeticName}>{trans.name}</span>
                       <span
                         className={`${styles.cosmeticBadge} ${item.is_equipped
                             ? styles.cosmeticBadgeEquipped
@@ -429,12 +433,6 @@ export function ProfileTab({
                     </div>
                   );
                 })}
-
-                {/* {activeCosmetics.length === 0 && (
-                  <div className={styles.emptyInventoryNotice}>
-                    No tienes {activeCosmeticTab === "frame" ? "marcos" : "accesorios"} desbloqueados aún. Subí de nivel completando tareas o visitá la Alino Shop para conseguirlos.
-                  </div>
-                )} */}
               </>
             );
           })()}

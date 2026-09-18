@@ -1,0 +1,94 @@
+{
+  "title": "Alino Shop",
+  "balanceTitle": "Tus Alino Coins",
+  "promo": {
+    "title": "Código promocional",
+    "subtitle": "Obtené monedas",
+    "placeholder": "Ej. ALINO100",
+    "button": "Canjear",
+    "redeeming": "Canjeando...",
+    "success": "¡Código canjeado con éxito!",
+    "emptyError": "Ingresa un código promocional.",
+    "genericError": "No se pudo canjear el código."
+  },
+  "packs": {
+    "title": "Packs de monedas",
+    "subtitle": "Recargas",
+    "coinsUnit": "monedas",
+    "defaultPackName": "Pack Monedas",
+    "tags": {
+      "popular": "POPULAR",
+      "best_value": "MEJOR VALOR",
+      "recommended": "RECOMENDADO"
+    },
+    "items": {
+      "pack_100": {
+        "name": "Pack Monedas"
+      },
+      "pack_starter": {
+        "name": "Pack Inicial"
+      },
+      "pack_plus": {
+        "name": "Montón de Monedas"
+      },
+      "pack_standard": {
+        "name": "Pack Estándar"
+      },
+      "pack_pro": {
+        "name": "Pila de Monedas"
+      }
+    }
+  },
+  "cosmetics": {
+    "title": "Cosméticos exclusivos",
+    "subtitle": "Personalizá tu avatar",
+    "viewAll": "Explorar tienda",
+    "insufficientCoins": "Monedas insuficientes para adquirir este cosmético.",
+    "allOwned": "¡Has adquirido todos los cosméticos disponibles!",
+    "owned": "En inventario",
+    "buy": "Comprar",
+    "purchasing": "Comprando...",
+    "notEnoughCoins": "Faltan monedas",
+    "purchaseSuccess": "¡{{name}} adquirido! Se ha añadido a tu inventario.",
+    "purchaseError": "No se pudo realizar la compra."
+  },
+  "gallery": {
+    "windowTitle": "Tienda de Cosméticos",
+    "balance": "Tus monedas",
+    "searchPlaceholder": "Buscar por nombre o descripción...",
+    "categoriesTitle": "Categorías",
+    "categories": {
+      "all": "Todos los artículos",
+      "frame": "Marcos de avatar",
+      "overlay": "Accesorios de avatar"
+    },
+    "filtersTitle": "Estado",
+    "status": {
+      "all": "Todos",
+      "unowned": "Por comprar",
+      "owned": "En inventario"
+    },
+    "rarityTitle": "Rareza",
+    "rarity": {
+      "all": "Todas",
+      "common": "Común",
+      "rare": "Raro",
+      "epic": "Épico",
+      "legendary": "Legendario"
+    },
+    "sortTitle": "Ordenar por",
+    "sort": {
+      "newest": "Más recientes",
+      "price_asc": "Menor precio",
+      "price_desc": "Mayor precio"
+    },
+    "pagination": {
+      "page": "Página {{current}} de {{total}}",
+      "prev": "Anterior",
+      "next": "Siguiente"
+    },
+    "empty": "No se encontraron cosméticos con los filtros actuales.",
+    "itemsCount": "{{count}} artículo",
+    "itemsCount_plural": "{{count}} artículos"
+  }
+}
