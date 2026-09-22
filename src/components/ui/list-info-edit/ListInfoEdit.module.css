@@ -3,11 +3,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-shrink: 0;
+  height: 100%;
+}
+
+:global(.collapsed) :global(#navbar-all-container) .colorPickerContainer {
   width: 25px;
   min-width: 25px;
   max-width: 25px;
-  flex-shrink: 0;
-  height: 100%;
 }
 
 .textContainer {
@@ -21,6 +24,7 @@
   opacity: 1;
   transform: translateX(0);
   transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0px 7px;
 }
 
 :global(.collapsed) :global(#navbar-all-container) .textContainer {
@@ -86,6 +90,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 0px 4.5px;
 }
 
 .emojiContainer span {

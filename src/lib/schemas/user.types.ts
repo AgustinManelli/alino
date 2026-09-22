@@ -28,6 +28,7 @@ export interface FeatureUsage {
   remaining: number;
   period_end: string;
   tier: string;
+  extra_remaining?: number;
 }
 
 export interface UserSearchResult {

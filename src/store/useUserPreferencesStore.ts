@@ -83,7 +83,7 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
   };
 
   const store = createStore<UserPreferences>()((set, get) => ({
-    animations: merged.animations ?? true,
+    animations: localStored.animations !== undefined ? localStored.animations : true,
     uxPwaPrompt: merged.uxPwaPrompt ?? true,
     sidebarCollapsed: merged.sidebarCollapsed ?? false,
     sidebarPosition: (merged.sidebarPosition as "left" | "right") ?? "left",
@@ -95,7 +95,8 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
     language: initialLang,
 
     initializePreferences: (prefs: Partial<UserPreferences>) => {
-      set((state) => ({ ...state, ...prefs }));
+      const { animations, ...rest } = prefs;
+      set((state) => ({ ...state, ...rest }));
       if (prefs.language) {
         i18n.changeLanguage(prefs.language);
       }
@@ -106,7 +107,6 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
       const nextVal = !get().animations;
       set({ animations: nextVal });
       persistToLocalStorage({ animations: nextVal });
-      syncWithDatabase({ animations: nextVal });
     },
 
     toggleUxPwaPrompt: () => {

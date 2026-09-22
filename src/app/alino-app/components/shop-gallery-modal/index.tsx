@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { WindowComponent } from "@/components/ui/WindowComponent";
 import { AlinoCoinIcon } from "@/components/ui/alino-coins-icon";
@@ -12,8 +12,8 @@ import {
   buyCosmeticAction,
 } from "@/lib/api/cosmetics/actions";
 import { CosmeticItem } from "@/lib/schemas/database.types";
-import { getCosmeticTranslation } from "@/lib/i18n/helpers";
-import { toast } from "sonner";
+import { getCosmeticTranslation, getCoinPackTranslation } from "@/lib/i18n/helpers";
+import { customToast } from "@/lib/toasts";
 import styles from "./ShopGalleryModal.module.css";
 
 interface Props {
@@ -21,86 +21,107 @@ interface Props {
   onClose: () => void;
 }
 
+type ShopSectionType = "cosmetics" | "coins" | "ai_credits";
+
 const PAGE_SIZE = 6;
+
+const SparklesIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    <path d="M5 3v4" />
+    <path d="M19 17v4" />
+    <path d="M3 5h4" />
+    <path d="M17 19h4" />
+  </svg>
+);
 
 export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const { t } = useTranslation(["shop", "common", "cosmetics"]);
   const currentUser = useUserDataStore((state) => state.user);
-  const { coins, setCoins } = useShopStore();
+  const {
+    coins,
+    extraAICredits,
+    coinPacks,
+    aiCreditPacks,
+    setCoins,
+    fetchShopData,
+    buyAICreditPack,
+  } = useShopStore();
 
+  const [activeSection, setActiveSection] = useState<ShopSectionType>("cosmetics");
   const [cosmetics, setCosmetics] = useState<CosmeticItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [purchasingId, setPurchasingId] = useState<string | null>(null);
+  const [isLoadingCosmetics, setIsLoadingCosmetics] = useState(false);
+  const [purchasingCosmeticId, setPurchasingCosmeticId] = useState<string | null>(null);
+  const [purchasingAICreditId, setPurchasingAICreditId] = useState<string | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     if (!isOpen) return;
-    setIsLoading(true);
-    getShopCosmeticsCatalogAction()
-      .then((res) => {
-        if (res.data) {
-          setCosmetics(res.data.cosmetics);
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [isOpen]);
+    fetchShopData(true);
+  }, [isOpen, fetchShopData]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery.trim().toLowerCase());
+      setDebouncedSearch(searchQuery.trim());
       setCurrentPage(1);
-    }, 200);
+    }, 250);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const filteredCosmetics = useMemo(() => {
-    let list = [...cosmetics];
-
-    if (selectedCategory !== "all") {
-      list = list.filter((item) => item.type === selectedCategory);
-    }
-
-    if (selectedStatus === "owned") {
-      list = list.filter((item) => item.is_unlocked);
-    } else if (selectedStatus === "unowned") {
-      list = list.filter((item) => !item.is_unlocked);
-    }
-
-    if (debouncedSearch) {
-      list = list.filter((item) => {
-        const trans = getCosmeticTranslation(item);
-        const nameMatch = trans.name.toLowerCase().includes(debouncedSearch);
-        const descMatch = trans.description.toLowerCase().includes(debouncedSearch);
-        return nameMatch || descMatch;
+  useEffect(() => {
+    if (!isOpen || activeSection !== "cosmetics") return;
+    setIsLoadingCosmetics(true);
+    getShopCosmeticsCatalogAction({
+      category: selectedCategory,
+      status: selectedStatus,
+      search: debouncedSearch,
+      page: currentPage,
+      pageSize: PAGE_SIZE,
+    })
+      .then((res) => {
+        if (res.data) {
+          setCosmetics(res.data.cosmetics);
+          setTotalPages(Math.max(1, res.data.total_pages));
+          if (typeof res.data.user_coins === "number") {
+            setCoins(res.data.user_coins);
+          }
+        }
+      })
+      .finally(() => {
+        setIsLoadingCosmetics(false);
       });
-    }
+  }, [
+    isOpen,
+    activeSection,
+    selectedCategory,
+    selectedStatus,
+    debouncedSearch,
+    currentPage,
+    setCoins,
+  ]);
 
-    list.sort((a, b) => b.sort_order - a.sort_order);
-
-    return list;
-  }, [cosmetics, selectedCategory, selectedStatus, debouncedSearch]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredCosmetics.length / PAGE_SIZE));
-
-  const paginatedCosmetics = useMemo(() => {
-    const startIndex = (currentPage - 1) * PAGE_SIZE;
-    return filteredCosmetics.slice(startIndex, startIndex + PAGE_SIZE);
-  }, [filteredCosmetics, currentPage]);
-
-  const handleBuy = async (item: CosmeticItem) => {
+  const handleBuyCosmetic = async (item: CosmeticItem) => {
     if (coins < item.coins_price) {
-      toast.error(t("shop:cosmetics.insufficientCoins"));
+      customToast.error(t("shop:cosmetics.insufficientCoins"));
       return;
     }
 
-    setPurchasingId(item.id);
+    setPurchasingCosmeticId(item.id);
     try {
       const res = await buyCosmeticAction(item.id);
       if (res.success && typeof res.new_balance === "number") {
@@ -109,12 +130,31 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
           prev.map((c) => (c.id === item.id ? { ...c, is_unlocked: true } : c))
         );
         const trans = getCosmeticTranslation(item);
-        toast.success(t("shop:cosmetics.purchaseSuccess", { name: trans.name }));
+        customToast.success(t("shop:cosmetics.purchaseSuccess", { name: trans.name }));
       } else {
-        toast.error(res.error || t("shop:cosmetics.purchaseError"));
+        customToast.error(res.error || t("shop:cosmetics.purchaseError"));
       }
     } finally {
-      setPurchasingId(null);
+      setPurchasingCosmeticId(null);
+    }
+  };
+
+  const handleBuyAICreditPack = async (packId: string, amount: number, coinsPrice: number) => {
+    if (coins < coinsPrice) {
+      customToast.error(t("shop:ai_credits.insufficientCoins"));
+      return;
+    }
+
+    setPurchasingAICreditId(packId);
+    try {
+      const res = await buyAICreditPack(packId);
+      if (res.success) {
+        customToast.success(t("shop:ai_credits.purchaseSuccess", { amount }));
+      } else {
+        customToast.error(res.error || t("shop:ai_credits.purchaseError"));
+      }
+    } finally {
+      setPurchasingAICreditId(null);
     }
   };
 
@@ -132,227 +172,395 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
           <aside className={styles.sidebar}>
             <div className={styles.sidebarGroup}>
               <span className={styles.sidebarGroupTitle}>
-                {t("shop:gallery.categoriesTitle")}
+                {t("shop:gallery.sectionsTitle")}
               </span>
               <button
                 type="button"
                 className={`${styles.sidebarBtn} ${
-                  selectedCategory === "all" ? styles.sidebarBtnActive : ""
+                  activeSection === "cosmetics" ? styles.sidebarBtnActive : ""
                 }`}
-                onClick={() => {
-                  setSelectedCategory("all");
-                  setCurrentPage(1);
-                }}
+                onClick={() => setActiveSection("cosmetics")}
               >
-                <span>{t("shop:gallery.categories.all")}</span>
+                <span>🎨 {t("shop:gallery.sections.cosmetics")}</span>
               </button>
               <button
                 type="button"
                 className={`${styles.sidebarBtn} ${
-                  selectedCategory === "frame" ? styles.sidebarBtnActive : ""
+                  activeSection === "coins" ? styles.sidebarBtnActive : ""
                 }`}
-                onClick={() => {
-                  setSelectedCategory("frame");
-                  setCurrentPage(1);
-                }}
+                onClick={() => setActiveSection("coins")}
               >
-                <span>{t("shop:gallery.categories.frame")}</span>
+                <span>🪙 {t("shop:gallery.sections.coins")}</span>
               </button>
               <button
                 type="button"
                 className={`${styles.sidebarBtn} ${
-                  selectedCategory === "overlay" ? styles.sidebarBtnActive : ""
+                  activeSection === "ai_credits" ? styles.sidebarBtnActive : ""
                 }`}
-                onClick={() => {
-                  setSelectedCategory("overlay");
-                  setCurrentPage(1);
-                }}
+                onClick={() => setActiveSection("ai_credits")}
               >
-                <span>{t("shop:gallery.categories.overlay")}</span>
+                <span>✨ {t("shop:gallery.sections.ai_credits")}</span>
               </button>
             </div>
 
-            <div className={styles.sidebarGroup}>
-              <span className={styles.sidebarGroupTitle}>
-                {t("shop:gallery.filtersTitle")}
-              </span>
-              <button
-                type="button"
-                className={`${styles.sidebarBtn} ${
-                  selectedStatus === "all" ? styles.sidebarBtnActive : ""
-                }`}
-                onClick={() => {
-                  setSelectedStatus("all");
-                  setCurrentPage(1);
-                }}
-              >
-                <span>{t("shop:gallery.status.all")}</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.sidebarBtn} ${
-                  selectedStatus === "unowned" ? styles.sidebarBtnActive : ""
-                }`}
-                onClick={() => {
-                  setSelectedStatus("unowned");
-                  setCurrentPage(1);
-                }}
-              >
-                <span>{t("shop:gallery.status.unowned")}</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.sidebarBtn} ${
-                  selectedStatus === "owned" ? styles.sidebarBtnActive : ""
-                }`}
-                onClick={() => {
-                  setSelectedStatus("owned");
-                  setCurrentPage(1);
-                }}
-              >
-                <span>{t("shop:gallery.status.owned")}</span>
-              </button>
-            </div>
+            {activeSection === "cosmetics" && (
+              <>
+                <div className={styles.sidebarGroup}>
+                  <span className={styles.sidebarGroupTitle}>
+                    {t("shop:gallery.categoriesTitle")}
+                  </span>
+                  <button
+                    type="button"
+                    className={`${styles.sidebarBtn} ${
+                      selectedCategory === "all" ? styles.sidebarBtnActive : ""
+                    }`}
+                    onClick={() => {
+                      setSelectedCategory("all");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span>{t("shop:gallery.categories.all")}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.sidebarBtn} ${
+                      selectedCategory === "frame" ? styles.sidebarBtnActive : ""
+                    }`}
+                    onClick={() => {
+                      setSelectedCategory("frame");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span>{t("shop:gallery.categories.frame")}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.sidebarBtn} ${
+                      selectedCategory === "overlay" ? styles.sidebarBtnActive : ""
+                    }`}
+                    onClick={() => {
+                      setSelectedCategory("overlay");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span>{t("shop:gallery.categories.overlay")}</span>
+                  </button>
+                </div>
+
+                <div className={styles.sidebarGroup}>
+                  <span className={styles.sidebarGroupTitle}>
+                    {t("shop:gallery.filtersTitle")}
+                  </span>
+                  <button
+                    type="button"
+                    className={`${styles.sidebarBtn} ${
+                      selectedStatus === "all" ? styles.sidebarBtnActive : ""
+                    }`}
+                    onClick={() => {
+                      setSelectedStatus("all");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span>{t("shop:gallery.status.all")}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.sidebarBtn} ${
+                      selectedStatus === "unowned" ? styles.sidebarBtnActive : ""
+                    }`}
+                    onClick={() => {
+                      setSelectedStatus("unowned");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span>{t("shop:gallery.status.unowned")}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.sidebarBtn} ${
+                      selectedStatus === "owned" ? styles.sidebarBtnActive : ""
+                    }`}
+                    onClick={() => {
+                      setSelectedStatus("owned");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span>{t("shop:gallery.status.owned")}</span>
+                  </button>
+                </div>
+              </>
+            )}
+
+            {activeSection === "ai_credits" && (
+              <div className={styles.sidebarGroup}>
+                <span className={styles.sidebarGroupTitle}>Información</span>
+                <span className={styles.permanentTag}>
+                  {t("shop:ai_credits.extraBadge")}
+                </span>
+              </div>
+            )}
           </aside>
 
           <main className={styles.mainArea}>
             <div className={styles.topBar}>
-              <div className={styles.searchContainer}>
-                <svg
-                  className={styles.searchIcon}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input
-                  type="text"
-                  className={styles.searchInput}
-                  placeholder={t("shop:gallery.searchPlaceholder")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    className={styles.clearButton}
-                    onClick={() => setSearchQuery("")}
-                    aria-label="Limpiar búsqueda"
+              {activeSection === "cosmetics" ? (
+                <div className={styles.searchContainer}>
+                  <svg
+                    className={styles.searchIcon}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <input
+                    type="text"
+                    className={styles.searchInput}
+                    placeholder={t("shop:gallery.searchPlaceholder")}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      className={styles.clearButton}
+                      onClick={() => setSearchQuery("")}
+                      aria-label="Limpiar búsqueda"
                     >
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
-                )}
-              </div>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className={styles.sectionHeaderArea}>
+                  <span className={styles.sectionTitle}>
+                    {activeSection === "coins"
+                      ? t("shop:packs.title")
+                      : t("shop:ai_credits.title")}
+                  </span>
+                  <span className={styles.sectionSubtitle}>
+                    {activeSection === "coins"
+                      ? t("shop:packs.subtitle")
+                      : t("shop:ai_credits.subtitle")}
+                  </span>
+                </div>
+              )}
 
               <div className={styles.topControls}>
-                <div className={styles.balanceBadge}>
+                <div className={styles.balanceBadge} title={t("shop:gallery.balance")}>
                   <AlinoCoinIcon amount={coins} size={16} />
                   <span>{coins}</span>
+                </div>
+                <div className={styles.aiBalanceBadge} title={t("shop:gallery.aiCreditsBalance")}>
+                  <SparklesIcon size={15} />
+                  <span>{extraAICredits} {t("shop:ai_credits.creditsUnit")}</span>
                 </div>
               </div>
             </div>
 
             <div className={styles.scrollArea}>
-              {isLoading ? (
-                <div className={styles.emptyState}>
-                  <span>{t("common:loading")}</span>
-                </div>
-              ) : paginatedCosmetics.length === 0 ? (
-                <div className={styles.emptyState}>
-                  <span>{t("shop:gallery.empty")}</span>
-                </div>
-              ) : (
-                <div className={styles.grid}>
-                  {paginatedCosmetics.map((item) => {
-                    const trans = getCosmeticTranslation(item);
-                    const isOwned = Boolean(item.is_unlocked);
-                    const isBuying = purchasingId === item.id;
-                    const canAfford = coins >= item.coins_price;
+              {activeSection === "cosmetics" && (
+                <>
+                  {isLoadingCosmetics ? (
+                    <div className={styles.emptyState}>
+                      <span>{t("common:loading")}</span>
+                    </div>
+                  ) : cosmetics.length === 0 ? (
+                    <div className={styles.emptyState}>
+                      <span>{t("shop:gallery.empty")}</span>
+                    </div>
+                  ) : (
+                    <div className={styles.grid}>
+                      {cosmetics.map((item) => {
+                        const trans = getCosmeticTranslation(item);
+                        const isOwned = Boolean(item.is_unlocked);
+                        const isBuying = purchasingCosmeticId === item.id;
+                        const canAfford = coins >= item.coins_price;
 
-                    return (
-                      <div
-                        key={item.id}
-                        className={`${styles.card} ${isOwned ? styles.cardOwned : ""}`}
-                      >
-                        <div className={styles.cardHeader}>
-                          <div className={styles.cardPreviewBox}>
-                            <UserAvatar
-                              avatarUrl={currentUser?.avatar_url}
-                              username={currentUser?.username}
-                              size={44}
-                              style={{ borderRadius: "11px" }}
-                              equippedFrameId={item.type === "frame" ? item.id : null}
-                              equippedOverlayId={item.type === "overlay" ? item.id : null}
-                            />
+                        return (
+                          <div
+                            key={item.id}
+                            className={`${styles.card} ${isOwned ? styles.cardOwned : ""}`}
+                          >
+                            <div className={styles.cardHeader}>
+                              <div className={styles.cardPreviewBox}>
+                                <UserAvatar
+                                  avatarUrl={currentUser?.avatar_url}
+                                  username={currentUser?.username}
+                                  size={44}
+                                  style={{ borderRadius: "11px" }}
+                                  equippedFrameId={item.type === "frame" ? item.id : null}
+                                  equippedOverlayId={item.type === "overlay" ? item.id : null}
+                                />
+                              </div>
+
+                              <div className={styles.cardHeaderInfo}>
+                                <span className={styles.cardTitle}>{trans.name}</span>
+                                <div className={styles.cardBadgesRow}>
+                                  <span className={styles.typeBadge}>{trans.typeLabel}</span>
+                                  <span
+                                    className={`${styles.rarityBadge} ${
+                                      styles[`rarity_${item.rarity}`] || ""
+                                    }`}
+                                  >
+                                    {t(`shop:gallery.rarity.${item.rarity}`, {
+                                      defaultValue: item.rarity,
+                                    })}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <p className={styles.cardDesc}>{trans.description}</p>
+
+                            <div className={styles.cardFooter}>
+                              <div className={styles.cardPrice}>
+                                <AlinoCoinIcon amount={item.coins_price} size={15} />
+                                <span>{item.coins_price}</span>
+                              </div>
+
+                              {isOwned ? (
+                                <span className={styles.ownedStatus}>
+                                  {t("shop:cosmetics.owned")} ✓
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className={styles.buyBtn}
+                                  disabled={isBuying || !canAfford}
+                                  onClick={() => handleBuyCosmetic(item)}
+                                >
+                                  {isBuying
+                                    ? t("shop:cosmetics.purchasing")
+                                    : !canAfford
+                                    ? t("shop:cosmetics.notEnoughCoins")
+                                    : t("shop:cosmetics.buy")}
+                                </button>
+                              )}
+                            </div>
                           </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
 
+              {activeSection === "coins" && (
+                <div className={styles.grid}>
+                  {coinPacks.map((pack) => {
+                    const packTrans = getCoinPackTranslation(pack);
+                    const priceFormatted = pack.resolved_price?.formatted || "";
+                    return (
+                      <div key={pack.id} className={styles.card}>
+                        <div className={styles.cardHeader}>
+                          <div className={`${styles.packPreviewBox} ${styles.packPreviewBoxCoins}`}>
+                            <AlinoCoinIcon amount={pack.coins_amount} size={30} />
+                          </div>
                           <div className={styles.cardHeaderInfo}>
-                            <span className={styles.cardTitle}>{trans.name}</span>
+                            <span className={styles.cardTitle}>{packTrans.name}</span>
                             <div className={styles.cardBadgesRow}>
-                              <span className={styles.typeBadge}>{trans.typeLabel}</span>
-                              <span
-                                className={`${styles.rarityBadge} ${
-                                  styles[`rarity_${item.rarity}`] || ""
-                                }`}
-                              >
-                                {t(`shop:gallery.rarity.${item.rarity}`, {
-                                  defaultValue: item.rarity,
-                                })}
-                              </span>
+                              {packTrans.tag && (
+                                <span className={styles.packTag}>{packTrans.tag}</span>
+                              )}
                             </div>
                           </div>
                         </div>
 
-                        <p className={styles.cardDesc}>{trans.description}</p>
+                        <p className={styles.cardDesc}>
+                          {pack.coins_amount} {t("shop:packs.coinsUnit")}
+                        </p>
 
                         <div className={styles.cardFooter}>
                           <div className={styles.cardPrice}>
-                            <AlinoCoinIcon amount={item.coins_price} size={15} />
-                            <span>{item.coins_price}</span>
+                            <span>{priceFormatted}</span>
                           </div>
-
-                          {isOwned ? (
-                            <span className={styles.ownedStatus}>
-                              {t("shop:cosmetics.owned")} ✓
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              className={styles.buyBtn}
-                              disabled={isBuying || !canAfford}
-                              onClick={() => handleBuy(item)}
-                            >
-                              {isBuying
-                                ? t("shop:cosmetics.purchasing")
-                                : !canAfford
-                                ? t("shop:cosmetics.notEnoughCoins")
-                                : t("shop:cosmetics.buy")}
-                            </button>
-                          )}
+                          <span className={styles.ownedStatus}>{t("common:comingSoon")}</span>
                         </div>
                       </div>
                     );
                   })}
                 </div>
               )}
+
+              {activeSection === "ai_credits" && (
+                <div className={styles.grid}>
+                  {aiCreditPacks.length === 0 ? (
+                    <div className={styles.emptyState}>
+                      <span>{t("shop:ai_credits.noPacks")}</span>
+                    </div>
+                  ) : (
+                    aiCreditPacks.map((pack) => {
+                      const isBuying = purchasingAICreditId === pack.id;
+                      const canAfford = coins >= pack.coins_price;
+
+                      return (
+                        <div key={pack.id} className={styles.card}>
+                          <div className={styles.cardHeader}>
+                            <div className={`${styles.packPreviewBox} ${styles.packPreviewBoxAI}`}>
+                              <SparklesIcon size={26} />
+                            </div>
+                            <div className={styles.cardHeaderInfo}>
+                              <span className={styles.cardTitle}>{pack.name}</span>
+                              <div className={styles.cardBadgesRow}>
+                                {pack.tag && (
+                                  <span className={styles.packTag}>{pack.tag}</span>
+                                )}
+                                <span className={styles.permanentTag}>
+                                  {t("shop:ai_credits.extraBadge")}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <p className={styles.cardDesc}>
+                            +{pack.credits_amount} {t("shop:ai_credits.creditsUnit")}
+                          </p>
+
+                          <div className={styles.cardFooter}>
+                            <div className={styles.cardPrice}>
+                              <AlinoCoinIcon amount={pack.coins_price} size={15} />
+                              <span>{pack.coins_price}</span>
+                            </div>
+
+                            <button
+                              type="button"
+                              className={styles.buyBtn}
+                              disabled={isBuying || !canAfford}
+                              onClick={() =>
+                                handleBuyAICreditPack(pack.id, pack.credits_amount, pack.coins_price)
+                              }
+                            >
+                              {isBuying
+                                ? t("shop:ai_credits.purchasing")
+                                : !canAfford
+                                ? t("shop:cosmetics.notEnoughCoins")
+                                : t("shop:ai_credits.buy")}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
             </div>
 
-            {totalPages > 1 && (
+            {activeSection === "cosmetics" && totalPages > 1 && (
               <footer className={styles.paginationBar}>
                 <span className={styles.pageInfo}>
                   {t("shop:gallery.pagination.page", {
@@ -365,7 +573,7 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     type="button"
                     className={styles.pageBtn}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage <= 1 || isLoading}
+                    disabled={currentPage <= 1 || isLoadingCosmetics}
                   >
                     {t("shop:gallery.pagination.prev")}
                   </button>
@@ -373,7 +581,7 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     type="button"
                     className={styles.pageBtn}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={currentPage >= totalPages || isLoading}
+                    disabled={currentPage >= totalPages || isLoadingCosmetics}
                   >
                     {t("shop:gallery.pagination.next")}
                   </button>

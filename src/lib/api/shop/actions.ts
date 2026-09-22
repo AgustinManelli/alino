@@ -23,15 +23,17 @@ export interface StreakPackage {
   name: string;
   protectors_count: number;
   coins_price: number;
-  format_type: "square" | "wide";
   badge: string | null;
   is_active: boolean;
   sort_order: number;
 }
 
+import { AICreditPack } from "@/lib/schemas/database.types";
+
 export interface ShopCatalogPayload {
   coin_packs: CoinPack[];
   streak_packages: StreakPackage[];
+  ai_credit_packs?: AICreditPack[];
 }
 
 export interface RedeemResult {
@@ -49,6 +51,7 @@ export interface PurchaseResult {
   purchased_protectors?: number;
   message?: string;
   error?: string;
+  errorCode?: string;
 }
 
 const getAuth = cache(async () => {
@@ -143,7 +146,14 @@ export async function buyStreakPackageAction(packageId: string): Promise<Purchas
     const { data, error } = await supabase.rpc("purchase_streak_protectors", {
       p_package_id: packageId,
     });
-    if (error) throw new Error(error.message);
+    if (error) {
+      const code = error.message || error.code || "GENERIC_ERROR";
+      return {
+        success: false,
+        errorCode: code,
+        error: code,
+      };
+    }
     const result = data as PurchaseResult;
     return {
       success: true,
@@ -153,9 +163,91 @@ export async function buyStreakPackageAction(packageId: string): Promise<Purchas
       message: result.message,
     };
   } catch (e) {
+    const message = e instanceof Error ? e.message : "GENERIC_ERROR";
+    const errorCode = message === "No autenticado." ? "UNAUTHORIZED" : message;
     return {
       success: false,
-      error: e instanceof Error ? e.message : "Error al comprar protectores.",
+      errorCode,
+      error: errorCode,
     };
   }
 }
+
+export async function getShopAICreditPacksAction(): Promise<{
+  data?: {
+    packs: AICreditPack[];
+    user_coins: number;
+    extra_ai_credits: number;
+  };
+  error?: string;
+}> {
+  try {
+    const supabase = createClient();
+    const { data: authData } = await supabase.auth.getUser();
+    let userCoins = 0;
+    let extraAICredits = 0;
+
+    if (authData?.user) {
+      const { data: privData } = await supabase
+        .from("user_private")
+        .select("alino_coins, extra_ai_credits")
+        .eq("user_id", authData.user.id)
+        .maybeSingle();
+      userCoins = privData?.alino_coins ?? 0;
+      extraAICredits = privData?.extra_ai_credits ?? 0;
+    }
+
+    const { data, error } = await supabase
+      .from("shop_ai_credit_packs")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+
+    if (error) throw new Error(error.message);
+
+    return {
+      data: {
+        packs: (data as AICreditPack[]) || [],
+        user_coins: userCoins,
+        extra_ai_credits: extraAICredits,
+      },
+    };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Error al obtener paquetes de créditos IA." };
+  }
+}
+
+export async function buyAICreditsAction(packId: string): Promise<{
+  success: boolean;
+  new_coins?: number;
+  credits_added?: number;
+  new_extra_credits?: number;
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const { supabase } = await getAuth();
+    const { data, error } = await supabase.rpc("buy_ai_credits_with_coins", {
+      p_pack_id: packId,
+    });
+    if (error) throw new Error(error.message);
+    const result = data as {
+      success: boolean;
+      new_coins: number;
+      credits_added: number;
+      new_extra_credits: number;
+    };
+    return {
+      success: true,
+      new_coins: result.new_coins,
+      credits_added: result.credits_added,
+      new_extra_credits: result.new_extra_credits,
+    };
+  } catch (e) {
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Error al comprar créditos IA.",
+    };
+  }
+}
+

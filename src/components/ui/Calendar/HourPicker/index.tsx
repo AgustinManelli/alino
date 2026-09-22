@@ -326,7 +326,7 @@ const TimeUnit = memo(function TimeUnit({
           style={cursorPointer}
         >
           <CounterAnimation
-            tasksLength={value}
+            value={value}
             format
             isAnimationEnabled={isAnimationEnabled}
           />

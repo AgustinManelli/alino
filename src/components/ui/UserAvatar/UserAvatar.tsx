@@ -65,13 +65,13 @@ export const UserAvatar = ({
     borderRadius: effectiveRadius,
     ...(size
       ? {
-          width: size,
-          height: size,
-          minWidth: size,
-          minHeight: size,
-          maxWidth: size,
-          maxHeight: size,
-        }
+        width: size,
+        height: size,
+        minWidth: size,
+        minHeight: size,
+        maxWidth: size,
+        maxHeight: size,
+      }
       : {}),
     ...style,
   };

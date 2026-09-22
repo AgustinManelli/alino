@@ -1,0 +1,78 @@
+{
+  "triggerAria": "Abrir racha",
+  "header": {
+    "title": "Tu racha",
+    "recordOne": "Récord: {{count}} día",
+    "recordOther": "Récord: {{count}} días"
+  },
+  "dayUnitOne": "DÍA",
+  "dayUnitOther": "DÍAS",
+  "status": {
+    "completedToday": "¡Objetivo cumplido hoy! Mantuviste tu racha encendida.",
+    "frozen": "Racha protegida con un congelador. Completá una tarea hoy para reactivarla.",
+    "endingSoon": "¡Quedan {{hours}} horas! Completá una tarea para no perder tu racha.",
+    "keepStreak": "Completá una tarea hoy para mantener tu racha.",
+    "startStreak": "Completá una tarea hoy para comenzar tu racha."
+  },
+  "history": {
+    "title": "Últimos 7 días",
+    "days": [
+      "D",
+      "L",
+      "M",
+      "X",
+      "J",
+      "V",
+      "S"
+    ],
+    "tooltips": {
+      "started": "Racha iniciada (→ {{count}} días)",
+      "extended": "Racha extendida (→ {{count}} días)",
+      "protectedFreeOne": "Protegida con {{count}} protector gratuito",
+      "protectedFreeOther": "Protegida con {{count}} protectores gratuitos",
+      "protectedPurchasedOne": "Protegida con {{count}} protector comprado",
+      "protectedPurchasedOther": "Protegida con {{count}} protectores comprados",
+      "protectedMixed": "Protegida ({{free}} gratuito + {{purchased}} comprado)",
+      "lost": "Racha perdida",
+      "today": "Completá una tarea hoy",
+      "missed": "Sin actividad"
+    }
+  },
+  "protectors": {
+    "title": "Protectores disponibles",
+    "subtitleCount": "{{free}} gratuito{{freeSuffix}} este mes",
+    "subtitleEmpty": "Protegen tu racha automáticamente si no completás tareas un día"
+  },
+  "shop": {
+    "title": "Comprar protectores",
+    "buyTitle": "Comprar {{name}} por {{price}} monedas",
+    "protectorsCountOne": "+{{count}} protector",
+    "protectorsCountOther": "+{{count}} protectores",
+    "purchaseSuccess": "¡Protectores comprados con éxito!",
+    "badges": {
+      "recommended": "Recomendado",
+      "popular": "Popular",
+      "mejor_valor": "Mejor valor",
+      "best_value": "Mejor valor"
+    },
+    "packages": {
+      "streak_3_days": {
+        "name": "3 protectores"
+      },
+      "streak_7_days": {
+        "name": "1 semana"
+      }
+    }
+  },
+  "errors": {
+    "UNAUTHORIZED": "No autorizado. Inicia sesión para continuar.",
+    "UNATH": "No autorizado. Inicia sesión para continuar.",
+    "PACKAGE_NOT_FOUND": "El paquete seleccionado no existe o no está disponible.",
+    "NOTFD": "El paquete seleccionado no existe o no está disponible.",
+    "INSUFFICIENT_COINS": "Necesitas {{required}} monedas. Tu saldo es de {{balance}} monedas.",
+    "INSUFFICIENT_COINS_GENERIC": "No tienes suficientes monedas para realizar esta compra.",
+    "INSUF": "No tienes suficientes monedas para realizar esta compra.",
+    "MAX_PROTECTORS_REACHED": "Has alcanzado el límite máximo de protectores.",
+    "GENERIC_ERROR": "No se pudo realizar la compra."
+  }
+}

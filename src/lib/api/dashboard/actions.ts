@@ -9,6 +9,7 @@ import {
   DashboardFullPayload,
 } from "@/lib/schemas/dashboard.types";
 import { AppUpdatesType, DashboardData } from "@/lib/schemas/database.types";
+import { StreakPackage } from "@/lib/api/shop/actions";
 
 const UNKNOWN_ERROR = "Error desconocido.";
 
@@ -233,6 +234,7 @@ export async function getStreakData(timezone?: string): Promise<{
       free_protectors_used: number;
       purchased_protectors_used: number;
     }>;
+    packages?: StreakPackage[];
   };
   error?: string;
 }> {

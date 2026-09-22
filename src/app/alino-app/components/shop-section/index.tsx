@@ -14,8 +14,9 @@ import {
 import { CosmeticItem } from "@/lib/schemas/database.types";
 import { getCosmeticTranslation, getCoinPackTranslation } from "@/lib/i18n/helpers";
 import { ShopGalleryModal } from "@/app/alino-app/components/shop-gallery-modal";
-import { toast } from "sonner";
+import { customToast } from "@/lib/toasts";
 import styles from "./ShopSection.module.css";
+import { CounterAnimation } from "@/components/ui/CounterAnimation";
 
 export const ShopSection = () => {
   const { t } = useTranslation(["shop", "common"]);
@@ -66,22 +67,22 @@ export const ShopSection = () => {
     e.preventDefault();
     const cleanCode = promoCode.trim();
     if (!cleanCode) {
-      toast.error(t("shop:promo.emptyError"));
+      customToast.error(t("shop:promo.emptyError"));
       return;
     }
 
     const res = await redeemPromoCode(cleanCode);
     if (res.success) {
-      toast.success(res.message || t("shop:promo.success"));
+      customToast.success(res.message || t("shop:promo.success"));
       setPromoCode("");
     } else {
-      toast.error(res.error || t("shop:promo.genericError"));
+      customToast.error(res.error || t("shop:promo.genericError"));
     }
   };
 
   const handleBuyCosmetic = async (item: CosmeticItem) => {
     if (coins < item.coins_price) {
-      toast.error(t("shop:cosmetics.insufficientCoins"));
+      customToast.error(t("shop:cosmetics.insufficientCoins"));
       return;
     }
 
@@ -94,9 +95,9 @@ export const ShopSection = () => {
           prev.map((c) => (c.id === item.id ? { ...c, is_unlocked: true } : c))
         );
         const trans = getCosmeticTranslation(item);
-        toast.success(t("shop:cosmetics.purchaseSuccess", { name: trans.name }));
+        customToast.success(t("shop:cosmetics.purchaseSuccess", { name: trans.name }));
       } else {
-        toast.error(res.error || t("shop:cosmetics.purchaseError"));
+        customToast.error(res.error || t("shop:cosmetics.purchaseError"));
       }
     } finally {
       setIsPurchasingCosmeticId(null);
@@ -121,7 +122,10 @@ export const ShopSection = () => {
         tabIndex={0}
       >
         <AlinoCoinIcon amount={coins} size={15} />
-        <span className={styles.coinsCount}>{coins}</span>
+        <CounterAnimation
+          value={coins}
+          className={styles.coinsCount}
+        />
       </div>
 
       {isOpen && (
@@ -278,8 +282,8 @@ export const ShopSection = () => {
                             {isPurchasingCosmeticId === item.id
                               ? t("shop:cosmetics.purchasing")
                               : coins < item.coins_price
-                              ? t("shop:cosmetics.notEnoughCoins")
-                              : t("shop:cosmetics.buy")}
+                                ? t("shop:cosmetics.notEnoughCoins")
+                                : t("shop:cosmetics.buy")}
                           </button>
                         </div>
                       </div>

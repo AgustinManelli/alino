@@ -1,0 +1,78 @@
+{
+  "triggerAria": "Open streak",
+  "header": {
+    "title": "Your streak",
+    "recordOne": "Record: {{count}} day",
+    "recordOther": "Record: {{count}} days"
+  },
+  "dayUnitOne": "DAY",
+  "dayUnitOther": "DAYS",
+  "status": {
+    "completedToday": "Goal accomplished today! You kept your streak burning.",
+    "frozen": "Streak protected with a freeze. Complete a task today to reactivate it.",
+    "endingSoon": "{{hours}} hours left! Complete a task to avoid losing your streak.",
+    "keepStreak": "Complete a task today to keep your streak.",
+    "startStreak": "Complete a task today to start your streak."
+  },
+  "history": {
+    "title": "Last 7 days",
+    "days": [
+      "S",
+      "M",
+      "T",
+      "W",
+      "T",
+      "F",
+      "S"
+    ],
+    "tooltips": {
+      "started": "Streak started (→ {{count}} days)",
+      "extended": "Streak extended (→ {{count}} days)",
+      "protectedFreeOne": "Protected with {{count}} free protector",
+      "protectedFreeOther": "Protected with {{count}} free protectors",
+      "protectedPurchasedOne": "Protected with {{count}} purchased protector",
+      "protectedPurchasedOther": "Protected with {{count}} purchased protectors",
+      "protectedMixed": "Protected ({{free}} free + {{purchased}} purchased)",
+      "lost": "Streak lost",
+      "today": "Complete a task today",
+      "missed": "No activity"
+    }
+  },
+  "protectors": {
+    "title": "Available protectors",
+    "subtitleCount": "{{free}} free this month",
+    "subtitleEmpty": "Automatically protects your streak if you miss completing tasks for a day"
+  },
+  "shop": {
+    "title": "Buy protectors",
+    "buyTitle": "Buy {{name}} for {{price}} coins",
+    "protectorsCountOne": "+{{count}} protector",
+    "protectorsCountOther": "+{{count}} protectors",
+    "purchaseSuccess": "Protectors purchased successfully!",
+    "badges": {
+      "recommended": "Recommended",
+      "popular": "Popular",
+      "mejor_valor": "Best value",
+      "best_value": "Best value"
+    },
+    "packages": {
+      "streak_3_days": {
+        "name": "3 protectors"
+      },
+      "streak_7_days": {
+        "name": "1 week"
+      }
+    }
+  },
+  "errors": {
+    "UNAUTHORIZED": "Unauthorized. Please log in to continue.",
+    "UNATH": "Unauthorized. Please log in to continue.",
+    "PACKAGE_NOT_FOUND": "The selected package does not exist or is unavailable.",
+    "NOTFD": "The selected package does not exist or is unavailable.",
+    "INSUFFICIENT_COINS": "You need {{required}} coins. Your balance is {{balance}} coins.",
+    "INSUFFICIENT_COINS_GENERIC": "You do not have enough coins to make this purchase.",
+    "INSUF": "You do not have enough coins to make this purchase.",
+    "MAX_PROTECTORS_REACHED": "Maximum protector limit reached.",
+    "GENERIC_ERROR": "Could not complete the purchase."
+  }
+}

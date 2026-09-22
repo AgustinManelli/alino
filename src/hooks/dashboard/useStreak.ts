@@ -1,6 +1,7 @@
 "use client";
 
 import { useStreakStore } from "@/store/useStreakStore";
+import { StreakPackage } from "@/lib/api/shop/actions";
 
 export type DayHistory = {
   date: string;
@@ -27,6 +28,7 @@ export type StreakData = {
   purchased_protectors: number;
   is_active_today: boolean;
   last_7_days: DayHistory[];
+  packages?: StreakPackage[];
 };
 
 export function useStreak() {

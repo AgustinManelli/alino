@@ -319,12 +319,6 @@ export const SortableFolder = memo(function SortableFolder({
   const configOptions = useMemo(() => {
     return [
       {
-        name: "Nueva lista",
-        icon: NEW_LIST_ICON,
-        action: handleStartNewList,
-        enabled: true,
-      },
-      {
         name: "Editar",
         icon: EDIT_ICON,
         action: handleInfoEdit,
@@ -334,6 +328,12 @@ export const SortableFolder = memo(function SortableFolder({
         name: folder.pinned ? "Desfijar" : "Fijar",
         icon: folder.pinned ? UNPIN_ICON : PIN_ICON,
         action: handlePin,
+        enabled: true,
+      },
+      {
+        name: "Nueva lista",
+        icon: NEW_LIST_ICON,
+        action: handleStartNewList,
         enabled: true,
       },
       {
@@ -491,7 +491,7 @@ export const SortableFolder = memo(function SortableFolder({
                       </div>
                     )}
                     <div className={styles.counterMobile}>
-                      <CounterAnimation tasksLength={listsCount} />
+                      <CounterAnimation value={listsCount} />
                     </div>
                   </section>
                 ) : (
@@ -515,7 +515,7 @@ export const SortableFolder = memo(function SortableFolder({
                       className={styles.counter}
                       style={isSelectionMode ? { opacity: 1 } : undefined}
                     >
-                      <CounterAnimation tasksLength={listsCount} />
+                      <CounterAnimation value={listsCount} />
                     </div>
                   </div>
                 )}

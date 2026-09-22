@@ -693,7 +693,6 @@ export const FrameGoldLuxury: React.FC<CosmeticRendererProps> = ({ size = 96, bo
 export const OverlayProCrown: React.FC<CosmeticRendererProps> = ({ size = 96 }) => {
   const scale = size / 96;
   const uid = useCosmeticId("pro_crown");
-
   const goldId = `${uid}_gold`;
   const ballId = `${uid}_ball`;
   const gemId = `${uid}_gem`;
@@ -705,6 +704,7 @@ export const OverlayProCrown: React.FC<CosmeticRendererProps> = ({ size = 96 }) 
         position: "absolute",
         top: -25 * scale,
         left: "50%",
+
         transform: "translateX(0%) rotate(20deg)",
         width: 64 * scale,
         height: 42 * scale,

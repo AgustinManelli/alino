@@ -12,7 +12,7 @@
   justify-content: flex-start;
   align-items: center;
   padding: 7px 10px;
-  gap: 7px;
+  /* gap: 7px; */
   transition: background-color 0.3s ease-in-out, height 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   content-visibility: auto;
   contain-intrinsic-size: auto 45px;

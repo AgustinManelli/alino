@@ -134,9 +134,8 @@ export function MemberRow({
           style={{ borderRadius: "10px" }}
         />
         <span
-          className={`${styles.statusDot} ${
-            isOnline ? styles.statusOnline : styles.statusOffline
-          }`}
+          className={`${styles.statusDot} ${isOnline ? styles.statusOnline : styles.statusOffline
+            }`}
           title={isOnline ? "En línea" : "Desconectado"}
           aria-label={isOnline ? "En línea" : "Desconectado"}
         />
@@ -149,7 +148,7 @@ export function MemberRow({
             {isCurrentUser && <span className={styles.selfTag}> (tú)</span>}
           </p>
           {user.level ? <LevelBadge level={user.level} size={15} /> : null}
-          {isOnline && <span className={styles.onlineBadge}>En línea</span>}
+          {/* {isOnline && <span className={styles.onlineBadge}>En línea</span>} */}
         </div>
         <p className={styles.username}>@{user.username}</p>
       </div>

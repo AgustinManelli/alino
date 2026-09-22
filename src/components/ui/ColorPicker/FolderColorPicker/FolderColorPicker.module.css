@@ -29,6 +29,7 @@
   align-items: center;
   width: 16px;
   height: 16px;
+  margin: 0px 4.5px;
 }
 
 .arrowContainer {
@@ -36,7 +37,7 @@
   display: flex;
   width: fit-content;
   height: fit-content;
-  margin-right: 10px;
+  margin-right: 5px;
   width: 16px;
 }
 
