@@ -39,8 +39,8 @@ next-env.d.ts
 estructura.sql
 schema.sql
 
-supabase
-supabase/.temp/
+/supabase
+/supabase/.temp/
 
 scripts
 

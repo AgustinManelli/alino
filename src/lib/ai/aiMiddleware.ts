@@ -1,26 +1,28 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { User } from "@supabase/supabase-js";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import {
+  AIFeatureKey,
+  SubscriptionTier,
+  hasAIFeatureAccess,
+  getAIFeatureConfig,
+} from "./permissions";
+import { preCheckAICredits, deductAICredits } from "./credits";
 
-/** Resultado exitoso de autenticación */
+export { preCheckAICredits, deductAICredits };
+
 interface AuthSuccess {
   user: User;
   supabase: SupabaseClient;
   errorResponse?: never;
 }
 
-/** Resultado fallido de autenticación */
 interface AuthFailure {
   user?: never;
   supabase?: never;
   errorResponse: NextResponse;
 }
 
-/**
- * Verifica que el usuario esté autenticado y devuelve user + supabase client.
- * Si no está autenticado, devuelve un errorResponse listo para retornar.
- */
 export async function getAuthenticatedUser(): Promise<AuthSuccess | AuthFailure> {
   const supabase = createClient();
   const {
@@ -40,9 +42,63 @@ export async function getAuthenticatedUser(): Promise<AuthSuccess | AuthFailure>
   return { user, supabase };
 }
 
-/**
- * Maneja errores de providers de IA de forma uniforme.
- */
+export interface FeatureAccessSuccess {
+  allowed: true;
+  tier: SubscriptionTier;
+  errorResponse?: never;
+}
+
+export interface FeatureAccessFailure {
+  allowed: false;
+  tier: SubscriptionTier;
+  errorResponse: NextResponse;
+}
+
+export type FeatureAccessResult = FeatureAccessSuccess | FeatureAccessFailure;
+
+export async function checkAIFeatureAccess(
+  supabase: SupabaseClient,
+  userId: string,
+  feature: AIFeatureKey
+): Promise<FeatureAccessResult> {
+  const { data: dbTier, error: tierError } = await supabase.rpc(
+    "get_user_tier",
+    { p_user_id: userId }
+  );
+
+  if (tierError) {
+    console.error("[checkAIFeatureAccess] Error obteniendo tier desde DB:", tierError);
+  }
+
+  const currentTier = (dbTier || "free") as SubscriptionTier;
+  const isAllowed = hasAIFeatureAccess(currentTier, feature);
+
+  if (!isAllowed) {
+    const config = getAIFeatureConfig(feature);
+    return {
+      allowed: false,
+      tier: currentTier,
+      errorResponse: NextResponse.json(
+        {
+          error:
+            config.upgradeMessage ||
+            "Esta funcionalidad de IA no está disponible en tu plan actual.",
+          code: "TIER_INSUFFICIENT",
+          feature,
+          currentTier,
+          requiredTiers: config.allowedTiers,
+        },
+        { status: 403 }
+      ),
+    };
+  }
+
+  return {
+    allowed: true,
+    tier: currentTier,
+  };
+}
+
 export function handleAIError(err: unknown): NextResponse {
   console.error("[AI Route] Error:", err);
   const message = err instanceof Error ? err.message : "Error interno del servidor.";
@@ -65,9 +121,6 @@ export function handleAIError(err: unknown): NextResponse {
   );
 }
 
-/**
- * Procesa la respuesta de consume_feature_limit y retorna un error si no está permitido.
- */
 export function handleCreditResult(creditResult: {
   allowed: boolean;
   reason?: string;
@@ -102,5 +155,5 @@ export function handleCreditResult(creditResult: {
     );
   }
 
-  return null; // null = sin error, proceder
+  return null;
 }

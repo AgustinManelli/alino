@@ -2,11 +2,18 @@
 import { useState } from "react";
 import { EnhanceAction } from "@/lib/ai/aiProvider";
 
+export interface EnhanceOptions {
+  taskId?: string;
+  field?: "task_content" | "description";
+  saveToDb?: boolean;
+}
+
 interface UseAIEnhanceReturn {
   enhance: (
     text: string,
     action: EnhanceAction,
-  ) => Promise<{ result: string | null; error: string | null }>;
+    options?: EnhanceOptions
+  ) => Promise<{ result: string | null; saved?: boolean; error: string | null }>;
   loading: boolean;
   error: string | null;
 }
@@ -18,14 +25,21 @@ export function useAIEnhance(): UseAIEnhanceReturn {
   const enhance = async (
     text: string,
     action: EnhanceAction,
-  ): Promise<{ result: string | null; error: string | null }> => {
+    options?: EnhanceOptions
+  ): Promise<{ result: string | null; saved?: boolean; error: string | null }> => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/ai/enhance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, action }),
+        body: JSON.stringify({
+          text,
+          action,
+          taskId: options?.taskId,
+          field: options?.field ?? "task_content",
+          saveToDb: options?.saveToDb ?? false,
+        }),
       });
 
       const data = await res.json();
@@ -35,7 +49,11 @@ export function useAIEnhance(): UseAIEnhanceReturn {
         return { result: null, error: errMsg };
       }
 
-      return { result: data.result as string, error: null };
+      return {
+        result: data.result as string,
+        saved: data.saved as boolean | undefined,
+        error: null,
+      };
     } catch {
       const errMsg = "No se pudo conectar con el servidor.";
       setError(errMsg);

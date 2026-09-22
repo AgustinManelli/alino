@@ -93,7 +93,67 @@ export function useAITaskSplit() {
     []
   );
 
+  /**
+   * Ejecuta la división y guarda directamente las subtareas en la base de datos
+   * de forma atómica en el backend. Si el usuario cierra el navegador o se corta
+   * la conexión, las tareas ya están seguras y persistidas en Supabase.
+   */
+  const splitAndPersist = useCallback(
+    async (params: {
+      taskContent: string;
+      listId: string;
+      maxSubtasks?: number;
+      taskRank?: string | null;
+      prevTaskRank?: string | null;
+    }): Promise<{
+      data: { tasks: TaskType[]; credits: SplitPreviewResult["credits"] } | null;
+      error: string | null;
+    }> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await fetch("/api/ai/split", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            taskContent: params.taskContent,
+            maxSubtasks: params.maxSubtasks ?? 5,
+            listId: params.listId,
+            taskRank: params.taskRank ?? null,
+            prevTaskRank: params.prevTaskRank ?? null,
+            saveToDb: true,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          const errMsg = data.error ?? "Error al dividir la tarea.";
+          setError(errMsg);
+          return { data: null, error: errMsg };
+        }
+
+        const createdTasks = (data.persistedTasks || data.tasks) as TaskType[];
+        return {
+          data: {
+            tasks: createdTasks,
+            credits: data.credits,
+          },
+          error: null,
+        };
+      } catch (err) {
+        const errMsg = "No se pudo conectar con el servidor. Verificá tu conexión.";
+        setError(errMsg);
+        return { data: null, error: errMsg };
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   const clearError = useCallback(() => setError(null), []);
 
-  return { preview, confirm, loading, error, clearError };
+  return { preview, confirm, splitAndPersist, loading, error, clearError };
 }

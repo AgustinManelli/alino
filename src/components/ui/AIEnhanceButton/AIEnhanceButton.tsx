@@ -13,6 +13,7 @@ import { useUserDataStore } from "@/store/useUserDataStore";
 import { useModalStore } from "@/store/useModalStore";
 import { Tabs, TabOption } from "@/components/ui/Tabs/Tabs";
 import { AIShadowEffect } from "@/components/ui/AIShadowEffect/AIShadowEffect";
+import { hasAIFeatureAccess } from "@/lib/ai/permissions";
 
 import {
   Check,
@@ -34,27 +35,27 @@ const ENHANCE_ACTIONS: {
   Icon?: React.ElementType;
   emoji?: string;
 }[] = [
-  {
-    id: "improve",
-    label: "Mejorar",
-    Icon: IAStars,
-  },
-  {
-    id: "summarize",
-    label: "Resumir",
-    Icon: CompressIcon,
-  },
-  {
-    id: "expand",
-    label: "Expandir",
-    Icon: ExpandIcon,
-  },
-  {
-    id: "fix",
-    label: "Corregir",
-    Icon: FixIcon,
-  },
-];
+    {
+      id: "improve",
+      label: "Mejorar",
+      Icon: IAStars,
+    },
+    {
+      id: "summarize",
+      label: "Resumir",
+      Icon: CompressIcon,
+    },
+    {
+      id: "expand",
+      label: "Expandir",
+      Icon: ExpandIcon,
+    },
+    {
+      id: "fix",
+      label: "Corregir",
+      Icon: FixIcon,
+    },
+  ];
 
 const MAX_TASKS_OPTIONS = [3, 5, 7] as const;
 const DEFAULT_MAX_TASKS = 5;
@@ -112,7 +113,7 @@ export function AIEnhanceButton({
 
   const user = useUserDataStore((s) => s.user);
   const userTier = (user as any)?.tier || "free";
-  const canGenerateTasks = userTier === "pro" || userTier === "student";
+  const canGenerateTasks = hasAIFeatureAccess(userTier, "task_generation");
 
   const { enhance } = useAIEnhance();
   const { generate, loading: genLoading } = useAITaskGeneration();
@@ -275,7 +276,6 @@ export function AIEnhanceButton({
                     }
                   />
 
-                  {/* Header */}
                   <div className={styles.panelHeader}>
                     <IAStars
                       style={{
@@ -288,7 +288,6 @@ export function AIEnhanceButton({
                     <span className={styles.panelTitle}>Asistente IA</span>
                   </div>
 
-                  {/* Tabs */}
                   {showGenerateTasks && (
                     <Tabs
                       options={tabOptions}
@@ -301,7 +300,6 @@ export function AIEnhanceButton({
 
                   <div className={styles.divisor} />
 
-                  {/*Enhance tab*/}
                   {activeTab === "enhance" && (
                     <div className={styles.tabContent}>
                       {enhanceFlow.phase === "idle" && (
@@ -387,52 +385,52 @@ export function AIEnhanceButton({
                         <>
                           {(generateFlow.phase === "idle" ||
                             generateFlow.phase === "error") && (
-                            <>
-                              <textarea
-                                className={styles.promptTextarea}
-                                placeholder="Genera las tareas que necesites para esta lista."
-                                value={taskPrompt}
-                                onChange={(e) => setTaskPrompt(e.target.value)}
-                                rows={4}
-                                maxLength={1_500}
-                              />
-                              <div className={styles.generateOptions}>
-                                <span className={styles.maxLabel}>
-                                  Máx. tareas:
-                                </span>
-                                <div className={styles.maxOptions}>
-                                  {MAX_TASKS_OPTIONS.map((n) => (
-                                    <button
-                                      key={n}
-                                      className={`${styles.maxBtn} ${maxTasks === n ? styles.maxBtnActive : ""}`}
-                                      onClick={() => setMaxTasks(n)}
-                                    >
-                                      {n}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                              {generateFlow.phase === "error" && (
-                                <p className={styles.errorTextInline}>
-                                  {generateFlow.message}
-                                </p>
-                              )}
-                              <button
-                                className={styles.generateBtn}
-                                onClick={handleGenerate}
-                                disabled={!taskPrompt.trim()}
-                              >
-                                <IAStars
-                                  style={{
-                                    width: "12px",
-                                    height: "12px",
-                                    stroke: "currentColor",
-                                  }}
+                              <>
+                                <textarea
+                                  className={styles.promptTextarea}
+                                  placeholder="Genera las tareas que necesites para esta lista."
+                                  value={taskPrompt}
+                                  onChange={(e) => setTaskPrompt(e.target.value)}
+                                  rows={4}
+                                  maxLength={1_500}
                                 />
-                                Generar tareas
-                              </button>
-                            </>
-                          )}
+                                <div className={styles.generateOptions}>
+                                  <span className={styles.maxLabel}>
+                                    Máx. tareas:
+                                  </span>
+                                  <div className={styles.maxOptions}>
+                                    {MAX_TASKS_OPTIONS.map((n) => (
+                                      <button
+                                        key={n}
+                                        className={`${styles.maxBtn} ${maxTasks === n ? styles.maxBtnActive : ""}`}
+                                        onClick={() => setMaxTasks(n)}
+                                      >
+                                        {n}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                {generateFlow.phase === "error" && (
+                                  <p className={styles.errorTextInline}>
+                                    {generateFlow.message}
+                                  </p>
+                                )}
+                                <button
+                                  className={styles.generateBtn}
+                                  onClick={handleGenerate}
+                                  disabled={!taskPrompt.trim()}
+                                >
+                                  <IAStars
+                                    style={{
+                                      width: "12px",
+                                      height: "12px",
+                                      stroke: "currentColor",
+                                    }}
+                                  />
+                                  Generar tareas
+                                </button>
+                              </>
+                            )}
 
                           {generateFlow.phase === "loading" && (
                             <div className={styles.loadingState}>

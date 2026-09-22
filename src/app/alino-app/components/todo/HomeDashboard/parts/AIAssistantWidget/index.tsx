@@ -6,31 +6,27 @@ import { motion, AnimatePresence } from "motion/react";
 import styles from "./AIAssistantWidget.module.css";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { IAStarsLoader } from "@/components/ui/icons/ia-loader";
-import { useInsertList } from "@/hooks/todo/lists/useInsertList";
-import { useAddTasks } from "@/hooks/todo/tasks/useAddTasks";
 import { customToast } from "@/lib/toasts";
 import { useWidgetPreview } from "@/context/WidgetPreviewContext";
-
 import { AIAssistantWidgetPreview } from "./AIAssistantWidgetPreview";
-
-import { tierSatisfies } from "@/config/widgets.registry";
+import { useModalStore } from "@/store/useModalStore";
+import { hasAIFeatureAccess } from "@/lib/ai/permissions";
 
 export default function AIAssistantWidget() {
   const isPreview = useWidgetPreview();
   const [prompt, setPrompt] = useState("");
-  const [loadingLocal, setLoadingLocal] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("Tu plan y tareas ya están guardados en tu cuenta.");
   const {
-    generate,
+    generateAndCreateList,
     error: aiError,
-    loading: loadingHook,
+    loading: isProcessing,
   } = useAITaskGeneration();
-  const { insertList } = useInsertList();
-  const { addTasks } = useAddTasks();
+  const openModal = useModalStore((state) => state.open);
   const user = useUserDataStore((state) => state.user);
 
   const canGenerateTasks = useMemo(
-    () => tierSatisfies(user?.tier ?? "free", "student"),
+    () => hasAIFeatureAccess(user?.tier, "assistant_widget"),
     [user?.tier],
   );
 
@@ -38,49 +34,39 @@ export default function AIAssistantWidget() {
     return <AIAssistantWidgetPreview />;
   }
 
-  const isProcessing = loadingLocal || loadingHook;
-
   const handleGenerateList = useCallback(async () => {
     if (!prompt.trim() || !canGenerateTasks || isProcessing) return;
-    setLoadingLocal(true);
+
     try {
-      const { data: responseData, error: responseError } = await generate(
-        prompt.trim(),
-        null,
-      );
-      if (!responseData || !responseData.tasks.length) {
-        throw new Error(responseError || "No se pudieron generar tareas.");
+      const { data, error } = await generateAndCreateList({
+        prompt: prompt.trim(),
+      });
+
+      if (error || !data) {
+        throw new Error(error || "No se pudo generar la estructura de trabajo.");
       }
-      const title = responseData.listSubject || "Lista Generada por IA";
-      const { error: listError, list_id } = await insertList(
-        title,
-        "#87189d",
-        null,
-      );
-      if (listError || !list_id) {
-        throw new Error("Ocurrió un error creando la lista contenedor.");
+
+      const folderCount = data.folders?.length || 0;
+      const listCount = data.lists?.length || 1;
+      const taskCount = data.tasks?.length || 0;
+
+      let msg = "";
+      if (folderCount > 0) {
+        msg = `¡Estructura creada! ${folderCount} carpeta${folderCount > 1 ? "s" : ""}, ${listCount} lista${listCount > 1 ? "s" : ""} y ${taskCount} tareas organizadas.`;
+      } else if (listCount > 1) {
+        msg = `¡${listCount} listas creadas con ${taskCount} tareas organizadas!`;
+      } else {
+        msg = `¡Lista "${data.list?.list?.list_name || "Plan"}" creada con ${taskCount} tareas!`;
       }
-      const tasksToInsert = responseData.tasks.map((t) => ({
-        list_id: list_id,
-        task_content: `<p>${t.text}</p>`,
-        target_date: t.target_date,
-        note: t.type === "note",
-      }));
-      const { error: taskError } = await addTasks(tasksToInsert);
-      if (taskError) {
-        throw new Error(
-          "Ocurrió un problema añadiendo las tareas a la nueva lista.",
-        );
-      }
+
+      setSuccessMsg(msg);
       setSuccess(true);
       setPrompt("");
-      customToast.success("¡Lista y tareas generadas exitosamente!");
+      customToast.success(msg);
     } catch (err) {
       customToast.error((err as Error).message);
-    } finally {
-      setLoadingLocal(false);
     }
-  }, [prompt, canGenerateTasks, isProcessing, generate, insertList, addTasks]);
+  }, [prompt, canGenerateTasks, isProcessing, generateAndCreateList]);
 
   const maxLength = 2000;
   const currentLength = prompt.length;
@@ -107,7 +93,7 @@ export default function AIAssistantWidget() {
               />
               <h4 className={styles.successTitle}>¡Todo listo!</h4>
               <p className={styles.successDesc}>
-                Revisa tu nueva lista en la barra lateral.
+                {successMsg}
               </p>
               <button
                 className={styles.resetBtn}
@@ -130,7 +116,7 @@ export default function AIAssistantWidget() {
                 duration={2}
                 title="Cargando IA"
               />
-              <span className={styles.loadingDots}>Generando plan...</span>
+              <span className={styles.loadingDots}>Diseñando y organizando estructura...</span>
             </motion.div>
           ) : (
             <motion.div
@@ -142,14 +128,25 @@ export default function AIAssistantWidget() {
             >
               {(!canGenerateTasks || aiError) && (
                 <div className={styles.errorState}>
-                  {!canGenerateTasks
-                    ? "Función exclusiva para usuarios Pro y Estudiantes."
-                    : aiError}
+                  {!canGenerateTasks ? (
+                    <div className={styles.upgradeNotice}>
+                      <span>Función exclusiva para usuarios Pro y Ultra.</span>
+                      <button
+                        type="button"
+                        className={styles.upgradeNoticeBtn}
+                        onClick={() => openModal({ type: "premium" })}
+                      >
+                        Mejorar plan
+                      </button>
+                    </div>
+                  ) : (
+                    aiError
+                  )}
                 </div>
               )}
               <textarea
                 className={styles.textarea}
-                placeholder="Ej. Organiza mi examen para la semana que viene de los siguientes temas..."
+                placeholder="Ej. Organiza mi mes: tengo 2 exámenes de la facultad y una mudanza..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 maxLength={maxLength}
