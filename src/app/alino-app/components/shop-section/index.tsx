@@ -8,7 +8,6 @@ import { ModalBox } from "@/components/ui/modal-options-box";
 import { AlinoCoinIcon } from "@/components/ui/alino-coins-icon";
 import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
 import {
-  getShopCosmeticsCatalogAction,
   buyCosmeticAction,
 } from "@/lib/api/cosmetics/actions";
 import { CosmeticItem } from "@/lib/schemas/database.types";
@@ -23,7 +22,6 @@ export const ShopSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [promoCode, setPromoCode] = useState("");
-  const [shopCosmetics, setShopCosmetics] = useState<CosmeticItem[]>([]);
   const [isPurchasingCosmeticId, setIsPurchasingCosmeticId] = useState<string | null>(null);
   const iconRef = useRef<HTMLDivElement>(null);
 
@@ -31,23 +29,18 @@ export const ShopSection = () => {
   const {
     coins,
     coinPacks,
+    cosmetics,
     isLoading,
     isRedeeming,
     fetchShopData,
     redeemPromoCode,
+    markCosmeticUnlocked,
+    setCoins,
   } = useShopStore();
 
   useEffect(() => {
     fetchShopData();
   }, [fetchShopData]);
-
-  const loadCosmetics = () => {
-    getShopCosmeticsCatalogAction().then((res) => {
-      if (res.data) {
-        setShopCosmetics(res.data.cosmetics);
-      }
-    });
-  };
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -55,7 +48,6 @@ export const ShopSection = () => {
       const next = !prev;
       if (next) {
         fetchShopData(true);
-        loadCosmetics();
       }
       return next;
     });
@@ -103,10 +95,8 @@ export const ShopSection = () => {
     try {
       const res = await buyCosmeticAction(item.id);
       if (res.success && typeof res.new_balance === "number") {
-        useShopStore.getState().setCoins(res.new_balance);
-        setShopCosmetics((prev) =>
-          prev.map((c) => (c.id === item.id ? { ...c, is_unlocked: true } : c))
-        );
+        setCoins(res.new_balance);
+        markCosmeticUnlocked(item.id);
         const trans = getCosmeticTranslation(item);
         customToast.success(t("shop:cosmetics.purchaseSuccess", { name: trans.name }));
       } else {
@@ -123,11 +113,11 @@ export const ShopSection = () => {
   };
 
   const previewCosmetics = useMemo(() => {
-    return shopCosmetics
+    return cosmetics
       .filter((item) => !item.is_unlocked)
       .sort((a, b) => b.sort_order - a.sort_order)
       .slice(0, 4);
-  }, [shopCosmetics]);
+  }, [cosmetics]);
 
   return (
     <div className={styles.container}>
@@ -248,7 +238,7 @@ export const ShopSection = () => {
               </div>
 
               <div className={styles.cosmeticsShopList}>
-                {previewCosmetics.length === 0 && (
+                {previewCosmetics.length > 0 ? (
                   previewCosmetics.map((item) => {
                     const cosmeticTrans = getCosmeticTranslation(item);
                     return (
@@ -285,6 +275,7 @@ export const ShopSection = () => {
                             type="button"
                             className={styles.cosmeticBuyBtn}
                             onClick={() => handleBuyCosmetic(item)}
+                            disabled={isPurchasingCosmeticId === item.id}
                           >
                             {isPurchasingCosmeticId === item.id
                               ? t("shop:cosmetics.purchasing")
@@ -294,6 +285,10 @@ export const ShopSection = () => {
                       </div>
                     );
                   })
+                ) : (
+                  <div className={styles.emptyCosmetics}>
+                    {t("shop:cosmetics.allOwned")}
+                  </div>
                 )}
 
                 <button

@@ -81,6 +81,7 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
     setCoins,
     fetchShopData,
     buyAICreditPack,
+    markCosmeticUnlocked,
   } = useShopStore();
 
   const [activeSection, setActiveSection] = useState<ShopSectionType>("cosmetics");
@@ -154,6 +155,7 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
       const res = await buyCosmeticAction(item.id);
       if (res.success && typeof res.new_balance === "number") {
         setCoins(res.new_balance);
+        markCosmeticUnlocked(item.id);
         setCosmetics((prev) => prev.filter((c) => c.id !== item.id));
         const trans = getCosmeticTranslation(item);
         customToast.success(t("shop:cosmetics.purchaseSuccess", { name: trans.name }));
