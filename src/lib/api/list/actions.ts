@@ -1,6 +1,7 @@
 "use server";
 
-import { cache } from "react";
+import * as React from "react";
+const cache = (React as any).cache || (<T extends (...args: any[]) => any>(fn: T): T => fn);
 import { createClient as createClientServer } from "@/utils/supabase/server";
 import { SupabaseClient, User } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -190,7 +191,7 @@ export async function getLists(): Promise<{
     const unpinnedLists: ListsType[] = [];
     const seenFolderIds = new Set<string>();
 
-    (pinnedFoldersResult.data ?? []).forEach((p) => {
+    (pinnedFoldersResult.data ?? []).forEach((p: any) => {
       seenFolderIds.add(p.folder_id);
       folders.push({
         folder_id: p.folder_id,
@@ -416,7 +417,7 @@ export const insertList = async (
 
     const { supabase } = await getAuthenticatedSupabaseClient();
 
-    const rpcParams: Record<string, unknown> = {
+    const baseParams: Record<string, unknown> = {
       p_list_id: validation.data.list_id,
       p_list_name: validation.data.list_name,
       p_color: validation.data.color ?? "#87189d",
@@ -424,17 +425,66 @@ export const insertList = async (
       p_rank: validation.data.rank,
       p_index: validation.data.index,
     };
-    if (folder) {
-      rpcParams.p_folder = folder;
-    }
 
-    const { data, error } = await supabase.rpc(
+    let rpcError: any = null;
+    let rpcData: any = null;
+
+    const resWithFolder = await (supabase.rpc as any)(
       "create_list_and_owner_membership",
-      rpcParams
+      {
+        ...baseParams,
+        p_folder: folder ?? null,
+      }
     );
 
-    if (error) {
+    if (!resWithFolder.error) {
+      rpcData = resWithFolder.data;
+    } else {
+      rpcError = resWithFolder.error;
+
+      const resWithoutFolder = await (supabase.rpc as any)(
+        "create_list_and_owner_membership",
+        baseParams
+      );
+
+      if (!resWithoutFolder.error) {
+        rpcData = resWithoutFolder.data;
+        rpcError = null;
+      } else {
+        rpcError = resWithoutFolder.error;
+
+        const atomicRes = await (supabase.rpc as any)(
+          "create_list_with_tasks_atomic",
+          {
+            p_list_id: validation.data.list_id,
+            p_list_name: validation.data.list_name,
+            p_color: validation.data.color ?? "#87189d",
+            p_icon: validation.data.icon ?? null,
+            p_rank: validation.data.rank,
+            p_index: validation.data.index,
+            p_tasks: [],
+            p_cost: 0,
+            p_folder: folder ?? null,
+          }
+        );
+
+        if (!atomicRes.error) {
+          rpcData = atomicRes.data;
+          rpcError = null;
+        } else {
+          rpcError = atomicRes.error;
+          console.error(
+            "[insertList] Fallback create_list_with_tasks_atomic falló:",
+            atomicRes.error
+          );
+        }
+      }
+    }
+
+    if (rpcError) {
+      console.error("[insertList] Error en RPC:", rpcError);
       throw new Error(
+        rpcError.message ||
         "No se pudo insertar la lista. Intentalo nuevamente o contacta con soporte."
       );
     }
@@ -446,7 +496,7 @@ export const insertList = async (
         .eq("list_id", validation.data.list_id);
     }
 
-    return { data: data ?? null };
+    return { data: rpcData ?? null };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };
@@ -480,7 +530,7 @@ export const updatePinnedFolder = async (
     if (error) {
       throw new Error(
         error.message ||
-          "No se pudo actualizar el estado de fijado de la carpeta."
+        "No se pudo actualizar el estado de fijado de la carpeta."
       );
     }
 
@@ -793,7 +843,7 @@ export const updatePinnedList = async (
     if (error) {
       throw new Error(
         error.message ||
-          "No se pudo actualizar la lista. Intentalo nuevamente o contacta con soporte."
+        "No se pudo actualizar la lista. Intentalo nuevamente o contacta con soporte."
       );
     }
 
@@ -939,20 +989,20 @@ export const createListInvitation = async (
 };
 
 export type PendingInvitation = {
-  invitation_id:        string;
-  invited_user_id:      string;
-  inviter_user_id:      string;
+  invitation_id: string;
+  invited_user_id: string;
+  inviter_user_id: string;
   inviter_display_name: string;
-  inviter_username:     string;
-  inviter_avatar_url:   string | null;
-  list_id:              string;
-  list_name:            string;
-  status:               string;
-  created_at:           string;
-  expires_at:           string | null;
-  invited_username:     string;
+  inviter_username: string;
+  inviter_avatar_url: string | null;
+  list_id: string;
+  list_name: string;
+  status: string;
+  created_at: string;
+  expires_at: string | null;
+  invited_username: string;
   invited_display_name: string;
-  invited_avatar_url:   string | null;
+  invited_avatar_url: string | null;
 };
 
 export const getListPendingInvitations = async (

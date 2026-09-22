@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { useUserDataStore } from "@/store/useUserDataStore";
@@ -17,6 +17,8 @@ import { AchievementsSection } from "./components/achievements-section";
 import { AchievementsGalleryModal } from "./components/achievements-gallery";
 import dynamic from "next/dynamic";
 import { CompanionOverlayHost } from "./components/CompanionOverlayHost";
+import { AIAssistantChat } from "./components/ai-assistant-chat";
+import { hasAIFeatureAccess } from "@/lib/ai/permissions";
 
 const InitialUserConfiguration = dynamic(
   () =>
@@ -42,6 +44,7 @@ export const AppContent = ({ children }: Props) => {
   const user = useUserDataStore((state) => state.user);
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const { sidebarCollapsed, sidebarPosition } = useUserPreferencesStore();
+  const canAccessAssistantChat = hasAIFeatureAccess(user?.tier, "assistant_chat");
 
   const [showConfiguration, setShowConfiguration] = useState(
     user?.user_private?.initial_username_prompt_shown ?? false,
@@ -97,6 +100,7 @@ export const AppContent = ({ children }: Props) => {
       <ModalRenderer />
       <AchievementsGalleryModal />
       <CompanionOverlayHost />
+      {canAccessAssistantChat && <AIAssistantChat />}
       <section className={styles.topButtons}>
         <StreakSection />
         <ShopSection />

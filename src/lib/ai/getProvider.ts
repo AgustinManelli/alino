@@ -14,7 +14,7 @@ let cachedProvider: AIProvider | null = null;
 let currentProviderName: string | null = null;
 
 export function getAIProvider(): AIProvider {
-  const selectedProvider = AI_CONFIG.provider;
+  const selectedProvider = AI_CONFIG.primaryProvider;
 
   if (cachedProvider && currentProviderName === selectedProvider) {
     return cachedProvider;

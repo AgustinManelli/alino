@@ -5,11 +5,13 @@ import esShop from "./locales/es/shop.json";
 import esCosmetics from "./locales/es/cosmetics.json";
 import esStreak from "./locales/es/streak.json";
 import esConfig from "./locales/es/config.json";
+import esAssistant from "./locales/es/assistant.json";
 import enCommon from "./locales/en/common.json";
 import enShop from "./locales/en/shop.json";
 import enCosmetics from "./locales/en/cosmetics.json";
 import enStreak from "./locales/en/streak.json";
 import enConfig from "./locales/en/config.json";
+import enAssistant from "./locales/en/assistant.json";
 
 export const defaultResources = {
   es: {
@@ -18,6 +20,7 @@ export const defaultResources = {
     cosmetics: esCosmetics,
     streak: esStreak,
     config: esConfig,
+    assistant: esAssistant,
   },
   en: {
     common: enCommon,
@@ -25,6 +28,7 @@ export const defaultResources = {
     cosmetics: enCosmetics,
     streak: enStreak,
     config: enConfig,
+    assistant: enAssistant,
   },
 };
 
@@ -34,7 +38,7 @@ if (!i18n.isInitialized) {
     lng: "es",
     fallbackLng: "es",
     defaultNS: "common",
-    ns: ["common", "shop", "cosmetics", "streak", "config"],
+    ns: ["common", "shop", "cosmetics", "streak", "config", "assistant"],
     interpolation: {
       escapeValue: false,
     },

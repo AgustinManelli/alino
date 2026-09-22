@@ -3,7 +3,7 @@ export const LIMITS = {
   PROMPT_MAX:       1_500,
   TASK_TEXT_MAX:    300,
   LIST_SUBJECT_MAX: 30,
-  MAX_TASKS_CAP:    20,
+  MAX_TASKS_CAP:    35,
   MIN_TASKS:        1,
 } as const;
 

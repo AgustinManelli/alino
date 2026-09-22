@@ -1,87 +1,70 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthenticatedUser, handleAIError, handleCreditResult } from "@/lib/ai/aiMiddleware";
-import { getAIProvider } from "@/lib/ai/getProvider";
-import { containsInjection, sanitizeText, clampMaxTasks, LIMITS } from "@/lib/ai/sanitize";
-import { AI_FEATURE_KEY, AI_CREDIT_COSTS } from "@/lib/ai/creditCosts";
+import {
+  getAuthenticatedUser,
+  checkAIFeatureAccess,
+  preCheckAICredits,
+  handleAIError,
+} from "@/lib/ai/aiMiddleware";
+import { TaskSplitInputSchema } from "@/lib/ai/schemas/taskSplit";
+import { TaskSplitService } from "@/lib/ai/services/taskSplitService";
+
+export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
-  const auth = await getAuthenticatedUser();
-  if (auth.errorResponse) return auth.errorResponse;
-  const { user, supabase } = auth;
-
-  let body: Record<string, unknown>;
   try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Cuerpo inválido." }, { status: 400 });
-  }
+    const auth = await getAuthenticatedUser();
+    if (auth.errorResponse) return auth.errorResponse;
+    const { user, supabase } = auth;
 
-  const rawContent = body.taskContent;
-  if (!rawContent || typeof rawContent !== "string") {
-    return NextResponse.json({ error: "taskContent es requerido." }, { status: 400 });
-  }
-
-  const plainText = rawContent.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-  const taskContent = sanitizeText(plainText, LIMITS.PROMPT_MAX);
-
-  if (!taskContent) {
-    return NextResponse.json({ error: "El contenido de la tarea está vacío." }, { status: 400 });
-  }
-
-  if (containsInjection(taskContent)) {
-    return NextResponse.json(
-      { error: "El contenido de la tarea contiene texto no permitido." },
-      { status: 422 }
-    );
-  }
-
-  const maxSubtasks = clampMaxTasks(body.maxSubtasks) ?? 5;
-
-  const { data: creditResult, error: creditError } = await supabase.rpc(
-    "consume_feature_limit",
-    {
-      p_feature_key: AI_FEATURE_KEY,
-      p_cost: AI_CREDIT_COSTS.splitTask,
+    const access = await checkAIFeatureAccess(supabase, user.id, "task_split");
+    if (!access.allowed) {
+      return access.errorResponse;
     }
-  );
 
-  if (creditError) {
-    console.error("[split] Credit RPC error:", creditError);
-    return NextResponse.json({ error: "Error al procesar créditos." }, { status: 500 });
-  }
+    const creditCheck = await preCheckAICredits(supabase, user.id);
+    if (!creditCheck.allowed) {
+      return creditCheck.errorResponse!;
+    }
 
-  const creditErrorResponse = handleCreditResult(creditResult);
-  if (creditErrorResponse) return creditErrorResponse;
+    const rawBody = await req.json().catch(() => null);
+    const parsed = TaskSplitInputSchema.safeParse(rawBody);
 
-  try {
-    const provider = getAIProvider();
-    const result = await provider.splitTask(taskContent, maxSubtasks);
-
-    if (!result || !result.tasks || result.tasks.length === 0) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "La IA no pudo generar subtareas para esta tarea." },
-        { status: 422 }
+        { error: parsed.error.errors[0]?.message || "Entrada inválida." },
+        { status: 400 }
       );
     }
 
-    const sanitized = result.tasks
-      .map((t) => ({
-        text: sanitizeText(t.text ?? "", LIMITS.TASK_TEXT_MAX),
-        type: t.type === "note" ? "note" : "check",
-        target_date: t.target_date ?? null,
-      }))
-      .filter((t) => t.text.length > 0)
-      .slice(0, maxSubtasks);
+    const service = new TaskSplitService();
+    const result = await service.execute(parsed.data, user, supabase);
 
     return NextResponse.json({
-      tasks: sanitized,
-      credits: {
-        used: creditResult.used,
-        limit: creditResult.limit,
-        remaining: creditResult.remaining,
-      },
+      tasks: result.tasks,
+      persistedTasks: result.persistedTasks,
+      credits: result.credits,
+      tokenUsage: result.tokenUsage,
+      metadata: result.metadata,
     });
-  } catch (err) {
+  } catch (err: unknown) {
+    console.error("[AI Split Route] Error:", err);
+    const message =
+      err instanceof Error ? err.message : "Error interno del servidor.";
+
+    if (
+      message.includes("Alcanzaste tu límite") ||
+      message.includes("AI_LIMIT_EXCEEDED")
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Alcanzaste tu límite de créditos IA para este período. Podés ver tu uso en Mi cuenta.",
+          code: "AI_LIMIT_EXCEEDED",
+        },
+        { status: 429 }
+      );
+    }
+
     return handleAIError(err);
   }
 }
