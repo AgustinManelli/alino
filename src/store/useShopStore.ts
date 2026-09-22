@@ -11,7 +11,8 @@ import {
   CoinPack,
   StreakPackage,
 } from "@/lib/api/shop/actions";
-import { AICreditPack } from "@/lib/schemas/database.types";
+import { getShopCosmeticsCatalogAction } from "@/lib/api/cosmetics/actions";
+import { AICreditPack, CosmeticItem } from "@/lib/schemas/database.types";
 import { useStreakStore } from "@/store/useStreakStore";
 import { globalUserStore } from "@/store/useUserDataStore";
 
@@ -21,6 +22,7 @@ interface ShopStore {
   coinPacks: CoinPack[];
   streakPackages: StreakPackage[];
   aiCreditPacks: AICreditPack[];
+  cosmetics: CosmeticItem[];
   isLoading: boolean;
   isRedeeming: boolean;
   isPurchasing: boolean;
@@ -30,6 +32,8 @@ interface ShopStore {
   buyAICreditPack: (packId: string) => Promise<{ success: boolean; message?: string; error?: string; errorCode?: string }>;
   setCoins: (amount: number) => void;
   setExtraAICredits: (amount: number) => void;
+  setCosmetics: (cosmetics: CosmeticItem[]) => void;
+  markCosmeticUnlocked: (cosmeticId: string) => void;
 }
 
 let activeShopPromise: Promise<void> | null = null;
@@ -42,6 +46,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   coinPacks: [],
   streakPackages: [],
   aiCreditPacks: [],
+  cosmetics: [],
   isLoading: false,
   isRedeeming: false,
   isPurchasing: false,
@@ -58,10 +63,11 @@ export const useShopStore = create<ShopStore>((set, get) => ({
     set({ isLoading: true });
     activeShopPromise = (async () => {
       try {
-        const [coinsRes, catalogRes, aiPacksRes] = await Promise.all([
+        const [coinsRes, catalogRes, aiPacksRes, cosmeticsRes] = await Promise.all([
           getUserCoinsAction(),
           getShopCatalogAction(),
           getShopAICreditPacksAction(),
+          getShopCosmeticsCatalogAction({ pageSize: 12 }),
         ]);
 
         if (typeof coinsRes.data === "number") {
@@ -81,6 +87,9 @@ export const useShopStore = create<ShopStore>((set, get) => ({
           if (typeof aiPacksRes.data.user_coins === "number") {
             set({ coins: aiPacksRes.data.user_coins });
           }
+        }
+        if (cosmeticsRes.data?.cosmetics) {
+          set({ cosmetics: cosmeticsRes.data.cosmetics });
         }
         lastShopFetchTimestamp = Date.now();
       } finally {
@@ -172,4 +181,11 @@ export const useShopStore = create<ShopStore>((set, get) => ({
 
   setCoins: (amount: number) => set({ coins: amount }),
   setExtraAICredits: (amount: number) => set({ extraAICredits: amount }),
+  setCosmetics: (cosmetics: CosmeticItem[]) => set({ cosmetics }),
+  markCosmeticUnlocked: (cosmeticId: string) =>
+    set((state) => ({
+      cosmetics: state.cosmetics.map((c) =>
+        c.id === cosmeticId ? { ...c, is_unlocked: true } : c
+      ),
+    })),
 }));
