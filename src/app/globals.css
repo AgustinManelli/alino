@@ -28,17 +28,17 @@
   /* will-change: transform; */
 }
 
-.react-grid-item:has(.dragHandle:active) > .react-resizable-handle {
+.react-grid-item:has(.dragHandle:active)>.react-resizable-handle {
   opacity: 0 !important;
   transform: scale(0);
   z-index: +1;
 }
 
-.react-grid-item:hover > .react-resizable-handle {
+.react-grid-item:hover>.react-resizable-handle {
   opacity: 1;
 }
 
-.react-grid-item > .react-resizable-handle {
+.react-grid-item>.react-resizable-handle {
   position: absolute;
   pointer-events: auto;
   background-image: none;
@@ -50,17 +50,17 @@
   height: 35px;
 }
 
-.react-grid-item > .react-resizable-handle:active {
+.react-grid-item>.react-resizable-handle:active {
   opacity: 1 !important;
 }
 
-.react-grid-item > .react-resizable-handle.react-resizable-handle-se {
+.react-grid-item>.react-resizable-handle.react-resizable-handle-se {
   bottom: -10px;
   right: -10px;
   z-index: 1;
 }
 
-.react-grid-item > .react-resizable-handle::after {
+.react-grid-item>.react-resizable-handle::after {
   content: "";
   display: none;
 }
@@ -69,7 +69,7 @@
   --background-alino-app: rgb(240, 240, 240);
   --background-alino-app-translucent: rgba(240, 240, 240, 0.5);
   --background-container: rgb(255, 255, 255);
-  --background-container-translucent: rgba(255, 255, 255, 0.5);
+  --background-container-translucent: rgba(255, 255, 255, 0.8);
   --background-over-container: rgba(0, 0, 0, 0.025);
   --background-over-container-solid: rgb(249, 249, 249);
   --background-over-container-hover: rgba(0, 0, 0, 0.05);
@@ -111,7 +111,7 @@
   --background-alino-app: rgb(36, 38, 41);
   --background-alino-app-translucent: rgba(36, 38, 41, 0.5);
   --background-container: rgb(44, 47, 53);
-  --background-container-translucent: rgba(44, 47, 53, 0.5);
+  --background-container-translucent: rgba(44, 47, 53, 0.8);
   --background-over-container: rgba(255, 255, 255, 0.05);
   --background-over-container-solid: rgb(56, 58, 63);
   --background-over-container-hover: rgba(255, 255, 255, 0.1);
@@ -162,6 +162,7 @@ a {
 }
 
 @media all and (display-mode: standalone) {
+
   html,
   body {
     height: 100vh;

@@ -25,9 +25,9 @@ interface ShopStore {
   isRedeeming: boolean;
   isPurchasing: boolean;
   fetchShopData: (force?: boolean) => Promise<void>;
-  redeemPromoCode: (code: string) => Promise<{ success: boolean; message?: string; error?: string }>;
+  redeemPromoCode: (code: string) => Promise<{ success: boolean; message?: string; error?: string; errorCode?: string }>;
   buyStreakPackage: (packageId: string) => Promise<{ success: boolean; message?: string; error?: string; errorCode?: string; protectors_added?: number }>;
-  buyAICreditPack: (packId: string) => Promise<{ success: boolean; message?: string; error?: string }>;
+  buyAICreditPack: (packId: string) => Promise<{ success: boolean; message?: string; error?: string; errorCode?: string }>;
   setCoins: (amount: number) => void;
   setExtraAICredits: (amount: number) => void;
 }
@@ -100,7 +100,8 @@ export const useShopStore = create<ShopStore>((set, get) => ({
         set({ coins: res.new_balance });
         return { success: true, message: res.message };
       }
-      return { success: false, error: res.error || "No se pudo canjear el código." };
+      const errCode = res.errorCode || res.error || "GENERIC_ERROR";
+      return { success: false, error: errCode, errorCode: errCode };
     } finally {
       set({ isRedeeming: false });
     }
@@ -162,7 +163,8 @@ export const useShopStore = create<ShopStore>((set, get) => ({
 
         return { success: true, message: res.message };
       }
-      return { success: false, error: res.error || "No se pudo comprar los créditos IA." };
+      const code = res.errorCode || res.error || "GENERIC_ERROR";
+      return { success: false, error: code, errorCode: code };
     } finally {
       set({ isPurchasing: false });
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import CopyToClipboard from "@/components/ui/CopyToClipboard";
 import {
@@ -31,6 +32,7 @@ export function ReferralsTab({
   updateUser,
   fetchAIUsage,
 }: ReferralsTabProps) {
+  const { t } = useTranslation(["config", "common"]);
   const cachedStats = useUserDataStore((s) => s.referralStats);
   const setReferralStats = useUserDataStore((s) => s.setReferralStats);
 
@@ -79,11 +81,14 @@ export function ReferralsTab({
   );
 
   const handleShare = async () => {
-    const shareText = `¡Únete a Alino con mi código ${effectiveCode} y recibe ${rewardDaysReferred} días de Plan Pro gratis con créditos de IA!`;
+    const shareText = t("config:account.referrals.shareText", {
+      code: effectiveCode,
+      days: rewardDaysReferred,
+    });
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Únete a Alino",
+          title: t("config:account.referrals.shareTitle"),
           text: shareText,
           url: referralUrl,
         });
@@ -108,7 +113,7 @@ export function ReferralsTab({
     if (res.error) {
       customToast.error(res.error);
     } else {
-      customToast.success(res.data?.message || "¡Código aplicado con éxito!");
+      customToast.success(res.data?.message || t("config:account.referrals.redeem.success"));
       setCodeToRedeem("");
       updateUser({ tier: "pro" });
       fetchAIUsage();
@@ -123,7 +128,7 @@ export function ReferralsTab({
     if (res.error) {
       customToast.error(res.error);
     } else {
-      customToast.success(res.data?.message || "¡Recompensa reclamada con éxito!");
+      customToast.success(res.data?.message || t("config:account.referrals.claimSuccess"));
       updateUser({ tier: "pro" });
       fetchAIUsage();
       loadStats();
@@ -148,17 +153,21 @@ export function ReferralsTab({
                 color: "var(--alino-secondary-color)",
               }}
             />
-            <h4 className={styles.referralTitle}>Programa de Referidos</h4>
+            <h4 className={styles.referralTitle}>{t("config:account.referrals.title")}</h4>
           </div>
           <span className={styles.referralBadge}>
-            +{milestoneRewardDays}d Pro cada {milestoneTarget} amigos
+            {t("config:account.referrals.badge", {
+              days: milestoneRewardDays,
+              target: milestoneTarget,
+            })}
           </span>
         </div>
         <p className={styles.referralDesc}>
-          Invita a tus amigos con tu enlace único. Ellos recibirán{" "}
-          {rewardDaysReferred} días de Plan Pro gratis al unirse, y tú acumulas
-          amigos para reclamar {milestoneRewardDays} días de Plan Pro cada{" "}
-          {milestoneTarget} invitados.
+          {t("config:account.referrals.desc", {
+            referredDays: rewardDaysReferred,
+            rewardDays: milestoneRewardDays,
+            target: milestoneTarget,
+          })}
         </p>
       </div>
 
@@ -166,12 +175,12 @@ export function ReferralsTab({
         {effectiveCode && (
           <div
             className={styles.referralCodeBadge}
-            title="Tu código único de referido"
+            title={t("config:account.referrals.codeBadgeTitle")}
           >
             <span>{effectiveCode}</span>
             <CopyToClipboard
               text={effectiveCode}
-              successMessage="Código de referido copiado"
+              successMessage={t("config:account.referrals.codeCopied")}
               size={22}
             />
           </div>
@@ -185,7 +194,7 @@ export function ReferralsTab({
         />
         <CopyToClipboard
           text={referralUrl}
-          successMessage="Enlace de referido copiado"
+          successMessage={t("config:account.referrals.linkCopied")}
           size={36}
           style={{ flexShrink: 0 }}
         />
@@ -193,7 +202,7 @@ export function ReferralsTab({
           type="button"
           className={styles.referralBtnShare}
           onClick={handleShare}
-          title="Compartir"
+          title={t("config:account.referrals.shareBtn")}
         >
           <ShareIcon style={{ width: "14px", height: "14px" }} />
         </button>
@@ -202,10 +211,13 @@ export function ReferralsTab({
       <div className={styles.referralMilestoneCard}>
         <div className={styles.referralMilestoneHeader}>
           <span className={styles.referralMilestoneTitle}>
-            Progreso del hito actual
+            {t("config:account.referrals.milestoneTitle")}
           </span>
           <span className={styles.referralMilestoneRatio}>
-            {currentProgress} / {milestoneTarget} amigos
+            {t("config:account.referrals.milestoneRatio", {
+              current: currentProgress,
+              target: milestoneTarget,
+            })}
           </span>
         </div>
         <div className={styles.referralProgressBarTrack}>
@@ -217,11 +229,13 @@ export function ReferralsTab({
         <div className={styles.referralMilestoneFooter}>
           <span className={styles.referralMilestoneHint}>
             {stats?.can_claim
-              ? `¡Meta alcanzada! Tienes ${milestoneRewardDays} días de Plan Pro listos para reclamar.`
-              : `Te faltan ${Math.max(
-                  0,
-                  milestoneTarget - currentProgress
-                )} amigo(s) para reclamar ${milestoneRewardDays} días de Plan Pro.`}
+              ? t("config:account.referrals.milestoneReached", {
+                  days: milestoneRewardDays,
+                })
+              : t("config:account.referrals.milestoneRemaining", {
+                  count: Math.max(0, milestoneTarget - currentProgress),
+                  days: milestoneRewardDays,
+                })}
           </span>
           {stats?.can_claim && (
             <button
@@ -233,8 +247,10 @@ export function ReferralsTab({
               <IAStars style={{ width: "13px", height: "13px" }} />
               <span>
                 {isClaiming
-                  ? "Reclamando..."
-                  : `Reclamar ${milestoneRewardDays}d Pro`}
+                  ? t("config:account.referrals.claiming")
+                  : t("config:account.referrals.claimBtn", {
+                      days: milestoneRewardDays,
+                    })}
               </span>
             </button>
           )}
@@ -244,7 +260,7 @@ export function ReferralsTab({
       <div className={styles.referralMetricsGrid}>
         <div className={styles.referralMetricCard}>
           <span className={styles.referralMetricLabel}>
-            Amigos que se unieron
+            {t("config:account.referrals.metrics.joinedFriends")}
           </span>
           <span className={styles.referralMetricValue}>
             {isLoading ? "..." : stats?.total_referrals ?? 0}
@@ -252,7 +268,7 @@ export function ReferralsTab({
         </div>
         <div className={styles.referralMetricCard}>
           <span className={styles.referralMetricLabel}>
-            Días Pro reclamados
+            {t("config:account.referrals.metrics.earnedDays")}
           </span>
           <span className={styles.referralMetricValue}>
             {isLoading ? "..." : `${stats?.total_days_earned ?? 0}d`}
@@ -265,7 +281,7 @@ export function ReferralsTab({
           <input
             type="text"
             className={styles.referralRedeemInput}
-            placeholder="Código único de tu amigo (ej. ALN7K9X)"
+            placeholder={t("config:account.referrals.redeem.placeholder")}
             value={codeToRedeem}
             onChange={(e) => {
               const raw = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -279,7 +295,9 @@ export function ReferralsTab({
             className={styles.referralRedeemBtn}
             disabled={isRedeeming || !codeToRedeem.trim()}
           >
-            {isRedeeming ? "..." : "Canjear código"}
+            {isRedeeming
+              ? t("config:account.referrals.redeem.loading")
+              : t("config:account.referrals.redeem.button")}
           </button>
         </form>
       ) : (
@@ -291,7 +309,7 @@ export function ReferralsTab({
               color: "var(--alino-secondary-color)",
             }}
           />
-          <span>Ya has canjeado tu beneficio de referido</span>
+          <span>{t("config:account.referrals.redeem.alreadyReferred")}</span>
         </div>
       )}
     </motion.div>

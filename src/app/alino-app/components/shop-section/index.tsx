@@ -67,7 +67,11 @@ export const ShopSection = () => {
     e.preventDefault();
     const cleanCode = promoCode.trim();
     if (!cleanCode) {
-      customToast.error(t("shop:promo.emptyError"));
+      customToast.error(
+        t("shop:errors.CODE_REQUIRED", {
+          defaultValue: t("shop:promo.emptyError"),
+        })
+      );
       return;
     }
 
@@ -76,13 +80,22 @@ export const ShopSection = () => {
       customToast.success(res.message || t("shop:promo.success"));
       setPromoCode("");
     } else {
-      customToast.error(res.error || t("shop:promo.genericError"));
+      const code = res.errorCode || res.error || "GENERIC_ERROR";
+      customToast.error(
+        t(`shop:errors.${code}`, {
+          defaultValue: t("shop:errors.GENERIC_ERROR"),
+        })
+      );
     }
   };
 
   const handleBuyCosmetic = async (item: CosmeticItem) => {
     if (coins < item.coins_price) {
-      customToast.error(t("shop:cosmetics.insufficientCoins"));
+      customToast.error(
+        t("shop:errors.INSUFFICIENT_COINS", {
+          defaultValue: t("shop:cosmetics.insufficientCoins"),
+        })
+      );
       return;
     }
 
@@ -97,7 +110,12 @@ export const ShopSection = () => {
         const trans = getCosmeticTranslation(item);
         customToast.success(t("shop:cosmetics.purchaseSuccess", { name: trans.name }));
       } else {
-        customToast.error(res.error || t("shop:cosmetics.purchaseError"));
+        const code = res.errorCode || res.error || "GENERIC_ERROR";
+        customToast.error(
+          t(`shop:errors.${code}`, {
+            defaultValue: t("shop:errors.GENERIC_ERROR"),
+          })
+        );
       }
     } finally {
       setIsPurchasingCosmeticId(null);
@@ -121,7 +139,7 @@ export const ShopSection = () => {
         role="button"
         tabIndex={0}
       >
-        <AlinoCoinIcon amount={coins} size={15} />
+        <AlinoCoinIcon size={20} />
         <CounterAnimation
           value={coins}
           className={styles.coinsCount}
@@ -143,37 +161,10 @@ export const ShopSection = () => {
           }
         >
           <div className={styles.panel}>
-            <section className={styles.promoSection}>
-              <div className={styles.sectionHeader}>
-                <span className={styles.sectionTitle}>{t("shop:promo.title")}</span>
-                <span className={styles.sectionSubtitle}>{t("shop:promo.subtitle")}</span>
-              </div>
-              <form onSubmit={handleRedeem} className={styles.promoForm}>
-                <div className={styles.promoInputWrapper}>
-                  <input
-                    type="text"
-                    placeholder={t("shop:promo.placeholder")}
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                    className={styles.promoInput}
-                    disabled={isRedeeming}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className={styles.redeemBtn}
-                  disabled={isRedeeming || !promoCode.trim()}
-                >
-                  {isRedeeming ? t("shop:promo.redeeming") : t("shop:promo.button")}
-                </button>
-              </form>
-            </section>
-
             <section className={styles.packsSection}>
-              <div className={styles.sectionHeader}>
+              {/* <div className={styles.sectionHeader}>
                 <span className={styles.sectionTitle}>{t("shop:packs.title")}</span>
-                <span className={styles.sectionSubtitle}>{t("shop:packs.subtitle")}</span>
-              </div>
+              </div> */}
 
               <div className={styles.packsList}>
                 {coinPacks.map((pack) => {
@@ -226,18 +217,38 @@ export const ShopSection = () => {
               </div>
             </section>
 
+            <section className={styles.promoSection}>
+              <div className={styles.sectionHeader}>
+                <span className={styles.sectionTitle}>{t("shop:promo.title")}</span>
+              </div>
+              <form onSubmit={handleRedeem} className={styles.promoForm}>
+                <div className={styles.promoInputWrapper}>
+                  <input
+                    type="text"
+                    placeholder={t("shop:promo.placeholder")}
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    className={styles.promoInput}
+                    disabled={isRedeeming}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className={styles.redeemBtn}
+                  disabled={isRedeeming || !promoCode.trim()}
+                >
+                  {isRedeeming ? t("shop:promo.redeeming") : t("shop:promo.button")}
+                </button>
+              </form>
+            </section>
+
             <section className={styles.cosmeticsShopSection}>
               <div className={styles.sectionHeader}>
                 <span className={styles.sectionTitle}>{t("shop:cosmetics.title")}</span>
-                <span className={styles.sectionSubtitle}>{t("shop:cosmetics.subtitle")}</span>
               </div>
 
               <div className={styles.cosmeticsShopList}>
-                {previewCosmetics.length === 0 ? (
-                  <div className={styles.emptyCosmetics}>
-                    <span>{t("shop:cosmetics.allOwned")}</span>
-                  </div>
-                ) : (
+                {previewCosmetics.length === 0 && (
                   previewCosmetics.map((item) => {
                     const cosmeticTrans = getCosmeticTranslation(item);
                     return (
@@ -256,9 +267,9 @@ export const ShopSection = () => {
                           <div className={styles.cosmeticShopInfo}>
                             <div className={styles.cosmeticShopNameRow}>
                               <span className={styles.cosmeticShopName}>{cosmeticTrans.name}</span>
-                              <span className={styles.cosmeticTypeBadge}>
+                              {/* <span className={styles.cosmeticTypeBadge}>
                                 {cosmeticTrans.typeLabel}
-                              </span>
+                              </span> */}
                             </div>
                             <p className={styles.cosmeticShopDesc}>{cosmeticTrans.description}</p>
                           </div>
@@ -273,17 +284,11 @@ export const ShopSection = () => {
                           <button
                             type="button"
                             className={styles.cosmeticBuyBtn}
-                            disabled={
-                              isPurchasingCosmeticId === item.id ||
-                              coins < item.coins_price
-                            }
                             onClick={() => handleBuyCosmetic(item)}
                           >
                             {isPurchasingCosmeticId === item.id
                               ? t("shop:cosmetics.purchasing")
-                              : coins < item.coins_price
-                                ? t("shop:cosmetics.notEnoughCoins")
-                                : t("shop:cosmetics.buy")}
+                              : t("shop:cosmetics.buy")}
                           </button>
                         </div>
                       </div>

@@ -566,17 +566,82 @@
 
 .aiCreditsBarTrack {
   width: 100%;
-  height: 5px;
+  height: 6px;
   background-color: var(--background-container);
   border-radius: 999px;
   overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
 }
 
-.aiCreditsBarFill {
+.aiCreditsBarFillExtra {
   height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
+  transition: width 0.4s ease;
+  flex-shrink: 0;
+}
+
+.aiCreditsBarFillExtraDivider {
+  border-right: 1.5px solid var(--background-container);
+}
+
+.aiCreditsBarFillExtraStandalone {
   border-radius: 999px;
-  transition: background 0.4s ease;
-  min-width: 4px;
+}
+
+.aiCreditsBarFillPlan {
+  height: 100%;
+  border-radius: 0 999px 999px 0;
+  transition: width 0.4s ease, background 0.4s ease;
+  flex-shrink: 0;
+}
+
+.aiCreditsBarFillPlanStandalone {
+  border-radius: 999px;
+}
+
+.aiCreditsLegend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.aiCreditsLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-not-available);
+  font-weight: 500;
+}
+
+.legendDotExtra {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+  flex-shrink: 0;
+}
+
+.legendDotPlan {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  box-shadow: 0 0 6px rgba(139, 92, 246, 0.4);
+  flex-shrink: 0;
+}
+
+.aiCreditsNotice {
+  font-size: 11px;
+  color: #f59e0b;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .aiCreditsWarning {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import {
   Crown,
@@ -33,6 +34,7 @@ type UnifiedItem =
   | { kind: "coin"; item: CoinMovement; date: Date };
 
 export function TransactionsTab({ user }: TransactionsTabProps) {
+  const { t, i18n } = useTranslation(["config", "common"]);
   const [filter, setFilter] = useState<FilterType>("all");
   const [data, setData] = useState<TransactionsHistoryResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,7 +62,7 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
   const formatDate = (dateStr: string) => {
     try {
       const d = new Date(dateStr);
-      return d.toLocaleDateString("es-AR", {
+      return d.toLocaleDateString(i18n.language === "en" ? "en-US" : "es-AR", {
         day: "numeric",
         month: "short",
         year: "numeric",
@@ -73,7 +75,7 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
   };
 
   const formatCurrency = (amount: number, currency: string = "ARS") => {
-    return new Intl.NumberFormat("es-AR", {
+    return new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "es-AR", {
       style: "currency",
       currency: currency || "ARS",
       maximumFractionDigits: 2,
@@ -82,13 +84,25 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
 
   const getBillingStatusBadge = (tx: BillingTransaction) => {
     if (tx.status === "approved") {
-      return <span className={styles.badgeSuccess}>Aprobado</span>;
+      return (
+        <span className={styles.badgeSuccess}>
+          {t("config:account.transactions.status.approved")}
+        </span>
+      );
     }
     if (tx.status === "rejected" || tx.status === "failed") {
-      return <span className={styles.badgeFailed}>Fallido</span>;
+      return (
+        <span className={styles.badgeFailed}>
+          {t("config:account.transactions.status.failed")}
+        </span>
+      );
     }
     if (tx.status === "pending") {
-      return <span className={styles.badgePending}>Pendiente</span>;
+      return (
+        <span className={styles.badgePending}>
+          {t("config:account.transactions.status.pending")}
+        </span>
+      );
     }
     return <span className={styles.badgeType}>{tx.status}</span>;
   };
@@ -96,21 +110,21 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
   const getCoinTypeLabel = (type: string) => {
     switch (type) {
       case "cosmetic_purchase":
-        return "Cosmético";
+        return t("config:account.transactions.types.cosmeticPurchase");
       case "streak_protection_purchase":
-        return "Protectores de racha";
+        return t("config:account.transactions.types.streakProtectionPurchase");
       case "ai_credits_purchase":
-        return "Créditos IA";
+        return t("config:account.transactions.types.aiCreditsPurchase");
       case "coin_pack_purchase":
-        return "Compra de monedas";
+        return t("config:account.transactions.types.coinPackPurchase");
       case "achievement_reward":
-        return "Premio por logro";
+        return t("config:account.transactions.types.achievementReward");
       case "level_up_reward":
-        return "Subida de nivel";
+        return t("config:account.transactions.types.levelUpReward");
       case "promo_code":
-        return "Código promocional";
+        return t("config:account.transactions.types.promoCode");
       default:
-        return "Monedas";
+        return t("config:account.transactions.types.defaultCoin");
     }
   };
 
@@ -147,9 +161,11 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
       transition={{ duration: 0.2 }}
     >
       <div className={configStyles.tabHeaderBlock}>
-        <h3 className={configStyles.tabSectionTitle}>Historial de transacciones</h3>
+        <h3 className={configStyles.tabSectionTitle}>
+          {t("config:account.transactions.title")}
+        </h3>
         <p className={configStyles.tabSectionSubtitle}>
-          Consulta tus compras de suscripciones, cobros mensuales, adquisición y uso de monedas.
+          {t("config:account.transactions.subtitle")}
         </p>
       </div>
 
@@ -162,7 +178,9 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
             <span className={styles.metricValue}>
               {data?.summary?.current_coins ?? 0}
             </span>
-            <span className={styles.metricLabel}>Saldo actual de monedas</span>
+            <span className={styles.metricLabel}>
+              {t("config:account.transactions.metrics.coinsBalance")}
+            </span>
           </div>
         </div>
 
@@ -172,7 +190,9 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
           </div>
           <div className={styles.metricInfo}>
             <span className={styles.metricValue}>{currentTier}</span>
-            <span className={styles.metricLabel}>Plan de cuenta actual</span>
+            <span className={styles.metricLabel}>
+              {t("config:account.transactions.metrics.currentPlan")}
+            </span>
           </div>
         </div>
 
@@ -184,7 +204,9 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
             <span className={styles.metricValue}>
               {data?.summary?.total_coins_spent ?? 0}
             </span>
-            <span className={styles.metricLabel}>Total monedas gastadas</span>
+            <span className={styles.metricLabel}>
+              {t("config:account.transactions.metrics.coinsSpent")}
+            </span>
           </div>
         </div>
       </div>
@@ -196,28 +218,28 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
             className={`${styles.filterBtn} ${filter === "all" ? styles.filterBtnActive : ""}`}
             onClick={() => setFilter("all")}
           >
-            Todas
+            {t("config:account.transactions.filters.all")}
           </button>
           <button
             type="button"
             className={`${styles.filterBtn} ${filter === "subscriptions" ? styles.filterBtnActive : ""}`}
             onClick={() => setFilter("subscriptions")}
           >
-            Membresías
+            {t("config:account.transactions.filters.subscriptions")}
           </button>
           <button
             type="button"
             className={`${styles.filterBtn} ${filter === "coin_packs" ? styles.filterBtnActive : ""}`}
             onClick={() => setFilter("coin_packs")}
           >
-            Compra de monedas
+            {t("config:account.transactions.filters.coinPacks")}
           </button>
           <button
             type="button"
             className={`${styles.filterBtn} ${filter === "coin_movements" ? styles.filterBtnActive : ""}`}
             onClick={() => setFilter("coin_movements")}
           >
-            Uso de monedas
+            {t("config:account.transactions.filters.coinMovements")}
           </button>
         </div>
       </div>
@@ -235,15 +257,17 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
             <div className={styles.emptyIcon}>
               <ReceiptIcon style={{ width: 22, height: 22, stroke: "currentColor" }} />
             </div>
-            <span className={styles.emptyTitle}>Sin transacciones registradas</span>
+            <span className={styles.emptyTitle}>
+              {t("config:account.transactions.empty.title")}
+            </span>
             <span className={styles.emptyDesc}>
               {filter === "subscriptions"
-                ? "Aún no posees pagos o cobros de membresías registrados."
+                ? t("config:account.transactions.empty.subscriptions")
                 : filter === "coin_packs"
-                ? "Aún no has adquirido paquetes de monedas."
+                ? t("config:account.transactions.empty.coinPacks")
                 : filter === "coin_movements"
-                ? "No tienes movimientos ni gastos de monedas por el momento."
-                : "Tus pagos, compras y movimientos de monedas aparecerán detallados aquí."}
+                ? t("config:account.transactions.empty.coinMovements")
+                : t("config:account.transactions.empty.all")}
             </span>
           </div>
         ) : (
@@ -270,10 +294,14 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
                       <div className={styles.txTitleRow}>
                         <span className={styles.txTitle}>{b.title}</span>
                         {b.is_recurring && (
-                          <span className={styles.badgeRecurring}>Cobro automático</span>
+                          <span className={styles.badgeRecurring}>
+                            {t("config:account.transactions.recurring")}
+                          </span>
                         )}
                         <span className={styles.badgeType}>
-                          {isSub ? "Membresía" : "Monedas"}
+                          {isSub
+                            ? t("config:account.transactions.types.subscription")
+                            : t("config:account.transactions.types.coinPack")}
                         </span>
                       </div>
                       <div className={styles.txSubline}>
@@ -325,7 +353,11 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
                     <div className={styles.txSubline}>
                       <span>{formatDate(c.created_at)}</span>
                       <span className={styles.txDot} />
-                      <span>Saldo posterior: {c.balance_after}</span>
+                      <span>
+                        {t("config:account.transactions.balanceAfter", {
+                          balance: c.balance_after,
+                        })}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -339,7 +371,9 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
                     {isPositive ? `+${c.amount}` : c.amount}
                     <AlinoCoinIcon amount={Math.abs(c.amount)} size={13} />
                   </span>
-                  <span className={styles.badgeSuccess}>Completado</span>
+                  <span className={styles.badgeSuccess}>
+                    {t("config:account.transactions.status.completed")}
+                  </span>
                 </div>
               </div>
             );

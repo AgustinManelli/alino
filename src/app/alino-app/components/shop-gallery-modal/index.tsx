@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { WindowComponent } from "@/components/ui/WindowComponent";
 import { AlinoCoinIcon } from "@/components/ui/alino-coins-icon";
@@ -12,7 +13,11 @@ import {
   buyCosmeticAction,
 } from "@/lib/api/cosmetics/actions";
 import { CosmeticItem } from "@/lib/schemas/database.types";
-import { getCosmeticTranslation, getCoinPackTranslation } from "@/lib/i18n/helpers";
+import {
+  getCosmeticTranslation,
+  getCoinPackTranslation,
+  getAICreditPackTranslation,
+} from "@/lib/i18n/helpers";
 import { customToast } from "@/lib/toasts";
 import styles from "./ShopGalleryModal.module.css";
 
@@ -25,7 +30,7 @@ type ShopSectionType = "cosmetics" | "coins" | "ai_credits";
 
 const PAGE_SIZE = 6;
 
-const SparklesIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
+const PaletteIcon: React.FC<{ size?: number; className?: string }> = ({ size = 16, className }) => (
   <svg
     width={size}
     height={size}
@@ -35,6 +40,27 @@ const SparklesIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2Z" />
+  </svg>
+);
+
+const SparklesIcon: React.FC<{ size?: number; className?: string }> = ({ size = 16, className }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
   >
     <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
     <path d="M5 3v4" />
@@ -64,7 +90,6 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [purchasingAICreditId, setPurchasingAICreditId] = useState<string | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -88,14 +113,14 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
     setIsLoadingCosmetics(true);
     getShopCosmeticsCatalogAction({
       category: selectedCategory,
-      status: selectedStatus,
+      status: "unowned",
       search: debouncedSearch,
       page: currentPage,
       pageSize: PAGE_SIZE,
     })
       .then((res) => {
         if (res.data) {
-          setCosmetics(res.data.cosmetics);
+          setCosmetics((res.data.cosmetics || []).filter((c) => !c.is_unlocked));
           setTotalPages(Math.max(1, res.data.total_pages));
           if (typeof res.data.user_coins === "number") {
             setCoins(res.data.user_coins);
@@ -109,7 +134,6 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
     isOpen,
     activeSection,
     selectedCategory,
-    selectedStatus,
     debouncedSearch,
     currentPage,
     setCoins,
@@ -117,7 +141,11 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const handleBuyCosmetic = async (item: CosmeticItem) => {
     if (coins < item.coins_price) {
-      customToast.error(t("shop:cosmetics.insufficientCoins"));
+      customToast.error(
+        t("shop:errors.INSUFFICIENT_COINS", {
+          defaultValue: t("shop:cosmetics.insufficientCoins"),
+        })
+      );
       return;
     }
 
@@ -126,13 +154,16 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
       const res = await buyCosmeticAction(item.id);
       if (res.success && typeof res.new_balance === "number") {
         setCoins(res.new_balance);
-        setCosmetics((prev) =>
-          prev.map((c) => (c.id === item.id ? { ...c, is_unlocked: true } : c))
-        );
+        setCosmetics((prev) => prev.filter((c) => c.id !== item.id));
         const trans = getCosmeticTranslation(item);
         customToast.success(t("shop:cosmetics.purchaseSuccess", { name: trans.name }));
       } else {
-        customToast.error(res.error || t("shop:cosmetics.purchaseError"));
+        const code = res.errorCode || res.error || "GENERIC_ERROR";
+        customToast.error(
+          t(`shop:errors.${code}`, {
+            defaultValue: t("shop:errors.GENERIC_ERROR"),
+          })
+        );
       }
     } finally {
       setPurchasingCosmeticId(null);
@@ -141,7 +172,11 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const handleBuyAICreditPack = async (packId: string, amount: number, coinsPrice: number) => {
     if (coins < coinsPrice) {
-      customToast.error(t("shop:ai_credits.insufficientCoins"));
+      customToast.error(
+        t("shop:errors.INSUFFICIENT_COINS", {
+          defaultValue: t("shop:ai_credits.insufficientCoins"),
+        })
+      );
       return;
     }
 
@@ -151,7 +186,12 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
       if (res.success) {
         customToast.success(t("shop:ai_credits.purchaseSuccess", { amount }));
       } else {
-        customToast.error(res.error || t("shop:ai_credits.purchaseError"));
+        const code = res.errorCode || res.error || "GENERIC_ERROR";
+        customToast.error(
+          t(`shop:errors.${code}`, {
+            defaultValue: t("shop:errors.GENERIC_ERROR"),
+          })
+        );
       }
     } finally {
       setPurchasingAICreditId(null);
@@ -176,129 +216,84 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
               </span>
               <button
                 type="button"
-                className={`${styles.sidebarBtn} ${
-                  activeSection === "cosmetics" ? styles.sidebarBtnActive : ""
-                }`}
+                className={`${styles.sidebarBtn} ${activeSection === "cosmetics" ? styles.sidebarBtnActive : ""
+                  }`}
                 onClick={() => setActiveSection("cosmetics")}
               >
-                <span>🎨 {t("shop:gallery.sections.cosmetics")}</span>
+                <PaletteIcon size={16} />
+                <span>{t("shop:gallery.sections.cosmetics")}</span>
               </button>
               <button
                 type="button"
-                className={`${styles.sidebarBtn} ${
-                  activeSection === "coins" ? styles.sidebarBtnActive : ""
-                }`}
+                className={`${styles.sidebarBtn} ${activeSection === "coins" ? styles.sidebarBtnActive : ""
+                  }`}
                 onClick={() => setActiveSection("coins")}
               >
-                <span>🪙 {t("shop:gallery.sections.coins")}</span>
+                <AlinoCoinIcon size={16} />
+                <span>{t("shop:gallery.sections.coins")}</span>
               </button>
               <button
                 type="button"
-                className={`${styles.sidebarBtn} ${
-                  activeSection === "ai_credits" ? styles.sidebarBtnActive : ""
-                }`}
+                className={`${styles.sidebarBtn} ${activeSection === "ai_credits" ? styles.sidebarBtnActive : ""
+                  }`}
                 onClick={() => setActiveSection("ai_credits")}
               >
-                <span>✨ {t("shop:gallery.sections.ai_credits")}</span>
+                <SparklesIcon size={16} />
+                <span>{t("shop:gallery.sections.ai_credits")}</span>
               </button>
             </div>
 
-            {activeSection === "cosmetics" && (
-              <>
-                <div className={styles.sidebarGroup}>
-                  <span className={styles.sidebarGroupTitle}>
-                    {t("shop:gallery.categoriesTitle")}
-                  </span>
-                  <button
-                    type="button"
-                    className={`${styles.sidebarBtn} ${
-                      selectedCategory === "all" ? styles.sidebarBtnActive : ""
-                    }`}
-                    onClick={() => {
-                      setSelectedCategory("all");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <span>{t("shop:gallery.categories.all")}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.sidebarBtn} ${
-                      selectedCategory === "frame" ? styles.sidebarBtnActive : ""
-                    }`}
-                    onClick={() => {
-                      setSelectedCategory("frame");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <span>{t("shop:gallery.categories.frame")}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.sidebarBtn} ${
-                      selectedCategory === "overlay" ? styles.sidebarBtnActive : ""
-                    }`}
-                    onClick={() => {
-                      setSelectedCategory("overlay");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <span>{t("shop:gallery.categories.overlay")}</span>
-                  </button>
-                </div>
-
-                <div className={styles.sidebarGroup}>
-                  <span className={styles.sidebarGroupTitle}>
-                    {t("shop:gallery.filtersTitle")}
-                  </span>
-                  <button
-                    type="button"
-                    className={`${styles.sidebarBtn} ${
-                      selectedStatus === "all" ? styles.sidebarBtnActive : ""
-                    }`}
-                    onClick={() => {
-                      setSelectedStatus("all");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <span>{t("shop:gallery.status.all")}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.sidebarBtn} ${
-                      selectedStatus === "unowned" ? styles.sidebarBtnActive : ""
-                    }`}
-                    onClick={() => {
-                      setSelectedStatus("unowned");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <span>{t("shop:gallery.status.unowned")}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.sidebarBtn} ${
-                      selectedStatus === "owned" ? styles.sidebarBtnActive : ""
-                    }`}
-                    onClick={() => {
-                      setSelectedStatus("owned");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <span>{t("shop:gallery.status.owned")}</span>
-                  </button>
-                </div>
-              </>
-            )}
-
-            {activeSection === "ai_credits" && (
-              <div className={styles.sidebarGroup}>
-                <span className={styles.sidebarGroupTitle}>Información</span>
-                <span className={styles.permanentTag}>
-                  {t("shop:ai_credits.extraBadge")}
-                </span>
-              </div>
-            )}
+            <AnimatePresence mode="wait">
+              {activeSection === "cosmetics" && (
+                <motion.div
+                  key="cosmetics-filters"
+                  initial={{ opacity: 0, height: 0, y: -6 }}
+                  animate={{ opacity: 1, height: "auto", y: 0 }}
+                  exit={{ opacity: 0, height: 0, y: -6 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ overflow: "hidden" }}
+                >
+                  <div className={styles.sidebarGroup}>
+                    <span className={styles.sidebarGroupTitle}>
+                      {t("shop:gallery.categoriesTitle")}
+                    </span>
+                    <button
+                      type="button"
+                      className={`${styles.sidebarBtn} ${selectedCategory === "all" ? styles.sidebarBtnActive : ""
+                        }`}
+                      onClick={() => {
+                        setSelectedCategory("all");
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <span>{t("shop:gallery.categories.all")}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.sidebarBtn} ${selectedCategory === "frame" ? styles.sidebarBtnActive : ""
+                        }`}
+                      onClick={() => {
+                        setSelectedCategory("frame");
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <span>{t("shop:gallery.categories.frame")}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.sidebarBtn} ${selectedCategory === "overlay" ? styles.sidebarBtnActive : ""
+                        }`}
+                      onClick={() => {
+                        setSelectedCategory("overlay");
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <span>{t("shop:gallery.categories.overlay")}</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </aside>
 
           <main className={styles.mainArea}>
@@ -381,21 +376,20 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     </div>
                   ) : cosmetics.length === 0 ? (
                     <div className={styles.emptyState}>
-                      <span>{t("shop:gallery.empty")}</span>
+                      <span>
+                        {debouncedSearch
+                          ? t("shop:gallery.empty")
+                          : t("shop:cosmetics.allOwned")}
+                      </span>
                     </div>
                   ) : (
                     <div className={styles.grid}>
                       {cosmetics.map((item) => {
                         const trans = getCosmeticTranslation(item);
-                        const isOwned = Boolean(item.is_unlocked);
                         const isBuying = purchasingCosmeticId === item.id;
-                        const canAfford = coins >= item.coins_price;
 
                         return (
-                          <div
-                            key={item.id}
-                            className={`${styles.card} ${isOwned ? styles.cardOwned : ""}`}
-                          >
+                          <div key={item.id} className={styles.card}>
                             <div className={styles.cardHeader}>
                               <div className={styles.cardPreviewBox}>
                                 <UserAvatar
@@ -413,9 +407,8 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                 <div className={styles.cardBadgesRow}>
                                   <span className={styles.typeBadge}>{trans.typeLabel}</span>
                                   <span
-                                    className={`${styles.rarityBadge} ${
-                                      styles[`rarity_${item.rarity}`] || ""
-                                    }`}
+                                    className={`${styles.rarityBadge} ${styles[`rarity_${item.rarity}`] || ""
+                                      }`}
                                   >
                                     {t(`shop:gallery.rarity.${item.rarity}`, {
                                       defaultValue: item.rarity,
@@ -433,24 +426,16 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                 <span>{item.coins_price}</span>
                               </div>
 
-                              {isOwned ? (
-                                <span className={styles.ownedStatus}>
-                                  {t("shop:cosmetics.owned")} ✓
-                                </span>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className={styles.buyBtn}
-                                  disabled={isBuying || !canAfford}
-                                  onClick={() => handleBuyCosmetic(item)}
-                                >
-                                  {isBuying
-                                    ? t("shop:cosmetics.purchasing")
-                                    : !canAfford
-                                    ? t("shop:cosmetics.notEnoughCoins")
-                                    : t("shop:cosmetics.buy")}
-                                </button>
-                              )}
+                              <button
+                                type="button"
+                                className={styles.buyBtn}
+                                disabled={isBuying}
+                                onClick={() => handleBuyCosmetic(item)}
+                              >
+                                {isBuying
+                                  ? t("shop:cosmetics.purchasing")
+                                  : t("shop:cosmetics.buy")}
+                              </button>
                             </div>
                           </div>
                         );
@@ -507,6 +492,7 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     aiCreditPacks.map((pack) => {
                       const isBuying = purchasingAICreditId === pack.id;
                       const canAfford = coins >= pack.coins_price;
+                      const trans = getAICreditPackTranslation(pack);
 
                       return (
                         <div key={pack.id} className={styles.card}>
@@ -515,14 +501,14 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                               <SparklesIcon size={26} />
                             </div>
                             <div className={styles.cardHeaderInfo}>
-                              <span className={styles.cardTitle}>{pack.name}</span>
+                              <span className={styles.cardTitle}>{trans.name}</span>
                               <div className={styles.cardBadgesRow}>
-                                {pack.tag && (
-                                  <span className={styles.packTag}>{pack.tag}</span>
+                                {trans.tag && (
+                                  <span className={styles.packTag}>{trans.tag}</span>
                                 )}
-                                <span className={styles.permanentTag}>
+                                {/* <span className={styles.permanentTag}>
                                   {t("shop:ai_credits.extraBadge")}
-                                </span>
+                                </span> */}
                               </div>
                             </div>
                           </div>
@@ -548,8 +534,8 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                               {isBuying
                                 ? t("shop:ai_credits.purchasing")
                                 : !canAfford
-                                ? t("shop:cosmetics.notEnoughCoins")
-                                : t("shop:ai_credits.buy")}
+                                  ? t("shop:cosmetics.notEnoughCoins")
+                                  : t("shop:ai_credits.buy")}
                             </button>
                           </div>
                         </div>

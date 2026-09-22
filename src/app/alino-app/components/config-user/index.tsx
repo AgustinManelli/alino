@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { AnimatePresence } from "motion/react";
 import { WindowComponent } from "@/components/ui/WindowComponent";
 import {
@@ -32,6 +33,7 @@ import styles from "./ConfigUser.module.css";
 type TabType = "profile" | "subscription" | "transactions" | "referrals" | "security";
 
 export default function ConfigUser() {
+  const { t } = useTranslation(["config", "common"]);
   const [activeTab, setActiveTab] = useState<TabType>("profile");
   const [isCroppingOpen, setIsCroppingOpen] = useState(false);
 
@@ -73,10 +75,9 @@ export default function ConfigUser() {
     openModal({
       type: "confirmation",
       props: {
-        text: "¿Estás seguro de que deseas cancelar tu suscripción?",
-        additionalText:
-          "Podrás disfrutar los beneficios hasta el final de tu período actual de facturación.",
-        actionButton: "Cancelar suscripción",
+        text: t("config:account.cancelModal.text"),
+        additionalText: t("config:account.cancelModal.additionalText"),
+        actionButton: t("config:account.cancelModal.actionButton"),
         onConfirm: async () => {
           setLoadingCancel(true);
           const { data, error } = await cancelSubscriptionAction();
@@ -116,13 +117,13 @@ export default function ConfigUser() {
 
   return (
     <WindowComponent
-      windowTitle={"Mi cuenta"}
+      windowTitle={t("config:account.windowTitle")}
       id={"list-config-section"}
       crossAction={closeConfigModal}
       sidebar={
         <WindowComponent.Sidebar>
           <WindowComponent.SidebarItem
-            label="Perfil"
+            label={t("config:account.tabs.profile")}
             icon={
               <UserIcon
                 style={{
@@ -137,7 +138,7 @@ export default function ConfigUser() {
             onClick={() => setActiveTab("profile")}
           />
           <WindowComponent.SidebarItem
-            label="Suscripción"
+            label={t("config:account.tabs.subscription")}
             icon={
               <IAStars
                 style={{
@@ -152,7 +153,7 @@ export default function ConfigUser() {
             onClick={() => setActiveTab("subscription")}
           />
           <WindowComponent.SidebarItem
-            label="Historial de transacciones"
+            label={t("config:account.tabs.transactions")}
             icon={
               <ReceiptIcon
                 style={{
@@ -167,7 +168,7 @@ export default function ConfigUser() {
             onClick={() => setActiveTab("transactions")}
           />
           <WindowComponent.SidebarItem
-            label="Referidos"
+            label={t("config:account.tabs.referrals")}
             icon={
               <TeamCollaborationIcon
                 style={{
@@ -181,7 +182,7 @@ export default function ConfigUser() {
             onClick={() => setActiveTab("referrals")}
           />
           <WindowComponent.SidebarItem
-            label="Seguridad y privacidad"
+            label={t("config:account.tabs.security")}
             icon={
               <ProtectorIcon
                 style={{

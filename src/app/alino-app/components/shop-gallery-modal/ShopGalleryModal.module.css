@@ -18,21 +18,22 @@
 }
 
 .sidebar {
-  width: 220px;
+  width: 210px;
   flex-shrink: 0;
   border-right: 1px solid var(--border-container-color);
   background: var(--background-secondary);
-  padding: 16px 12px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 8px;
   overflow-y: auto;
 }
 
 .sidebarGroup {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  padding: 12px 10px 0 10px;
 }
 
 .sidebarGroupTitle {
@@ -47,36 +48,49 @@
 .sidebarBtn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   width: 100%;
-  padding: 8px 10px;
-  border-radius: 8px;
+  padding: 8px 12px;
+  border-radius: 9px;
   background: transparent;
-  border: none;
-  color: var(--text);
+  border: 1px solid transparent;
+  color: var(--text-not-available);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   text-align: left;
   transition: all 0.15s ease;
+  user-select: none;
 }
 
 .sidebarBtn:hover {
-  background: var(--background-over-container);
+  background: var(--background-over-container-hover);
+  color: var(--text);
 }
 
 .sidebarBtnActive {
-  background: var(--background-over-container-hover);
-  color: var(--alino-primary-color);
+  background: color-mix(in srgb, var(--alino-secondary-color) 12%, transparent);
+  color: var(--alino-secondary-color);
+  border-color: color-mix(in srgb, var(--alino-secondary-color) 30%, transparent);
   font-weight: 700;
 }
 
-.sidebarBadge {
+.sidebarBtnActive svg {
+  color: var(--alino-secondary-color);
+}
+
+.infoBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: var(--background);
-  color: var(--text-not-available);
+  font-weight: 600;
+  color: var(--alino-secondary-color);
+  background: color-mix(in srgb, var(--alino-secondary-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--alino-secondary-color) 25%, transparent);
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin: 0 2px;
 }
 
 .mainArea {
@@ -184,7 +198,7 @@
 .card {
   display: flex;
   flex-direction: column;
-  background: var(--background-secondary);
+  background: var(--background-over-container);
   border: 1px solid var(--border-container-color);
   border-radius: 14px;
   padding: 14px;
@@ -194,11 +208,8 @@
 
 .card:hover {
   border-color: var(--border-container-hover);
+  background: var(--background-over-container-hover);
   transform: translateY(-1px);
-}
-
-.cardOwned {
-  border-color: rgba(48, 209, 88, 0.3);
 }
 
 .cardHeader {
@@ -435,14 +446,14 @@
 }
 
 .packTag {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  padding: 1px 6px;
+  color: #ffffff;
+  background: var(--alino-primary-color);
+  padding: 1px 5px;
   border-radius: 4px;
-  text-transform: uppercase;
   letter-spacing: 0.04em;
-  background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  text-transform: uppercase;
 }
 
 .permanentTag {
@@ -481,12 +492,13 @@
     width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--border-container-color);
-    padding: 10px;
+    padding: 0;
     flex-direction: row;
     overflow-x: auto;
   }
 
   .sidebarGroup {
+    padding: 8px 10px;
     flex-direction: row;
     align-items: center;
   }

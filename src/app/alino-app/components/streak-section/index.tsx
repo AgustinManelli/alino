@@ -9,7 +9,6 @@ import { getStreakPackageTranslation } from "@/lib/i18n/helpers";
 import { ModalBox } from "@/components/ui/modal-options-box";
 import { LoadingIcon, StreakProtectorIcon } from "@/components/ui/icons/icons";
 import { AlinoCoinIcon } from "@/components/ui/alino-coins-icon";
-import { motion } from "motion/react";
 import {
   AnimatedStreakFlame,
   FlameStatus,

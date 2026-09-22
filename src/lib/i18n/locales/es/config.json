@@ -34,5 +34,276 @@
     "title": "Aplicación instalable (PWA)",
     "description": "Controla si deseas ver avisos de instalación en tus navegadores compatibles.",
     "label": "Sugerir instalación de la aplicación"
+  },
+  "account": {
+    "windowTitle": "Mi cuenta",
+    "tabs": {
+      "profile": "Perfil",
+      "subscription": "Suscripción",
+      "transactions": "Historial de transacciones",
+      "referrals": "Referidos",
+      "security": "Seguridad y privacidad"
+    },
+    "cancelModal": {
+      "text": "¿Estás seguro de que deseas cancelar tu suscripción?",
+      "additionalText": "Podrás disfrutar los beneficios hasta el final de tu período actual de facturación.",
+      "actionButton": "Cancelar suscripción"
+    },
+    "profile": {
+      "avatarEditTitle": "Personalizar foto de perfil",
+      "defaultUser": "Usuario",
+      "levelText": "Nivel {{level}} • {{title}}",
+      "tierPlan": "Plan {{tier}}",
+      "displayName": {
+        "title": "Nombre de visualización",
+        "placeholder": "Tu nombre completo o apodo",
+        "updated": "Nombre de visualización actualizado con éxito."
+      },
+      "username": {
+        "title": "Nombre de usuario (@)",
+        "placeholder": "nuevo_usuario",
+        "remainingChanges": "Te quedan {{count}} cambios de usuario este mes.",
+        "lastChange": "Último cambio: {{date}}",
+        "updated": "Nombre de usuario (@) actualizado con éxito."
+      },
+      "biography": {
+        "title": "Biografía",
+        "placeholder": "Cuéntanos un poco sobre ti...",
+        "updated": "Biografía actualizada con éxito."
+      },
+      "minCharsError": "El valor debe tener al menos 3 caracteres.",
+      "editBtn": "Editar",
+      "cancelBtn": "Cancelar",
+      "saveBtn": "Guardar",
+      "savingBtn": "...",
+      "cosmetics": {
+        "title": "Inventario de Cosméticos",
+        "subtitle": "Personalizá tu avatar con los marcos y accesorios obtenidos en tus logros, la tienda o tu plan PRO.",
+        "framesTab": "Marcos",
+        "overlaysTab": "Accesorios",
+        "none": "Ninguno",
+        "unequipTitle": "Desequipar y no mostrar cosmético",
+        "active": "Activo",
+        "remove": "Quitar",
+        "equipped": "Equipado",
+        "equip": "Equipar",
+        "pro": "PRO",
+        "equipSuccess": "¡Cosmético equipado!",
+        "unequipSuccess": "Cosmético desequipado",
+        "updateError": "No se pudo actualizar el cosmético."
+      },
+      "avatarModal": {
+        "title": "Personalizar foto de perfil",
+        "cancel": "Cancelar",
+        "save": "Guardar foto",
+        "saving": "Guardando...",
+        "success": "Foto de perfil actualizada con éxito.",
+        "error": "No se pudo actualizar la foto de perfil."
+      }
+    },
+    "subscription": {
+      "title": "Suscripción y Beneficios",
+      "subtitle": "Descubre el potencial de tu cuenta, gestiona tu plan y controla tu consumo de IA.",
+      "freeBanner": {
+        "title": "Alino Pro — Productividad Sin Límites",
+        "desc": "Acceso completo a Inteligencia Artificial, widgets ilimitados y funciones avanzadas para tus proyectos.",
+        "button": "Explorar planes"
+      },
+      "activeBanner": {
+        "title": "Suscripción {{tier}} Activa",
+        "loading": "Cargando información...",
+        "endsOn": "Termina el {{date}}",
+        "cancelsOn": "Se cancelará el {{date}}",
+        "renewsOn": "Renueva el {{date}}",
+        "ultraDesc": "Tu cuenta cuenta con el plan más alto y todos los beneficios ilimitados.",
+        "proDesc": "Tu cuenta cuenta con todos los beneficios Pro activos.",
+        "upgradeToUltra": "Mejorar a Ultra",
+        "upgradePlan": "Mejorar plan"
+      },
+      "aiCredits": {
+        "sectionTitle": "Créditos de Inteligencia Artificial",
+        "availableLabel": "Créditos disponibles este período",
+        "unlimited": "Ilimitados ✦",
+        "loading": "Cargando cuotas...",
+        "renewsOn": "Renueva el {{date}}",
+        "purchasedLabel": "Comprados ({{count}})",
+        "planLabel": "Plan mensual ({{count}})",
+        "purchasedTooltip": "Tokens comprados: {{count}}",
+        "planTooltip": "Tokens del plan: {{count}}",
+        "exhaustedWarning": "Has alcanzado el límite de créditos para este período y no tienes créditos adicionales. Se renovarán automáticamente en la fecha indicada o puedes comprar más en la tienda.",
+        "usingExtraNotice": "Has consumido los créditos de tu plan mensual. Actualmente estás utilizando tus créditos adicionales comprados.",
+        "usingExtraNearLimitNotice": "Has consumido tu cuota mensual y te quedan pocos créditos comprados ({{count}}). Puedes conseguir más en la tienda.",
+        "nearLimitWarning": "Quedan pocos créditos disponibles. Puedes actualizar tu plan o adquirir tokens en la tienda."
+      },
+      "benefits": {
+        "sectionTitle": "Beneficios incluidos en Alino Pro",
+        "ai": {
+          "title": "Inteligencia Artificial Ilimitada",
+          "desc": "Hasta 500 créditos mensuales para desglosar subtareas, mejorar notas y organizar listas."
+        },
+        "widgets": {
+          "title": "Widgets y Panel Exclusivo",
+          "desc": "Desbloquea todos los widgets de productividad para tu pantalla de inicio personalizada."
+        },
+        "collaboration": {
+          "title": "Colaboración en Tiempo Real",
+          "desc": "Comparte y gestiona listas con tus compañeros de equipo sin límites de miembros."
+        },
+        "folders": {
+          "title": "Carpetas y Fijación Avanzada",
+          "desc": "Organización jerárquica ilimitada y fija tus proyectos clave en la barra lateral."
+        }
+      },
+      "promo": {
+        "title": "¿Tienes un código de promoción?",
+        "placeholder": "INGRESA TU CÓDIGO (EJ. PRO30D)",
+        "button": "Aplicar",
+        "loading": "Canjeando...",
+        "success": "¡Código promocional canjeado!"
+      },
+      "cancel": {
+        "button": "Cancelar suscripción",
+        "loading": "..."
+      },
+      "subscribe": "Suscribirme",
+      "faq": {
+        "title": "Preguntas frecuentes",
+        "cancelQuestion": "¿Puedo cancelar en cualquier momento?",
+        "cancelAnswer": "Sí, puedes cancelar cuando desees con un solo clic. Conservarás todos los beneficios Pro hasta el final del período ya facturado.",
+        "paymentQuestion": "¿Qué métodos de pago aceptan?",
+        "paymentAnswer": "Aceptamos Mercado Pago, tarjetas de crédito, débito y transferencias locales bancarias seguras.",
+        "dataQuestion": "¿Qué sucede con mis datos y listas si vuelvo al plan Free?",
+        "dataAnswer": "Absolutamente ninguna información se pierde. Todas tus listas, tareas y notas permanecerán intactas y seguras."
+      }
+    },
+    "transactions": {
+      "title": "Historial de transacciones",
+      "subtitle": "Consulta tus compras de suscripciones, cobros mensuales, adquisición y uso de monedas.",
+      "metrics": {
+        "coinsBalance": "Saldo actual de monedas",
+        "currentPlan": "Plan de cuenta actual",
+        "coinsSpent": "Total monedas gastadas"
+      },
+      "filters": {
+        "all": "Todas",
+        "subscriptions": "Membresías",
+        "coinPacks": "Compra de monedas",
+        "coinMovements": "Uso de monedas"
+      },
+      "empty": {
+        "title": "Sin transacciones registradas",
+        "subscriptions": "Aún no posees pagos o cobros de membresías registrados.",
+        "coinPacks": "Aún no has adquirido paquetes de monedas.",
+        "coinMovements": "No tienes movimientos ni gastos de monedas por el momento.",
+        "all": "Tus pagos, compras y movimientos de monedas aparecerán detallados aquí."
+      },
+      "status": {
+        "approved": "Aprobado",
+        "failed": "Fallido",
+        "pending": "Pendiente",
+        "completed": "Completado"
+      },
+      "types": {
+        "subscription": "Membresía",
+        "coinPack": "Monedas",
+        "cosmeticPurchase": "Cosmético",
+        "streakProtectionPurchase": "Protectores de racha",
+        "aiCreditsPurchase": "Créditos IA",
+        "coinPackPurchase": "Compra de monedas",
+        "achievementReward": "Premio por logro",
+        "levelUpReward": "Subida de nivel",
+        "promoCode": "Código promocional",
+        "defaultCoin": "Monedas"
+      },
+      "recurring": "Cobro automático",
+      "balanceAfter": "Saldo posterior: {{balance}}"
+    },
+    "referrals": {
+      "title": "Programa de Referidos",
+      "badge": "+{{days}}d Pro cada {{target}} amigos",
+      "desc": "Invita a tus amigos con tu enlace único. Ellos recibirán {{referredDays}} días de Plan Pro gratis al unirse, y tú acumulas amigos para reclamar {{rewardDays}} días de Plan Pro cada {{target}} invitados.",
+      "codeBadgeTitle": "Tu código único de referido",
+      "codeCopied": "Código de referido copiado",
+      "linkCopied": "Enlace de referido copiado",
+      "shareBtn": "Compartir",
+      "shareTitle": "Únete a Alino",
+      "shareText": "¡Únete a Alino con mi código {{code}} y recibe {{days}} días de Plan Pro gratis con créditos de IA!",
+      "milestoneTitle": "Progreso del hito actual",
+      "milestoneRatio": "{{current}} / {{target}} amigos",
+      "milestoneReached": "¡Meta alcanzada! Tienes {{days}} días de Plan Pro listos para reclamar.",
+      "milestoneRemaining": "Te faltan {{count}} amigo(s) para reclamar {{days}} días de Plan Pro.",
+      "claimBtn": "Reclamar {{days}}d Pro",
+      "claiming": "Reclamando...",
+      "claimSuccess": "¡Recompensa reclamada con éxito!",
+      "metrics": {
+        "joinedFriends": "Amigos que se unieron",
+        "earnedDays": "Días Pro reclamados"
+      },
+      "redeem": {
+        "placeholder": "Código único de tu amigo (ej. ALN7K9X)",
+        "button": "Canjear código",
+        "loading": "...",
+        "success": "¡Código aplicado con éxito!",
+        "alreadyReferred": "Ya has canjeado tu beneficio de referido"
+      }
+    },
+    "security": {
+      "title": "Seguridad y Privacidad",
+      "subtitle": "Controla quién puede interactuar contigo, administra tus sesiones y resguarda tus datos.",
+      "visibility": {
+        "title": "Visibilidad y privacidad",
+        "desc": "Configura cómo otros usuarios pueden descubrirte o interactuar contigo dentro de Alino.",
+        "privateAccount": "Cuenta privada",
+        "privateAccountDesc": "No aparecerás en las búsquedas de usuarios ni serás sugerido para invitaciones.",
+        "privateSuccessOn": "Cuenta privada activada. Tu perfil no aparecerá en búsquedas.",
+        "privateSuccessOff": "Cuenta pública. Otros usuarios podrán encontrarte para invitarte.",
+        "privateError": "No se pudo actualizar la privacidad.",
+        "listInvites": "Permitir invitaciones a listas",
+        "listInvitesDesc": "Si lo desactivas, nadie podrá enviarte solicitudes para unirte a listas compartidas.",
+        "listInvitesSuccessOn": "Invitaciones permitidas.",
+        "listInvitesSuccessOff": "Invitaciones bloqueadas. Nadie podrá agregarte a listas compartidas.",
+        "listInvitesError": "No se pudo actualizar el ajuste de invitaciones.",
+        "activityStatus": "Presencia en vivo en listas compartidas",
+        "activityStatusDesc": "Muestra cuándo estás activo o completando tareas a los colaboradores de tus listas.",
+        "activityStatusSuccessOn": "Actividad en tiempo real visible para tus colaboradores.",
+        "activityStatusSuccessOff": "Actividad en tiempo real oculta.",
+        "activityStatusError": "No se pudo actualizar el estado de actividad."
+      },
+      "sessions": {
+        "title": "Sesiones y dispositivos",
+        "desc": "Administra los accesos activos a tu cuenta en navegadores y teléfonos móviles.",
+        "signOutOthers": "Cerrar sesión en otros dispositivos",
+        "signOutOthersDesc": "Revoca el acceso en todos los navegadores abiertos excepto en este.",
+        "signOutBtn": "Cerrar otras sesiones",
+        "signingOut": "Cerrando...",
+        "signOutSuccess": "Sesiones cerradas en todos los demás dispositivos correctamente.",
+        "signOutError": "No se pudieron cerrar las demás sesiones."
+      },
+      "export": {
+        "title": "Portabilidad y copia de seguridad",
+        "desc": "Descarga una copia completa de tus datos personales, listas, notas y tareas en formato estándar JSON.",
+        "exportLabel": "Exportar mis datos (JSON)",
+        "exportDesc": "Recibirás un archivo descargable con todas tus listas, tareas y configuraciones.",
+        "exportBtn": "Descargar datos",
+        "exporting": "Exportando...",
+        "exportSuccess": "Copia de datos exportada y descargada.",
+        "exportError": "Error al exportar los datos."
+      },
+      "dangerZone": {
+        "title": "Zona de peligro",
+        "desc": "La eliminación de la cuenta es permanente e irreversible. Todos tus datos se borrarán sin posibilidad de recuperación.",
+        "deleteLabel": "Eliminar mi cuenta",
+        "deleteDesc": "Elimina permanentemente tu usuario, listas personales, archivos y suscripción activa.",
+        "deleteBtn": "Eliminar cuenta",
+        "modalTitle": "¿Eliminar cuenta permanentemente?",
+        "warning": "Atención: Esta acción no se puede deshacer. Se borrarán todas tus listas, tareas, carpetas compartidas y beneficios de suscripción de forma definitiva.",
+        "confirmPrompt": "Para confirmar, escribe tu nombre de usuario",
+        "cancel": "Cancelar",
+        "confirmDelete": "Eliminar definitivamente",
+        "deleting": "Eliminando...",
+        "deleteSuccess": "Tu cuenta ha sido eliminada. Hasta pronto.",
+        "deleteError": "No se pudo completar la eliminación."
+      }
+    }
   }
 }

@@ -34,5 +34,276 @@
     "title": "Installable App (PWA)",
     "description": "Control whether you want to see installation prompts in supported browsers.",
     "label": "Prompt app installation"
+  },
+  "account": {
+    "windowTitle": "My Account",
+    "tabs": {
+      "profile": "Profile",
+      "subscription": "Subscription",
+      "transactions": "Transaction History",
+      "referrals": "Referrals",
+      "security": "Security & Privacy"
+    },
+    "cancelModal": {
+      "text": "Are you sure you want to cancel your subscription?",
+      "additionalText": "You will be able to enjoy the benefits until the end of your current billing period.",
+      "actionButton": "Cancel subscription"
+    },
+    "profile": {
+      "avatarEditTitle": "Customize profile picture",
+      "defaultUser": "User",
+      "levelText": "Level {{level}} • {{title}}",
+      "tierPlan": "{{tier}} Plan",
+      "displayName": {
+        "title": "Display Name",
+        "placeholder": "Your full name or nickname",
+        "updated": "Display name updated successfully."
+      },
+      "username": {
+        "title": "Username (@)",
+        "placeholder": "new_user",
+        "remainingChanges": "You have {{count}} username changes left this month.",
+        "lastChange": "Last change: {{date}}",
+        "updated": "Username (@) updated successfully."
+      },
+      "biography": {
+        "title": "Biography",
+        "placeholder": "Tell us a bit about yourself...",
+        "updated": "Biography updated successfully."
+      },
+      "minCharsError": "The value must be at least 3 characters long.",
+      "editBtn": "Edit",
+      "cancelBtn": "Cancel",
+      "saveBtn": "Save",
+      "savingBtn": "...",
+      "cosmetics": {
+        "title": "Cosmetics Inventory",
+        "subtitle": "Customize your avatar with frames and accessories obtained through achievements, the shop, or your PRO plan.",
+        "framesTab": "Frames",
+        "overlaysTab": "Accessories",
+        "none": "None",
+        "unequipTitle": "Unequip and hide cosmetic",
+        "active": "Active",
+        "remove": "Remove",
+        "equipped": "Equipped",
+        "equip": "Equip",
+        "pro": "PRO",
+        "equipSuccess": "Cosmetic equipped!",
+        "unequipSuccess": "Cosmetic unequipped",
+        "updateError": "Could not update cosmetic."
+      },
+      "avatarModal": {
+        "title": "Customize profile picture",
+        "cancel": "Cancel",
+        "save": "Save picture",
+        "saving": "Saving...",
+        "success": "Profile picture updated successfully.",
+        "error": "Could not update profile picture."
+      }
+    },
+    "subscription": {
+      "title": "Subscription and Benefits",
+      "subtitle": "Unlock your account's potential, manage your plan, and track your AI usage.",
+      "freeBanner": {
+        "title": "Alino Pro — Limitless Productivity",
+        "desc": "Full access to Artificial Intelligence, unlimited widgets, and advanced features for your projects.",
+        "button": "Explore plans"
+      },
+      "activeBanner": {
+        "title": "Active {{tier}} Subscription",
+        "loading": "Loading information...",
+        "endsOn": "Ends on {{date}}",
+        "cancelsOn": "Will cancel on {{date}}",
+        "renewsOn": "Renews on {{date}}",
+        "ultraDesc": "Your account has the highest plan with all unlimited benefits.",
+        "proDesc": "Your account has all Pro benefits active.",
+        "upgradeToUltra": "Upgrade to Ultra",
+        "upgradePlan": "Upgrade plan"
+      },
+      "aiCredits": {
+        "sectionTitle": "Artificial Intelligence Credits",
+        "availableLabel": "Available credits this period",
+        "unlimited": "Unlimited ✦",
+        "loading": "Loading quotas...",
+        "renewsOn": "Renews on {{date}}",
+        "purchasedLabel": "Purchased ({{count}})",
+        "planLabel": "Monthly plan ({{count}})",
+        "purchasedTooltip": "Purchased tokens: {{count}}",
+        "planTooltip": "Plan tokens: {{count}}",
+        "exhaustedWarning": "You have reached the credit limit for this period and have no additional credits. They will renew automatically on the indicated date or you can purchase more in the shop.",
+        "usingExtraNotice": "You have exhausted your monthly plan credits. You are currently using your purchased additional credits.",
+        "usingExtraNearLimitNotice": "You have exhausted your monthly quota and have few purchased credits left ({{count}}). You can get more in the shop.",
+        "nearLimitWarning": "Few credits remaining. You can upgrade your plan or purchase tokens in the shop."
+      },
+      "benefits": {
+        "sectionTitle": "Benefits included in Alino Pro",
+        "ai": {
+          "title": "Unlimited Artificial Intelligence",
+          "desc": "Up to 500 monthly credits to break down subtasks, improve notes, and organize lists."
+        },
+        "widgets": {
+          "title": "Exclusive Widgets & Dashboard",
+          "desc": "Unlock all productivity widgets for your personalized home screen."
+        },
+        "collaboration": {
+          "title": "Real-Time Collaboration",
+          "desc": "Share and manage lists with your team members with no member limits."
+        },
+        "folders": {
+          "title": "Advanced Folders & Pinning",
+          "desc": "Unlimited hierarchical organization and pin your key projects to the sidebar."
+        }
+      },
+      "promo": {
+        "title": "Do you have a promo code?",
+        "placeholder": "ENTER YOUR CODE (E.G. PRO30D)",
+        "button": "Apply",
+        "loading": "Redeeming...",
+        "success": "Promo code redeemed successfully!"
+      },
+      "cancel": {
+        "button": "Cancel subscription",
+        "loading": "..."
+      },
+      "subscribe": "Subscribe",
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "cancelQuestion": "Can I cancel at any time?",
+        "cancelAnswer": "Yes, you can cancel whenever you want with a single click. You will keep all Pro benefits until the end of the period already billed.",
+        "paymentQuestion": "What payment methods do you accept?",
+        "paymentAnswer": "We accept Mercado Pago, credit cards, debit cards, and secure local bank transfers.",
+        "dataQuestion": "What happens to my data and lists if I return to the Free plan?",
+        "dataAnswer": "Absolutely no data is lost. All your lists, tasks, and notes will remain intact and secure."
+      }
+    },
+    "transactions": {
+      "title": "Transaction History",
+      "subtitle": "Check your subscription purchases, monthly charges, and coin acquisition and usage.",
+      "metrics": {
+        "coinsBalance": "Current coin balance",
+        "currentPlan": "Current account plan",
+        "coinsSpent": "Total coins spent"
+      },
+      "filters": {
+        "all": "All",
+        "subscriptions": "Subscriptions",
+        "coinPacks": "Coin purchases",
+        "coinMovements": "Coin usage"
+      },
+      "empty": {
+        "title": "No registered transactions",
+        "subscriptions": "You don't have any subscription payments or charges recorded yet.",
+        "coinPacks": "You haven't purchased any coin packs yet.",
+        "coinMovements": "No coin movements or expenses at the moment.",
+        "all": "Your payments, purchases, and coin movements will appear here."
+      },
+      "status": {
+        "approved": "Approved",
+        "failed": "Failed",
+        "pending": "Pending",
+        "completed": "Completed"
+      },
+      "types": {
+        "subscription": "Subscription",
+        "coinPack": "Coins",
+        "cosmeticPurchase": "Cosmetic",
+        "streakProtectionPurchase": "Streak shields",
+        "aiCreditsPurchase": "AI credits",
+        "coinPackPurchase": "Coin purchase",
+        "achievementReward": "Achievement reward",
+        "levelUpReward": "Level up",
+        "promoCode": "Promo code",
+        "defaultCoin": "Coins"
+      },
+      "recurring": "Auto-renewal",
+      "balanceAfter": "Balance after: {{balance}}"
+    },
+    "referrals": {
+      "title": "Referral Program",
+      "badge": "+{{days}}d Pro every {{target}} friends",
+      "desc": "Invite friends with your unique link. They get {{referredDays}} days of Free Pro Plan upon joining, and you accumulate friends to claim {{rewardDays}} days of Pro Plan for every {{target}} invitees.",
+      "codeBadgeTitle": "Your unique referral code",
+      "codeCopied": "Referral code copied",
+      "linkCopied": "Referral link copied",
+      "shareBtn": "Share",
+      "shareTitle": "Join Alino",
+      "shareText": "Join Alino with my code {{code}} and get {{days}} days of Free Pro Plan with AI credits!",
+      "milestoneTitle": "Current milestone progress",
+      "milestoneRatio": "{{current}} / {{target}} friends",
+      "milestoneReached": "Goal reached! You have {{days}} days of Pro Plan ready to claim.",
+      "milestoneRemaining": "You need {{count}} more friend(s) to claim {{days}} days of Pro Plan.",
+      "claimBtn": "Claim {{days}}d Pro",
+      "claiming": "Claiming...",
+      "claimSuccess": "Reward claimed successfully!",
+      "metrics": {
+        "joinedFriends": "Joined friends",
+        "earnedDays": "Earned Pro days"
+      },
+      "redeem": {
+        "placeholder": "Friend's unique code (e.g. ALN7K9X)",
+        "button": "Redeem code",
+        "loading": "...",
+        "success": "Code applied successfully!",
+        "alreadyReferred": "You have already redeemed your referral benefit"
+      }
+    },
+    "security": {
+      "title": "Security & Privacy",
+      "subtitle": "Control who can interact with you, manage your sessions, and protect your data.",
+      "visibility": {
+        "title": "Visibility and privacy",
+        "desc": "Configure how other users can discover or interact with you inside Alino.",
+        "privateAccount": "Private account",
+        "privateAccountDesc": "You will not appear in user searches or be suggested for invites.",
+        "privateSuccessOn": "Private account activated. Your profile will not appear in searches.",
+        "privateSuccessOff": "Public account. Other users can find you to invite you.",
+        "privateError": "Could not update privacy setting.",
+        "listInvites": "Allow list invites",
+        "listInvitesDesc": "If turned off, no one will be able to send you requests to join shared lists.",
+        "listInvitesSuccessOn": "Invites allowed.",
+        "listInvitesSuccessOff": "Invites blocked. No one can add you to shared lists.",
+        "listInvitesError": "Could not update invites setting.",
+        "activityStatus": "Live presence on shared lists",
+        "activityStatusDesc": "Shows when you are active or completing tasks to collaborators on your lists.",
+        "activityStatusSuccessOn": "Real-time activity visible to your collaborators.",
+        "activityStatusSuccessOff": "Real-time activity hidden.",
+        "activityStatusError": "Could not update activity status setting."
+      },
+      "sessions": {
+        "title": "Sessions and devices",
+        "desc": "Manage active logins to your account on browsers and mobile devices.",
+        "signOutOthers": "Sign out of other devices",
+        "signOutOthersDesc": "Revokes access on all open browsers except this one.",
+        "signOutBtn": "Sign out other sessions",
+        "signingOut": "Signing out...",
+        "signOutSuccess": "Sessions closed on all other devices successfully.",
+        "signOutError": "Could not sign out of other sessions."
+      },
+      "export": {
+        "title": "Data portability and backup",
+        "desc": "Download a complete copy of your personal data, lists, notes, and tasks in standard JSON format.",
+        "exportLabel": "Export my data (JSON)",
+        "exportDesc": "You will receive a downloadable file with all your lists, tasks, and settings.",
+        "exportBtn": "Download data",
+        "exporting": "Exporting...",
+        "exportSuccess": "Data copy exported and downloaded.",
+        "exportError": "Failed to export data."
+      },
+      "dangerZone": {
+        "title": "Danger zone",
+        "desc": "Account deletion is permanent and irreversible. All your data will be erased with no recovery option.",
+        "deleteLabel": "Delete my account",
+        "deleteDesc": "Permanently deletes your user, personal lists, files, and active subscription.",
+        "deleteBtn": "Delete account",
+        "modalTitle": "Permanently delete account?",
+        "warning": "Warning: This action cannot be undone. All your lists, tasks, shared folders, and subscription benefits will be permanently deleted.",
+        "confirmPrompt": "To confirm, type your username",
+        "cancel": "Cancel",
+        "confirmDelete": "Delete permanently",
+        "deleting": "Deleting...",
+        "deleteSuccess": "Your account has been deleted. Goodbye.",
+        "deleteError": "Could not complete account deletion."
+      }
+    }
   }
 }

@@ -42,6 +42,7 @@ export interface RedeemResult {
   new_balance?: number;
   message?: string;
   error?: string;
+  errorCode?: string;
 }
 
 export interface PurchaseResult {
@@ -124,7 +125,14 @@ export async function redeemPromoCodeAction(code: string): Promise<RedeemResult>
     const { data, error } = await supabase.rpc("redeem_coin_promo_code", {
       p_code: code,
     });
-    if (error) throw new Error(error.message);
+    if (error) {
+      const errCode = error.message || error.code || "GENERIC_ERROR";
+      return {
+        success: false,
+        errorCode: errCode,
+        error: errCode,
+      };
+    }
     const result = data as RedeemResult;
     return {
       success: true,
@@ -133,9 +141,12 @@ export async function redeemPromoCodeAction(code: string): Promise<RedeemResult>
       message: result.message,
     };
   } catch (e) {
+    const message = e instanceof Error ? e.message : "GENERIC_ERROR";
+    const errorCode = message === "No autenticado." ? "UNAUTHORIZED" : message;
     return {
       success: false,
-      error: e instanceof Error ? e.message : "Error al canjear el código.",
+      errorCode,
+      error: errorCode,
     };
   }
 }
@@ -224,13 +235,21 @@ export async function buyAICreditsAction(packId: string): Promise<{
   new_extra_credits?: number;
   message?: string;
   error?: string;
+  errorCode?: string;
 }> {
   try {
     const { supabase } = await getAuth();
     const { data, error } = await supabase.rpc("buy_ai_credits_with_coins", {
       p_pack_id: packId,
     });
-    if (error) throw new Error(error.message);
+    if (error) {
+      const code = error.message || error.code || "GENERIC_ERROR";
+      return {
+        success: false,
+        errorCode: code,
+        error: code,
+      };
+    }
     const result = data as {
       success: boolean;
       new_coins: number;
@@ -244,9 +263,12 @@ export async function buyAICreditsAction(packId: string): Promise<{
       new_extra_credits: result.new_extra_credits,
     };
   } catch (e) {
+    const message = e instanceof Error ? e.message : "GENERIC_ERROR";
+    const errorCode = message === "No autenticado." ? "UNAUTHORIZED" : message;
     return {
       success: false,
-      error: e instanceof Error ? e.message : "Error al comprar créditos IA.",
+      errorCode,
+      error: errorCode,
     };
   }
 }

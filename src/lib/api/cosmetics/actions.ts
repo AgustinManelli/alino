@@ -203,6 +203,7 @@ export async function equipCosmeticAction(
   success: boolean;
   equipped_id: string | null;
   error?: string;
+  errorCode?: string;
 }> {
   try {
     const { supabase } = await getAuth();
@@ -210,7 +211,15 @@ export async function equipCosmeticAction(
       p_cosmetic_id: cosmeticId,
       p_type: type,
     });
-    if (error) throw new Error(error.message);
+    if (error) {
+      const code = error.message || error.code || "GENERIC_ERROR";
+      return {
+        success: false,
+        equipped_id: null,
+        errorCode: code,
+        error: code,
+      };
+    }
 
     const result = data as {
       success: boolean;
@@ -222,11 +231,13 @@ export async function equipCosmeticAction(
       equipped_id: result.equipped_id,
     };
   } catch (e) {
+    const message = e instanceof Error ? e.message : "GENERIC_ERROR";
+    const errorCode = message === "No autenticado." ? "UNAUTHORIZED" : message;
     return {
       success: false,
       equipped_id: null,
-      error:
-        e instanceof Error ? e.message : "Error al equipar el cosmético.",
+      errorCode,
+      error: errorCode,
     };
   }
 }
@@ -235,13 +246,21 @@ export async function buyCosmeticAction(cosmeticId: string): Promise<{
   success: boolean;
   new_balance?: number;
   error?: string;
+  errorCode?: string;
 }> {
   try {
     const { supabase } = await getAuth();
     const { data, error } = await supabase.rpc("buy_cosmetic_with_coins", {
       p_cosmetic_id: cosmeticId,
     });
-    if (error) throw new Error(error.message);
+    if (error) {
+      const code = error.message || error.code || "GENERIC_ERROR";
+      return {
+        success: false,
+        errorCode: code,
+        error: code,
+      };
+    }
 
     const result = data as {
       success: boolean;
@@ -253,10 +272,12 @@ export async function buyCosmeticAction(cosmeticId: string): Promise<{
       new_balance: result.new_balance,
     };
   } catch (e) {
+    const message = e instanceof Error ? e.message : "GENERIC_ERROR";
+    const errorCode = message === "No autenticado." ? "UNAUTHORIZED" : message;
     return {
       success: false,
-      error:
-        e instanceof Error ? e.message : "Error al comprar el cosmético.",
+      errorCode,
+      error: errorCode,
     };
   }
 }

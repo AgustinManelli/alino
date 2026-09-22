@@ -63,7 +63,32 @@
     "purchaseError": "Failed to purchase AI credits.",
     "insufficientCoins": "Not enough coins for this pack.",
     "noPacks": "No AI credit packs available at this moment.",
-    "extraBadge": "Permanent (never expire)"
+    "extraBadge": "Permanent (never expire)",
+    "tags": {
+      "popular": "POPULAR",
+      "best_value": "BEST VALUE",
+      "recommended": "RECOMMENDED",
+      "starter": "STARTER",
+      "saving": "SAVINGS",
+      "super": "SUPER",
+      "pro": "PRO",
+      "oferta": "OFFER",
+      "nuevo": "NEW"
+    },
+    "packs": {
+      "ai_starter": {
+        "name": "AI Starter Pack"
+      },
+      "ai_medium": {
+        "name": "AI Standard Pack"
+      },
+      "ai_pro": {
+        "name": "AI Advanced Pack"
+      },
+      "ai_ultra": {
+        "name": "AI Master Pack"
+      }
+    }
   },
   "gallery": {
     "windowTitle": "General Shop",
@@ -110,5 +135,43 @@
     "empty": "No items found matching your criteria.",
     "itemsCount": "{{count}} item",
     "itemsCount_plural": "{{count}} items"
+  },
+  "errors": {
+    "UNAUTHORIZED": "Unauthorized. Please sign in to continue.",
+    "UNATH": "Unauthorized. Please sign in to continue.",
+    "CODE_REQUIRED": "Please enter a promo code.",
+    "VLDTN": "Please enter a promo code.",
+    "PROMO_CODE_NOT_FOUND": "The entered promo code does not exist or is invalid.",
+    "NOTFD": "The selected item or code does not exist or is unavailable.",
+    "PROMO_CODE_INACTIVE": "This promo code is no longer active.",
+    "INACT": "This promo code is no longer active.",
+    "PROMO_CODE_EXPIRED": "This promo code has expired.",
+    "EXPIR": "This promo code has expired.",
+    "PROMO_CODE_MAX_USES_REACHED": "This promo code has reached its maximum redemption limit.",
+    "MAXUS": "This promo code has reached its maximum redemption limit.",
+    "PROMO_CODE_ALREADY_USED": "You have already redeemed this promo code.",
+    "ALRDY": "You have already redeemed or purchased this item.",
+    "COSMETIC_NOT_FOUND": "The selected cosmetic does not exist or is unavailable.",
+    "COSMETIC_NOT_ACTIVE": "This cosmetic is currently unavailable.",
+    "NOTAC": "This cosmetic is currently unavailable.",
+    "COSMETIC_NOT_FOR_SALE": "This cosmetic is not available for sale.",
+    "NOTFS": "This cosmetic is not available for sale.",
+    "INVALID_PRICE": "This item does not have a valid price.",
+    "INVPR": "This item does not have a valid price.",
+    "ALREADY_OWNED": "You already own this cosmetic in your inventory.",
+    "LEVEL_REQUIREMENT_NOT_MET": "You do not meet the minimum level required to purchase this cosmetic.",
+    "LVREQ": "You do not meet the minimum level required to purchase this cosmetic.",
+    "INSUFFICIENT_COINS": "You don't have enough coins to complete this purchase.",
+    "INSUF": "You don't have enough coins to complete this purchase.",
+    "AI_PACK_NOT_FOUND": "The AI credits pack was not found or is unavailable.",
+    "NTFND": "The AI credits pack was not found or is unavailable.",
+    "PACKAGE_NOT_FOUND": "The selected package does not exist or is unavailable.",
+    "INVALID_COSMETIC_TYPE": "Invalid cosmetic type.",
+    "INVTP": "Invalid cosmetic type.",
+    "TIER_REQUIRED_PRO": "This cosmetic requires an active PRO subscription.",
+    "TRREQ": "This cosmetic requires an active PRO subscription.",
+    "COSMETIC_NOT_OWNED": "You do not own this cosmetic in your inventory.",
+    "NTOWN": "You do not own this cosmetic in your inventory.",
+    "GENERIC_ERROR": "An unexpected error occurred while processing the operation."
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
 import { Switch } from "@/components/ui/switch";
 import { WindowModal } from "@/components/ui/WindowModal";
@@ -21,6 +22,7 @@ interface SecurityTabProps {
 }
 
 export function SecurityTab({ user, updateUser }: SecurityTabProps) {
+  const { t } = useTranslation(["config", "common"]);
   const [isPrivate, setIsPrivate] = useState<boolean>(
     user?.is_private ?? false
   );
@@ -60,14 +62,14 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
 
     const res = await updateUserSecuritySettingsAction({ is_private: nextVal });
     if (res.error) {
-      customToast.error("No se pudo actualizar la privacidad.");
+      customToast.error(t("config:account.security.visibility.privateError"));
       setIsPrivate(!nextVal);
       updateUser({ is_private: !nextVal });
     } else {
       customToast.success(
         nextVal
-          ? "Cuenta privada activada. Tu perfil no aparecerá en búsquedas."
-          : "Cuenta pública. Otros usuarios podrán encontrarte para invitarte."
+          ? t("config:account.security.visibility.privateSuccessOn")
+          : t("config:account.security.visibility.privateSuccessOff")
       );
     }
   };
@@ -81,14 +83,14 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
       allow_list_invites: nextVal,
     });
     if (res.error) {
-      customToast.error("No se pudo actualizar el ajuste de invitaciones.");
+      customToast.error(t("config:account.security.visibility.listInvitesError"));
       setAllowListInvites(!nextVal);
       updateUser({ allow_list_invites: !nextVal });
     } else {
       customToast.success(
         nextVal
-          ? "Invitaciones permitidas."
-          : "Invitaciones bloqueadas. Nadie podrá agregarte a listas compartidas."
+          ? t("config:account.security.visibility.listInvitesSuccessOn")
+          : t("config:account.security.visibility.listInvitesSuccessOff")
       );
     }
   };
@@ -102,14 +104,14 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
       show_activity_status: nextVal,
     });
     if (res.error) {
-      customToast.error("No se pudo actualizar el estado de actividad.");
+      customToast.error(t("config:account.security.visibility.activityStatusError"));
       setShowActivityStatus(!nextVal);
       updateUser({ show_activity_status: !nextVal });
     } else {
       customToast.success(
         nextVal
-          ? "Actividad en tiempo real visible para tus colaboradores."
-          : "Actividad en tiempo real oculta."
+          ? t("config:account.security.visibility.activityStatusSuccessOn")
+          : t("config:account.security.visibility.activityStatusSuccessOff")
       );
     }
   };
@@ -121,13 +123,13 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
       const { error } = await supabase.auth.signOut({ scope: "others" });
       if (error) throw error;
       customToast.success(
-        "Sesiones cerradas en todos los demás dispositivos correctamente."
+        t("config:account.security.sessions.signOutSuccess")
       );
     } catch (err: unknown) {
       const msg =
         err instanceof Error
           ? err.message
-          : "No se pudieron cerrar las demás sesiones.";
+          : t("config:account.security.sessions.signOutError");
       customToast.error(msg);
     } finally {
       setIsSigningOutOthers(false);
@@ -139,7 +141,7 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
     try {
       const res = await exportUserDataAction();
       if (res.error || !res.data) {
-        throw new Error(res.error || "Error al recopilar los datos.");
+        throw new Error(res.error || t("config:account.security.export.exportError"));
       }
 
       const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
@@ -155,10 +157,10 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
       downloadAnchor.click();
       downloadAnchor.remove();
 
-      customToast.success("Copia de datos exportada y descargada.");
+      customToast.success(t("config:account.security.export.exportSuccess"));
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "Error al exportar los datos.";
+        err instanceof Error ? err.message : t("config:account.security.export.exportError");
       customToast.error(msg);
     } finally {
       setIsExporting(false);
@@ -179,7 +181,7 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
         throw new Error(res.error);
       }
 
-      customToast.success("Tu cuenta ha sido eliminada. Hasta pronto.");
+      customToast.success(t("config:account.security.dangerZone.deleteSuccess"));
       const supabase = createClient();
       await supabase.auth.signOut();
       localStorage.clear();
@@ -188,7 +190,7 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
       const msg =
         err instanceof Error
           ? err.message
-          : "No se pudo completar la eliminación.";
+          : t("config:account.security.dangerZone.deleteError");
       customToast.error(msg);
       setIsDeleting(false);
     }
@@ -204,24 +206,24 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
       style={{ display: "flex", flexDirection: "column", gap: "20px" }}
     >
       <div className={userStyles.tabHeaderBlock}>
-        <h3 className={userStyles.tabSectionTitle}>Seguridad y Privacidad</h3>
+        <h3 className={userStyles.tabSectionTitle}>
+          {t("config:account.security.title")}
+        </h3>
         <p className={userStyles.tabSectionSubtitle}>
-          Controla quién puede interactuar contigo, administra tus sesiones y
-          resguarda tus datos.
+          {t("config:account.security.subtitle")}
         </p>
       </div>
 
       <SectionContainer
-        sectionTitle="Visibilidad y privacidad"
-        sectionDescription="Configura cómo otros usuarios pueden descubrirte o interactuar contigo dentro de Alino."
+        sectionTitle={t("config:account.security.visibility.title")}
+        sectionDescription={t("config:account.security.visibility.desc")}
         configElements={[
           {
             text: (
               <div className={styles.infoCol}>
-                <span>Cuenta privada</span>
+                <span>{t("config:account.security.visibility.privateAccount")}</span>
                 <span className={styles.infoSubtext}>
-                  No aparecerás en las búsquedas de usuarios ni serás sugerido
-                  para invitaciones.
+                  {t("config:account.security.visibility.privateAccountDesc")}
                 </span>
               </div>
             ),
@@ -236,10 +238,9 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
           {
             text: (
               <div className={styles.infoCol}>
-                <span>Permitir invitaciones a listas</span>
+                <span>{t("config:account.security.visibility.listInvites")}</span>
                 <span className={styles.infoSubtext}>
-                  Si lo desactivas, nadie podrá enviarte solicitudes para unirte a
-                  listas compartidas.
+                  {t("config:account.security.visibility.listInvitesDesc")}
                 </span>
               </div>
             ),
@@ -254,10 +255,9 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
           {
             text: (
               <div className={styles.infoCol}>
-                <span>Presencia en vivo en listas compartidas</span>
+                <span>{t("config:account.security.visibility.activityStatus")}</span>
                 <span className={styles.infoSubtext}>
-                  Muestra cuándo estás activo o completando tareas a los
-                  colaboradores de tus listas.
+                  {t("config:account.security.visibility.activityStatusDesc")}
                 </span>
               </div>
             ),
@@ -273,16 +273,15 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
       />
 
       <SectionContainer
-        sectionTitle="Sesiones y dispositivos"
-        sectionDescription="Administra los accesos activos a tu cuenta en navegadores y teléfonos móviles."
+        sectionTitle={t("config:account.security.sessions.title")}
+        sectionDescription={t("config:account.security.sessions.desc")}
         configElements={[
           {
             text: (
               <div className={styles.infoCol}>
-                <span>Cerrar sesión en otros dispositivos</span>
+                <span>{t("config:account.security.sessions.signOutOthers")}</span>
                 <span className={styles.infoSubtext}>
-                  Revoca el acceso en todos los navegadores abiertos excepto en
-                  este.
+                  {t("config:account.security.sessions.signOutOthersDesc")}
                 </span>
               </div>
             ),
@@ -293,7 +292,9 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
                 onClick={handleSignOutOthers}
                 disabled={isSigningOutOthers}
               >
-                {isSigningOutOthers ? "Cerrando..." : "Cerrar otras sesiones"}
+                {isSigningOutOthers
+                  ? t("config:account.security.sessions.signingOut")
+                  : t("config:account.security.sessions.signOutBtn")}
               </button>
             ),
           },
@@ -301,16 +302,15 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
       />
 
       <SectionContainer
-        sectionTitle="Portabilidad y copia de seguridad"
-        sectionDescription="Descarga una copia completa de tus datos personales, listas, notas y tareas en formato estándar JSON."
+        sectionTitle={t("config:account.security.export.title")}
+        sectionDescription={t("config:account.security.export.desc")}
         configElements={[
           {
             text: (
               <div className={styles.infoCol}>
-                <span>Exportar mis datos (JSON)</span>
+                <span>{t("config:account.security.export.exportLabel")}</span>
                 <span className={styles.infoSubtext}>
-                  Recibirás un archivo descargable con todas tus listas, tareas y
-                  configuraciones.
+                  {t("config:account.security.export.exportDesc")}
                 </span>
               </div>
             ),
@@ -321,7 +321,9 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
                 onClick={handleExportData}
                 disabled={isExporting}
               >
-                {isExporting ? "Exportando..." : "Descargar datos"}
+                {isExporting
+                  ? t("config:account.security.export.exporting")
+                  : t("config:account.security.export.exportBtn")}
               </button>
             ),
           },
@@ -329,18 +331,17 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
       />
 
       <SectionContainer
-        sectionTitle="Zona de peligro"
-        sectionDescription="La eliminación de la cuenta es permanente e irreversible. Todos tus datos se borrarán sin posibilidad de recuperación."
+        sectionTitle={t("config:account.security.dangerZone.title")}
+        sectionDescription={t("config:account.security.dangerZone.desc")}
         configElements={[
           {
             text: (
               <div className={styles.infoCol}>
                 <span style={{ color: "var(--button-critical)" }}>
-                  Eliminar mi cuenta
+                  {t("config:account.security.dangerZone.deleteLabel")}
                 </span>
                 <span className={styles.infoSubtext}>
-                  Elimina permanentemente tu usuario, listas personales,
-                  archivos y suscripción activa.
+                  {t("config:account.security.dangerZone.deleteDesc")}
                 </span>
               </div>
             ),
@@ -353,7 +354,7 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
                   setIsDeleteModalOpen(true);
                 }}
               >
-                Eliminar cuenta
+                {t("config:account.security.dangerZone.deleteBtn")}
               </button>
             ),
           },
@@ -363,7 +364,7 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
       <AnimatePresence mode="wait">
         {isDeleteModalOpen && (
           <WindowModal
-            title="¿Eliminar cuenta permanentemente?"
+            title={t("config:account.security.dangerZone.modalTitle")}
             crossButton={false}
             closeAction={() => {
               if (!isDeleting) setIsDeleteModalOpen(false);
@@ -388,9 +389,7 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
                   lineHeight: "1.4",
                 }}
               >
-                <strong>Atención:</strong> Esta acción no se puede deshacer. Se
-                borrarán todas tus listas, tareas, carpetas compartidas y
-                beneficios de suscripción de forma definitiva.
+                {t("config:account.security.dangerZone.warning")}
               </div>
 
               <div
@@ -403,7 +402,7 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
                     color: "var(--text)",
                   }}
                 >
-                  Para confirmar, escribe tu nombre de usuario{" "}
+                  {t("config:account.security.dangerZone.confirmPrompt")}{" "}
                   <code
                     style={{
                       backgroundColor: "var(--background-over-container)",
@@ -443,7 +442,7 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
                   onClick={() => setIsDeleteModalOpen(false)}
                   disabled={isDeleting}
                 >
-                  Cancelar
+                  {t("config:account.security.dangerZone.cancel")}
                 </button>
                 <button
                   type="button"
@@ -451,7 +450,9 @@ export function SecurityTab({ user, updateUser }: SecurityTabProps) {
                   onClick={handleDeleteAccount}
                   disabled={!isUsernameMatch || isDeleting}
                 >
-                  {isDeleting ? "Eliminando..." : "Eliminar permanentemente"}
+                  {isDeleting
+                    ? t("config:account.security.dangerZone.deleting")
+                    : t("config:account.security.dangerZone.confirmDelete")}
                 </button>
               </div>
             </div>
