@@ -1,5 +1,5 @@
 import i18n from "./index";
-import { CosmeticItem } from "@/lib/schemas/database.types";
+import { CosmeticItem, AICreditPack } from "@/lib/schemas/database.types";
 import { CoinPack, StreakPackage } from "@/lib/api/shop/actions";
 
 export interface TranslatedCosmetic {
@@ -77,6 +77,36 @@ export function getStreakPackageTranslation(pkg: Pick<StreakPackage, "id" | "nam
   return {
     name,
     badge,
+  };
+}
+
+export interface TranslatedAICreditPack {
+  name: string;
+  tag?: string | null;
+}
+
+export function getAICreditPackTranslation(
+  pack: Pick<AICreditPack, "id" | "name"> & { code?: string; tag?: string | null }
+): TranslatedAICreditPack {
+  const name = i18n.t(`shop:ai_credits.packs.${pack.id}.name`, {
+    defaultValue: pack.code
+      ? i18n.t(`shop:ai_credits.packs.${pack.code}.name`, { defaultValue: pack.name })
+      : pack.name,
+  });
+
+  let tag = pack.tag;
+  if (pack.tag) {
+    const normalizedTag = pack.tag.toLowerCase().trim().replace(/[\s-]+/g, "_");
+    tag = i18n.t(`shop:ai_credits.tags.${normalizedTag}`, {
+      defaultValue: i18n.t(`shop:packs.tags.${normalizedTag}`, {
+        defaultValue: pack.tag,
+      }),
+    });
+  }
+
+  return {
+    name,
+    tag,
   };
 }
 

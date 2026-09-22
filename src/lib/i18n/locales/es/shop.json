@@ -63,7 +63,32 @@
     "purchaseError": "No se pudo realizar la compra de créditos IA.",
     "insufficientCoins": "Monedas insuficientes para este pack.",
     "noPacks": "No hay paquetes de créditos IA disponibles en este momento.",
-    "extraBadge": "Permanentes (no vencen)"
+    "extraBadge": "Permanentes (no vencen)",
+    "tags": {
+      "popular": "POPULAR",
+      "best_value": "MEJOR VALOR",
+      "recommended": "RECOMENDADO",
+      "starter": "INICIAL",
+      "saving": "AHORRO",
+      "super": "SUPER",
+      "pro": "PRO",
+      "oferta": "OFERTA",
+      "nuevo": "NUEVO"
+    },
+    "packs": {
+      "ai_starter": {
+        "name": "Pack Inicial IA"
+      },
+      "ai_medium": {
+        "name": "Pack Estándar IA"
+      },
+      "ai_pro": {
+        "name": "Pack Avanzado IA"
+      },
+      "ai_ultra": {
+        "name": "Pack Maestro IA"
+      }
+    }
   },
   "gallery": {
     "windowTitle": "Tienda General",
@@ -110,5 +135,43 @@
     "empty": "No se encontraron cosméticos con los filtros actuales.",
     "itemsCount": "{{count}} artículo",
     "itemsCount_plural": "{{count}} artículos"
+  },
+  "errors": {
+    "UNAUTHORIZED": "No autorizado. Inicia sesión para continuar.",
+    "UNATH": "No autorizado. Inicia sesión para continuar.",
+    "CODE_REQUIRED": "Debes ingresar un código promocional.",
+    "VLDTN": "Debes ingresar un código promocional.",
+    "PROMO_CODE_NOT_FOUND": "El código ingresado no existe o no es válido.",
+    "NOTFD": "El artículo o código seleccionado no existe o no está disponible.",
+    "PROMO_CODE_INACTIVE": "Este código ya no está activo.",
+    "INACT": "Este código ya no está activo.",
+    "PROMO_CODE_EXPIRED": "Este código promocional ha expirado.",
+    "EXPIR": "Este código promocional ha expirado.",
+    "PROMO_CODE_MAX_USES_REACHED": "Este código ya alcanzó el límite máximo de canjes.",
+    "MAXUS": "Este código ya alcanzó el límite máximo de canjes.",
+    "PROMO_CODE_ALREADY_USED": "Ya has canjeado este código anteriormente.",
+    "ALRDY": "Ya has canjeado o adquirido este artículo anteriormente.",
+    "COSMETIC_NOT_FOUND": "El cosmético seleccionado no existe o no está disponible.",
+    "COSMETIC_NOT_ACTIVE": "Este cosmético no está disponible actualmente.",
+    "NOTAC": "Este cosmético no está disponible actualmente.",
+    "COSMETIC_NOT_FOR_SALE": "Este cosmético no está habilitado para la venta.",
+    "NOTFS": "Este cosmético no está habilitado para la venta.",
+    "INVALID_PRICE": "Este artículo no tiene un precio válido de compra.",
+    "INVPR": "Este artículo no tiene un precio válido de compra.",
+    "ALREADY_OWNED": "Ya posees este cosmético en tu inventario.",
+    "LEVEL_REQUIREMENT_NOT_MET": "No cumples con el nivel mínimo requerido para adquirir este cosmético.",
+    "LVREQ": "No cumples con el nivel mínimo requerido para adquirir este cosmético.",
+    "INSUFFICIENT_COINS": "No tienes suficientes monedas para realizar esta compra.",
+    "INSUF": "No tienes suficientes monedas para realizar esta compra.",
+    "AI_PACK_NOT_FOUND": "El paquete de créditos IA no existe o no está disponible.",
+    "NTFND": "El paquete de créditos IA no existe o no está disponible.",
+    "PACKAGE_NOT_FOUND": "El paquete seleccionado no existe o no está disponible.",
+    "INVALID_COSMETIC_TYPE": "Tipo de cosmético inválido.",
+    "INVTP": "Tipo de cosmético inválido.",
+    "TIER_REQUIRED_PRO": "Este cosmético requiere una suscripción PRO activa.",
+    "TRREQ": "Este cosmético requiere una suscripción PRO activa.",
+    "COSMETIC_NOT_OWNED": "No posees este cosmético en tu inventario.",
+    "NTOWN": "No posees este cosmético en tu inventario.",
+    "GENERIC_ERROR": "Ocurrió un error al procesar la operación."
   }
 }

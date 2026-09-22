@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
 import { WindowModal } from "@/components/ui/WindowModal";
 import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
@@ -43,6 +44,7 @@ export function ProfileTab({
   updateProfile,
   onCropModalStateChange,
 }: ProfileTabProps) {
+  const { t, i18n } = useTranslation(["config", "cosmetics", "common"]);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [selectedAvatarType, setSelectedAvatarType] =
     useState<AvatarSourceType>("blobatar");
@@ -104,10 +106,12 @@ export function ProfileTab({
         }
 
         customToast.success(
-          newEquippedId ? "¡Cosmético equipado!" : "Cosmético desequipado"
+          newEquippedId
+            ? t("config:account.profile.cosmetics.equipSuccess")
+            : t("config:account.profile.cosmetics.unequipSuccess")
         );
       } else {
-        customToast.error(res.error || "No se pudo actualizar el cosmético.");
+        customToast.error(res.error || t("config:account.profile.cosmetics.updateError"));
       }
     } finally {
       setIsEquipping(false);
@@ -203,13 +207,13 @@ export function ProfileTab({
       const res = await updateProfile({ avatar_url: finalAvatarUrl });
       if (res.error) throw new Error(res.error);
 
-      customToast.success("Foto de perfil actualizada correctamente.");
+      customToast.success(t("config:account.profile.avatarModal.success"));
       handleCloseAvatarModal();
     } catch (error: unknown) {
       const message =
         error instanceof Error
           ? error.message
-          : "Error al actualizar la foto de perfil.";
+          : t("config:account.profile.avatarModal.error");
       customToast.error(message);
     } finally {
       setIsSavingAvatar(false);
@@ -244,7 +248,7 @@ export function ProfileTab({
           role="button"
           tabIndex={0}
           style={{ cursor: "pointer" }}
-          title="Personalizar foto de perfil"
+          title={t("config:account.profile.avatarEditTitle")}
         >
           <UserAvatar
             avatarUrl={user?.avatar_url}
@@ -259,8 +263,8 @@ export function ProfileTab({
               e.stopPropagation();
               handleOpenAvatarModal();
             }}
-            title="Personalizar foto de perfil"
-            aria-label="Personalizar foto de perfil"
+            title={t("config:account.profile.avatarEditTitle")}
+            aria-label={t("config:account.profile.avatarEditTitle")}
           >
             <Edit
               style={{
@@ -275,13 +279,16 @@ export function ProfileTab({
         </div>
         <div className={styles.userInfoContainer}>
           <h1 className={styles.displayName}>
-            {user?.display_name || "Usuario"}
+            {user?.display_name || t("config:account.profile.defaultUser")}
           </h1>
           <p className={styles.username}>@{user?.username || "usuario"}</p>
           <div className={styles.levelDisplayRow}>
             <LevelBadge level={user?.level ?? 1} size={20} />
             <span className={styles.levelText}>
-              Nivel {user?.level ?? 1} • {getLevelInfo(user?.level ?? 1).title}
+              {t("config:account.profile.levelText", {
+                level: user?.level ?? 1,
+                title: getLevelInfo(user?.level ?? 1).title,
+              })}
             </span>
           </div>
           <motion.div
@@ -290,7 +297,9 @@ export function ProfileTab({
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
-            Plan {user?.tier ? user.tier.charAt(0).toUpperCase() + user.tier.slice(1) : "Free"}
+            {t("config:account.profile.tierPlan", {
+              tier: user?.tier ? user.tier.charAt(0).toUpperCase() + user.tier.slice(1) : "Free",
+            })}
           </motion.div>
         </div>
       </section>
@@ -299,9 +308,10 @@ export function ProfileTab({
 
       <div className={styles.userEditorContainer}>
         <ProfileFieldEditor
-          title="Nombre de visualización"
+          title={t("config:account.profile.displayName.title")}
           currentValue={user?.display_name || ""}
-          placeholder="Tu nombre completo o apodo"
+          placeholder={t("config:account.profile.displayName.placeholder")}
+          successMessage={t("config:account.profile.displayName.updated")}
           onSave={async (val) => {
             const res = await updateProfile({ display_name: val });
             return res.error;
@@ -310,17 +320,26 @@ export function ProfileTab({
         />
 
         <ProfileFieldEditor
-          title="Nombre de usuario (@)"
+          title={t("config:account.profile.username.title")}
           currentValue={user?.username || ""}
-          placeholder="nuevo_usuario"
-          note={`Te quedan ${profileStats?.remaining_changes ?? 2} cambios de usuario este mes. ${profileStats?.last_username_change
-            ? `Último cambio: ${new Date(profileStats.last_username_change).toLocaleDateString("es-AR", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}`
-            : ""
-            }`}
+          placeholder={t("config:account.profile.username.placeholder")}
+          successMessage={t("config:account.profile.username.updated")}
+          note={`${t("config:account.profile.username.remainingChanges", {
+            count: profileStats?.remaining_changes ?? 2,
+          })} ${
+            profileStats?.last_username_change
+              ? t("config:account.profile.username.lastChange", {
+                  date: new Date(profileStats.last_username_change).toLocaleDateString(
+                    i18n.language === "en" ? "en-US" : "es-AR",
+                    {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    }
+                  ),
+                })
+              : ""
+          }`}
           onSave={async (val) => {
             const res = await updateProfile({ username: val });
             return res.error;
@@ -329,9 +348,10 @@ export function ProfileTab({
         />
 
         <ProfileFieldEditor
-          title="Biografía"
+          title={t("config:account.profile.biography.title")}
           currentValue={user?.biography || ""}
-          placeholder="Cuéntanos un poco sobre ti..."
+          placeholder={t("config:account.profile.biography.placeholder")}
+          successMessage={t("config:account.profile.biography.updated")}
           isTextArea
           onSave={async (val) => {
             const res = await updateProfile({ biography: val });
@@ -345,17 +365,19 @@ export function ProfileTab({
 
       <section className={styles.cosmeticsSection}>
         <div className={styles.cosmeticsHeader}>
-          <h2 className={styles.cosmeticsTitle}>Inventario de Cosméticos</h2>
+          <h2 className={styles.cosmeticsTitle}>
+            {t("config:account.profile.cosmetics.title")}
+          </h2>
           <p className={styles.cosmeticsSubtitle}>
-            Personalizá tu avatar con los marcos y accesorios obtenidos en tus logros, la tienda o tu plan PRO.
+            {t("config:account.profile.cosmetics.subtitle")}
           </p>
         </div>
 
         <div className={styles.cosmeticsTabs}>
           <Tabs
             options={[
-              { id: "frame", label: "Marcos" },
-              { id: "overlay", label: "Accesorios" },
+              { id: "frame", label: t("config:account.profile.cosmetics.framesTab") },
+              { id: "overlay", label: t("config:account.profile.cosmetics.overlaysTab") },
             ]}
             activeTab={activeCosmeticTab}
             onChange={(id) => setActiveCosmeticTab(id as "frame" | "overlay")}
@@ -408,7 +430,7 @@ export function ProfileTab({
                     className={`${styles.cosmeticCard} ${styles.cosmeticCardNone} ${!isEquippedSlot ? styles.cosmeticCardEquipped : ""
                       }`}
                     onClick={() => handleEquipToggle(null, activeCosmeticTab)}
-                    title="Desequipar y no mostrar cosmético"
+                    title={t("config:account.profile.cosmetics.unequipTitle")}
                   >
                     <div className={styles.cosmeticPreviewWrap}>
                       <UserAvatar
@@ -420,12 +442,16 @@ export function ProfileTab({
                         equippedOverlayId={null}
                       />
                     </div>
-                    <span className={styles.cosmeticName}>Ninguno</span>
+                    <span className={styles.cosmeticName}>
+                      {t("config:account.profile.cosmetics.none")}
+                    </span>
                     <span
                       className={`${styles.cosmeticBadge} ${!isEquippedSlot ? styles.cosmeticBadgeEquipped : ""
                         }`}
                     >
-                      {!isEquippedSlot ? "Activo" : "Quitar"}
+                      {!isEquippedSlot
+                        ? t("config:account.profile.cosmetics.active")
+                        : t("config:account.profile.cosmetics.remove")}
                     </span>
                   </div>
 
@@ -464,10 +490,10 @@ export function ProfileTab({
                             }`}
                         >
                           {item.is_equipped
-                            ? "Equipado"
+                            ? t("config:account.profile.cosmetics.equipped")
                             : isProItem
-                              ? "PRO"
-                              : "Equipar"}
+                              ? t("config:account.profile.cosmetics.pro")
+                              : t("config:account.profile.cosmetics.equip")}
                         </span>
                       </div>
                     );
@@ -482,7 +508,7 @@ export function ProfileTab({
       <AnimatePresence mode="wait">
         {isAvatarModalOpen && (
           <WindowModal
-            title="Personalizar foto de perfil"
+            title={t("config:account.profile.avatarModal.title")}
             crossButton={false}
             closeAction={handleCloseAvatarModal}
           >
@@ -506,7 +532,7 @@ export function ProfileTab({
                   onClick={handleCloseAvatarModal}
                   disabled={isSavingAvatar}
                 >
-                  Cancelar
+                  {t("config:account.profile.avatarModal.cancel")}
                 </button>
                 <button
                   type="button"
@@ -514,7 +540,9 @@ export function ProfileTab({
                   onClick={handleSaveAvatar}
                   disabled={isSavingAvatar}
                 >
-                  {isSavingAvatar ? "Guardando..." : "Guardar foto"}
+                  {isSavingAvatar
+                    ? t("config:account.profile.avatarModal.saving")
+                    : t("config:account.profile.avatarModal.save")}
                 </button>
               </div>
             </div>
@@ -531,6 +559,7 @@ interface ProfileFieldEditorProps {
   placeholder: string;
   note?: string;
   isTextArea?: boolean;
+  successMessage?: string;
   onSave: (value: string) => Promise<string | null>;
   index: number;
 }
@@ -541,9 +570,11 @@ function ProfileFieldEditor({
   placeholder,
   note,
   isTextArea = false,
+  successMessage,
   onSave,
   index,
 }: ProfileFieldEditorProps) {
+  const { t } = useTranslation(["config", "common"]);
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(currentValue);
   const [isLoading, setIsLoading] = useState(false);
@@ -560,7 +591,7 @@ function ProfileFieldEditor({
     }
 
     if (!isTextArea && trimmed.length < 3) {
-      customToast.error("El valor debe tener al menos 3 caracteres.");
+      customToast.error(t("config:account.profile.minCharsError"));
       return;
     }
 
@@ -570,7 +601,9 @@ function ProfileFieldEditor({
       customToast.error(error);
       setValue(currentValue);
     } else {
-      customToast.success(`${title} actualizado con éxito.`);
+      customToast.success(
+        successMessage || `${title} ${t("common:saved", { defaultValue: "actualizado con éxito." })}`
+      );
       setIsEditing(false);
     }
     setIsLoading(false);
@@ -646,7 +679,7 @@ function ProfileFieldEditor({
                 disabled={isLoading}
                 type="button"
               >
-                Cancelar
+                {t("config:account.profile.cancelBtn")}
               </button>
               <button
                 className={`${styles.btnAction} ${styles.btnPrimary}`}
@@ -654,7 +687,9 @@ function ProfileFieldEditor({
                 disabled={isLoading}
                 type="button"
               >
-                {isLoading ? "..." : "Guardar"}
+                {isLoading
+                  ? t("config:account.profile.savingBtn")
+                  : t("config:account.profile.saveBtn")}
               </button>
             </>
           ) : (
@@ -663,7 +698,7 @@ function ProfileFieldEditor({
               onClick={() => setIsEditing(true)}
               type="button"
             >
-              Editar
+              {t("config:account.profile.editBtn")}
             </button>
           )}
         </div>

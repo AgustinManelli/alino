@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import {
   IAStars,
@@ -33,29 +34,39 @@ export function SubscriptionTab({
   onOpenPremiumModal,
   onCancelSub,
 }: SubscriptionTabProps) {
+  const { t, i18n } = useTranslation(["config", "common"]);
   const isFreeTier = !user?.tier || user.tier === "free";
   const [promoCode, setPromoCode] = useState("");
   const [loadingPromo, setLoadingPromo] = useState(false);
 
   const isUnlimited = aiUsage ? aiUsage.limit >= 9999999 : false;
-  const usedPct =
-    aiUsage && !isUnlimited
-      ? Math.min((aiUsage.used / aiUsage.limit) * 100, 100)
-      : 0;
-  const remainingPct =
-    aiUsage && !isUnlimited
-      ? Math.max((aiUsage.remaining / aiUsage.limit) * 100, 0)
-      : 0;
+  const extraCredits = aiUsage?.extra_remaining ?? 0;
+  const planRemaining = aiUsage?.remaining ?? 0;
+  const planLimit = aiUsage?.limit ?? 0;
+  const totalAvailable = isUnlimited ? Infinity : planRemaining + extraCredits;
+  const totalCapacity = planLimit + extraCredits;
 
-  const isNearLimit = usedPct >= 80 && !isUnlimited;
-  const isExhausted = aiUsage ? aiUsage.remaining === 0 && !isUnlimited : false;
+  const extraPct =
+    !isUnlimited && totalCapacity > 0 ? (extraCredits / totalCapacity) * 100 : 0;
+  const planRemainingPct =
+    !isUnlimited && totalCapacity > 0 ? (planRemaining / totalCapacity) * 100 : 0;
+
+  const isExhausted = aiUsage ? totalAvailable === 0 && !isUnlimited : false;
+  const isUsingExtraCredits = !isUnlimited && planRemaining === 0 && extraCredits > 0;
+  const isNearLimit =
+    !isUnlimited &&
+    !isExhausted &&
+    totalAvailable <= (planLimit > 0 ? Math.max(5, Math.round(totalCapacity * 0.15)) : 5);
 
   const renewDate = aiUsage?.period_end
-    ? new Date(aiUsage.period_end).toLocaleDateString("es-AR", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    })
+    ? new Date(aiUsage.period_end).toLocaleDateString(
+        i18n.language === "en" ? "en-US" : "es-AR",
+        {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }
+      )
     : null;
 
   const handleApplyPromo = async (e: React.FormEvent) => {
@@ -70,30 +81,30 @@ export function SubscriptionTab({
     if (error) {
       customToast.error(error);
     } else {
-      customToast.success(data?.message || "¡Código promocional canjeado!");
+      customToast.success(data?.message || t("config:account.subscription.promo.success"));
       setPromoCode("");
     }
   };
 
   const PRO_BENEFITS = [
     {
-      title: "Inteligencia Artificial Ilimitada",
-      desc: "Hasta 500 créditos mensuales para desglosar subtareas, mejorar notas y organizar listas.",
+      title: t("config:account.subscription.benefits.ai.title"),
+      desc: t("config:account.subscription.benefits.ai.desc"),
       icon: <IAStars style={{ width: 15, height: 15, stroke: "currentColor" }} />,
     },
     {
-      title: "Widgets y Panel Exclusivo",
-      desc: "Desbloquea todos los widgets de productividad para tu pantalla de inicio personalizada.",
+      title: t("config:account.subscription.benefits.widgets.title"),
+      desc: t("config:account.subscription.benefits.widgets.desc"),
       icon: <Crown style={{ width: 15, height: 15, stroke: "currentColor" }} />,
     },
     {
-      title: "Colaboración en Tiempo Real",
-      desc: "Comparte y gestiona listas con tus compañeros de equipo sin límites de miembros.",
+      title: t("config:account.subscription.benefits.collaboration.title"),
+      desc: t("config:account.subscription.benefits.collaboration.desc"),
       icon: <Colaborate style={{ width: 15, height: 15, stroke: "currentColor" }} />,
     },
     {
-      title: "Carpetas y Fijación Avanzada",
-      desc: "Organización jerárquica ilimitada y fija tus proyectos clave en la barra lateral.",
+      title: t("config:account.subscription.benefits.folders.title"),
+      desc: t("config:account.subscription.benefits.folders.desc"),
       icon: <FolderClosed style={{ width: 15, height: 15, stroke: "currentColor" }} />,
     },
   ];
@@ -107,9 +118,9 @@ export function SubscriptionTab({
       transition={{ duration: 0.2 }}
     >
       <div className={styles.tabHeaderBlock}>
-        <h3 className={styles.tabSectionTitle}>Suscripción y Beneficios</h3>
+        <h3 className={styles.tabSectionTitle}>{t("config:account.subscription.title")}</h3>
         <p className={styles.tabSectionSubtitle}>
-          Descubre el potencial de tu cuenta, gestiona tu plan y controla tu consumo de IA.
+          {t("config:account.subscription.subtitle")}
         </p>
       </div>
 
@@ -118,9 +129,11 @@ export function SubscriptionTab({
           <div className={styles.upgradeBannerContent}>
             <span className={styles.upgradeEmoji}>✦</span>
             <div>
-              <p className={styles.upgradeBannerTitle}>Alino Pro — Productividad Sin Límites</p>
+              <p className={styles.upgradeBannerTitle}>
+                {t("config:account.subscription.freeBanner.title")}
+              </p>
               <p className={styles.upgradeBannerDesc}>
-                Acceso completo a Inteligencia Artificial, widgets ilimitados y funciones avanzadas para tus proyectos.
+                {t("config:account.subscription.freeBanner.desc")}
               </p>
             </div>
           </div>
@@ -129,7 +142,7 @@ export function SubscriptionTab({
             className={styles.upgradeBannerBtn}
             type="button"
           >
-            Explorar planes
+            {t("config:account.subscription.freeBanner.button")}
           </button>
         </div>
       ) : (
@@ -141,7 +154,9 @@ export function SubscriptionTab({
             <span className={styles.upgradeEmoji}>✦</span>
             <div>
               <p className={styles.upgradeBannerTitle}>
-                Suscripción {user?.tier?.toUpperCase()} Activa
+                {t("config:account.subscription.activeBanner.title", {
+                  tier: user?.tier?.toUpperCase(),
+                })}
               </p>
               <p
                 className={styles.upgradeBannerDesc}
@@ -152,28 +167,36 @@ export function SubscriptionTab({
                 }}
               >
                 {loadingSub
-                  ? "Cargando información..."
+                  ? t("config:account.subscription.activeBanner.loading")
                   : activeSub?.gateway === "promo" ||
                     activeSub?.gateway === "manual" ||
                     activeSub?.gateway === "referral"
-                    ? `Termina el ${activeSub?.current_period_end
-                      ? new Date(activeSub.current_period_end).toLocaleDateString("es-AR")
-                      : ""
-                    }`
+                    ? t("config:account.subscription.activeBanner.endsOn", {
+                        date: activeSub?.current_period_end
+                          ? new Date(activeSub.current_period_end).toLocaleDateString(
+                              i18n.language === "en" ? "en-US" : "es-AR"
+                            )
+                          : "",
+                      })
                     : activeSub?.cancel_at_period_end ||
                       activeSub?.status === "canceled" ||
                       activeSub?.status === "free"
-                      ? `Se cancelará el ${activeSub?.current_period_end
-                        ? new Date(activeSub.current_period_end).toLocaleDateString("es-AR")
-                        : ""
-                      }`
+                      ? t("config:account.subscription.activeBanner.cancelsOn", {
+                          date: activeSub?.current_period_end
+                            ? new Date(activeSub.current_period_end).toLocaleDateString(
+                                i18n.language === "en" ? "en-US" : "es-AR"
+                              )
+                            : "",
+                        })
                       : activeSub?.current_period_end
-                        ? `Renueva el ${new Date(activeSub.current_period_end).toLocaleDateString(
-                          "es-AR"
-                        )}`
+                        ? t("config:account.subscription.activeBanner.renewsOn", {
+                            date: new Date(activeSub.current_period_end).toLocaleDateString(
+                              i18n.language === "en" ? "en-US" : "es-AR"
+                            ),
+                          })
                         : user?.tier === "ultra"
-                          ? "Tu cuenta cuenta con el plan más alto y todos los beneficios ilimitados."
-                          : "Tu cuenta cuenta con todos los beneficios Pro activos."}
+                          ? t("config:account.subscription.activeBanner.ultraDesc")
+                          : t("config:account.subscription.activeBanner.proDesc")}
               </p>
             </div>
           </div>
@@ -183,7 +206,7 @@ export function SubscriptionTab({
               className={styles.upgradeBannerBtn}
               type="button"
             >
-              Mejorar a Ultra
+              {t("config:account.subscription.activeBanner.upgradeToUltra")}
             </button>
           )}
           {user?.tier === "student" && (
@@ -192,7 +215,7 @@ export function SubscriptionTab({
               className={styles.upgradeBannerBtn}
               type="button"
             >
-              Mejorar plan
+              {t("config:account.subscription.activeBanner.upgradePlan")}
             </button>
           )}
           {activeSub &&
@@ -206,7 +229,7 @@ export function SubscriptionTab({
                 className={styles.upgradeBannerBtn}
                 type="button"
               >
-                Suscribirme
+                {t("config:account.subscription.subscribe")}
               </button>
             )}
           {activeSub &&
@@ -225,7 +248,9 @@ export function SubscriptionTab({
                 disabled={loadingCancel}
                 type="button"
               >
-                {loadingCancel ? "..." : "Cancelar suscripción"}
+                {loadingCancel
+                  ? t("config:account.subscription.cancel.loading")
+                  : t("config:account.subscription.cancel.button")}
               </button>
             )}
         </div>
@@ -242,18 +267,22 @@ export function SubscriptionTab({
             }}
           />
           <h4 className={styles.aiCreditsSectionTitle}>
-            Créditos de Inteligencia Artificial
+            {t("config:account.subscription.aiCredits.sectionTitle")}
           </h4>
         </div>
 
         <div className={styles.aiCreditsCard}>
           <div className={styles.aiCreditsRow}>
             <div className={styles.aiCreditsInfo}>
-              <span className={styles.aiCreditsLabel}>Créditos disponibles este período</span>
+              <span className={styles.aiCreditsLabel}>
+                {t("config:account.subscription.aiCredits.availableLabel")}
+              </span>
               {aiUsage ? (
                 <span className={styles.aiCreditsCount}>
                   {isUnlimited ? (
-                    <span className={styles.aiCreditsUnlimited}>Ilimitados ✦</span>
+                    <span className={styles.aiCreditsUnlimited}>
+                      {t("config:account.subscription.aiCredits.unlimited")}
+                    </span>
                   ) : (
                     <>
                       <span
@@ -266,57 +295,117 @@ export function SubscriptionTab({
                               : "var(--text)",
                         }}
                       >
-                        {aiUsage.remaining}
+                        {totalAvailable}
                       </span>
                       <span className={styles.aiCreditsTotal}>
                         {" "}
-                        / {aiUsage.limit}
+                        / {totalCapacity}
                       </span>
                     </>
                   )}
                 </span>
               ) : (
-                <span className={styles.aiCreditsLoading}>Cargando cuotas...</span>
+                <span className={styles.aiCreditsLoading}>
+                  {t("config:account.subscription.aiCredits.loading")}
+                </span>
               )}
             </div>
 
             {renewDate && !isUnlimited && (
               <span className={styles.aiCreditsRenew}>
-                Renueva el {renewDate}
+                {t("config:account.subscription.aiCredits.renewsOn", { date: renewDate })}
               </span>
             )}
           </div>
 
           {!isUnlimited && aiUsage && (
-            <div className={styles.aiCreditsBarTrack}>
-              <motion.div
-                className={styles.aiCreditsBarFill}
-                initial={{ width: "100%" }}
-                animate={{ width: `${remainingPct}%` }}
-                transition={{
-                  duration: 0.6,
-                  ease: "easeOut",
-                  delay: 0.15,
-                }}
-                style={{
-                  background: isExhausted
-                    ? "rgba(239, 68, 68, 0.7)"
-                    : isNearLimit
-                      ? "linear-gradient(90deg, rgba(245, 158, 11, 0.8), rgba(239, 68, 68, 0.6))"
-                      : "linear-gradient(90deg, rgba(139, 92, 246, 0.8), rgba(168, 85, 247, 0.6))",
-                }}
-              />
-            </div>
+            <>
+              <div className={styles.aiCreditsBarTrack}>
+                {extraPct > 0 && (
+                  <motion.div
+                    className={`${styles.aiCreditsBarFillExtra} ${
+                      planRemainingPct > 0
+                        ? styles.aiCreditsBarFillExtraDivider
+                        : styles.aiCreditsBarFillExtraStandalone
+                    }`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${extraPct}%` }}
+                    transition={{
+                      duration: 0.6,
+                      ease: "easeOut",
+                      delay: 0.1,
+                    }}
+                    title={t("config:account.subscription.aiCredits.purchasedTooltip", {
+                      count: extraCredits,
+                    })}
+                  />
+                )}
+                {planRemainingPct > 0 && (
+                  <motion.div
+                    className={`${styles.aiCreditsBarFillPlan} ${
+                      extraPct === 0 ? styles.aiCreditsBarFillPlanStandalone : ""
+                    }`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${planRemainingPct}%` }}
+                    transition={{
+                      duration: 0.6,
+                      ease: "easeOut",
+                      delay: 0.15,
+                    }}
+                    title={t("config:account.subscription.aiCredits.planTooltip", {
+                      count: planRemaining,
+                    })}
+                    style={{
+                      background: isExhausted
+                        ? "rgba(239, 68, 68, 0.7)"
+                        : isNearLimit && extraCredits === 0
+                          ? "linear-gradient(90deg, rgba(245, 158, 11, 0.8), rgba(239, 68, 68, 0.6))"
+                          : "linear-gradient(90deg, rgba(139, 92, 246, 0.8), rgba(168, 85, 247, 0.6))",
+                    }}
+                  />
+                )}
+              </div>
+
+              {extraCredits > 0 && (
+                <div className={styles.aiCreditsLegend}>
+                  <div className={styles.aiCreditsLegendItem}>
+                    <span className={styles.legendDotExtra} />
+                    <span>
+                      {t("config:account.subscription.aiCredits.purchasedLabel", {
+                        count: extraCredits,
+                      })}
+                    </span>
+                  </div>
+                  <div className={styles.aiCreditsLegendItem}>
+                    <span className={styles.legendDotPlan} />
+                    <span>
+                      {t("config:account.subscription.aiCredits.planLabel", {
+                        count: planRemaining,
+                      })}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {isExhausted && (
             <p className={styles.aiCreditsWarning}>
-              Has alcanzado el límite de créditos para este período. Se renovarán automáticamente en la fecha indicada.
+              {t("config:account.subscription.aiCredits.exhaustedWarning")}
             </p>
           )}
-          {isNearLimit && !isExhausted && (
+          {isUsingExtraCredits && (
+            <p className={styles.aiCreditsNotice}>
+              {isNearLimit
+                ? t("config:account.subscription.aiCredits.usingExtraNearLimitNotice", {
+                    count: extraCredits,
+                  })
+                : t("config:account.subscription.aiCredits.usingExtraNotice")}
+            </p>
+          )}
+          {isNearLimit && !isUsingExtraCredits && !isExhausted && (
             <p className={styles.aiCreditsWarning} style={{ color: "#f59e0b" }}>
-              Quedan pocos créditos disponibles. Puedes actualizar tu plan o esperar a la renovación.
+              {t("config:account.subscription.aiCredits.nearLimitWarning")}
             </p>
           )}
         </div>
@@ -326,7 +415,7 @@ export function SubscriptionTab({
 
       <section className={styles.featuresSection}>
         <h4 className={styles.tabSectionTitle} style={{ fontSize: "14px" }}>
-          Beneficios incluidos en Alino Pro
+          {t("config:account.subscription.benefits.sectionTitle")}
         </h4>
         <div className={styles.featuresGrid}>
           {PRO_BENEFITS.map((b, idx) => (
@@ -344,13 +433,13 @@ export function SubscriptionTab({
       <section className={styles.promoSection}>
         <div className={styles.promoHeader}>
           <Crown style={{ width: "15px", height: "15px", stroke: "var(--alino-primary-color)" }} />
-          <h4 className={styles.promoTitle}>¿Tienes un código de promoción?</h4>
+          <h4 className={styles.promoTitle}>{t("config:account.subscription.promo.title")}</h4>
         </div>
         <form onSubmit={handleApplyPromo} className={styles.promoForm}>
           <input
             type="text"
             className={styles.promoInput}
-            placeholder="INGRESA TU CÓDIGO (EJ. PRO30D)"
+            placeholder={t("config:account.subscription.promo.placeholder")}
             value={promoCode}
             onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
             disabled={loadingPromo}
@@ -361,7 +450,9 @@ export function SubscriptionTab({
             className={styles.promoBtn}
             disabled={loadingPromo || !promoCode.trim()}
           >
-            {loadingPromo ? "Canjeando..." : "Aplicar"}
+            {loadingPromo
+              ? t("config:account.subscription.promo.loading")
+              : t("config:account.subscription.promo.button")}
           </button>
         </form>
       </section>
@@ -370,24 +461,24 @@ export function SubscriptionTab({
 
       <section className={styles.faqSection}>
         <h4 className={styles.tabSectionTitle} style={{ fontSize: "14px" }}>
-          Preguntas frecuentes
+          {t("config:account.subscription.faq.title")}
         </h4>
         <div className={styles.faqItem}>
-          <p className={styles.faqQuestion}>¿Puedo cancelar en cualquier momento?</p>
+          <p className={styles.faqQuestion}>{t("config:account.subscription.faq.cancelQuestion")}</p>
           <p className={styles.faqAnswer}>
-            Sí, puedes cancelar cuando desees con un solo clic. Conservarás todos los beneficios Pro hasta el final del período ya facturado.
+            {t("config:account.subscription.faq.cancelAnswer")}
           </p>
         </div>
         <div className={styles.faqItem}>
-          <p className={styles.faqQuestion}>¿Qué métodos de pago aceptan?</p>
+          <p className={styles.faqQuestion}>{t("config:account.subscription.faq.paymentQuestion")}</p>
           <p className={styles.faqAnswer}>
-            Aceptamos Mercado Pago, tarjetas de crédito, débito y transferencias locales bancarias seguras.
+            {t("config:account.subscription.faq.paymentAnswer")}
           </p>
         </div>
         <div className={styles.faqItem}>
-          <p className={styles.faqQuestion}>¿Qué sucede con mis datos y listas si vuelvo al plan Free?</p>
+          <p className={styles.faqQuestion}>{t("config:account.subscription.faq.dataQuestion")}</p>
           <p className={styles.faqAnswer}>
-            Absolutamente ninguna información se pierde. Todas tus listas, tareas y notas permanecerán intactas y seguras.
+            {t("config:account.subscription.faq.dataAnswer")}
           </p>
         </div>
       </section>
