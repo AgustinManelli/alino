@@ -114,9 +114,9 @@ export function ColorPicker({
           animate={
             animations
               ? {
-                  paddingLeft: "10px",
-                  backgroundColor: "var(--background-over-container)",
-                }
+                paddingLeft: "5px",
+                backgroundColor: "var(--background-over-container)",
+              }
               : undefined
           }
           transition={
@@ -125,9 +125,9 @@ export function ColorPicker({
           exit={
             animations
               ? {
-                  paddingLeft: "0px",
-                  backgroundColor: "transparent",
-                }
+                paddingLeft: "0px",
+                backgroundColor: "transparent",
+              }
               : undefined
           }
           style={{
@@ -180,12 +180,12 @@ export function ColorPicker({
               transition={
                 animations
                   ? {
-                      rotate: {
-                        type: "spring" as const,
-                        stiffness: 300,
-                        damping: 20,
-                      },
-                    }
+                    rotate: {
+                      type: "spring" as const,
+                      stiffness: 300,
+                      damping: 20,
+                    },
+                  }
                   : { rotate: { duration: 0.2 } }
               }
               style={{

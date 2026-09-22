@@ -39,7 +39,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 7px;
+  /* gap: 7px; */
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
@@ -54,7 +54,7 @@
 .infoEditContainer {
   position: relative;
   display: flex;
-  gap: 5px;
+  /* gap: 5px; */
   align-items: center;
   height: 100%;
   flex: 1;

@@ -1,67 +1,38 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useStreak } from "@/hooks/dashboard/useStreak";
 import { useShopStore } from "@/store/useShopStore";
 import { StreakPackage } from "@/lib/api/shop/actions";
+import { getStreakPackageTranslation } from "@/lib/i18n/helpers";
 import { ModalBox } from "@/components/ui/modal-options-box";
-import { FreezeDayIcon, ProtectorIcon } from "@/components/ui/icons/icons";
+import { LoadingIcon, StreakProtectorIcon } from "@/components/ui/icons/icons";
 import { AlinoCoinIcon } from "@/components/ui/alino-coins-icon";
 import { motion } from "motion/react";
 import {
   AnimatedStreakFlame,
   FlameStatus,
 } from "@/components/ui/animated-streak-flame";
-import { toast } from "sonner";
+import { customToast } from "@/lib/toasts";
 import styles from "./StreakSection.module.css";
-import {
-  getDayAbbrev,
-  getDayCircleClass,
-  getDayCircleContent,
-  getTooltip,
-} from "./streakUtils";
-
-const DEFAULT_PACKAGES: StreakPackage[] = [
-  {
-    id: "streak_3_days",
-    code: "streak_3_days",
-    name: "3 protectores",
-    protectors_count: 3,
-    coins_price: 50,
-    format_type: "square",
-    badge: null,
-    is_active: true,
-    sort_order: 1,
-  },
-  {
-    id: "streak_7_days",
-    code: "streak_7_days",
-    name: "1 semana",
-    protectors_count: 7,
-    coins_price: 100,
-    format_type: "wide",
-    badge: "Recomendado",
-    is_active: true,
-    sort_order: 2,
-  },
-];
+import { CounterAnimation } from "@/components/ui/CounterAnimation";
+import { WeekHistory } from "./WeekHistory";
 
 export const StreakSection = () => {
+  const { t } = useTranslation(["streak", "common"]);
   const [isOpen, setIsOpen] = useState(false);
   const iconRef = useRef<HTMLDivElement>(null);
   const { streak, fetchStreak } = useStreak();
   const {
-    streakPackages,
     coins,
     buyStreakPackage,
     isPurchasing,
-    fetchShopData,
   } = useShopStore();
 
   useEffect(() => {
     fetchStreak();
-    fetchShopData();
-  }, [fetchStreak, fetchShopData]);
+  }, [fetchStreak]);
 
   const streakCount = streak?.current_streak ?? 0;
   const maxStreak = streak?.max_streak ?? 0;
@@ -72,10 +43,7 @@ export const StreakSection = () => {
   const protectorsCount = freeLeft + purchasedCount;
   const isActiveToday = streak?.is_active_today ?? false;
   const weekDays = streak?.last_7_days ?? [];
-
-  const packages = useMemo(() => {
-    return streakPackages.length > 0 ? streakPackages : DEFAULT_PACKAGES;
-  }, [streakPackages]);
+  const packages = streak?.packages ?? [];
 
   const status: FlameStatus = useMemo(() => {
     if (isActiveToday) {
@@ -118,18 +86,18 @@ export const StreakSection = () => {
 
   const statusMessage = useMemo(() => {
     if (isActiveToday) {
-      return "¡Objetivo cumplido hoy! Mantuviste tu racha encendida.";
+      return t("streak:status.completedToday");
     }
     if (status === "frozen") {
-      return "Racha protegida con un congelador. Completá una tarea hoy para reactivarla.";
+      return t("streak:status.frozen");
     }
     if (streakCount > 0) {
       return isEndingSoon
-        ? `¡Quedan ${Math.ceil(hoursLeft)} horas! Completá una tarea para no perder tu racha.`
-        : "Completá una tarea hoy para mantener tu racha.";
+        ? t("streak:status.endingSoon", { hours: Math.ceil(hoursLeft) })
+        : t("streak:status.keepStreak");
     }
-    return "Completá una tarea hoy para comenzar tu racha.";
-  }, [isActiveToday, status, streakCount, isEndingSoon, hoursLeft]);
+    return t("streak:status.startStreak");
+  }, [isActiveToday, status, streakCount, isEndingSoon, hoursLeft, t]);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -137,7 +105,6 @@ export const StreakSection = () => {
       const next = !prev;
       if (next) {
         fetchStreak();
-        fetchShopData();
       }
       return next;
     });
@@ -147,52 +114,52 @@ export const StreakSection = () => {
 
   const handleBuyPackage = async (pkg: StreakPackage) => {
     if (coins < pkg.coins_price) {
-      toast.error(
-        `Necesitas ${pkg.coins_price} monedas. Tu saldo es de ${coins} monedas.`,
+      customToast.error(
+        t("streak:errors.INSUFFICIENT_COINS", {
+          required: pkg.coins_price,
+          balance: coins,
+        }),
       );
       return;
     }
     const res = await buyStreakPackage(pkg.id);
     if (res.success) {
-      toast.success(res.message || "¡Protectores comprados con éxito!");
+      customToast.success(
+        t("streak:shop.purchaseSuccess", {
+          count: res.protectors_added ?? pkg.protectors_count,
+        }),
+      );
     } else {
-      toast.error(res.error || "No se pudo realizar la compra.");
+      const code = res.errorCode || res.error || "GENERIC_ERROR";
+      customToast.error(
+        t(`streak:errors.${code}`, {
+          defaultValue: t("streak:errors.GENERIC_ERROR"),
+        }),
+      );
     }
   };
 
-  const streakGroups = useMemo(() => {
-    const groups: { start: number; end: number }[] = [];
-    let current: { start: number; end: number } | null = null;
 
-    weekDays.forEach((day, i) => {
-      const isStreak =
-        day.event_type === "extended" || day.event_type === "started";
-      if (isStreak) {
-        if (!current) {
-          current = { start: i, end: i };
-        } else {
-          current.end = i;
-        }
-      } else {
-        if (current) {
-          groups.push(current);
-          current = null;
-        }
-      }
-    });
-
-    if (current) {
-      groups.push(current);
+  const protectorsSubtitle = useMemo(() => {
+    if (protectorsCount > 0) {
+      return t("streak:protectors.subtitleCount", {
+        free: freeLeft,
+        freeSuffix: freeLeft !== 1 ? "s" : "",
+        purchased: purchasedCount,
+        purchasedSuffix: purchasedCount !== 1 ? "s" : "",
+      });
     }
-    return groups;
-  }, [weekDays]);
+    return t("streak:protectors.subtitleEmpty");
+  }, [protectorsCount, freeLeft, purchasedCount, t]);
 
   const headerSlot = (
     <div className={styles.headerSlot}>
-      <span className={styles.title}>Tu racha</span>
+      <span className={styles.title}>{t("streak:header.title")}</span>
       {maxStreak > 0 && (
         <span className={styles.maxStreakBadge}>
-          Récord: {maxStreak} {maxStreak === 1 ? "día" : "días"}
+          {maxStreak === 1
+            ? t("streak:header.recordOne", { count: maxStreak })
+            : t("streak:header.recordOther", { count: maxStreak })}
         </span>
       )}
     </div>
@@ -204,6 +171,9 @@ export const StreakSection = () => {
         className={styles.triggerBtn}
         onClick={handleToggle}
         ref={iconRef}
+        aria-label={t("streak:triggerAria")}
+        role="button"
+        tabIndex={0}
         style={{
           backgroundColor: isOpen
             ? "var(--background-over-container-hover)"
@@ -215,7 +185,10 @@ export const StreakSection = () => {
           size={20}
           showWarning={showWarning}
         />
-        <span className={styles.streakCount}>{streakCount}</span>
+        <CounterAnimation
+          value={streakCount}
+          className={styles.streakCount}
+        />
       </div>
 
       {isOpen && (
@@ -234,77 +207,23 @@ export const StreakSection = () => {
               <div className={styles.countWrapper}>
                 <span className={styles.currentStreak}>{streakCount}</span>
                 <span className={styles.streakLabel}>
-                  {streakCount === 1 ? "DÍA" : "DÍAS"}
+                  {streakCount === 1 ? t("streak:dayUnitOne") : t("streak:dayUnitOther")}
                 </span>
               </div>
               <p className={styles.streakStatusMessage}>{statusMessage}</p>
             </div>
 
             <div className={styles.historySection}>
-              <span className={styles.historyTitle}>Últimos 7 días</span>
-              <div className={styles.weekHistory}>
-                <div className={styles.barsContainer}>
-                  {streakGroups.map((g) => {
-                    const startPercent = ((g.start + 0.5) / 7) * 100;
-                    const endPercent = ((g.end + 0.5) / 7) * 100;
-                    const left = `calc(${startPercent}% - 14px)`;
-                    const width = `calc(${endPercent - startPercent}% + 28px)`;
-                    return (
-                      <motion.div
-                        key={g.start}
-                        initial={{ width: "28px" }}
-                        animate={{ width }}
-                        transition={{ type: "spring", stiffness: 140, damping: 18 }}
-                        className={styles.animatedBar}
-                        style={{ left }}
-                      />
-                    );
-                  })}
-                </div>
-                {weekDays.map((day, i) => {
-                  const isProtected = day.event_type.startsWith("protected_");
-                  return (
-                    <div
-                      key={i}
-                      className={styles.dayItem}
-                      title={getTooltip(day)}
-                    >
-                      {isProtected ? (
-                        <div className={styles.dayCircle}>
-                          <FreezeDayIcon
-                            style={{
-                              width: 24,
-                              height: 24,
-                              zIndex: 2,
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div
-                          className={`${styles.dayCircle} ${getDayCircleClass(day.event_type, styles)}`}
-                        >
-                          <span className={styles.dayCircleContent}>
-                            {getDayCircleContent(day.event_type)}
-                          </span>
-                        </div>
-                      )}
-                      <span
-                        className={`${styles.dayLabel} ${day.event_type === "today" ? styles.dayLabelToday : ""}`}
-                      >
-                        {getDayAbbrev(day.date)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+              <span className={styles.historyTitle}>{t("streak:history.title")}</span>
+              <WeekHistory days={weekDays} isLoading={true} />
             </div>
 
             <div className={styles.protectorsSection}>
               <div className={styles.protectorRow}>
                 <div className={styles.protectorInfo}>
-                  <ProtectorIcon className={styles.protectorIcon} />
+                  <StreakProtectorIcon className={styles.protectorIcon} />
                   <span className={styles.protectorsTitle}>
-                    Protectores disponibles
+                    {t("streak:protectors.title")}
                   </span>
                 </div>
                 <span className={styles.protectorCount}>
@@ -312,59 +231,77 @@ export const StreakSection = () => {
                 </span>
               </div>
               <span className={styles.protectorsSubtitle}>
-                {protectorsCount > 0
-                  ? `${freeLeft} gratuito${freeLeft !== 1 ? "s" : ""} este mes · ${purchasedCount} extra${purchasedCount !== 1 ? "s" : ""}`
-                  : "Protegen tu racha automáticamente si no completás tareas un día"}
+                {protectorsSubtitle}
               </span>
             </div>
 
             <div className={styles.purchaseSection}>
               <div className={styles.purchaseHeader}>
-                <span className={styles.purchaseTitle}>Comprar protectores</span>
+                <span className={styles.purchaseTitle}>{t("streak:shop.title")}</span>
               </div>
-              <div className={styles.purchaseGrid}>
-                {packages.map((pkg) => (
-                  <button
-                    key={pkg.id}
-                    type="button"
-                    className={styles.packageCard}
-                    onClick={() => handleBuyPackage(pkg)}
-                    disabled={isPurchasing}
-                    title={`Comprar ${pkg.name} por ${pkg.coins_price} monedas`}
-                  >
-                    <div className={styles.cardHeader}>
-                      <ProtectorIcon className={styles.cardIcon} />
-                      {pkg.badge && (
-                        <span className={styles.cardBadgeHeader}>
-                          {pkg.badge}
-                        </span>
-                      )}
-                    </div>
-                    <div className={styles.cardBody}>
-                      <div className={styles.cardTitleRow}>
-                        <span className={styles.cardTitle}>{pkg.name}</span>
-                        {pkg.badge && (
-                          <span className={styles.cardBadgeInline}>
-                            {pkg.badge}
+              {packages.length === 0 ? (
+                <div className={styles.packagesLoader}>
+                  <LoadingIcon
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      stroke: "var(--text-not-available)",
+                      strokeWidth: "2.5",
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className={styles.purchaseGrid}>
+                  {packages.map((pkg) => {
+                    const pkgTrans = getStreakPackageTranslation(pkg);
+                    const protectorsCountText =
+                      pkg.protectors_count === 1
+                        ? t("streak:shop.protectorsCountOne", { count: pkg.protectors_count })
+                        : t("streak:shop.protectorsCountOther", { count: pkg.protectors_count });
+                    return (
+                      <button
+                        key={pkg.id}
+                        type="button"
+                        className={styles.packageCard}
+                        onClick={() => handleBuyPackage(pkg)}
+                        disabled={isPurchasing}
+                        title={t("streak:shop.buyTitle", {
+                          name: pkgTrans.name,
+                          price: pkg.coins_price,
+                        })}
+                      >
+                        <div className={styles.cardHeader}>
+                          <StreakProtectorIcon className={styles.cardIcon} />
+                          {pkgTrans.badge && (
+                            <span className={styles.cardBadgeHeader}>
+                              {pkgTrans.badge}
+                            </span>
+                          )}
+                        </div>
+                        <div className={styles.cardBody}>
+                          <div className={styles.cardTitleRow}>
+                            <span className={styles.cardTitle}>{pkgTrans.name}</span>
+                            {pkgTrans.badge && (
+                              <span className={styles.cardBadgeInline}>
+                                {pkgTrans.badge}
+                              </span>
+                            )}
+                          </div>
+                          <span className={styles.cardSubtitle}>
+                            {protectorsCountText}
                           </span>
-                        )}
-                      </div>
-                      <span className={styles.cardSubtitle}>
-                        +{pkg.protectors_count}{" "}
-                        {pkg.protectors_count === 1
-                          ? "protector"
-                          : "protectores"}
-                      </span>
-                    </div>
-                    <div className={styles.cardFooter}>
-                      <div className={styles.priceChip}>
-                        <AlinoCoinIcon amount={pkg.coins_price} size={13} />
-                        <span>{pkg.coins_price}</span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+                        </div>
+                        <div className={styles.cardFooter}>
+                          <div className={styles.priceChip}>
+                            <AlinoCoinIcon amount={pkg.coins_price} size={13} />
+                            <span>{pkg.coins_price}</span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </ModalBox>

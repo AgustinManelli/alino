@@ -40,6 +40,7 @@
   box-sizing: content-box;
   transition: background-color 0.2s ease, opacity 0.2s ease;
   pointer-events: auto;
+  z-index: 2;
 }
 
 .statusOnline {
@@ -187,9 +188,11 @@
   0% {
     opacity: 0.5;
   }
+
   50% {
     opacity: 1;
   }
+
   100% {
     opacity: 0.5;
   }
@@ -214,9 +217,11 @@
   .memberRow {
     padding: 8px 6px;
   }
+
   .displayName {
     font-size: 13px;
   }
+
   .username {
     font-size: 11px;
   }

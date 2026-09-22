@@ -52,9 +52,29 @@
     "purchaseSuccess": "¡{{name}} adquirido! Se ha añadido a tu inventario.",
     "purchaseError": "No se pudo realizar la compra."
   },
+  "ai_credits": {
+    "title": "Packs de Créditos IA",
+    "subtitle": "Comprá créditos para funciones avanzadas de IA",
+    "creditsUnit": "créditos IA",
+    "coinsUnit": "monedas",
+    "buy": "Canjear",
+    "purchasing": "Canjeando...",
+    "purchaseSuccess": "¡{{amount}} créditos IA añadidos con éxito!",
+    "purchaseError": "No se pudo realizar la compra de créditos IA.",
+    "insufficientCoins": "Monedas insuficientes para este pack.",
+    "noPacks": "No hay paquetes de créditos IA disponibles en este momento.",
+    "extraBadge": "Permanentes (no vencen)"
+  },
   "gallery": {
-    "windowTitle": "Tienda de Cosméticos",
+    "windowTitle": "Tienda General",
     "balance": "Tus monedas",
+    "aiCreditsBalance": "Créditos IA Extra",
+    "sectionsTitle": "Secciones",
+    "sections": {
+      "cosmetics": "Cosméticos",
+      "coins": "Packs de Monedas",
+      "ai_credits": "Créditos IA"
+    },
     "searchPlaceholder": "Buscar por nombre o descripción...",
     "categoriesTitle": "Categorías",
     "categories": {

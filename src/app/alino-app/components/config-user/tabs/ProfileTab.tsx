@@ -20,6 +20,7 @@ import {
 } from "@/app/alino-app/components/initial-user-configuration/avatar-selector";
 import { createClient } from "@/utils/supabase/client";
 import { Tabs } from "@/components/ui/Tabs/Tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getCosmeticTranslation } from "@/lib/i18n/helpers";
 import styles from "../ConfigUser.module.css";
 
@@ -51,16 +52,23 @@ export function ProfileTab({
   const [customAvatar, setCustomAvatar] = useState<string | null>(null);
   const [isSavingAvatar, setIsSavingAvatar] = useState(false);
   const [cosmetics, setCosmetics] = useState<CosmeticItem[]>([]);
+  const [isLoadingCosmetics, setIsLoadingCosmetics] = useState(true);
   const [activeCosmeticTab, setActiveCosmeticTab] = useState<"frame" | "overlay">("frame");
   const [isEquipping, setIsEquipping] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    getUserCosmeticsCatalogAction().then((res) => {
-      if (isMounted && res.data) {
-        setCosmetics(res.data.cosmetics);
-      }
-    });
+    getUserCosmeticsCatalogAction()
+      .then((res) => {
+        if (isMounted && res.data) {
+          setCosmetics(res.data.cosmetics);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoadingCosmetics(false);
+        }
+      });
     return () => {
       isMounted = false;
     };
@@ -356,86 +364,118 @@ export function ProfileTab({
         </div>
 
         <div className={styles.cosmeticsGrid}>
-          {(() => {
-            const activeCosmetics = cosmetics.filter((c) => c.type === activeCosmeticTab);
-            const isEquippedSlot =
-              activeCosmeticTab === "frame"
-                ? !!user?.equipped_frame_id
-                : !!user?.equipped_overlay_id;
+          {isLoadingCosmetics ? (
+            <>
+              <Skeleton
+                style={{
+                  width: "100%",
+                  height: "134px",
+                  borderRadius: "12px",
+                  border: "1px solid var(--border-container-color)",
+                }}
+                delay={0}
+              />
+              <Skeleton
+                style={{
+                  width: "100%",
+                  height: "134px",
+                  borderRadius: "12px",
+                  border: "1px solid var(--border-container-color)",
+                }}
+                delay={0.15}
+              />
+              <Skeleton
+                style={{
+                  width: "100%",
+                  height: "134px",
+                  borderRadius: "12px",
+                  border: "1px solid var(--border-container-color)",
+                }}
+                delay={0.3}
+              />
+            </>
+          ) : (
+            (() => {
+              const activeCosmetics = cosmetics.filter((c) => c.type === activeCosmeticTab);
+              const isEquippedSlot =
+                activeCosmeticTab === "frame"
+                  ? !!user?.equipped_frame_id
+                  : !!user?.equipped_overlay_id;
 
-            return (
-              <>
-                <div
-                  className={`${styles.cosmeticCard} ${styles.cosmeticCardNone} ${!isEquippedSlot ? styles.cosmeticCardEquipped : ""
-                    }`}
-                  onClick={() => handleEquipToggle(null, activeCosmeticTab)}
-                  title="Desequipar y no mostrar cosmético"
-                >
-                  <div className={styles.cosmeticPreviewWrap}>
-                    <UserAvatar
-                      avatarUrl={user?.avatar_url}
-                      username={user?.username}
-                      size={44}
-                      style={{ borderRadius: "10px" }}
-                      equippedFrameId={null}
-                      equippedOverlayId={null}
-                    />
-                  </div>
-                  <span className={styles.cosmeticName}>Ninguno</span>
-                  <span
-                    className={`${styles.cosmeticBadge} ${!isEquippedSlot ? styles.cosmeticBadgeEquipped : ""
+              return (
+                <>
+                  <div
+                    className={`${styles.cosmeticCard} ${styles.cosmeticCardNone} ${!isEquippedSlot ? styles.cosmeticCardEquipped : ""
                       }`}
+                    onClick={() => handleEquipToggle(null, activeCosmeticTab)}
+                    title="Desequipar y no mostrar cosmético"
                   >
-                    {!isEquippedSlot ? "Activo" : "Quitar"}
-                  </span>
-                </div>
-
-                {activeCosmetics.map((item) => {
-                  const isProItem =
-                    item.id === "overlay_pro_crown" ||
-                    item.code === "overlay_pro_crown" ||
-                    item.tier_required === "pro";
-                  const trans = getCosmeticTranslation(item);
-
-                  return (
-                    <div
-                      key={item.id}
-                      className={`${styles.cosmeticCard} ${item.is_equipped ? styles.cosmeticCardEquipped : ""
-                        }`}
-                      onClick={() => handleEquipToggle(item)}
-                      title={trans.description}
-                    >
-                      <div className={styles.cosmeticPreviewWrap}>
-                        <UserAvatar
-                          avatarUrl={user?.avatar_url}
-                          username={user?.username}
-                          size={44}
-                          style={{ borderRadius: "10px" }}
-                          equippedFrameId={item.type === "frame" ? item.id : null}
-                          equippedOverlayId={item.type === "overlay" ? item.id : null}
-                        />
-                      </div>
-                      <span className={styles.cosmeticName}>{trans.name}</span>
-                      <span
-                        className={`${styles.cosmeticBadge} ${item.is_equipped
-                            ? styles.cosmeticBadgeEquipped
-                            : isProItem
-                              ? styles.cosmeticBadgePro
-                              : ""
-                          }`}
-                      >
-                        {item.is_equipped
-                          ? "Equipado"
-                          : isProItem
-                            ? "PRO"
-                            : "Equipar"}
-                      </span>
+                    <div className={styles.cosmeticPreviewWrap}>
+                      <UserAvatar
+                        avatarUrl={user?.avatar_url}
+                        username={user?.username}
+                        size={44}
+                        style={{ borderRadius: "10px" }}
+                        equippedFrameId={null}
+                        equippedOverlayId={null}
+                      />
                     </div>
-                  );
-                })}
-              </>
-            );
-          })()}
+                    <span className={styles.cosmeticName}>Ninguno</span>
+                    <span
+                      className={`${styles.cosmeticBadge} ${!isEquippedSlot ? styles.cosmeticBadgeEquipped : ""
+                        }`}
+                    >
+                      {!isEquippedSlot ? "Activo" : "Quitar"}
+                    </span>
+                  </div>
+
+                  {activeCosmetics.map((item) => {
+                    const isProItem =
+                      item.id === "overlay_pro_crown" ||
+                      item.code === "overlay_pro_crown" ||
+                      item.tier_required === "pro";
+                    const trans = getCosmeticTranslation(item);
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`${styles.cosmeticCard} ${item.is_equipped ? styles.cosmeticCardEquipped : ""
+                          }`}
+                        onClick={() => handleEquipToggle(item)}
+                        title={trans.description}
+                      >
+                        <div className={styles.cosmeticPreviewWrap}>
+                          <UserAvatar
+                            avatarUrl={user?.avatar_url}
+                            username={user?.username}
+                            size={44}
+                            style={{ borderRadius: "10px" }}
+                            equippedFrameId={item.type === "frame" ? item.id : null}
+                            equippedOverlayId={item.type === "overlay" ? item.id : null}
+                          />
+                        </div>
+                        <span className={styles.cosmeticName}>{trans.name}</span>
+                        <span
+                          className={`${styles.cosmeticBadge} ${item.is_equipped
+                              ? styles.cosmeticBadgeEquipped
+                              : isProItem
+                                ? styles.cosmeticBadgePro
+                                : ""
+                            }`}
+                        >
+                          {item.is_equipped
+                            ? "Equipado"
+                            : isProItem
+                              ? "PRO"
+                              : "Equipar"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </>
+              );
+            })()
+          )}
         </div>
       </section>
 

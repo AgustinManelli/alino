@@ -327,7 +327,7 @@ export const cancelSubscriptionAction = async (): Promise<{
 }> => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
-    
+
     const { data: sub, error } = await supabase
       .from('subscriptions')
       .select('id, subscription_id, gateway, status')
@@ -342,22 +342,22 @@ export const cancelSubscriptionAction = async (): Promise<{
     if (sub.gateway === "mercadopago" && sub.subscription_id) {
       const { cancelMPSubscription } = await import("./payments");
       await cancelMPSubscription(sub.subscription_id);
-      
+
       await supabase
         .from('subscriptions')
         .update({ cancel_at_period_end: true, status: 'canceled' })
         .eq('id', sub.id);
-        
+
       return { data: "Suscripción cancelada con éxito." };
     } else if (sub.gateway === "promo" || sub.gateway === "manual") {
       await supabase
         .from('subscriptions')
         .update({ cancel_at_period_end: true, status: 'canceled' })
         .eq('id', sub.id);
-        
+
       return { data: "Suscripción cancelada con éxito." };
     }
-    
+
     return { error: "No se puede cancelar esta suscripción." };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
@@ -528,7 +528,7 @@ export const getFeatureUsageAction = async (
 export const updateUserPreferences = async (preferences: Record<string, unknown>) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
-    
+
     const { data: currentPrivate, error: readError } = await supabase
       .from("user_private")
       .select("preferences")
@@ -544,9 +544,9 @@ export const updateUserPreferences = async (preferences: Record<string, unknown>
 
     const { error: updateError } = await supabase
       .from("user_private")
-      .update({ 
-        preferences: mergedPreferences, 
-        updated_at: new Date().toISOString() 
+      .update({
+        preferences: mergedPreferences,
+        updated_at: new Date().toISOString()
       })
       .eq("user_id", user.id);
 
@@ -833,7 +833,7 @@ export const deleteAccountAction = async (
     if (
       !dbUser ||
       dbUser.username.trim().toLowerCase() !==
-        confirmationUsername.trim().toLowerCase()
+      confirmationUsername.trim().toLowerCase()
     ) {
       return { error: "El nombre de usuario ingresado no coincide." };
     }
@@ -864,7 +864,7 @@ export const deleteAccountAction = async (
           process.env.SUPABASE_SERVICE_ROLE_KEY
         );
         await admin.auth.admin.deleteUser(user.id);
-      } catch {}
+      } catch { }
     }
 
     return { error: null };

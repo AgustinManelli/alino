@@ -469,7 +469,7 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
                       : undefined
                   }
                 >
-                  <CounterAnimation tasksLength={taskCount} />
+                  <CounterAnimation value={taskCount} />
                 </p>
               </div>
             </div>

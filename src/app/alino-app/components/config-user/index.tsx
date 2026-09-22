@@ -8,6 +8,7 @@ import {
   IAStars,
   TeamCollaborationIcon,
   ProtectorIcon,
+  ReceiptIcon,
 } from "@/components/ui/icons/icons";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useFetchProfileStats } from "@/hooks/user/useFetchProfileStats";
@@ -23,11 +24,12 @@ import { customToast } from "@/lib/toasts";
 import { ActiveSubscription } from "@/lib/schemas/user.types";
 import { ProfileTab } from "./tabs/ProfileTab";
 import { SubscriptionTab } from "./tabs/SubscriptionTab";
+import { TransactionsTab } from "./tabs/TransactionsTab";
 import { ReferralsTab } from "./tabs/ReferralsTab";
 import { SecurityTab } from "./tabs/SecurityTab";
 import styles from "./ConfigUser.module.css";
 
-type TabType = "profile" | "subscription" | "referrals" | "security";
+type TabType = "profile" | "subscription" | "transactions" | "referrals" | "security";
 
 export default function ConfigUser() {
   const [activeTab, setActiveTab] = useState<TabType>("profile");
@@ -150,6 +152,21 @@ export default function ConfigUser() {
             onClick={() => setActiveTab("subscription")}
           />
           <WindowComponent.SidebarItem
+            label="Historial de transacciones"
+            icon={
+              <ReceiptIcon
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  stroke: "currentColor",
+                  strokeWidth: "1.8",
+                }}
+              />
+            }
+            active={activeTab === "transactions"}
+            onClick={() => setActiveTab("transactions")}
+          />
+          <WindowComponent.SidebarItem
             label="Referidos"
             icon={
               <TeamCollaborationIcon
@@ -204,6 +221,13 @@ export default function ConfigUser() {
               loadingCancel={loadingCancel}
               onOpenPremiumModal={handleOpenPremiumModal}
               onCancelSub={handleCancelSub}
+            />
+          )}
+
+          {activeTab === "transactions" && (
+            <TransactionsTab
+              key="transactions"
+              user={user}
             />
           )}
 

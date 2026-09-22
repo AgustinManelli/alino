@@ -1,15 +1,16 @@
 import React from "react";
 import { AnimatedStreakFlame } from "@/components/ui/animated-streak-flame";
 import styles from "./Streak.module.css";
+import { WeekHistory, WeekDayItem } from "@/app/alino-app/components/streak-section/WeekHistory";
 
-const PREVIEW_WEEK = [
-  { day: "L", type: "lost" },
-  { day: "M", type: "missed" },
-  { day: "X", type: "extended" },
-  { day: "J", type: "extended" },
-  { day: "V", type: "extended" },
-  { day: "S", type: "extended" },
-  { day: "D", type: "today" },
+const PREVIEW_DAYS: WeekDayItem[] = [
+  { day: "L", event_type: "missed" },
+  { day: "M", event_type: "missed" },
+  { day: "X", event_type: "started" },
+  { day: "J", event_type: "extended" },
+  { day: "V", event_type: "extended" },
+  { day: "S", event_type: "extended" },
+  { day: "D", event_type: "today" },
 ];
 
 export const StreakPreview = () => {
@@ -25,32 +26,7 @@ export const StreakPreview = () => {
         </div>
       </div>
 
-      <div className={styles.weekHistory}>
-        {PREVIEW_WEEK.map((item, index) => (
-          <div key={index} className={styles.dayItem}>
-            <div
-              className={`${styles.dayCircle} ${
-                item.type === "extended"
-                  ? styles.extended
-                  : item.type === "today"
-                    ? styles.today
-                    : styles.missed
-              }`}
-            >
-              <span className={styles.dayCircleContent}>
-                {item.type === "extended" ? "✓" : item.type === "today" ? "•" : ""}
-              </span>
-            </div>
-            <span
-              className={`${styles.dayLabel} ${
-                item.type === "today" ? styles.dayLabelToday : ""
-              }`}
-            >
-              {item.day}
-            </span>
-          </div>
-        ))}
-      </div>
+      <WeekHistory days={PREVIEW_DAYS} />
     </div>
   );
 };

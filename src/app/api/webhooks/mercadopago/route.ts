@@ -364,7 +364,36 @@ export async function POST(req: Request) {
       }
 
       if (pay.status !== "approved") {
-        console.log(`[MP] Pago ${id} ignorado (estado: ${pay.status})`);
+        console.log(`[MP] Pago ${id} no aprobado (estado: ${pay.status})`);
+        const preapprovalId = (pay as any).preapproval_id;
+        if (preapprovalId) {
+          try {
+            const sub = await preapproval.get({ id: String(preapprovalId) });
+            const rawRef = await resolveExternalRef(sub as any, mpConfig);
+            const [userId, tierStr] = rawRef.split("|");
+            const purchasedTier = tierStr || "pro";
+            if (userId) {
+              await supabaseAdmin.rpc("record_billing_transaction", {
+                p_user_id: userId,
+                p_transaction_type: "subscription",
+                p_title: `Cobro mensual ${purchasedTier.toUpperCase()}`,
+                p_amount: (pay as any).transaction_amount ?? 0,
+                p_currency: (pay as any).currency_id ?? "ARS",
+                p_status: pay.status === "rejected" ? "rejected" : "failed",
+                p_is_recurring: true,
+                p_tier: purchasedTier as any,
+                p_gateway: GATEWAY,
+                p_gateway_payment_id: String(pay.id),
+                p_payment_method: (pay as any).payment_method_id ?? null,
+                p_error_message: (pay as any).status_detail ?? "Pago no aprobado",
+                p_metadata: {
+                  status_detail: (pay as any).status_detail,
+                  preapproval_id: preapprovalId,
+                },
+              });
+            }
+          } catch {}
+        }
         return new NextResponse("OK", { status: 200 });
       }
 
@@ -418,6 +447,25 @@ export async function POST(req: Request) {
         },
       );
       if (error) throw new Error(error.message);
+
+      await supabaseAdmin.rpc("record_billing_transaction", {
+        p_user_id: userId,
+        p_transaction_type: "subscription",
+        p_title: `Suscripción ${purchasedTier.toUpperCase()} Mensual`,
+        p_amount: (pay as any).transaction_amount ?? 0,
+        p_currency: (pay as any).currency_id ?? "ARS",
+        p_status: "approved",
+        p_is_recurring: true,
+        p_tier: purchasedTier as any,
+        p_gateway: GATEWAY,
+        p_gateway_payment_id: String(pay.id),
+        p_payment_method: (pay as any).payment_method_id ?? null,
+        p_error_message: null,
+        p_metadata: {
+          status_detail: (pay as any).status_detail,
+          preapproval_id: preapprovalId,
+        },
+      });
 
       console.log(
         `[MP] ✅ Pago procesado: ${id} → user ${userId} | sub ${sub.id}`,

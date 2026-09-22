@@ -4,16 +4,27 @@ import { useMemo, memo } from "react";
 import NumberFlow from "@number-flow/react";
 
 type CounterAnimationProps = {
-  tasksLength?: number;
+  value?: number;
+  count?: number;
+  className?: string;
+  style?: React.CSSProperties;
   format?: boolean;
   isAnimationEnabled?: boolean;
+  /** @deprecated use `value` */
+  tasksLength?: number;
 };
 
 export const CounterAnimation = memo(function CounterAnimation({
-  tasksLength = 0,
+  value,
+  count,
+  tasksLength,
+  className,
+  style,
   format = false,
   isAnimationEnabled = true,
 }: CounterAnimationProps) {
+  const finalValue = value ?? count ?? tasksLength ?? 0;
+
   const formatOptions = useMemo(
     () => ({
       notation: "compact" as const,
@@ -25,9 +36,11 @@ export const CounterAnimation = memo(function CounterAnimation({
 
   return (
     <NumberFlow
-      value={tasksLength}
+      value={finalValue}
       format={formatOptions}
       animated={isAnimationEnabled}
+      className={className}
+      style={style}
     />
   );
 });

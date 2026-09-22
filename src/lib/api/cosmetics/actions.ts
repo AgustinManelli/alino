@@ -108,52 +108,50 @@ export async function getUserCosmeticsCatalogAction(): Promise<{
   }
 }
 
-export async function getShopCosmeticsCatalogAction(): Promise<{
+export async function getShopCosmeticsCatalogAction(params?: {
+  category?: string;
+  status?: string;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<{
   data?: {
     cosmetics: CosmeticItem[];
     user_coins: number;
+    total: number;
+    page: number;
+    total_pages: number;
   };
   error?: string;
 }> {
   try {
-    const { supabase, user } = await getAuth();
+    const { supabase } = await getAuth();
+    const { data, error } = await supabase.rpc("get_shop_cosmetics", {
+      p_category: params?.category || "all",
+      p_status: params?.status || "all",
+      p_search: params?.search || "",
+      p_page: params?.page || 1,
+      p_page_size: params?.pageSize || 6,
+    });
 
-    const [cosmeticsRes, userCosmeticsRes, userRes] = await Promise.all([
-      supabase
-        .from("cosmetics")
-        .select("*")
-        .eq("is_for_sale", true)
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true }),
-      supabase
-        .from("user_cosmetics")
-        .select("cosmetic_id")
-        .eq("user_id", user.id),
-      supabase
-        .from("users")
-        .select("alino_coins")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-    ]);
+    if (error) throw new Error(error.message);
 
-    if (cosmeticsRes.error) throw new Error(cosmeticsRes.error.message);
-
-    const ownedIds = new Set(
-      (userCosmeticsRes.data || []).map((uc) => uc.cosmetic_id)
-    );
-
-    const items: CosmeticItem[] = (
-      cosmeticsRes.data as unknown as CosmeticItem[]
-    ).map((c) => ({
-      ...c,
-      is_unlocked: ownedIds.has(c.id),
-      is_equipped: false,
-    }));
+    const result = data as {
+      items: CosmeticItem[];
+      total: number;
+      page: number;
+      page_size: number;
+      total_pages: number;
+      user_coins: number;
+    };
 
     return {
       data: {
-        cosmetics: items,
-        user_coins: userRes.data?.alino_coins ?? 0,
+        cosmetics: result?.items || [],
+        user_coins: result?.user_coins ?? 0,
+        total: result?.total ?? 0,
+        page: result?.page ?? 1,
+        total_pages: result?.total_pages ?? 1,
       },
     };
   } catch (e) {

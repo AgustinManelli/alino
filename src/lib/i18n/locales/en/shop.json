@@ -52,9 +52,29 @@
     "purchaseSuccess": "{{name}} acquired! Added to your inventory.",
     "purchaseError": "Failed to complete purchase."
   },
+  "ai_credits": {
+    "title": "AI Credits Packs",
+    "subtitle": "Get credits for advanced AI features",
+    "creditsUnit": "AI credits",
+    "coinsUnit": "coins",
+    "buy": "Redeem",
+    "purchasing": "Redeeming...",
+    "purchaseSuccess": "{{amount}} AI credits added successfully!",
+    "purchaseError": "Failed to purchase AI credits.",
+    "insufficientCoins": "Not enough coins for this pack.",
+    "noPacks": "No AI credit packs available at this moment.",
+    "extraBadge": "Permanent (never expire)"
+  },
   "gallery": {
-    "windowTitle": "Cosmetics Shop",
+    "windowTitle": "General Shop",
     "balance": "Your balance",
+    "aiCreditsBalance": "Extra AI Credits",
+    "sectionsTitle": "Sections",
+    "sections": {
+      "cosmetics": "Cosmetics",
+      "coins": "Coin Packs",
+      "ai_credits": "AI Credits"
+    },
     "searchPlaceholder": "Search by name or description...",
     "categoriesTitle": "Categories",
     "categories": {
