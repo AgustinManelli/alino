@@ -17,14 +17,7 @@
 }
 
 .triggerBtn:hover {
-  background-color: var(--background-over-container-hover);
-}
-
-.shopIcon {
-  width: 18px;
-  height: 18px;
-  color: var(--text);
-  flex-shrink: 0;
+  background-color: var(--background-over-container-hover) !important;
 }
 
 .coinsCount {
@@ -55,10 +48,10 @@
   gap: 5px;
   background: var(--background-over-container);
   border: 1px solid var(--border-container-color);
-  padding: 5px 10px;
+  padding: 4px 9px;
   border-radius: 8px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
@@ -67,34 +60,202 @@
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   width: 320px;
   box-sizing: border-box;
-}
-
-.promoSection {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: 100%;
+  max-height: min(580px, calc(100vh - 90px));
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
 }
 
 .sectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
 }
 
 .sectionTitle {
   font-size: 12px;
   font-weight: 600;
   color: var(--text);
-  margin-left: 7px;
+}
+
+.cosmeticsSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cosmeticsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.emptyCosmetics {
+  padding: 16px 8px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-not-available);
+  font-weight: 500;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+}
+
+.cosmeticCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  padding: 8px 10px;
+  transition: all 0.15s ease;
+}
+
+.cosmeticCard:hover {
+  background: var(--background-over-container-hover);
+  border-color: var(--border-container-hover);
+}
+
+.cosmeticLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.cosmeticPreviewWrap {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.cosmeticInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cosmeticName {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.cosmeticDesc {
+  font-size: 11px;
+  color: var(--text-not-available);
+  margin: 0;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cosmeticRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.priceChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--background-over-container-hover);
+  border: 1px solid var(--border-container-color);
+  padding: 2px 7px;
+  border-radius: 6px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cosmeticBuyBtn {
+  border: none;
+  outline: none;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--alino-primary-color);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.cosmeticBuyBtn:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.cosmeticBuyBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.cosmeticBuyBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.viewGalleryBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 2px;
+}
+
+.viewGalleryBtn:hover {
+  background: var(--background-over-container-hover);
+  border-color: var(--alino-secondary-color);
+  color: var(--alino-secondary-color);
+}
+
+.promoSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .promoForm {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
 }
 
@@ -107,7 +268,7 @@
   border: 1px solid var(--border-container-color);
   border-radius: 10px;
   padding: 0 10px;
-  height: 38px;
+  height: 36px;
   transition: border-color 0.2s ease;
 }
 
@@ -131,28 +292,29 @@
   color: var(--placeholder-text-color);
   font-weight: 400;
   text-transform: none;
+  letter-spacing: normal;
 }
 
 .redeemBtn {
   border: none;
   outline: none;
-  height: 38px;
-  padding: 0 14px;
+  height: 36px;
+  padding: 0 12px;
   border-radius: 10px;
   background: var(--alino-primary-color);
   color: #ffffff;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  transition: opacity 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .redeemBtn:hover:not(:disabled) {
-  opacity: 0.9;
+  filter: brightness(1.1);
 }
 
 .redeemBtn:disabled {
@@ -161,30 +323,32 @@
 }
 
 .packsSection {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 100%;
+  gap: 8px;
 }
 
 .packsList {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 6px;
   width: 100%;
 }
 
 .packCard {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 10px;
+  gap: 10px;
   background: var(--background-over-container);
   border: 1px solid var(--border-container-color);
   border-radius: 10px;
-  gap: 10px;
-  opacity: 0.85;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+  user-select: none;
+  cursor: default;
 }
 
 .packLeft {
@@ -192,6 +356,19 @@
   align-items: center;
   gap: 10px;
   min-width: 0;
+  flex: 1;
+}
+
+.packIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--background-over-container-hover);
+  border: 1px solid var(--border-container-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .packInfo {
@@ -209,227 +386,66 @@
 
 .packName {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.25;
 }
 
 .packTag {
-  position: absolute;
-  top: -5px;
-  left: 10px;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
-  color: #ffffff;
-  background: var(--alino-primary-color);
+  color: var(--alino-secondary-color);
+  background: rgba(106, 195, 255, 0.12);
+  border: 1px solid rgba(106, 195, 255, 0.25);
   padding: 1px 5px;
   border-radius: 4px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 .packCoins {
   font-size: 11px;
-  color: var(--text-not-available);
   font-weight: 500;
+  color: var(--text-not-available);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .packRight {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
-.packPrice {
-  font-size: 12px;
+.packPriceChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text);
+  background: var(--background-over-container-hover);
+  border: 1px solid var(--border-container-color);
+  padding: 2px 7px;
+  border-radius: 6px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .soonBadge {
   font-size: 9px;
   font-weight: 600;
   color: var(--text-not-available);
-  background: var(--background-over-container-hover);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.cosmeticsShopSection {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.cosmeticsShopList {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.emptyCosmetics {
-  padding: 18px 8px;
-  text-align: center;
-  font-size: 11px;
-  color: var(--text-not-available);
-  font-weight: 500;
-  background: var(--background-over-container);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-container-color);
-  border-radius: 10px;
-}
-
-.cosmeticShopCard {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: var(--background-over-container);
-  border: 1px solid var(--border-container-color);
-  border-radius: 12px;
-  padding: 10px 12px;
-  transition: all 0.2s ease;
-}
-
-.cosmeticShopLeft {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  flex: 1;
-}
-
-.cosmeticShopPreviewWrap {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.cosmeticShopInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.cosmeticShopNameRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.cosmeticShopName {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.cosmeticTypeBadge {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text-not-available);
-  background: var(--background-secondary);
   padding: 1px 5px;
   border-radius: 4px;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-.cosmeticShopDesc {
-  font-size: 11px;
-  color: var(--text-not-available);
-  margin: 0;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.cosmeticShopRight {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.cosmeticShopPrice {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.cosmeticBuyBtn {
-  border: none;
-  outline: none;
-  height: 28px;
-  padding: 0 12px;
-  border-radius: 8px;
-  background: var(--alino-primary-color);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
   white-space: nowrap;
-}
-
-.cosmeticBuyBtn:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-}
-
-.cosmeticBuyBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.ownedBadge {
-  font-size: 10px;
-  font-weight: 700;
-  color: #30D158;
-  background: rgba(48, 209, 88, 0.12);
-  border: 1px solid rgba(48, 209, 88, 0.25);
-  padding: 3px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-}
-
-.viewGalleryBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 9px 14px;
-  border-radius: 10px;
-  background: var(--background-over-container);
-  border: 1px solid var(--border-container-color);
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 4px;
-}
-
-.viewGalleryBtn:hover {
-  background: var(--background-over-container-hover);
-  border-color: var(--alino-secondary-color);
-  color: var(--alino-secondary-color);
 }

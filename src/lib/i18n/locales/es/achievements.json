@@ -1,0 +1,29 @@
+{
+  "triggerAria": "Abrir logros",
+  "triggerTitle": "Nivel {{level}} • Logros e Incentivos",
+  "header": {
+    "title": "Tus logros",
+    "tooltip": "Logros completados"
+  },
+  "hero": {
+    "levelLabel": "Nivel {{level}}"
+  },
+  "nextReward": {
+    "title": "Recompensa de Nivel {{level}}",
+    "titlePlural": "Recompensas de Nivel {{level}}",
+    "badges": {
+      "frame": "Marco",
+      "overlay": "Accesorio",
+      "coins": "Monedas",
+      "combo": "Marco + Accesorio"
+    },
+    "coinsReward": "+{{count}} Monedas",
+    "coinsDesc": "Monedas Alino"
+  },
+  "upcoming": {
+    "title": "Próximos a completar",
+    "claim": "Reclamar",
+    "claiming": "Reclamando..."
+  },
+  "viewAll": "Ver todos los logros"
+}

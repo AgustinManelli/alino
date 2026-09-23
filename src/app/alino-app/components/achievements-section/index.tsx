@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useAchievementsStore } from "@/store/useAchievementsStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { ModalBox } from "@/components/ui/modal-options-box";
@@ -14,7 +15,19 @@ import { AchievementItem } from "@/lib/schemas/database.types";
 import { getCosmeticTranslation } from "@/lib/i18n/helpers";
 import styles from "./AchievementsSection.module.css";
 
+interface RewardItem {
+  id: string;
+  type: "frame" | "overlay" | "coins";
+  name: string;
+  description?: string;
+  badgeLabel: string;
+  amount?: number;
+  frameId?: string | null;
+  overlayId?: string | null;
+}
+
 export const AchievementsSection: React.FC = () => {
+  const { t } = useTranslation(["achievements", "common"]);
   const [isOpen, setIsOpen] = useState(false);
   const iconRef = useRef<HTMLDivElement>(null);
 
@@ -80,66 +93,63 @@ export const AchievementsSection: React.FC = () => {
     );
   }, [levels, currentLevel]);
 
-  const nextReward = useMemo(() => {
+  const nextRewardData = useMemo(() => {
     if (nextLevelItem) {
+      const items: RewardItem[] = [];
       const cosmetics = nextLevelItem.reward_cosmetics || [];
-      const frame = cosmetics.find((c) => c.type === "frame");
-      const overlay = cosmetics.find((c) => c.type === "overlay");
-      const cosmeticNames = cosmetics.map((c) => getCosmeticTranslation(c).name).join(" + ");
+      cosmetics.forEach((c) => {
+        const trans = getCosmeticTranslation(c);
+        items.push({
+          id: c.id,
+          type: c.type as "frame" | "overlay",
+          name: trans.name,
+          description: trans.description,
+          badgeLabel:
+            c.type === "frame"
+              ? t("achievements:nextReward.badges.frame")
+              : t("achievements:nextReward.badges.overlay"),
+          frameId: c.type === "frame" ? c.id : null,
+          overlayId: c.type === "overlay" ? c.id : null,
+        });
+      });
 
-      let badgeLabel = "Monedas";
-      if (frame && overlay) {
-        badgeLabel = "Marco + Accesorio";
-      } else if (frame) {
-        badgeLabel = "Marco";
-      } else if (overlay) {
-        badgeLabel = "Accesorio";
+      if (nextLevelItem.reward_coins > 0) {
+        items.push({
+          id: `coins_${nextLevelItem.level}`,
+          type: "coins",
+          name: t("achievements:nextReward.coinsReward", { count: nextLevelItem.reward_coins }),
+          description: t("achievements:nextReward.coinsDesc"),
+          badgeLabel: t("achievements:nextReward.badges.coins"),
+          amount: nextLevelItem.reward_coins,
+        });
       }
-
-      const displayName =
-        cosmeticNames ||
-        (nextLevelItem.reward_coins > 0
-          ? `${nextLevelItem.reward_coins} Alino Coins`
-          : nextLevelItem.title);
-
-      const description =
-        cosmetics.map((c) => getCosmeticTranslation(c).description).filter(Boolean).join(" ") ||
-        nextLevelItem.description ||
-        `Recompensa por alcanzar el nivel ${nextLevelItem.level}.`;
 
       return {
         level: nextLevelItem.level,
-        name: displayName,
-        badgeLabel,
-        description,
-        rewardCoins: nextLevelItem.reward_coins,
-        equippedFrameId: frame?.id || null,
-        equippedOverlayId: overlay?.id || null,
-        rewardCosmetics: cosmetics,
+        items,
       };
     }
+
     const fallback = getNextLevelReward(currentLevel);
     if (!fallback) return null;
     return {
       level: fallback.level,
-      name: fallback.name,
-      badgeLabel: fallback.type === "frame" ? "Marco" : "Accesorio",
-      description: fallback.description,
-      rewardCoins: 0,
-      equippedFrameId: fallback.type === "frame" ? fallback.cosmeticId : null,
-      equippedOverlayId: fallback.type === "overlay" ? fallback.cosmeticId : null,
-      rewardCosmetics: [
+      items: [
         {
           id: fallback.cosmeticId,
-          code: fallback.cosmeticId,
+          type: fallback.type,
           name: fallback.name,
           description: fallback.description,
-          type: fallback.type,
-          rarity: "common" as const,
+          badgeLabel:
+            fallback.type === "frame"
+              ? t("achievements:nextReward.badges.frame")
+              : t("achievements:nextReward.badges.overlay"),
+          frameId: fallback.type === "frame" ? fallback.cosmeticId : null,
+          overlayId: fallback.type === "overlay" ? fallback.cosmeticId : null,
         },
       ],
     };
-  }, [nextLevelItem, currentLevel]);
+  }, [nextLevelItem, currentLevel, t]);
 
   const unclaimedList = useMemo(() => {
     return (overview?.achievements || []).filter(
@@ -201,8 +211,8 @@ export const AchievementsSection: React.FC = () => {
 
   const headerSlot = (
     <div className={styles.headerSlot}>
-      <span className={styles.headerTitle}>Tus logros</span>
-      <div className={styles.headerBadge} title="Logros completados">
+      <span className={styles.title}>{t("achievements:header.title")}</span>
+      <div className={styles.headerBadge} title={t("achievements:header.tooltip")}>
         <span>
           {overview?.completed_count ?? 0} / {overview?.total_count ?? 0}
         </span>
@@ -216,7 +226,10 @@ export const AchievementsSection: React.FC = () => {
         className={styles.triggerBtn}
         onClick={handleToggle}
         ref={iconRef}
-        title={`Nivel ${currentLevel} • Logros e Incentivos`}
+        aria-label={t("achievements:triggerAria")}
+        title={t("achievements:triggerTitle", { level: currentLevel })}
+        role="button"
+        tabIndex={0}
         style={{
           backgroundColor: isOpen
             ? "var(--background-over-container-hover)"
@@ -225,107 +238,132 @@ export const AchievementsSection: React.FC = () => {
       >
         <LevelBadge
           level={currentLevel}
-          size={22}
-          showLevelNumber={false}
+          size={26}
           badgeColor={currentLevelData.badge_color}
           accentColor={currentLevelData.accent_color}
           title={currentLevelData.title}
         />
-        <span className={styles.levelLabel}>{currentLevel}</span>
         {hasUnclaimed && <div className={styles.unclaimedIndicator} />}
       </div>
 
       {isOpen && (
         <ModalBox onClose={handleClose} iconRef={iconRef} headerSlot={headerSlot}>
           <div className={styles.panel}>
-            <div className={styles.levelHero}>
-              <div className={styles.levelHeroGlow} />
-              <LevelBadge
-                level={currentLevel}
-                size={48}
-                badgeColor={currentLevelData.badge_color}
-                accentColor={currentLevelData.accent_color}
-                title={currentLevelData.title}
-              />
-              <div className={styles.levelHeroInfo}>
-                <div className={styles.levelHeroTitleRow}>
-                  <span className={styles.levelHeroTitle}>
-                    {currentUser?.display_name || "Tu Perfil"}
-                  </span>
-                  <span className={styles.levelHeroRank}>{currentLevelData.title}</span>
+            <div className={styles.mainInfo}>
+              <div className={styles.heroBadgeWrapper}>
+                <LevelBadge
+                  level={currentLevel}
+                  size={40}
+                  badgeColor={currentLevelData.badge_color}
+                  accentColor={currentLevelData.accent_color}
+                  title={currentLevelData.title}
+                />
+              </div>
+              <div className={styles.countWrapper}>
+                <span className={styles.levelNumber}>
+                  {t("achievements:hero.levelLabel", { level: currentLevel })}
+                </span>
+                <span className={styles.levelRank}>{currentLevelData.title}</span>
+              </div>
+              <div className={styles.xpProgressWrapper}>
+                <div className={styles.xpBarTrack}>
+                  <div
+                    className={styles.xpBarFill}
+                    style={{ width: `${levelProgress.pct}%` }}
+                  />
                 </div>
-                <div className={styles.xpBarContainer}>
-                  <div className={styles.xpBarTrack}>
-                    <div
-                      className={styles.xpBarFill}
-                      style={{ width: `${levelProgress.pct}%` }}
-                    />
-                  </div>
-                  <div className={styles.xpBarLabels}>
-                    <span>
-                      {levelProgress.currentInRange} / {levelProgress.range} XP
-                    </span>
-                    <span>{levelProgress.pct}%</span>
-                  </div>
+                <div className={styles.xpBarLabels}>
+                  <span>
+                    {levelProgress.currentInRange} / {levelProgress.range} XP
+                  </span>
+                  <span>{levelProgress.pct}%</span>
                 </div>
               </div>
             </div>
 
-            {nextReward && (
+            {nextRewardData && nextRewardData.items.length > 0 && (
               <div className={styles.nextRewardSection}>
-                <div className={styles.nextRewardHeader}>
-                  <span className={styles.nextRewardTitle}>
-                    Recompensa de Nivel {nextReward.level}
-                  </span>
-                  <span className={styles.nextRewardBadge}>
-                    {nextReward.badgeLabel}
+                <div className={styles.sectionHeader}>
+                  <span className={styles.sectionTitle}>
+                    {nextRewardData.items.length > 1
+                      ? t("achievements:nextReward.titlePlural", { level: nextRewardData.level })
+                      : t("achievements:nextReward.title", { level: nextRewardData.level })}
                   </span>
                 </div>
-                <div className={styles.nextRewardCard}>
-                  <div className={styles.nextRewardAvatarWrap}>
-                    {nextReward.equippedFrameId || nextReward.equippedOverlayId ? (
-                      <UserAvatar
-                        avatarUrl={currentUser?.avatar_url}
-                        username={currentUser?.username}
-                        size={40}
-                        style={{ borderRadius: "11px" }}
-                        equippedFrameId={nextReward.equippedFrameId}
-                        equippedOverlayId={nextReward.equippedOverlayId}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 11,
-                          backgroundColor: "var(--background-secondary)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <AlinoCoinIcon amount={nextReward.rewardCoins} size={22} />
+
+                {nextRewardData.items.length >= 2 ? (
+                  <div className={styles.rewardsGrid}>
+                    {nextRewardData.items.map((item) => (
+                      <div key={item.id} className={styles.rewardSquare}>
+                        {/* <span
+                          className={`${styles.rewardBadge} ${
+                            item.type === "coins" ? styles.rewardBadgeGold : ""
+                          }`}
+                        >
+                          {item.badgeLabel}
+                        </span> */}
+                        <div className={styles.rewardSquareIconWrap}>
+                          {item.type === "coins" ? (
+                            <div className={styles.rewardCoinWrap}>
+                              <AlinoCoinIcon amount={item.amount || 0} size={20} />
+                            </div>
+                          ) : (
+                            <UserAvatar
+                              avatarUrl={currentUser?.avatar_url}
+                              username={currentUser?.username}
+                              size={38}
+                              style={{ borderRadius: "10px" }}
+                              equippedFrameId={item.frameId}
+                              equippedOverlayId={item.overlayId}
+                            />
+                          )}
+                        </div>
+                        <span className={styles.rewardSquareName} title={item.name}>
+                          {item.name}
+                        </span>
                       </div>
-                    )}
+                    ))}
                   </div>
-                  <div className={styles.nextRewardInfo}>
-                    <span className={styles.nextRewardName}>{nextReward.name}</span>
-                    <span className={styles.nextRewardDesc}>{nextReward.description}</span>
+                ) : (
+                  <div className={styles.rewardSingleCard}>
+                    <div className={styles.rewardSquareIconWrap}>
+                      {nextRewardData.items[0].type === "coins" ? (
+                        <div className={styles.rewardCoinWrap}>
+                          <AlinoCoinIcon amount={nextRewardData.items[0].amount || 0} size={20} />
+                        </div>
+                      ) : (
+                        <UserAvatar
+                          avatarUrl={currentUser?.avatar_url}
+                          username={currentUser?.username}
+                          size={38}
+                          style={{ borderRadius: "10px" }}
+                          equippedFrameId={nextRewardData.items[0].frameId}
+                          equippedOverlayId={nextRewardData.items[0].overlayId}
+                        />
+                      )}
+                    </div>
+                    <div className={styles.rewardSingleInfo}>
+                      <span className={styles.rewardSingleName}>{nextRewardData.items[0].name}</span>
+                      {nextRewardData.items[0].description && (
+                        <span className={styles.rewardSingleDesc}>
+                          {nextRewardData.items[0].description}
+                        </span>
+                      )}
+                    </div>
+                    <span
+                      className={`${styles.rewardBadge} ${nextRewardData.items[0].type === "coins" ? styles.rewardBadgeGold : ""
+                        }`}
+                    >
+                      {nextRewardData.items[0].badgeLabel}
+                    </span>
                   </div>
-                  {nextReward.rewardCoins > 0 &&
-                    (nextReward.equippedFrameId || nextReward.equippedOverlayId) && (
-                      <span className={styles.rewardBadge}>
-                        <AlinoCoinIcon amount={nextReward.rewardCoins} size={11} />
-                        +{nextReward.rewardCoins}
-                      </span>
-                    )}
-                </div>
+                )}
               </div>
             )}
 
             <div className={styles.upcomingSection}>
-              <div className={styles.upcomingHeader}>
-                <span className={styles.upcomingTitle}>Próximos a completar</span>
+              <div className={styles.sectionHeader}>
+                <span className={styles.sectionTitle}>{t("achievements:upcoming.title")}</span>
               </div>
               <div className={styles.upcomingList}>
                 {upcomingAchievements.map((item) => {
@@ -338,12 +376,11 @@ export const AchievementsSection: React.FC = () => {
                   return (
                     <div
                       key={item.id}
-                      className={`${styles.achievementCard} ${
-                        isReadyToClaim ? styles.achievementCardReady : ""
-                      }`}
+                      className={`${styles.achievementCard} ${isReadyToClaim ? styles.achievementCardReady : ""
+                        }`}
                     >
                       <div className={styles.achievementIconWrapper}>
-                        <AchievementIllustration code={item.code} size={36} />
+                        <AchievementIllustration code={item.code} size={32} />
                       </div>
                       <div className={styles.achievementCardDetails}>
                         <div className={styles.achievementNameRow}>
@@ -353,9 +390,8 @@ export const AchievementsSection: React.FC = () => {
                         <div className={styles.progressRow}>
                           <div className={styles.progressBarTrack}>
                             <div
-                              className={`${styles.progressBarFill} ${
-                                item.is_completed ? styles.progressBarFillComplete : ""
-                              }`}
+                              className={`${styles.progressBarFill} ${item.is_completed ? styles.progressBarFillComplete : ""
+                                }`}
                               style={{ width: `${progressPct}%` }}
                             />
                           </div>
@@ -365,13 +401,13 @@ export const AchievementsSection: React.FC = () => {
                         </div>
                         <div className={styles.rewardsRow}>
                           {item.reward_coins > 0 && (
-                            <span className={styles.rewardBadge}>
+                            <span className={styles.rewardChip}>
                               <AlinoCoinIcon amount={item.reward_coins} size={11} />
                               +{item.reward_coins}
                             </span>
                           )}
                           {item.reward_xp > 0 && (
-                            <span className={`${styles.rewardBadge} ${styles.xpBadge}`}>
+                            <span className={`${styles.rewardChip} ${styles.xpChip}`}>
                               +{item.reward_xp} XP
                             </span>
                           )}
@@ -381,13 +417,14 @@ export const AchievementsSection: React.FC = () => {
                       {isReadyToClaim && (
                         <button
                           type="button"
-                          className={`${styles.claimButton} ${
-                            isClaimingId === item.id ? styles.claimButtonDisabled : ""
-                          }`}
+                          className={`${styles.claimButton} ${isClaimingId === item.id ? styles.claimButtonDisabled : ""
+                            }`}
                           onClick={() => handleClaim(item)}
                           disabled={isClaimingId === item.id}
                         >
-                          {isClaimingId === item.id ? "Reclamando..." : "Reclamar"}
+                          {isClaimingId === item.id
+                            ? t("achievements:upcoming.claiming")
+                            : t("achievements:upcoming.claim")}
                         </button>
                       )}
                     </div>
@@ -398,10 +435,23 @@ export const AchievementsSection: React.FC = () => {
 
             <button
               type="button"
-              className={styles.galleryTriggerButton}
+              className={styles.viewGalleryBtn}
               onClick={handleOpenGallery}
             >
-              Ver todos los logros
+              <span>{t("achievements:viewAll")}</span>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
             </button>
           </div>
         </ModalBox>
