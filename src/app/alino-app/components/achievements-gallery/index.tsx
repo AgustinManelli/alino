@@ -8,7 +8,13 @@ import { AchievementIllustration } from "@/config/achievementIcons";
 import { AlinoCoinIcon } from "@/components/ui/alino-coins-icon";
 import { showAchievementToast } from "@/components/ui/toaster/achievement-toaster";
 import { AchievementItem } from "@/lib/schemas/database.types";
-import { Tabs } from "@/components/ui/Tabs/Tabs";
+import {
+  IAStars,
+  Check,
+  SplitIcon,
+  ReceiptIcon,
+  Crown,
+} from "@/components/ui/icons/icons";
 import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
 import { LEVEL_REWARDS } from "@/config/levelRewards";
 import { useUserDataStore } from "@/store/useUserDataStore";
@@ -97,7 +103,92 @@ export const AchievementsGalleryModal: React.FC = () => {
       windowTitle="Galería de logros"
       id="achievements-gallery-window"
       crossAction={() => setIsGalleryOpen(false)}
-      adaptative={{ width: "880px", maxWidth: "95vw" }}
+      sidebar={
+        <WindowComponent.Sidebar>
+          <WindowComponent.SidebarItem
+            label="Todos"
+            icon={
+              <IAStars
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  stroke: "currentColor",
+                  strokeWidth: "1.8",
+                }}
+              />
+            }
+            active={activeFilter === "all"}
+            onClick={() => setActiveFilter("all")}
+            badge={overview?.total_count ?? 0}
+          />
+          <WindowComponent.SidebarItem
+            label="Listos"
+            icon={
+              <Check
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                }}
+              />
+            }
+            active={activeFilter === "unclaimed"}
+            onClick={() => setActiveFilter("unclaimed")}
+            badge={
+              overview?.completed_count && overview.completed_count > 0
+                ? overview.completed_count
+                : undefined
+            }
+          />
+          <WindowComponent.SidebarItem
+            label="En progreso"
+            icon={
+              <SplitIcon
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                }}
+              />
+            }
+            active={activeFilter === "in_progress"}
+            onClick={() => setActiveFilter("in_progress")}
+          />
+          <WindowComponent.SidebarItem
+            label="Reclamados"
+            icon={
+              <ReceiptIcon
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  stroke: "currentColor",
+                  strokeWidth: "1.8",
+                }}
+              />
+            }
+            active={activeFilter === "completed"}
+            onClick={() => setActiveFilter("completed")}
+            badge={overview?.claimed_count ?? 0}
+          />
+          <WindowComponent.SidebarItem
+            label="Niveles"
+            icon={
+              <Crown
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                }}
+              />
+            }
+            active={activeFilter === "levels"}
+            onClick={() => setActiveFilter("levels")}
+          />
+        </WindowComponent.Sidebar>
+      }
     >
       <div className={styles.galleryContainer}>
         <div className={styles.overviewBanner}>
@@ -137,27 +228,6 @@ export const AchievementsGalleryModal: React.FC = () => {
               <span>{currentXp} XP</span>
             </div>
           </div>
-        </div>
-
-        <div className={styles.filtersContainer}>
-          <Tabs
-            options={[
-              { id: "all", label: `Todos (${overview?.total_count ?? 0})` },
-              {
-                id: "unclaimed",
-                label: `Listos (${overview?.completed_count ?? 0})`,
-              },
-              { id: "in_progress", label: "En progreso" },
-              {
-                id: "completed",
-                label: `Reclamados (${overview?.claimed_count ?? 0})`,
-              },
-              { id: "levels", label: "Recompensas por Nivel" },
-            ]}
-            activeTab={activeFilter}
-            onChange={(id) => setActiveFilter(id as FilterStatus)}
-            layoutId="achievements-gallery-tabs"
-          />
         </div>
 
         {activeFilter === "levels" ? (

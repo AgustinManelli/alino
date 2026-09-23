@@ -420,18 +420,16 @@
   font-size: 11px;
   font-weight: 800;
   background: linear-gradient(135deg, #FFD60A, #FF9F0A);
-  color: #000000;
+  color: #1c1c1c;
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(255, 214, 10, 0.25);
   transition: all 0.15s ease;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .claimButton:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 214, 10, 0.4);
+  background: linear-gradient(135deg, #ffd60a9e, #ff9f0aa8);
 }
 
 .claimButton:active:not(:disabled) {

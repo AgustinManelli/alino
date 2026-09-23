@@ -1,7 +1,7 @@
 .perspectiveContainer {
   perspective: 1000px;
   width: 100%;
-  height: 200px; /* Altura fija para la preview */
+  height: 200px;
   margin: 10px 0;
   display: flex;
   align-items: center;
@@ -15,13 +15,11 @@
   background: var(--background-container);
   border: 1px solid var(--border-container-color);
   border-radius: 30px;
-  /* El boxShadow puede añadir un efecto extra al 3D */
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
-  transition: box-shadow 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 
 .previewCard:hover {
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+  border-color: var(--alino-primary-color);
 }
 
 .previewInner {
@@ -30,21 +28,18 @@
   position: relative;
   overflow: hidden;
   border-radius: 30px;
-  /* pointer-events: none es CLAVE para evitar que el usuario interactúe con el widget */
   pointer-events: none;
-  /* Usamos un scale o container-type si el widget necesita saber su tamaño */
-  /* container-type: inline-size; */
   display: flex;
   flex-direction: column;
 }
 
-/* Ocultar scrollbars en la preview */
 .previewInner :global(::-webkit-scrollbar) {
   display: none;
 }
+
 .previewInner {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .placeholder {
@@ -59,8 +54,6 @@
   font-size: 13px;
   margin: 10px 0;
 }
-
-/* === Estilos simulados de BentoGridItem === */
 
 .bentoHeader {
   position: relative;
