@@ -20,6 +20,7 @@ import {
   getActiveSubscription,
   cancelSubscriptionAction,
 } from "@/lib/api/user/actions";
+import { getUserCosmeticsCatalogAction } from "@/lib/api/cosmetics/actions";
 import { useModalStore } from "@/store/useModalStore";
 import { customToast } from "@/lib/toasts";
 import { ActiveSubscription } from "@/lib/schemas/user.types";
@@ -44,6 +45,9 @@ export default function ConfigUser() {
   const setConfigUserActive = useUserDataStore(
     (state) => state.setConfigUserActive,
   );
+  const setCosmeticsCatalog = useUserDataStore(
+    (state) => state.setCosmeticsCatalog,
+  );
 
   const { fetchProfileStats } = useFetchProfileStats();
   const { fetchAIUsage } = useFetchAIUsage();
@@ -59,7 +63,12 @@ export default function ConfigUser() {
   useEffect(() => {
     fetchProfileStats();
     fetchAIUsage();
-  }, [fetchProfileStats, fetchAIUsage]);
+    getUserCosmeticsCatalogAction().then((res) => {
+      if (res.data?.cosmetics) {
+        setCosmeticsCatalog(res.data.cosmetics);
+      }
+    });
+  }, [fetchProfileStats, fetchAIUsage, setCosmeticsCatalog]);
 
   useEffect(() => {
     if (!isFreeTier) {

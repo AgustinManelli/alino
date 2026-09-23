@@ -4,6 +4,7 @@ import { type ReactNode, useRef, useEffect } from "react";
 import { type StoreApi } from "zustand";
 import { UserType } from "@/lib/schemas/database.types";
 import { createUserDataStore, UserStoreContext, type UserState } from "@/store/useUserDataStore";
+import { getUserCosmeticsCatalogAction } from "@/lib/api/cosmetics/actions";
 
 import { createUserPreferencesStore, UserPreferencesContext } from "@/store/useUserPreferencesStore";
 
@@ -39,6 +40,16 @@ export const UserStoreProvider = ({ children, user, initialSidebarCollapsed, ini
       }
     } catch (_) { }
   }, []);
+
+  useEffect(() => {
+    if (user?.user_id) {
+      getUserCosmeticsCatalogAction().then((res) => {
+        if (res.data?.cosmetics) {
+          storeRef.current?.getState().setCosmeticsCatalog(res.data.cosmetics);
+        }
+      });
+    }
+  }, [user?.user_id]);
 
   return (
     <UserStoreContext.Provider value={storeRef.current}>

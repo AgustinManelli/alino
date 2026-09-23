@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
 import { WindowModal } from "@/components/ui/WindowModal";
 import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
-import { Edit } from "@/components/ui/icons/icons";
+import { Edit, Crown, Cross } from "@/components/ui/icons/icons";
 import { customToast } from "@/lib/toasts";
 import { UserType, CosmeticItem } from "@/lib/schemas/database.types";
 import { ProfileStats } from "@/lib/schemas/user.types";
@@ -14,7 +14,7 @@ import {
   getUserCosmeticsCatalogAction,
   equipCosmeticAction,
 } from "@/lib/api/cosmetics/actions";
-import { globalUserStore } from "@/store/useUserDataStore";
+import { globalUserStore, useUserDataStore } from "@/store/useUserDataStore";
 import {
   AvatarSelector,
   AvatarSourceType,
@@ -53,10 +53,20 @@ export function ProfileTab({
   const [oauthProvider, setOauthProvider] = useState<string | null>(null);
   const [customAvatar, setCustomAvatar] = useState<string | null>(null);
   const [isSavingAvatar, setIsSavingAvatar] = useState(false);
-  const [cosmetics, setCosmetics] = useState<CosmeticItem[]>([]);
-  const [isLoadingCosmetics, setIsLoadingCosmetics] = useState(true);
+  const storeCosmetics = useUserDataStore((state) => state.cosmeticsCatalog);
+  const [cosmetics, setCosmetics] = useState<CosmeticItem[]>(storeCosmetics || []);
+  const [isLoadingCosmetics, setIsLoadingCosmetics] = useState(
+    !storeCosmetics || storeCosmetics.length === 0,
+  );
   const [activeCosmeticTab, setActiveCosmeticTab] = useState<"frame" | "overlay">("frame");
   const [isEquipping, setIsEquipping] = useState(false);
+
+  useEffect(() => {
+    if (storeCosmetics && storeCosmetics.length > 0) {
+      setCosmetics(storeCosmetics);
+      setIsLoadingCosmetics(false);
+    }
+  }, [storeCosmetics]);
 
   useEffect(() => {
     let isMounted = true;
@@ -64,6 +74,7 @@ export function ProfileTab({
       .then((res) => {
         if (isMounted && res.data) {
           setCosmetics(res.data.cosmetics);
+          globalUserStore?.getState().setCosmeticsCatalog(res.data.cosmetics);
         }
       })
       .finally(() => {
@@ -84,35 +95,53 @@ export function ProfileTab({
     const isCurrentlyEquipped = item ? item.is_equipped : false;
     const newEquippedId = isCurrentlyEquipped || !item ? null : item.id;
 
+    const previousCosmetics = [...cosmetics];
+    const previousFrameId = user?.equipped_frame_id ?? null;
+    const previousOverlayId = user?.equipped_overlay_id ?? null;
+
+    const updated = cosmetics.map((c) => {
+      if (c.type !== cosmeticType) return c;
+      return {
+        ...c,
+        is_equipped: c.id === newEquippedId,
+      };
+    });
+    setCosmetics(updated);
+    globalUserStore?.getState().setCosmeticsCatalog(updated);
+
+    if (cosmeticType === "frame") {
+      globalUserStore?.getState().updateUser({ equipped_frame_id: newEquippedId });
+    } else {
+      globalUserStore?.getState().updateUser({ equipped_overlay_id: newEquippedId });
+    }
+
     try {
       const res = await equipCosmeticAction(newEquippedId, cosmeticType);
       if (res.success) {
-        setCosmetics((prev) =>
-          prev.map((c) => {
-            if (c.type !== cosmeticType) return c;
-            return {
-              ...c,
-              is_equipped: c.id === newEquippedId,
-            };
-          })
-        );
-
-        if (globalUserStore) {
-          if (cosmeticType === "frame") {
-            globalUserStore.getState().updateUser({ equipped_frame_id: newEquippedId });
-          } else {
-            globalUserStore.getState().updateUser({ equipped_overlay_id: newEquippedId });
-          }
-        }
-
         customToast.success(
           newEquippedId
             ? t("config:account.profile.cosmetics.equipSuccess")
-            : t("config:account.profile.cosmetics.unequipSuccess")
+            : t("config:account.profile.cosmetics.unequipSuccess"),
         );
       } else {
+        setCosmetics(previousCosmetics);
+        globalUserStore?.getState().setCosmeticsCatalog(previousCosmetics);
+        if (cosmeticType === "frame") {
+          globalUserStore?.getState().updateUser({ equipped_frame_id: previousFrameId });
+        } else {
+          globalUserStore?.getState().updateUser({ equipped_overlay_id: previousOverlayId });
+        }
         customToast.error(res.error || t("config:account.profile.cosmetics.updateError"));
       }
+    } catch {
+      setCosmetics(previousCosmetics);
+      globalUserStore?.getState().setCosmeticsCatalog(previousCosmetics);
+      if (cosmeticType === "frame") {
+        globalUserStore?.getState().updateUser({ equipped_frame_id: previousFrameId });
+      } else {
+        globalUserStore?.getState().updateUser({ equipped_overlay_id: previousOverlayId });
+      }
+      customToast.error(t("config:account.profile.cosmetics.updateError"));
     } finally {
       setIsEquipping(false);
     }
@@ -373,49 +402,40 @@ export function ProfileTab({
           </p>
         </div>
 
-        <div className={styles.cosmeticsTabs}>
-          <Tabs
-            options={[
-              { id: "frame", label: t("config:account.profile.cosmetics.framesTab") },
-              { id: "overlay", label: t("config:account.profile.cosmetics.overlaysTab") },
-            ]}
-            activeTab={activeCosmeticTab}
-            onChange={(id) => setActiveCosmeticTab(id as "frame" | "overlay")}
-            layoutId="profile-cosmetics-tabs"
-          />
+        <div className={styles.cosmeticsToolbar}>
+          <div className={styles.cosmeticsTabs}>
+            <Tabs
+              options={[
+                { id: "frame", label: t("config:account.profile.cosmetics.framesTab") },
+                { id: "overlay", label: t("config:account.profile.cosmetics.overlaysTab") },
+              ]}
+              activeTab={activeCosmeticTab}
+              onChange={(id) => setActiveCosmeticTab(id as "frame" | "overlay")}
+              layoutId="profile-cosmetics-tabs"
+            />
+          </div>
+          <span className={styles.cosmeticsCountBadge}>
+            {cosmetics.filter((c) => c.type === activeCosmeticTab).length}{" "}
+            {activeCosmeticTab === "frame"
+              ? t("config:account.profile.cosmetics.framesTab").toLowerCase()
+              : t("config:account.profile.cosmetics.overlaysTab").toLowerCase()}
+          </span>
         </div>
 
-        <div className={styles.cosmeticsGrid}>
+        <div className={styles.inventorySlotsGrid}>
           {isLoadingCosmetics ? (
-            <>
+            Array.from({ length: 10 }).map((_, idx) => (
               <Skeleton
+                key={`cosmetic-skel-${idx}`}
                 style={{
                   width: "100%",
-                  height: "134px",
-                  borderRadius: "12px",
+                  aspectRatio: "1",
+                  borderRadius: "14px",
                   border: "1px solid var(--border-container-color)",
                 }}
-                delay={0}
+                delay={idx * 0.04}
               />
-              <Skeleton
-                style={{
-                  width: "100%",
-                  height: "134px",
-                  borderRadius: "12px",
-                  border: "1px solid var(--border-container-color)",
-                }}
-                delay={0.15}
-              />
-              <Skeleton
-                style={{
-                  width: "100%",
-                  height: "134px",
-                  borderRadius: "12px",
-                  border: "1px solid var(--border-container-color)",
-                }}
-                delay={0.3}
-              />
-            </>
+            ))
           ) : (
             (() => {
               const activeCosmetics = cosmetics.filter((c) => c.type === activeCosmeticTab);
@@ -424,34 +444,27 @@ export function ProfileTab({
                   ? !!user?.equipped_frame_id
                   : !!user?.equipped_overlay_id;
 
+              const totalFilled = activeCosmetics.length + 1;
+              const minSlots = 10;
+              const emptySlotsCount = Math.max(0, minSlots - totalFilled);
+
               return (
                 <>
                   <div
-                    className={`${styles.cosmeticCard} ${styles.cosmeticCardNone} ${!isEquippedSlot ? styles.cosmeticCardEquipped : ""
-                      }`}
+                    className={`${styles.inventorySlot} ${styles.inventorySlotNone} ${
+                      !isEquippedSlot ? styles.inventorySlotEquipped : ""
+                    }`}
                     onClick={() => handleEquipToggle(null, activeCosmeticTab)}
                     title={t("config:account.profile.cosmetics.unequipTitle")}
                   >
-                    <div className={styles.cosmeticPreviewWrap}>
-                      <UserAvatar
-                        avatarUrl={user?.avatar_url}
-                        username={user?.username}
-                        size={44}
-                        style={{ borderRadius: "10px" }}
-                        equippedFrameId={null}
-                        equippedOverlayId={null}
-                      />
+                    {!isEquippedSlot && <div className={styles.inventorySlotEquippedDot} />}
+                    <div className={styles.inventorySlotPreviewWrap}>
+                      <div className={styles.inventorySlotNoneIcon}>
+                        <Cross style={{ width: "14px", height: "14px" }} />
+                      </div>
                     </div>
-                    <span className={styles.cosmeticName}>
+                    <span className={styles.inventorySlotName}>
                       {t("config:account.profile.cosmetics.none")}
-                    </span>
-                    <span
-                      className={`${styles.cosmeticBadge} ${!isEquippedSlot ? styles.cosmeticBadgeEquipped : ""
-                        }`}
-                    >
-                      {!isEquippedSlot
-                        ? t("config:account.profile.cosmetics.active")
-                        : t("config:account.profile.cosmetics.remove")}
                     </span>
                   </div>
 
@@ -459,45 +472,57 @@ export function ProfileTab({
                     const isProItem =
                       item.id === "overlay_pro_crown" ||
                       item.code === "overlay_pro_crown" ||
-                      item.tier_required === "pro";
+                      item.tier_required === "pro" ||
+                      item.tier_required === "ultra";
                     const trans = getCosmeticTranslation(item);
 
                     return (
                       <div
                         key={item.id}
-                        className={`${styles.cosmeticCard} ${item.is_equipped ? styles.cosmeticCardEquipped : ""
-                          }`}
+                        className={`${styles.inventorySlot} ${
+                          item.is_equipped ? styles.inventorySlotEquipped : ""
+                        }`}
                         onClick={() => handleEquipToggle(item)}
                         title={trans.description}
                       >
-                        <div className={styles.cosmeticPreviewWrap}>
+                        {item.is_equipped && (
+                          <div className={styles.inventorySlotEquippedDot} />
+                        )}
+                        {isProItem && (
+                          <div className={styles.inventorySlotProCrown}>
+                            <Crown
+                              style={{
+                                width: "12px",
+                                height: "12px",
+                                color: "rgb(255, 200, 100)",
+                              }}
+                            />
+                          </div>
+                        )}
+                        <div className={styles.inventorySlotPreviewWrap}>
                           <UserAvatar
                             avatarUrl={user?.avatar_url}
                             username={user?.username}
-                            size={44}
+                            size={42}
                             style={{ borderRadius: "10px" }}
                             equippedFrameId={item.type === "frame" ? item.id : null}
                             equippedOverlayId={item.type === "overlay" ? item.id : null}
                           />
                         </div>
-                        <span className={styles.cosmeticName}>{trans.name}</span>
-                        <span
-                          className={`${styles.cosmeticBadge} ${item.is_equipped
-                              ? styles.cosmeticBadgeEquipped
-                              : isProItem
-                                ? styles.cosmeticBadgePro
-                                : ""
-                            }`}
-                        >
-                          {item.is_equipped
-                            ? t("config:account.profile.cosmetics.equipped")
-                            : isProItem
-                              ? t("config:account.profile.cosmetics.pro")
-                              : t("config:account.profile.cosmetics.equip")}
-                        </span>
+                        <span className={styles.inventorySlotName}>{trans.name}</span>
                       </div>
                     );
                   })}
+
+                  {Array.from({ length: emptySlotsCount }).map((_, idx) => (
+                    <div
+                      key={`empty-slot-${idx}`}
+                      className={styles.inventorySlotEmpty}
+                      aria-hidden="true"
+                    >
+                      <div className={styles.inventorySlotEmptyDot} />
+                    </div>
+                  ))}
                 </>
               );
             })()
