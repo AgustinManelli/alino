@@ -43,12 +43,12 @@
 }
 
 .maxStreakBadge {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-not-available);
   background: var(--background-over-container);
   padding: 5px 10px;
-  border-radius: 7px;
+  border-radius: 8px;
   font-variant-numeric: tabular-nums;
 }
 

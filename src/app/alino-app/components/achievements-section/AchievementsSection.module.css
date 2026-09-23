@@ -18,41 +18,18 @@
 }
 
 .triggerBtn:hover {
-  background-color: var(--background-over-container-hover);
-}
-
-.levelLabel {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
+  background-color: var(--background-over-container-hover) !important;
 }
 
 .unclaimedIndicator {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 9px;
-  height: 9px;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background-color: #FFD60A;
-  box-shadow: 0 0 8px #FFD60A;
-  border: 1.5px solid var(--background-secondary);
-  animation: pulseDot 2s infinite ease-in-out;
-}
-
-@keyframes pulseDot {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: scale(1.3);
-    opacity: 0.8;
-  }
+  border: 1.5px solid var(--background-container);
 }
 
 .headerSlot {
@@ -64,7 +41,7 @@
   box-sizing: border-box;
 }
 
-.headerTitle {
+.title {
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
@@ -76,73 +53,68 @@
   gap: 5px;
   background: var(--background-over-container);
   border: 1px solid var(--border-container-color);
-  padding: 3px 8px;
+  padding: 4px 9px;
   border-radius: 8px;
   font-size: 12px;
-  font-weight: 700;
-  color: var(--text);
+  font-weight: 600;
+  color: var(--text-not-available);
   font-variant-numeric: tabular-nums;
 }
 
 .panel {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  width: 340px;
-  box-sizing: border-box;
-}
-
-.levelHero {
-  display: flex;
-  align-items: center;
-  gap: 14px;
   padding: 14px;
-  background: var(--background-over-container);
-  border: 1px solid var(--border-container-color);
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
-}
-
-.levelHeroGlow {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle, rgba(255, 214, 10, 0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.levelHeroInfo {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex: 1;
+  gap: 16px;
+  width: 320px;
+  box-sizing: border-box;
+  max-height: min(580px, calc(100vh - 90px));
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
 }
 
-.levelHeroTitleRow {
+.mainInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  text-align: center;
+  width: 100%;
+}
+
+.heroBadgeWrapper {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
 }
 
-.levelHeroTitle {
-  font-size: 14px;
-  font-weight: 800;
+.countWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.levelNumber {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
   color: var(--text);
+  font-variant-numeric: tabular-nums;
 }
 
-.levelHeroRank {
-  font-size: 11px;
+.levelRank {
+  font-size: 10px;
   font-weight: 700;
   color: #FFD60A;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
 }
 
-.xpBarContainer {
+.xpProgressWrapper {
+  width: 100%;
+  max-width: 260px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -167,52 +139,175 @@
 .xpBarLabels {
   display: flex;
   justify-content: space-between;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-not-available);
+  font-variant-numeric: tabular-nums;
 }
 
-.upcomingSection {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.upcomingHeader {
+.sectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
 }
 
-.upcomingTitle {
+.sectionTitle {
   font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-not-available);
+  font-weight: 600;
+  color: var(--text);
 }
 
-.upcomingList {
+.nextRewardSection {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
+.rewardBadge {
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--alino-primary-color);
+  background: rgba(135, 24, 157, 0.1);
+  border: 1px solid rgba(135, 24, 157, 0.25);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.rewardBadgeGold {
+  color: #FFD60A;
+  background: rgba(255, 214, 10, 0.12);
+  border-color: rgba(255, 214, 10, 0.3);
+}
+
+.rewardsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.rewardSquare {
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  padding: 5px 5px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  min-height: 80px;
+  user-select: none;
+}
+
+.rewardSquareIconWrap {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.rewardCoinWrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--background-over-container-hover);
+  border: 1px solid var(--border-container-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rewardSquareName {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.rewardSingleCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.rewardSingleInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.rewardSingleName {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.rewardSingleDesc {
+  font-size: 11px;
+  color: var(--text-not-available);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upcomingSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upcomingList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
 .achievementCard {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 8px 10px;
   background: var(--background-over-container);
   border: 1px solid var(--border-container-color);
-  border-radius: 12px;
-  transition: all 0.2s ease;
+  border-radius: 10px;
   position: relative;
-  overflow: hidden;
+  cursor: default;
+  user-select: none;
 }
 
 .achievementCardReady {
-  border-color: rgba(255, 214, 10, 0.4);
+  border-color: rgba(255, 214, 10, 0.45);
   background: rgba(255, 214, 10, 0.05);
 }
 
@@ -234,17 +329,17 @@
 .achievementNameRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 6px;
 }
 
 .achievementName {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.25;
 }
 
 .achievementDesc {
@@ -253,13 +348,14 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.25;
 }
 
 .progressRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 4px;
+  gap: 6px;
+  margin-top: 3px;
 }
 
 .progressBarTrack {
@@ -285,25 +381,32 @@
   font-size: 10px;
   font-weight: 700;
   color: var(--text-not-available);
+  font-variant-numeric: tabular-nums;
 }
 
 .rewardsRow {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 3px;
+  gap: 5px;
+  margin-top: 2px;
 }
 
-.rewardBadge {
+.rewardChip {
   display: inline-flex;
   align-items: center;
   gap: 3px;
   font-size: 10px;
   font-weight: 700;
   color: var(--text);
+  background: var(--background-over-container-hover);
+  border: 1px solid var(--border-container-color);
+  padding: 1px 5px;
+  border-radius: 5px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
-.xpBadge {
+.xpChip {
   color: #64D2FF;
 }
 
@@ -311,7 +414,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 12px;
+  height: 26px;
+  padding: 0 10px;
   border-radius: 8px;
   font-size: 11px;
   font-weight: 800;
@@ -319,19 +423,19 @@
   color: #000000;
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(255, 214, 10, 0.3);
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 214, 10, 0.25);
+  transition: all 0.15s ease;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-.claimButton:hover {
+.claimButton:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(255, 214, 10, 0.45);
+  box-shadow: 0 4px 12px rgba(255, 214, 10, 0.4);
 }
 
-.claimButton:active {
-  transform: translateY(0);
+.claimButton:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .claimButtonDisabled {
@@ -340,95 +444,26 @@
   transform: none !important;
 }
 
-.galleryTriggerButton {
-  width: 100%;
-  padding: 10px;
-  background: var(--background-over-container);
-  border: 1px solid var(--border-container-color);
-  border-radius: 10px;
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-}
-
-.galleryTriggerButton:hover {
-  background: var(--background-over-container-hover);
-  border-color: var(--border-container-hover);
-}
-
-.nextRewardSection {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.nextRewardHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.nextRewardTitle {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.nextRewardBadge {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--alino-primary-color);
-  background: rgba(135, 24, 157, 0.1);
-  padding: 1px 5px;
-  border-radius: 4px;
-  text-transform: uppercase;
-}
-
-.nextRewardCard {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  background: var(--background-over-container);
-  border: 1px solid var(--border-container-color);
-  border-radius: 12px;
-}
-
-.nextRewardAvatarWrap {
-  width: 44px;
-  height: 44px;
+.viewGalleryBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.nextRewardInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.nextRewardName {
-  font-size: 12px;
-  font-weight: 700;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
   color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 2px;
 }
 
-.nextRewardDesc {
-  font-size: 11px;
-  color: var(--text-not-available);
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.viewGalleryBtn:hover {
+  background: var(--background-over-container-hover);
+  border-color: var(--alino-secondary-color);
+  color: var(--alino-secondary-color);
 }

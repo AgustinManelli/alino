@@ -7,9 +7,7 @@ import { useUserDataStore } from "@/store/useUserDataStore";
 import { ModalBox } from "@/components/ui/modal-options-box";
 import { AlinoCoinIcon } from "@/components/ui/alino-coins-icon";
 import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
-import {
-  buyCosmeticAction,
-} from "@/lib/api/cosmetics/actions";
+import { buyCosmeticAction } from "@/lib/api/cosmetics/actions";
 import { CosmeticItem } from "@/lib/schemas/database.types";
 import { getCosmeticTranslation, getCoinPackTranslation } from "@/lib/i18n/helpers";
 import { ShopGalleryModal } from "@/app/alino-app/components/shop-gallery-modal";
@@ -116,8 +114,18 @@ export const ShopSection = () => {
     return cosmetics
       .filter((item) => !item.is_unlocked)
       .sort((a, b) => b.sort_order - a.sort_order)
-      .slice(0, 4);
+      .slice(0, 3);
   }, [cosmetics]);
+
+  const headerSlot = (
+    <div className={styles.headerSlot}>
+      <span className={styles.title}>{t("shop:title")}</span>
+      <div className={styles.balanceBadge}>
+        <AlinoCoinIcon amount={coins} size={14} />
+        <span>{coins}</span>
+      </div>
+    </div>
+  );
 
   return (
     <div className={styles.container}>
@@ -128,6 +136,11 @@ export const ShopSection = () => {
         aria-label="Abrir Tienda"
         role="button"
         tabIndex={0}
+        style={{
+          backgroundColor: isOpen
+            ? "var(--background-over-container-hover)"
+            : "var(--background-over-container)",
+        }}
       >
         <AlinoCoinIcon size={20} />
         <CounterAnimation
@@ -140,21 +153,15 @@ export const ShopSection = () => {
         <ModalBox
           onClose={handleClose}
           iconRef={iconRef}
-          headerSlot={
-            <div className={styles.headerSlot}>
-              <span className={styles.title}>{t("shop:title")}</span>
-              <div className={styles.balanceBadge}>
-                <AlinoCoinIcon amount={coins} size={22} />
-                <span>{coins}</span>
-              </div>
-            </div>
-          }
+          headerSlot={headerSlot}
         >
           <div className={styles.panel}>
             <section className={styles.packsSection}>
-              {/* <div className={styles.sectionHeader}>
-                <span className={styles.sectionTitle}>{t("shop:packs.title")}</span>
-              </div> */}
+              <div className={styles.sectionHeader}>
+                <span className={styles.sectionTitle}>
+                  {t("shop:packs.title", { defaultValue: "Paquetes de monedas" })}
+                </span>
+              </div>
 
               <div className={styles.packsList}>
                 {coinPacks.map((pack) => {
@@ -163,7 +170,9 @@ export const ShopSection = () => {
                   return (
                     <div key={pack.id} className={styles.packCard}>
                       <div className={styles.packLeft}>
-                        <AlinoCoinIcon amount={pack.coins_amount} size={22} />
+                        <div className={styles.packIconWrap}>
+                          <AlinoCoinIcon amount={pack.coins_amount} size={20} />
+                        </div>
                         <div className={styles.packInfo}>
                           <div className={styles.packNameRow}>
                             <span className={styles.packName}>{packTrans.name}</span>
@@ -178,9 +187,9 @@ export const ShopSection = () => {
                       </div>
 
                       <div className={styles.packRight}>
-                        <span className={styles.packPrice}>
-                          {priceFormatted}
-                        </span>
+                        <div className={styles.packPriceChip}>
+                          <span>{priceFormatted}</span>
+                        </div>
                         <span className={styles.soonBadge}>{t("common:comingSoon")}</span>
                       </div>
                     </div>
@@ -190,16 +199,18 @@ export const ShopSection = () => {
                 {coinPacks.length === 0 && !isLoading && (
                   <div className={styles.packCard}>
                     <div className={styles.packLeft}>
-                      <AlinoCoinIcon amount={100} size={22} />
+                      <div className={styles.packIconWrap}>
+                        <AlinoCoinIcon amount={100} size={20} />
+                      </div>
                       <div className={styles.packInfo}>
                         <span className={styles.packName}>{t("shop:packs.defaultPackName")}</span>
                         <span className={styles.packCoins}>100 {t("shop:packs.coinsUnit")}</span>
                       </div>
                     </div>
                     <div className={styles.packRight}>
-                      <span className={styles.packPrice}>
-                        $1.99
-                      </span>
+                      <div className={styles.packPriceChip}>
+                        <span>$1.99</span>
+                      </div>
                       <span className={styles.soonBadge}>{t("common:comingSoon")}</span>
                     </div>
                   </div>
@@ -232,42 +243,37 @@ export const ShopSection = () => {
               </form>
             </section>
 
-            <section className={styles.cosmeticsShopSection}>
+            <section className={styles.cosmeticsSection}>
               <div className={styles.sectionHeader}>
                 <span className={styles.sectionTitle}>{t("shop:cosmetics.title")}</span>
               </div>
 
-              <div className={styles.cosmeticsShopList}>
+              <div className={styles.cosmeticsList}>
                 {previewCosmetics.length > 0 ? (
                   previewCosmetics.map((item) => {
                     const cosmeticTrans = getCosmeticTranslation(item);
                     return (
-                      <div key={item.id} className={styles.cosmeticShopCard}>
-                        <div className={styles.cosmeticShopLeft}>
-                          <div className={styles.cosmeticShopPreviewWrap}>
+                      <div key={item.id} className={styles.cosmeticCard}>
+                        <div className={styles.cosmeticLeft}>
+                          <div className={styles.cosmeticPreviewWrap}>
                             <UserAvatar
                               avatarUrl={currentUser?.avatar_url}
                               username={currentUser?.username}
-                              size={40}
-                              style={{ borderRadius: "11px" }}
+                              size={38}
+                              style={{ borderRadius: "10px" }}
                               equippedFrameId={item.type === "frame" ? item.id : null}
                               equippedOverlayId={item.type === "overlay" ? item.id : null}
                             />
                           </div>
-                          <div className={styles.cosmeticShopInfo}>
-                            <div className={styles.cosmeticShopNameRow}>
-                              <span className={styles.cosmeticShopName}>{cosmeticTrans.name}</span>
-                              {/* <span className={styles.cosmeticTypeBadge}>
-                                {cosmeticTrans.typeLabel}
-                              </span> */}
-                            </div>
-                            <p className={styles.cosmeticShopDesc}>{cosmeticTrans.description}</p>
+                          <div className={styles.cosmeticInfo}>
+                            <span className={styles.cosmeticName}>{cosmeticTrans.name}</span>
+                            <p className={styles.cosmeticDesc}>{cosmeticTrans.description}</p>
                           </div>
                         </div>
 
-                        <div className={styles.cosmeticShopRight}>
-                          <div className={styles.cosmeticShopPrice}>
-                            <AlinoCoinIcon amount={item.coins_price} size={14} />
+                        <div className={styles.cosmeticRight}>
+                          <div className={styles.priceChip}>
+                            <AlinoCoinIcon amount={item.coins_price} size={12} />
                             <span>{item.coins_price}</span>
                           </div>
 

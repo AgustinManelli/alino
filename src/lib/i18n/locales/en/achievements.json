@@ -1,0 +1,29 @@
+{
+  "triggerAria": "Open achievements",
+  "triggerTitle": "Level {{level}} • Achievements & Incentives",
+  "header": {
+    "title": "Your achievements",
+    "tooltip": "Completed achievements"
+  },
+  "hero": {
+    "levelLabel": "Level {{level}}"
+  },
+  "nextReward": {
+    "title": "Level {{level}} Reward",
+    "titlePlural": "Level {{level}} Rewards",
+    "badges": {
+      "frame": "Frame",
+      "overlay": "Accessory",
+      "coins": "Coins",
+      "combo": "Frame + Accessory"
+    },
+    "coinsReward": "+{{count}} Coins",
+    "coinsDesc": "Alino Coins"
+  },
+  "upcoming": {
+    "title": "Next to complete",
+    "claim": "Claim",
+    "claiming": "Claiming..."
+  },
+  "viewAll": "View all achievements"
+}

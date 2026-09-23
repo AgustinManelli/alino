@@ -88,9 +88,9 @@ export const LevelBadge: React.FC<LevelBadgeProps> = ({
             <stop offset="0%" stopColor={infoAccent} />
             <stop offset="100%" stopColor={infoColor} />
           </linearGradient>
-          <filter id={`lvlGlow_${level}_${size}`} x="-20%" y="-20%" width="140%" height="140%">
+          {/* <filter id={`lvlGlow_${level}_${size}`} x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor={infoColor} floodOpacity="0.4" />
-          </filter>
+          </filter> */}
         </defs>
 
         <path
@@ -122,10 +122,8 @@ export const LevelBadge: React.FC<LevelBadgeProps> = ({
             fontSize: `${Math.round(size * 0.4)}px`,
             fontWeight: 800,
             color: "#FFFFFF",
-            textShadow: "0 1px 3px rgba(0, 0, 0, 0.8)",
             letterSpacing: "-0.5px",
             lineHeight: 1,
-            marginTop: "1px",
           }}
         >
           {level}
