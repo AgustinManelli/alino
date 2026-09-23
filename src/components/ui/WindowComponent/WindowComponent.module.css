@@ -1,14 +1,17 @@
 .windowContainer {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: fixed;
+  inset: 0;
   width: 100%;
-  height: 100%;
+  height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 100;
-  padding: 15px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 15px);
+  padding-right: calc(env(safe-area-inset-right, 0px) + 15px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 15px);
+  padding-left: calc(env(safe-area-inset-left, 0px) + 15px);
+  box-sizing: border-box;
 }
 
 .glow {
@@ -424,7 +427,8 @@
 @media only screen and (max-width: 850px) {
   .windowModal {
     width: 100%;
-    height: 85%;
+    height: 100%;
+    max-height: 100%;
     min-width: initial;
     max-width: initial;
     padding: 20px 0 0 0;
@@ -432,7 +436,8 @@
 
   .windowModalWithSidebar {
     width: 100%;
-    height: 90%;
+    height: 100%;
+    max-height: 100%;
     max-width: 100%;
     min-height: initial;
     border-radius: 24px;

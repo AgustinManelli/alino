@@ -1,7 +1,6 @@
 .container {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: fixed;
+  inset: 0;
   width: 100vw;
   height: 100dvh;
   display: flex;
@@ -9,6 +8,11 @@
   align-items: center;
   background-color: rgba(0, 0, 0, 0.3);
   z-index: 1000;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 15px);
+  padding-right: calc(env(safe-area-inset-right, 0px) + 15px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 15px);
+  padding-left: calc(env(safe-area-inset-left, 0px) + 15px);
+  box-sizing: border-box;
 }
 
 .main {
