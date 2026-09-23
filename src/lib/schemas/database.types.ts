@@ -1644,6 +1644,13 @@ export type Database = {
         Args: { p_notification_id: string }
         Returns: undefined
       }
+      equip_cosmetic: {
+        Args: {
+          p_cosmetic_id: string | null
+          p_type: string
+        }
+        Returns: Json
+      }
       get_active_subscription: { Args: never; Returns: Json }
       get_dashboard_widgets: {
         Args: never
@@ -1828,6 +1835,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["subscription_tier"]
       }
       get_widget_limits: { Args: never; Returns: Json }
+      grant_user_pro_cosmetics: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       increment_rank: { Args: { input_rank: string }; Returns: string }
       install_widget: {
         Args: {

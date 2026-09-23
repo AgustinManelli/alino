@@ -3,7 +3,7 @@
 import { createContext, useContext } from "react";
 import { createStore, StoreApi, useStore } from "zustand";
 
-import { UserType } from "@/lib/schemas/database.types";
+import { UserType, CosmeticItem } from "@/lib/schemas/database.types";
 import { ProfileStats, FeatureUsage } from "@/lib/schemas/user.types";
 import { UserReferralStats } from "@/lib/api/user/actions";
 
@@ -13,12 +13,14 @@ export interface UserState {
   profileStats: ProfileStats | null;
   aiUsage: FeatureUsage | null;
   referralStats: UserReferralStats | null;
+  cosmeticsCatalog: CosmeticItem[] | null;
 
   updateUser: (partial: Partial<UserType>) => void;
   setConfigUserActive: (active: boolean) => void;
   setProfileStats: (stats: ProfileStats) => void;
   setAIUsage: (usage: FeatureUsage) => void;
   setReferralStats: (stats: UserReferralStats) => void;
+  setCosmeticsCatalog: (cosmetics: CosmeticItem[] | null) => void;
 }
 
 export const UserStoreContext = createContext<StoreApi<UserState> | undefined>(
@@ -34,6 +36,7 @@ export const createUserDataStore = (initialState: Partial<UserState> = {}) => {
     profileStats: null,
     aiUsage: null,
     referralStats: null,
+    cosmeticsCatalog: null,
 
     updateUser: (partial) =>
       set((state) => ({
@@ -45,6 +48,7 @@ export const createUserDataStore = (initialState: Partial<UserState> = {}) => {
     setProfileStats: (stats) => set({ profileStats: stats }),
     setAIUsage: (usage) => set({ aiUsage: usage }),
     setReferralStats: (stats) => set({ referralStats: stats }),
+    setCosmeticsCatalog: (cosmetics) => set({ cosmeticsCatalog: cosmetics }),
   }));
 
   if (typeof window !== "undefined") {

@@ -50,33 +50,37 @@ export async function getUserCosmeticsCatalogAction(): Promise<{
       (userCosmeticsRes.data || []).map((uc) => uc.cosmetic_id)
     );
     const equippedFrameId = userRes.data?.equipped_frame_id ?? null;
-    let equippedOverlayId = userRes.data?.equipped_overlay_id ?? null;
+    const equippedOverlayId = userRes.data?.equipped_overlay_id ?? null;
 
-    if (
-      !isPro &&
-      (equippedOverlayId === "overlay_pro_crown" || equippedOverlayId === "overlay_golden_crown")
-    ) {
-      equippedOverlayId = null;
-      await supabase
-        .from("users")
-        .update({ equipped_overlay_id: null })
-        .eq("user_id", user.id);
+    const allCosmetics = (cosmeticsRes.data || []) as unknown as CosmeticItem[];
+
+    if (isPro) {
+      await supabase.rpc("grant_user_pro_cosmetics", { p_user_id: user.id });
+      allCosmetics.forEach((c) => {
+        if (
+          c.id === "overlay_pro_crown" ||
+          c.code === "overlay_pro_crown" ||
+          c.tier_required === "pro" ||
+          c.tier_required === "ultra"
+        ) {
+          ownedIds.add(c.id);
+        }
+      });
     }
 
-    const inventoryCosmetics: CosmeticItem[] = (
-      cosmeticsRes.data as unknown as CosmeticItem[]
-    )
+    const inventoryCosmetics: CosmeticItem[] = allCosmetics
       .filter((cosmetic) => {
         if (cosmetic.id === "overlay_golden_crown" || cosmetic.code === "overlay_golden_crown") {
           return false;
         }
-        if (cosmetic.id === "overlay_pro_crown" || cosmetic.code === "overlay_pro_crown") {
-          return isPro;
-        }
-        if (cosmetic.tier_required === "pro") {
-          return isPro;
-        }
-        return ownedIds.has(cosmetic.id);
+        return (
+          ownedIds.has(cosmetic.id) ||
+          (isPro &&
+            (cosmetic.id === "overlay_pro_crown" ||
+              cosmetic.code === "overlay_pro_crown" ||
+              cosmetic.tier_required === "pro" ||
+              cosmetic.tier_required === "ultra"))
+        );
       })
       .map((cosmetic) => {
         const isEquipped =
@@ -206,12 +210,29 @@ export async function equipCosmeticAction(
   errorCode?: string;
 }> {
   try {
-    const { supabase } = await getAuth();
+    const { supabase, user } = await getAuth();
     const { data, error } = await supabase.rpc("equip_cosmetic", {
       p_cosmetic_id: cosmeticId,
       p_type: type,
     });
     if (error) {
+      if (error.message?.includes("TIER_REQUIRED_PRO") && cosmeticId) {
+        const { data: ownCheck } = await supabase
+          .from("user_cosmetics")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("cosmetic_id", cosmeticId)
+          .maybeSingle();
+
+        if (ownCheck) {
+          const updateField = type === "frame" ? "equipped_frame_id" : "equipped_overlay_id";
+          await supabase
+            .from("users")
+            .update({ [updateField]: cosmeticId, updated_at: new Date().toISOString() })
+            .eq("user_id", user.id);
+          return { success: true, equipped_id: cosmeticId };
+        }
+      }
       const code = error.message || error.code || "GENERIC_ERROR";
       return {
         success: false,

@@ -596,18 +596,15 @@
 
 .betaBadge {
   position: absolute;
-  top: -3px;
-  right: -3px;
-  padding: 1.5px 5.5px;
+  bottom: -3px;
+  padding: 2px 5px;
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.6px;
   text-transform: uppercase;
   background: var(--alino-primary-color);
   color: #ffffff;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 2px 6px rgba(135, 24, 157, 0.4);
+  border-radius: 5px;
   line-height: 1.1;
   pointer-events: none;
   user-select: none;

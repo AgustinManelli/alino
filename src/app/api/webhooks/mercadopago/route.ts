@@ -99,6 +99,17 @@ function mapMPStatus(
   }
 }
 
+async function grantPermanentProCosmetics(
+  supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
+  userId: string,
+) {
+  try {
+    await supabaseAdmin.rpc("grant_user_pro_cosmetics", { p_user_id: userId });
+  } catch (e) {
+    console.error("[MP] Error granting permanent pro cosmetics:", e);
+  }
+}
+
 async function registerEvent(
   supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
   eventId: string,
@@ -325,6 +336,10 @@ export async function POST(req: Request) {
             p_phase_days: offerPhaseDays,
           });
         }
+
+        if (purchasedTier === "pro" || purchasedTier === "ultra") {
+          await grantPermanentProCosmetics(supabaseAdmin, userId);
+        }
       }
 
       console.log(
@@ -466,6 +481,10 @@ export async function POST(req: Request) {
           preapproval_id: preapprovalId,
         },
       });
+
+      if (purchasedTier === "pro" || purchasedTier === "ultra") {
+        await grantPermanentProCosmetics(supabaseAdmin, userId);
+      }
 
       console.log(
         `[MP] ✅ Pago procesado: ${id} → user ${userId} | sub ${sub.id}`,

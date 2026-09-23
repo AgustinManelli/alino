@@ -94,7 +94,7 @@
   flex-direction: column;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0px 15px 20px 15px;
+  padding: 10px 15px 20px 15px;
 }
 
 .elementsSection::-webkit-scrollbar {
