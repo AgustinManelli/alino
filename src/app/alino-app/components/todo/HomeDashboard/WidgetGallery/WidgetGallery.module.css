@@ -386,22 +386,65 @@
   border-color: rgba(106, 195, 255, 0.3);
 }
 
+.tierChipsRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tierChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-container-color, rgba(255, 255, 255, 0.1));
+  background: var(--background-over-container, rgba(255, 255, 255, 0.04));
+  color: var(--text-not-available);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tierChip:hover {
+  background: var(--background-over-container-hover, rgba(255, 255, 255, 0.08));
+  color: var(--text);
+}
+
+.tierChipActive {
+  background: var(--background-over-container-hover, rgba(255, 255, 255, 0.12));
+  color: var(--text);
+  border-color: var(--border-container-color, rgba(255, 255, 255, 0.2));
+  font-weight: 700;
+}
+
 @media (max-width: 768px) {
-  .storeLayout {
+  .topBar {
     flex-direction: column;
-    height: auto;
-    max-height: 80vh;
+    align-items: stretch;
+    gap: 10px;
   }
 
-  .sidebar {
+  .searchContainer {
+    max-width: 100%;
+  }
+
+  .tierChipsRow {
+    overflow-x: auto;
+    width: 100%;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .tierChipsRow::-webkit-scrollbar {
     display: none;
-  }
-
-  .mobileCategoryScroll {
-    display: flex;
   }
 
   .grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 }

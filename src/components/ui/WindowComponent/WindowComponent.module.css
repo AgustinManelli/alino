@@ -211,7 +211,170 @@
   color: var(--text);
   font-weight: 600;
   border-color: var(--border-container-color);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.windowBackContainer {
+  width: fit-content;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.windowBackButton {
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text-not-available);
+  transition: color 0.15s ease, background-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.windowBackButton:hover {
+  color: var(--text);
+  background-color: var(--background-over-container-hover);
+}
+
+.windowBackIcon {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.windowParaphActive {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.mobileViewWrapper {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.mobileViewSlide {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileMenuContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 4px 0 16px 0;
+}
+
+.mobileMenuList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.mobileMenuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  background-color: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 12px;
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.mobileMenuItem:hover,
+.mobileMenuItem:active {
+  background-color: var(--background-over-container-hover);
+}
+
+.mobileMenuItemActive {
+  border-color: var(--border-container-color);
+}
+
+.mobileMenuItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mobileMenuItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: var(--background-over-container-hover);
+  flex-shrink: 0;
+  color: var(--text);
+}
+
+.mobileMenuItemIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.mobileMenuItemLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobileMenuItemRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mobileMenuItemBadge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background-color: var(--background-over-container-hover);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.mobileMenuItemChevron {
+  width: 16px;
+  height: 16px;
+  stroke: var(--placeholder-text-color);
+  stroke-width: 2;
+  transform: rotate(-90deg);
+  transition: stroke 0.15s ease;
+}
+
+.mobileMenuItem:hover .mobileMenuItemChevron {
+  stroke: var(--text);
 }
 
 .sidebarItemMain {
@@ -269,18 +432,19 @@
 
   .windowModalWithSidebar {
     width: 100%;
-    height: 88%;
+    height: 90%;
     max-width: 100%;
     min-height: initial;
+    border-radius: 24px;
   }
 
   .windowHeader {
-    padding: 0 15px 15px 15px;
+    padding: 0 16px 14px 16px;
   }
 
   .windowContent :global(.simplebar-content),
   .windowMainContent :global(.simplebar-content) {
-    padding: 0 15px 15px 15px !important;
+    padding: 0 16px 16px 16px !important;
   }
 
   .windowContent :global(.simplebar-track.simplebar-vertical),
@@ -313,7 +477,7 @@
   .sidebarItem {
     height: 34px;
     padding: 0 14px;
-    border-radius: 999px;
+    border-radius: 10px;
     font-size: 13px;
     white-space: nowrap;
     flex-shrink: 0;
@@ -325,22 +489,26 @@
     border-color: var(--border-container-color);
     color: var(--text);
   }
+}
 
-  .windowSidebarMobileTabsWrapper {
-    width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-    display: flex;
-    padding: 8px 15px;
+@media only screen and (max-width: 600px) {
+  .windowContainer {
+    padding: 10px 8px;
   }
 
-  .windowSidebarMobileTabsWrapper::-webkit-scrollbar {
-    display: none;
+  .windowModalWithSidebar {
+    height: 94%;
+    border-radius: 22px;
   }
 }
 
 @media only screen and (max-width: 850px) and (display-mode: standalone) {
   .windowContainer {
     height: 100dvh;
+    padding: 10px 8px;
+  }
+
+  .windowModalWithSidebar {
+    height: 100%;
   }
 }

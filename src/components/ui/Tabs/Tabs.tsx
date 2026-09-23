@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useId } from "react";
 import { motion } from "motion/react";
 import styles from "./Tabs.module.css";
 
@@ -34,7 +34,7 @@ export const Tabs: React.FC<TabsProps> = ({
   onChange,
   className,
   disabled,
-  layoutId = "active-tab",
+  layoutId,
   style,
   backgroundColor,
   indicatorColor,
@@ -44,6 +44,10 @@ export const Tabs: React.FC<TabsProps> = ({
   activeTextColor,
   hoverTextColor,
 }) => {
+  const generatedId = useId().replace(/:/g, "");
+  const effectiveLayoutId = layoutId
+    ? `${layoutId}-${generatedId}`
+    : `tabs-active-${generatedId}`;
   const dynamicStyles: React.CSSProperties = {
     ...(backgroundColor ? { ["--tabs-bg" as string]: backgroundColor } : {}),
     ...(indicatorColor ? { ["--tabs-indicator-bg" as string]: indicatorColor } : {}),
@@ -75,7 +79,7 @@ export const Tabs: React.FC<TabsProps> = ({
             <span className={styles.label}>{option.label}</span>
             {isActive && (
               <motion.div
-                layoutId={layoutId}
+                layoutId={effectiveLayoutId}
                 className={styles.activeIndicator}
                 transition={{
                   type: "spring",

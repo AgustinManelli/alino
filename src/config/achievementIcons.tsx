@@ -1,181 +1,240 @@
 "use client";
 
-import React from "react";
+import React, { useId } from "react";
 
 interface IllustrationProps {
   size?: number;
   className?: string;
 }
 
-export const FirstTaskIllustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
+interface BadgeShellProps {
+  gradientId: string;
+  colorStart: string;
+  colorEnd: string;
+  shadowColor: string;
+}
+
+const BadgeShell: React.FC<BadgeShellProps> = ({ gradientId, colorStart, colorEnd, shadowColor }) => (
+  <>
     <defs>
-      <linearGradient id="ft_grad_bg" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#30D158" />
-        <stop offset="100%" stopColor="#1E7B34" />
-      </linearGradient>
-      <linearGradient id="ft_grad_star" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FFE066" />
-        <stop offset="100%" stopColor="#FF9F0A" />
+      <linearGradient id={gradientId} x1="15%" y1="0%" x2="85%" y2="100%">
+        <stop offset="0%" stopColor={colorStart} />
+        <stop offset="100%" stopColor={colorEnd} />
       </linearGradient>
     </defs>
-    <circle cx="32" cy="32" r="28" fill="url(#ft_grad_bg)" />
-    <circle cx="32" cy="32" r="24" stroke="rgba(255,255,255,0.25)" strokeWidth="2" strokeDasharray="3 3" />
-    <path d="M21 33L28 40L44 24" stroke="#FFFFFF" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M48 14L49.5 18.5L54 20L49.5 21.5L48 26L46.5 21.5L42 20L46.5 18.5L48 14Z" fill="url(#ft_grad_star)" />
-  </svg>
+    <circle cx="32" cy="35" r="26" fill={shadowColor} />
+    <circle cx="32" cy="31" r="26" fill={`url(#${gradientId})`} />
+    <path
+      d="M12 27C13 18 20 11 29 9"
+      stroke="#FFFFFF"
+      strokeOpacity="0.32"
+      strokeWidth="5"
+      strokeLinecap="round"
+      fill="none"
+    />
+  </>
 );
 
-export const Streak3Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
-    <defs>
-      <linearGradient id="s3_flame_grad" x1="0%" y1="100%" x2="0%" y2="0%">
-        <stop offset="0%" stopColor="#FF453A" />
-        <stop offset="50%" stopColor="#FF9F0A" />
-        <stop offset="100%" stopColor="#FFD60A" />
-      </linearGradient>
-      <linearGradient id="s3_bg" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#3A1A00" />
-        <stop offset="100%" stopColor="#1A0D00" />
-      </linearGradient>
-    </defs>
-    <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#s3_bg)" stroke="#FF9F0A" strokeWidth="2" strokeOpacity="0.4" />
-    <path d="M32 12C32 12 39 21 39 29C39 34 35.8 38 32 38C28.2 38 25 34 25 29C25 24 28 19 32 12Z" fill="url(#s3_flame_grad)" />
-    <path d="M23 26C23 26 28 32 28 37C28 41 25.5 44 23 44C20.5 44 18 41 18 37C18 33 21 30 23 26Z" fill="#FF453A" opacity="0.8" />
-    <path d="M41 26C41 26 46 32 46 37C46 41 43.5 44 41 44C38.5 44 36 41 36 37C36 33 39 30 41 26Z" fill="#FF453A" opacity="0.8" />
-    <path d="M32 28C32 28 35 32 35 35C35 37 33.6 39 32 39C30.4 39 29 37 29 35C29 32 32 28 32 28Z" fill="#FFFFFF" />
-  </svg>
-);
+export const FirstTaskIllustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => {
+  const id = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
+      <BadgeShell gradientId={`${id}-ft`} colorStart="#7BEE5B" colorEnd="#2FA344" shadowColor="#1D7A34" />
+      <path d="M19 31L27 39L46 17" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M48 10L49.6 14.8L54.4 16.4L49.6 18L48 22.8L46.4 18L41.6 16.4L46.4 14.8L48 10Z"
+        fill="#FFE066"
+      />
+    </svg>
+  );
+};
 
-export const Streak7Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
-    <defs>
-      <linearGradient id="s7_outer_grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FF9F0A" />
-        <stop offset="100%" stopColor="#FF375F" />
-      </linearGradient>
-      <linearGradient id="s7_inner" x1="0%" y1="100%" x2="0%" y2="0%">
-        <stop offset="0%" stopColor="#FF453A" />
-        <stop offset="60%" stopColor="#FFD60A" />
-        <stop offset="100%" stopColor="#FFFFFF" />
-      </linearGradient>
-    </defs>
-    <circle cx="32" cy="32" r="28" fill="#201005" stroke="url(#s7_outer_grad)" strokeWidth="2.5" />
-    <path d="M32 10C35 18 46 25 46 37C46 45 39.5 50 32 50C24.5 50 18 45 18 37C18 28 25 21 28 17C29 23 32 26 34 26C35 21 34 15 32 10Z" fill="url(#s7_inner)" />
-    <circle cx="32" cy="38" r="7" fill="#FF453A" />
-    <path d="M32 33L34 38H30L32 33Z" fill="#FFE866" />
-  </svg>
-);
+export const Streak3Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => {
+  const id = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
+      <BadgeShell gradientId={`${id}-s3`} colorStart="#FFC168" colorEnd="#E2791D" shadowColor="#8A4A14" />
+      <path
+        d="M32 14C32 14 40 24 40 32C40 38 36.4 42 32 42C27.6 42 24 38 24 32C24 26 28 20 32 14Z"
+        fill="#FF7A3D"
+      />
+      <path
+        d="M32 26C32 26 35.5 30.5 35.5 34.5C35.5 37 34 39 32 39C30 39 28.5 37 28.5 34.5C28.5 31.5 32 26 32 26Z"
+        fill="#FFE388"
+      />
+    </svg>
+  );
+};
 
-export const Streak30Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
-    <defs>
-      <linearGradient id="s30_grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#0A84FF" />
-        <stop offset="50%" stopColor="#64D2FF" />
-        <stop offset="100%" stopColor="#BF5AF2" />
-      </linearGradient>
-    </defs>
-    <path d="M32 4L54 16V38L32 58L10 38V16L32 4Z" fill="#0C1226" stroke="url(#s30_grad)" strokeWidth="2.5" />
-    <path d="M32 14C35 20 44 26 44 36C44 42 38.5 47 32 47C25.5 47 20 42 20 36C20 28 27 22 29 19C30 23 32 26 34 26C35 22 34 18 32 14Z" fill="url(#s30_grad)" />
-    <path d="M32 28L34.5 34H41L36 37.5L38 43.5L32 39.5L26 43.5L28 37.5L23 34H29.5L32 28Z" fill="#FFFFFF" />
-  </svg>
-);
+export const Streak7Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => {
+  const id = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
+      <BadgeShell gradientId={`${id}-s7`} colorStart="#FF9A5C" colorEnd="#D9361C" shadowColor="#7A2410" />
+      <path
+        d="M22 30C22 30 26 34 26 38C26 41 24 43 22 43C20 43 18 41 18 38C18 35 20 32 22 30Z"
+        fill="#FF6A33"
+        opacity="0.9"
+      />
+      <path
+        d="M42 30C42 30 46 34 46 38C46 41 44 43 42 43C40 43 38 41 38 38C38 35 40 32 42 30Z"
+        fill="#FF6A33"
+        opacity="0.9"
+      />
+      <path
+        d="M32 12C32 12 41 22 41 32C41 38.5 37.2 43 32 43C26.8 43 23 38.5 23 32C23 25 28 19 32 12Z"
+        fill="#FF7A38"
+      />
+      <path
+        d="M32 24C32 24 36 29.5 36 33.5C36 36.5 34.2 39 32 39C29.8 39 28 36.5 28 33.5C28 30 32 24 32 24Z"
+        fill="#FFE888"
+      />
+    </svg>
+  );
+};
 
-export const ListCreatorIllustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
-    <defs>
-      <linearGradient id="lc_grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#0A84FF" />
-        <stop offset="100%" stopColor="#0055B3" />
-      </linearGradient>
-    </defs>
-    <rect x="8" y="12" width="48" height="40" rx="8" fill="url(#lc_grad)" />
-    <path d="M16 22H36M16 32H44M16 42H28" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
-    <circle cx="46" cy="40" r="10" fill="#30D158" stroke="#FFFFFF" strokeWidth="2.5" />
-    <path d="M42 40L45 43L50 37" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
+export const Streak30Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => {
+  const id = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
+      <defs>
+        <linearGradient id={`${id}-flame`} x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor="#5B8DEF" />
+          <stop offset="55%" stopColor="#9B6BF2" />
+          <stop offset="100%" stopColor="#F26BC6" />
+        </linearGradient>
+      </defs>
+      <BadgeShell gradientId={`${id}-s30`} colorStart="#8B7CF6" colorEnd="#5326C4" shadowColor="#33176E" />
+      <path
+        d="M32 10C32 10 43 21 43 33C43 40.5 38.2 46 32 46C25.8 46 21 40.5 21 33C21 25.5 26 19 29 16C29.5 22 32 25 34 25C35 20 34 15 32 10Z"
+        fill={`url(#${id}-flame)`}
+      />
+      <path d="M35 12L36 15.5L39.5 16.5L36 17.5L35 21L34 17.5L30.5 16.5L34 15.5L35 12Z" fill="#FFFFFF" opacity="0.85" />
+      <path d="M50 22L51 25L54 26L51 27L50 30L49 27L46 26L49 25L50 22Z" fill="#FFFFFF" opacity="0.7" />
+    </svg>
+  );
+};
 
-export const Tasks10Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
-    <defs>
-      <linearGradient id="t10_grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#5E5CE6" />
-        <stop offset="100%" stopColor="#BF5AF2" />
-      </linearGradient>
-    </defs>
-    <circle cx="32" cy="32" r="28" fill="#15122B" stroke="url(#t10_grad)" strokeWidth="2.5" />
-    <circle cx="32" cy="32" r="18" stroke="url(#t10_grad)" strokeWidth="2" strokeDasharray="4 4" />
-    <circle cx="32" cy="32" r="7" fill="#BF5AF2" />
-    <path d="M28 20L36 12M32 10V14M36 10H32" stroke="#64D2FF" strokeWidth="2.5" strokeLinecap="round" />
-  </svg>
-);
+export const ListCreatorIllustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => {
+  const id = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
+      <BadgeShell gradientId={`${id}-lc`} colorStart="#5FC1FF" colorEnd="#0B6FE0" shadowColor="#0A3E7A" />
+      <rect x="20" y="14" width="24" height="32" rx="5" fill="#FFFFFF" />
+      <rect x="26" y="10" width="12" height="8" rx="3" fill="#DCEEFF" />
+      <path d="M25 24H39M25 31H39M25 38H33" stroke="#0B6FE0" strokeWidth="2.6" strokeLinecap="round" />
+      <circle cx="45" cy="42" r="10" fill="#2FBE6B" stroke="#FFFFFF" strokeWidth="2.5" />
+      <path d="M41 42L44 45L49.5 38.5" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </svg>
+  );
+};
 
-export const Tasks50Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
-    <defs>
-      <linearGradient id="t50_gold" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FFE866" />
-        <stop offset="50%" stopColor="#FFD60A" />
-        <stop offset="100%" stopColor="#FF9F0A" />
-      </linearGradient>
-    </defs>
-    <path d="M32 6L52 14V30C52 42 43 51 32 56C21 51 12 42 12 30V14L32 6Z" fill="#2A1F05" stroke="url(#t50_gold)" strokeWidth="3" />
-    <path d="M32 16L35.5 24H44L37 29L39.5 37L32 32L24.5 37L27 29L20 24H28.5L32 16Z" fill="url(#t50_gold)" />
-    <path d="M22 43L28 47L42 36" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
+export const Tasks10Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => {
+  const id = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
+      <BadgeShell gradientId={`${id}-t10`} colorStart="#E7B27B" colorEnd="#B0692B" shadowColor="#6B3A16" />
+      <circle cx="32" cy="30" r="18" fill="none" stroke="#FFFFFF" strokeOpacity="0.55" strokeWidth="1.6" strokeDasharray="2 4" />
+      <text
+        x="32"
+        y="37"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontWeight={800}
+        fontSize="20"
+        fill="#FFFFFF"
+      >
+        10
+      </text>
+      <path d="M20 46C24 50 40 50 44 46L42 52C38 55 26 55 22 52L20 46Z" fill="#8A4A1E" />
+    </svg>
+  );
+};
 
-export const Tasks100Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
-    <defs>
-      <linearGradient id="t100_crown" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FFD700" />
-        <stop offset="100%" stopColor="#FF8C00" />
-      </linearGradient>
-      <linearGradient id="t100_glow" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FF007A" />
-        <stop offset="100%" stopColor="#7928CA" />
-      </linearGradient>
-    </defs>
-    <circle cx="32" cy="32" r="28" fill="url(#t100_glow)" />
-    <path d="M16 42L20 22L28 32L32 18L36 32L44 22L48 42H16Z" fill="url(#t100_crown)" stroke="#FFFFFF" strokeWidth="2" strokeLinejoin="round" />
-    <circle cx="32" cy="18" r="2.5" fill="#FFFFFF" />
-    <circle cx="20" cy="22" r="2" fill="#FFFFFF" />
-    <circle cx="44" cy="22" r="2" fill="#FFFFFF" />
-    <rect x="18" y="44" width="28" height="4" rx="2" fill="#FFFFFF" opacity="0.9" />
-  </svg>
-);
+export const Tasks50Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => {
+  const id = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
+      <BadgeShell gradientId={`${id}-t50`} colorStart="#F3F7FB" colorEnd="#AAB6C2" shadowColor="#5B6672" />
+      <circle cx="32" cy="30" r="18" fill="none" stroke="#FFFFFF" strokeOpacity="0.7" strokeWidth="1.6" strokeDasharray="2 4" />
+      <path d="M15 30C13 24 16 18 20 16C18 21 19 26 21 29" stroke="#8FA0AF" strokeWidth="3" strokeLinecap="round" fill="none" />
+      <path d="M49 30C51 24 48 18 44 16C46 21 45 26 43 29" stroke="#8FA0AF" strokeWidth="3" strokeLinecap="round" fill="none" />
+      <text
+        x="32"
+        y="37"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontWeight={800}
+        fontSize="19"
+        fill="#3B4652"
+      >
+        50
+      </text>
+    </svg>
+  );
+};
 
-export const CustomProfileIllustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
-    <defs>
-      <linearGradient id="cp_bg" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FF375F" />
-        <stop offset="100%" stopColor="#BF5AF2" />
-      </linearGradient>
-    </defs>
-    <rect x="8" y="8" width="48" height="48" rx="14" fill="url(#cp_bg)" />
-    <circle cx="32" cy="25" r="9" fill="#FFFFFF" />
-    <path d="M18 48C18 40.5 24.5 37 32 37C39.5 37 46 40.5 46 48" fill="#FFFFFF" />
-    <circle cx="46" cy="18" r="7" fill="#FFD60A" stroke="#FFFFFF" strokeWidth="2" />
-    <path d="M46 14V17M46 19V22M43 18H49" stroke="#1C1C1E" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
+export const Tasks100Illustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => {
+  const id = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
+      <defs>
+        <linearGradient id={`${id}-crown`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFE066" />
+          <stop offset="100%" stopColor="#FF9500" />
+        </linearGradient>
+      </defs>
+      <BadgeShell gradientId={`${id}-t100`} colorStart="#FFD966" colorEnd="#FF8A00" shadowColor="#7A4A00" />
+      <path
+        d="M32 8L34 16M14 22L10 18M50 22L54 18M20 15L17 10M44 15L47 10"
+        stroke="#FFFFFF"
+        strokeOpacity="0.4"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M17 42L20 22L29 32L32 17L35 32L44 22L47 42H17Z"
+        fill={`url(#${id}-crown)`}
+        stroke="#FFFFFF"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <rect x="19" y="43" width="26" height="4.5" rx="2.2" fill="#FFFFFF" />
+      <circle cx="32" cy="30" r="3.4" fill="#F26BC6" stroke="#FFFFFF" strokeWidth="1.4" />
+    </svg>
+  );
+};
 
-export const FallbackIllustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
-    <defs>
-      <linearGradient id="fb_grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FFD60A" />
-        <stop offset="100%" stopColor="#FF9F0A" />
-      </linearGradient>
-    </defs>
-    <circle cx="32" cy="32" r="26" fill="#1C1C1E" stroke="url(#fb_grad)" strokeWidth="2.5" />
-    <path d="M32 16L35.5 24H44L37 29L39.5 37L32 32L24.5 37L27 29L20 24H28.5L32 16Z" fill="url(#fb_grad)" />
-  </svg>
-);
+export const CustomProfileIllustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => {
+  const id = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
+      <BadgeShell gradientId={`${id}-cp`} colorStart="#FF8FC0" colorEnd="#C13584" shadowColor="#7A1F52" />
+      <circle cx="32" cy="25" r="9" fill="#FFFFFF" />
+      <path d="M17 47C17 38.5 23.5 34 32 34C40.5 34 47 38.5 47 47" fill="#FFFFFF" />
+      <circle cx="47" cy="16" r="8" fill="#FFE066" stroke="#FFFFFF" strokeWidth="2.2" />
+      <path
+        d="M47 11.5V14.5M47 17.5V20.5M43.5 16H46.5M47.5 16H50.5"
+        stroke="#7A5A00"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+};
+
+export const FallbackIllustration: React.FC<IllustrationProps> = ({ size = 64, className = "" }) => {
+  const id = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className={className}>
+      <BadgeShell gradientId={`${id}-fb`} colorStart="#9FB0C2" colorEnd="#5A6B7D" shadowColor="#2E3A47" />
+      <path
+        d="M32 15L35.6 24.4H45.6L37.6 30.2L40.6 39.6L32 33.8L23.4 39.6L26.4 30.2L18.4 24.4H28.4L32 15Z"
+        fill="#FFFFFF"
+      />
+    </svg>
+  );
+};
 
 const ILLUSTRATION_MAP: Record<string, React.FC<IllustrationProps>> = {
   first_task: FirstTaskIllustration,

@@ -13,6 +13,7 @@ import {
   buyCosmeticAction,
 } from "@/lib/api/cosmetics/actions";
 import { CosmeticItem } from "@/lib/schemas/database.types";
+import { PaintBoard, IAStars } from "@/components/ui/icons/icons";
 import {
   getCosmeticTranslation,
   getCoinPackTranslation,
@@ -29,46 +30,6 @@ interface Props {
 type ShopSectionType = "cosmetics" | "coins" | "ai_credits";
 
 const PAGE_SIZE = 6;
-
-const PaletteIcon: React.FC<{ size?: number; className?: string }> = ({ size = 16, className }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
-    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
-    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
-    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
-    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2Z" />
-  </svg>
-);
-
-const SparklesIcon: React.FC<{ size?: number; className?: string }> = ({ size = 16, className }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-    <path d="M5 3v4" />
-    <path d="M19 17v4" />
-    <path d="M3 5h4" />
-    <path d="M17 19h4" />
-  </svg>
-);
 
 export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const { t } = useTranslation(["shop", "common", "cosmetics"]);
@@ -207,98 +168,48 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
       windowTitle={t("shop:gallery.windowTitle")}
       id="shop-gallery-window"
       crossAction={onClose}
-      adaptative={{ width: "940px", maxWidth: "95vw", height: "660px" }}
+      sidebar={
+        <WindowComponent.Sidebar>
+          <WindowComponent.SidebarItem
+            label={t("shop:gallery.sections.cosmetics")}
+            icon={
+              <PaintBoard
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                }}
+              />
+            }
+            active={activeSection === "cosmetics"}
+            onClick={() => setActiveSection("cosmetics")}
+          />
+          <WindowComponent.SidebarItem
+            label={t("shop:gallery.sections.coins")}
+            icon={<AlinoCoinIcon size={16} />}
+            active={activeSection === "coins"}
+            onClick={() => setActiveSection("coins")}
+          />
+          <WindowComponent.SidebarItem
+            label={t("shop:gallery.sections.ai_credits")}
+            icon={
+              <IAStars
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  stroke: "currentColor",
+                  strokeWidth: "1.8",
+                }}
+              />
+            }
+            active={activeSection === "ai_credits"}
+            onClick={() => setActiveSection("ai_credits")}
+          />
+        </WindowComponent.Sidebar>
+      }
     >
-      <div className={styles.modalWrapper}>
-        <div className={styles.contentWrapper}>
-          <aside className={styles.sidebar}>
-            <div className={styles.sidebarGroup}>
-              <span className={styles.sidebarGroupTitle}>
-                {t("shop:gallery.sectionsTitle")}
-              </span>
-              <button
-                type="button"
-                className={`${styles.sidebarBtn} ${activeSection === "cosmetics" ? styles.sidebarBtnActive : ""
-                  }`}
-                onClick={() => setActiveSection("cosmetics")}
-              >
-                <PaletteIcon size={16} />
-                <span>{t("shop:gallery.sections.cosmetics")}</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.sidebarBtn} ${activeSection === "coins" ? styles.sidebarBtnActive : ""
-                  }`}
-                onClick={() => setActiveSection("coins")}
-              >
-                <AlinoCoinIcon size={16} />
-                <span>{t("shop:gallery.sections.coins")}</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.sidebarBtn} ${activeSection === "ai_credits" ? styles.sidebarBtnActive : ""
-                  }`}
-                onClick={() => setActiveSection("ai_credits")}
-              >
-                <SparklesIcon size={16} />
-                <span>{t("shop:gallery.sections.ai_credits")}</span>
-              </button>
-            </div>
-
-            <AnimatePresence mode="wait">
-              {activeSection === "cosmetics" && (
-                <motion.div
-                  key="cosmetics-filters"
-                  initial={{ opacity: 0, height: 0, y: -6 }}
-                  animate={{ opacity: 1, height: "auto", y: 0 }}
-                  exit={{ opacity: 0, height: 0, y: -6 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                  style={{ overflow: "hidden" }}
-                >
-                  <div className={styles.sidebarGroup}>
-                    <span className={styles.sidebarGroupTitle}>
-                      {t("shop:gallery.categoriesTitle")}
-                    </span>
-                    <button
-                      type="button"
-                      className={`${styles.sidebarBtn} ${selectedCategory === "all" ? styles.sidebarBtnActive : ""
-                        }`}
-                      onClick={() => {
-                        setSelectedCategory("all");
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <span>{t("shop:gallery.categories.all")}</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles.sidebarBtn} ${selectedCategory === "frame" ? styles.sidebarBtnActive : ""
-                        }`}
-                      onClick={() => {
-                        setSelectedCategory("frame");
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <span>{t("shop:gallery.categories.frame")}</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles.sidebarBtn} ${selectedCategory === "overlay" ? styles.sidebarBtnActive : ""
-                        }`}
-                      onClick={() => {
-                        setSelectedCategory("overlay");
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <span>{t("shop:gallery.categories.overlay")}</span>
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </aside>
-
-          <main className={styles.mainArea}>
+      <main className={styles.mainArea}>
             <div className={styles.topBar}>
               {activeSection === "cosmetics" ? (
                 <div className={styles.searchContainer}>
@@ -363,11 +274,52 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                   <span>{coins}</span>
                 </div>
                 <div className={styles.aiBalanceBadge} title={t("shop:gallery.aiCreditsBalance")}>
-                  <SparklesIcon size={15} />
+                  <IAStars style={{ width: 14, height: 14, stroke: "currentColor", strokeWidth: 1.8 }} />
                   <span>{extraAICredits} {t("shop:ai_credits.creditsUnit")}</span>
                 </div>
               </div>
             </div>
+
+            {activeSection === "cosmetics" && (
+              <div className={styles.categoryFilterRow}>
+                <button
+                  type="button"
+                  className={`${styles.categoryBtn} ${
+                    selectedCategory === "all" ? styles.categoryBtnActive : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedCategory("all");
+                    setCurrentPage(1);
+                  }}
+                >
+                  {t("shop:gallery.categories.all")}
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.categoryBtn} ${
+                    selectedCategory === "frame" ? styles.categoryBtnActive : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedCategory("frame");
+                    setCurrentPage(1);
+                  }}
+                >
+                  {t("shop:gallery.categories.frame")}
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.categoryBtn} ${
+                    selectedCategory === "overlay" ? styles.categoryBtnActive : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedCategory("overlay");
+                    setCurrentPage(1);
+                  }}
+                >
+                  {t("shop:gallery.categories.overlay")}
+                </button>
+              </div>
+            )}
 
             <div className={styles.scrollArea}>
               {activeSection === "cosmetics" && (
@@ -500,7 +452,7 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         <div key={pack.id} className={styles.card}>
                           <div className={styles.cardHeader}>
                             <div className={`${styles.packPreviewBox} ${styles.packPreviewBoxAI}`}>
-                              <SparklesIcon size={26} />
+                              <IAStars style={{ width: 24, height: 24, stroke: "currentColor", strokeWidth: 1.8 }} />
                             </div>
                             <div className={styles.cardHeaderInfo}>
                               <span className={styles.cardTitle}>{trans.name}</span>
@@ -577,8 +529,6 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
               </footer>
             )}
           </main>
-        </div>
-      </div>
     </WindowComponent>
   );
 };

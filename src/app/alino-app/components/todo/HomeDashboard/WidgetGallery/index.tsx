@@ -1,7 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Crown, Link } from "@/components/ui/icons/icons";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Crown,
+  Link,
+  GridPlusIcon,
+  Check,
+  Clock,
+  Information,
+  Cross,
+} from "@/components/ui/icons/icons";
 import { tierSatisfies } from "@/config/widgets.registry";
 import { useInstallWidget } from "@/hooks/dashboard/useInstallWidget";
 import { useUninstallWidget } from "@/hooks/dashboard/useUninstallWidget";
@@ -157,155 +165,142 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
       windowTitle="Tienda de widgets"
       id="widget-gallery-window"
       crossAction={onClose}
-      adaptative={{ width: "880px", maxWidth: "95vw" }}
-    >
-      <div className={styles.container}>
-        <div className={styles.mobileCategoryScroll}>
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              className={`${styles.chipBtn} ${activeSection === "catalog" && selectedCategory === cat.id
-                ? styles.chipBtnActive
-                : ""
-                }`}
-              onClick={() => handleSelectCategory(cat.id)}
-            >
-              {cat.label}
-            </button>
-          ))}
-          <button
-            className={`${styles.chipBtn} ${activeSection === "my-widgets" ? styles.chipBtnActive : ""
-              }`}
+      sidebar={
+        <WindowComponent.Sidebar>
+          <WindowComponent.SidebarItem
+            label="Todos"
+            icon={<GridPlusIcon style={{ width: "16px", height: "16px" }} />}
+            active={activeSection === "catalog" && selectedCategory === "all"}
+            onClick={() => handleSelectCategory("all")}
+            badge={catalogData?.totalCount}
+          />
+          <WindowComponent.SidebarItem
+            label="Productividad"
+            icon={
+              <Check
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                }}
+              />
+            }
+            active={
+              activeSection === "catalog" && selectedCategory === "productivity"
+            }
+            onClick={() => handleSelectCategory("productivity")}
+            badge={catalogData?.categoryCounts?.["productivity"]}
+          />
+          <WindowComponent.SidebarItem
+            label="Bienestar"
+            icon={<Clock style={{ width: "16px", height: "16px" }} />}
+            active={
+              activeSection === "catalog" && selectedCategory === "wellness"
+            }
+            onClick={() => handleSelectCategory("wellness")}
+            badge={catalogData?.categoryCounts?.["wellness"]}
+          />
+          <WindowComponent.SidebarItem
+            label="Información"
+            icon={
+              <Information
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                }}
+              />
+            }
+            active={activeSection === "catalog" && selectedCategory === "info"}
+            onClick={() => handleSelectCategory("info")}
+            badge={catalogData?.categoryCounts?.["info"]}
+          />
+          <WindowComponent.SidebarItem
+            label="Mis Widgets"
+            icon={<Link style={{ width: "16px", height: "16px" }} />}
+            active={activeSection === "my-widgets"}
             onClick={() => setActiveSection("my-widgets")}
-          >
-            Mis Widgets
-          </button>
-        </div>
-
-        <div className={styles.storeLayout}>
-          <aside className={styles.sidebar}>
-            <div className={styles.sidebarSection}>
-              <span className={styles.sidebarTitle}>Categorías</span>
-              {CATEGORIES.map((cat) => {
-                const count =
-                  catalogData?.categoryCounts[cat.id] ??
-                  (cat.id === "all" ? catalogData?.totalCount : 0);
-                const isActive =
-                  activeSection === "catalog" && selectedCategory === cat.id;
-
-                return (
+            badge={
+              myEmbeddedWidgets.length > 0 ? myEmbeddedWidgets.length : undefined
+            }
+          />
+        </WindowComponent.Sidebar>
+      }
+    >
+      <main className={styles.mainArea}>
+        {activeSection === "catalog" ? (
+          <>
+            <div className={styles.topBar}>
+              <div className={styles.searchContainer}>
+                <svg
+                  className={styles.searchIcon}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input
+                  type="text"
+                  className={styles.searchInput}
+                  placeholder="Buscar widgets por nombre o descripción..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
                   <button
-                    key={cat.id}
-                    className={`${styles.sidebarButton} ${isActive ? styles.sidebarButtonActive : ""
-                      }`}
-                    onClick={() => handleSelectCategory(cat.id)}
+                    type="button"
+                    className={styles.clearButton}
+                    onClick={() => setSearchQuery("")}
+                    aria-label="Limpiar búsqueda"
                   >
-                    <div className={styles.sidebarBtnContent}>
-                      <span>{cat.label}</span>
-                    </div>
-                    {typeof count === "number" && count > 0 && (
-                      <span className={styles.sidebarBadge}>{count}</span>
-                    )}
+                    <Cross style={{ width: "12px", height: "12px" }} />
                   </button>
-                );
-              })}
-
-              <button
-                className={`${styles.sidebarButton} ${activeSection === "my-widgets" ? styles.sidebarButtonActive : ""
-                  }`}
-                onClick={() => setActiveSection("my-widgets")}
-              >
-                <div className={styles.sidebarBtnContent}>
-                  <Link style={{ width: "13px" }} />
-                  <span>Mis Widgets</span>
-                </div>
-                {myEmbeddedWidgets.length > 0 && (
-                  <span className={styles.sidebarBadge}>
-                    {myEmbeddedWidgets.length}
-                  </span>
                 )}
-              </button>
-            </div>
+              </div>
 
-            <div className={styles.sidebarDivider} />
-
-            <div className={styles.sidebarSection}>
-              <span className={styles.sidebarTitle}>Filtrar por nivel</span>
-              {TIERS.map((tier) => {
-                const isActive = selectedTier === tier.id;
-                return (
-                  <button
-                    key={tier.id}
-                    className={`${styles.sidebarButton} ${isActive ? styles.sidebarButtonActive : ""
+              <div className={styles.tierChipsRow}>
+                {TIERS.map((tier) => {
+                  const isActive = selectedTier === tier.id;
+                  return (
+                    <button
+                      key={tier.id}
+                      type="button"
+                      className={`${styles.tierChip} ${
+                        isActive ? styles.tierChipActive : ""
                       }`}
-                    onClick={() => handleSelectTier(tier.id)}
-                  >
-                    <div className={styles.sidebarBtnContent}>
+                      onClick={() => handleSelectTier(tier.id)}
+                    >
                       {tier.id === "pro" && (
-                        <Crown style={{ width: "13px", color: "rgb(255, 200, 100)" }} />
+                        <Crown
+                          style={{
+                            width: "12px",
+                            height: "12px",
+                            color: "rgb(255, 200, 100)",
+                          }}
+                        />
                       )}
                       <span>{tier.label}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
+                    </button>
+                  );
+                })}
+              </div>
 
-          <main className={styles.mainArea}>
-            {activeSection === "catalog" ? (
-              <>
-                <div className={styles.topBar}>
-                  <div className={styles.searchContainer}>
-                    <svg
-                      className={styles.searchIcon}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="11" cy="11" r="8" />
-                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    </svg>
-                    <input
-                      type="text"
-                      className={styles.searchInput}
-                      placeholder="Buscar widgets por nombre o descripción..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    {searchQuery && (
-                      <button
-                        type="button"
-                        className={styles.clearButton}
-                        onClick={() => setSearchQuery("")}
-                        aria-label="Limpiar búsqueda"
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                  <span className={styles.resultsCount}>
-                    {totalCount} {totalCount === 1 ? "widget" : "widgets"}
-                  </span>
-                </div>
+              <span className={styles.resultsCount}>
+                {totalCount} {totalCount === 1 ? "widget" : "widgets"}
+              </span>
+            </div>
 
                 <div className={styles.scrollArea}>
                   {widgetsList.length > 0 ? (
                     <div className={styles.grid}>
-                      {widgetsList.map((def) => {
+                      {widgetsList.map((def: PredefinedWidget) => {
                         const isInstalled = activeWidgets.includes(def.id);
                         const canUse = tierSatisfies(userTier, def.tierRequired);
                         const isPending = isThisActionPending(def.id);
@@ -322,8 +317,9 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
                         return (
                           <div
                             key={def.id}
-                            className={`${styles.card} ${isInstalled ? styles.cardInstalled : ""
-                              }`}
+                            className={`${styles.card} ${
+                              isInstalled ? styles.cardInstalled : ""
+                            }`}
                           >
                             <div className={styles.cardHeader}>
                               <div
@@ -356,8 +352,9 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
                             />
 
                             <button
-                              className={`${styles.cardAction} ${isInstalled ? styles.cardActionRemove : ""
-                                }`}
+                              className={`${styles.cardAction} ${
+                                isInstalled ? styles.cardActionRemove : ""
+                              }`}
                               onClick={() => handleWidgetAction(def)}
                               disabled={isPending}
                             >
@@ -385,7 +382,7 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
                     <div className={styles.pageButtons}>
                       <button
                         className={styles.pageBtn}
-                        onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                        onClick={() => setCurrentPage((p: number) => Math.max(p - 1, 1))}
                         disabled={currentPage <= 1 || isLoading}
                       >
                         Anterior
@@ -393,7 +390,7 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
                       <button
                         className={styles.pageBtn}
                         onClick={() =>
-                          setCurrentPage((p) => Math.min(p + 1, totalPages))
+                          setCurrentPage((p: number) => Math.min(p + 1, totalPages))
                         }
                         disabled={currentPage >= totalPages || isLoading}
                       >
@@ -416,8 +413,6 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
               </div>
             )}
           </main>
-        </div>
-      </div>
     </WindowComponent>
   );
 };
