@@ -20,6 +20,8 @@ import {
 import {
   saveSingleListToIndexedDB,
   removeListFromIndexedDB,
+  saveSingleTaskToIndexedDB,
+  removeTaskFromIndexedDB,
 } from "@/lib/offline/sidebarSync";
 
 export function useTodoRealtime() {
@@ -168,6 +170,8 @@ export function useTodoRealtime() {
         lists: updatedLists,
       });
     }
+
+    saveSingleTaskToIndexedDB(taskToInsert);
   }, [updateState]);
 
   const onUpdateTask = useCallback((task: TaskType | any) => {
@@ -237,6 +241,8 @@ export function useTodoRealtime() {
         lists: updatedLists,
       });
     }
+
+    saveSingleTaskToIndexedDB(mergedTask);
   }, [updateState]);
 
   const onDeleteTask = useCallback((task: { task_id: string }) => {
@@ -268,6 +274,8 @@ export function useTodoRealtime() {
       completedTasks: state.completedTasks.filter((t) => t.task_id !== task.task_id),
       lists: updatedLists,
     });
+
+    removeTaskFromIndexedDB(task.task_id);
   }, [updateState]);
 
   return {

@@ -2,7 +2,7 @@
 
 import { type ReactNode, useRef, useEffect } from "react";
 import { type StoreApi } from "zustand";
-import { UserType, ListsType, FolderType } from "@/lib/schemas/database.types";
+import { UserType, ListsType, FolderType, TaskType } from "@/lib/schemas/database.types";
 import { createUserDataStore, UserStoreContext, type UserState } from "@/store/useUserDataStore";
 import { getUserCosmeticsCatalogAction } from "@/lib/api/cosmetics/actions";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
@@ -25,6 +25,7 @@ interface Props {
   initialListsData?: {
     lists: ListsType[];
     folders: FolderType[];
+    tasks?: TaskType[];
     hasMoreRoot: boolean;
   } | null;
 }
@@ -60,7 +61,7 @@ export const UserStoreProvider = ({
     useTodoDataStore.setState({
       lists: (initialListsData.lists ?? []).filter((l) => !isListDeleted(l.list_id)),
       folders: initialListsData.folders ?? [],
-      tasks: [],
+      tasks: initialListsData.tasks ?? [],
       listsPagination: {
         root: { page: 0, hasMore: initialListsData.hasMoreRoot ?? false },
       },
@@ -74,11 +75,11 @@ export const UserStoreProvider = ({
     async function hydrateSidebar() {
       if (!initialListsData) {
         const local = await loadSidebarFromIndexedDB();
-        if (isMounted && (local.lists.length > 0 || local.folders.length > 0)) {
+        if (isMounted && (local.lists.length > 0 || local.folders.length > 0 || local.tasks.length > 0)) {
           useTodoDataStore.setState({
             lists: local.lists,
             folders: local.folders,
-            tasks: [],
+            tasks: local.tasks ?? [],
             listsPagination: {
               root: { page: 0, hasMore: false },
             },
@@ -90,21 +91,26 @@ export const UserStoreProvider = ({
 
       const reconciled = await reconcileWithOfflineState(
         initialListsData.lists ?? [],
-        initialListsData.folders ?? []
+        initialListsData.folders ?? [],
+        initialListsData.tasks ?? []
       );
 
       if (isMounted) {
         useTodoDataStore.setState({
           lists: reconciled.lists,
           folders: reconciled.folders,
-          tasks: [],
+          tasks: reconciled.tasks ?? initialListsData.tasks ?? [],
           listsPagination: {
             root: { page: 0, hasMore: initialListsData.hasMoreRoot ?? false },
           },
           initialFetch: true,
         });
 
-        await saveSidebarToIndexedDB(reconciled.lists, reconciled.folders);
+        await saveSidebarToIndexedDB(
+          reconciled.lists,
+          reconciled.folders,
+          reconciled.tasks ?? initialListsData.tasks ?? []
+        );
       }
     }
 
@@ -114,6 +120,7 @@ export const UserStoreProvider = ({
       isMounted = false;
     };
   }, [initialListsData]);
+
 
   useEffect(() => {
     try {

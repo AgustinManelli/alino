@@ -6,16 +6,21 @@ import { useSyncStore } from "@/store/useSyncStore";
 import { getLists } from "@/lib/api/list/actions";
 import { handleError } from "@/store/todoUtils";
 
-import { saveSidebarToIndexedDB, loadSidebarFromIndexedDB, isNetworkError } from "@/lib/offline/sidebarSync";
+import {
+  saveSidebarToIndexedDB,
+  loadSidebarFromIndexedDB,
+  reconcileWithOfflineState,
+  isNetworkError,
+} from "@/lib/offline/sidebarSync";
 
 export function useGetLists() {
   const [isPending, setIsPending] = useState(false);
   const addLoading = useSyncStore((state) => state.addLoading);
   const removeLoading = useSyncStore((state) => state.removeLoading);
 
-  const fetchLists = useCallback(async () => {
+  const fetchLists = useCallback(async (force: boolean = false) => {
     const initialFetch = useTodoDataStore.getState().initialFetch;
-    if (initialFetch) return;
+    if (initialFetch && !force) return;
 
     addLoading();
     setIsPending(true);
@@ -26,28 +31,36 @@ export function useGetLists() {
         throw new Error(error);
       }
 
-      const lists = data?.lists ?? [];
-      const folders = data?.folders ?? [];
+      const rawLists = data?.lists ?? [];
+      const rawFolders = data?.folders ?? [];
+      const rawTasks = data?.tasks ?? [];
+
+      const reconciled = await reconcileWithOfflineState(
+        rawLists,
+        rawFolders,
+        rawTasks
+      );
 
       useTodoDataStore.setState({
-        lists,
-        tasks: data?.tasks ?? [],
-        folders,
+        lists: reconciled.lists,
+        tasks: reconciled.tasks,
+        folders: reconciled.folders,
         listsPagination: {
           root: { page: 0, hasMore: data?.hasMoreRoot ?? false },
         },
         initialFetch: true,
       });
 
-      saveSidebarToIndexedDB(lists, folders);
+      saveSidebarToIndexedDB(reconciled.lists, reconciled.folders, reconciled.tasks);
+
     } catch (err) {
       if (isNetworkError(err)) {
         const local = await loadSidebarFromIndexedDB();
-        if (local.lists.length > 0 || local.folders.length > 0) {
+        if (local.lists.length > 0 || local.folders.length > 0 || local.tasks.length > 0) {
           useTodoDataStore.setState({
             lists: local.lists,
             folders: local.folders,
-            tasks: [],
+            tasks: local.tasks ?? [],
             listsPagination: {
               root: { page: 0, hasMore: false },
             },

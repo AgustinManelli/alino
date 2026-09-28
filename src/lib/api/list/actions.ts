@@ -11,6 +11,7 @@ import {
   MembershipCountPayload,
   TaskCountPayload,
   UserWithMembershipRole,
+  TaskType,
 } from "@/lib/schemas/database.types";
 import {
   insertListSchema,
@@ -177,12 +178,10 @@ export async function getSingleLists(list_id: string) {
   }
 }
 
-const SIDEBAR_PAGE_SIZE = 100;
-
 export async function getLists(): Promise<{
   data?: {
     lists: ListsType[];
-    tasks: never[];
+    tasks: TaskType[];
     folders: FolderType[];
     hasMoreRoot: boolean;
   };
@@ -190,6 +189,36 @@ export async function getLists(): Promise<{
 }> {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
+
+    const { data: rpcData, error: rpcError } = await (supabase.rpc as any)(
+      "get_user_workspace_data",
+      {
+        p_user_id: user.id,
+      }
+    );
+
+    if (!rpcError && rpcData) {
+      const payload = rpcData as {
+        folders?: FolderType[];
+        lists?: ListsType[];
+        tasks?: TaskType[];
+      };
+      return {
+        data: {
+          lists: (payload.lists as ListsType[]) ?? [],
+          folders: (payload.folders as FolderType[]) ?? [],
+          tasks: (payload.tasks as TaskType[]) ?? [],
+          hasMoreRoot: false,
+        },
+      };
+    }
+
+    if (rpcError) {
+      console.warn(
+        "[getLists] RPC get_user_workspace_data no disponible o falló, usando fallback:",
+        rpcError.message
+      );
+    }
 
     const [membershipsResult, foldersResult] = await Promise.all([
       supabase

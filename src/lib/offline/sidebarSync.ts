@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { offlineDb, type SyncQueueItem, type SidebarActionType } from "./db";
-import type { ListsType, FolderType } from "@/lib/schemas/database.types";
+import type { ListsType, FolderType, TaskType } from "@/lib/schemas/database.types";
 import { syncBatchSidebar } from "@/lib/api/sync/actions";
 import { useSyncStore } from "@/store/useSyncStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
@@ -33,7 +33,8 @@ export function isNetworkError(error: unknown): boolean {
 
 export async function saveSidebarToIndexedDB(
   lists: ListsType[],
-  folders: FolderType[]
+  folders: FolderType[],
+  tasks?: TaskType[]
 ): Promise<void> {
   if (!offlineDb) return;
   try {
@@ -42,7 +43,10 @@ export async function saveSidebarToIndexedDB(
       return;
     }
 
-    await offlineDb.transaction("rw", [offlineDb.lists, offlineDb.folders], async () => {
+    const tables: any[] = [offlineDb.lists, offlineDb.folders];
+    if (offlineDb.tasks) tables.push(offlineDb.tasks);
+
+    await offlineDb.transaction("rw", tables, async () => {
       await offlineDb.lists.clear();
       await offlineDb.folders.clear();
       if (lists.length > 0) {
@@ -51,11 +55,18 @@ export async function saveSidebarToIndexedDB(
       if (folders.length > 0) {
         await offlineDb.folders.bulkPut(folders);
       }
+      if (tasks && offlineDb.tasks) {
+        await offlineDb.tasks.clear();
+        if (tasks.length > 0) {
+          await offlineDb.tasks.bulkPut(tasks);
+        }
+      }
     });
   } catch (error) {
     console.error("[IndexedDB] Error al guardar estado del sidebar:", error);
   }
 }
+
 
 const recentlyDeletedListIds = new Map<string, number>();
 const DELETION_TTL_MS = 15000;
@@ -80,12 +91,14 @@ export function unmarkListAsDeleted(listId: string): void {
 
 export async function reconcileWithOfflineState(
   serverLists: ListsType[],
-  serverFolders: FolderType[]
-): Promise<{ lists: ListsType[]; folders: FolderType[] }> {
+  serverFolders: FolderType[],
+  serverTasks: TaskType[] = []
+): Promise<{ lists: ListsType[]; folders: FolderType[]; tasks: TaskType[] }> {
   if (!offlineDb) {
     return {
       lists: serverLists.filter((l) => !isListDeleted(l.list_id)),
       folders: serverFolders,
+      tasks: serverTasks,
     };
   }
 
@@ -95,6 +108,7 @@ export async function reconcileWithOfflineState(
       return {
         lists: serverLists.filter((l) => !isListDeleted(l.list_id)),
         folders: serverFolders,
+        tasks: serverTasks,
       };
     }
 
@@ -160,10 +174,12 @@ export async function reconcileWithOfflineState(
       }
     });
 
-    return { lists: mergedLists, folders: mergedFolders };
+    const mergedTasks = serverTasks.length > 0 ? serverTasks : local.tasks;
+
+    return { lists: mergedLists, folders: mergedFolders, tasks: mergedTasks };
   } catch (error) {
     console.error("[OfflineSync] Error al reconciliar estado offline:", error);
-    return { lists: serverLists, folders: serverFolders };
+    return { lists: serverLists, folders: serverFolders, tasks: serverTasks };
   }
 }
 
@@ -171,17 +187,37 @@ export async function reconcileWithOfflineState(
 export async function loadSidebarFromIndexedDB(): Promise<{
   lists: ListsType[];
   folders: FolderType[];
+  tasks: TaskType[];
 }> {
-  if (!offlineDb) return { lists: [], folders: [] };
+  if (!offlineDb) return { lists: [], folders: [], tasks: [] };
   try {
-    const [lists, folders] = await Promise.all([
+    const [lists, folders, tasks] = await Promise.all([
       offlineDb.lists.toArray(),
       offlineDb.folders.toArray(),
+      offlineDb.tasks ? offlineDb.tasks.toArray() : Promise.resolve([]),
     ]);
-    return { lists, folders };
+    return { lists, folders, tasks };
   } catch (error) {
     console.error("[IndexedDB] Error al cargar sidebar local:", error);
-    return { lists: [], folders: [] };
+    return { lists: [], folders: [], tasks: [] };
+  }
+}
+
+export async function saveSingleTaskToIndexedDB(task: TaskType): Promise<void> {
+  if (!offlineDb || !offlineDb.tasks) return;
+  try {
+    await offlineDb.tasks.put(task);
+  } catch (error) {
+    console.error("[IndexedDB] Error al guardar tarea en IDB:", error);
+  }
+}
+
+export async function removeTaskFromIndexedDB(task_id: string): Promise<void> {
+  if (!offlineDb || !offlineDb.tasks) return;
+  try {
+    await offlineDb.tasks.delete(task_id);
+  } catch (error) {
+    console.error("[IndexedDB] Error al eliminar tarea de IDB:", error);
   }
 }
 
@@ -202,6 +238,7 @@ export async function removeListFromIndexedDB(list_id: string): Promise<void> {
     console.error("[IndexedDB] Error al eliminar lista de IDB:", error);
   }
 }
+
 
 export async function saveSingleFolderToIndexedDB(folder: FolderType): Promise<void> {
   if (!offlineDb) return;
@@ -394,8 +431,8 @@ export async function processSyncQueue(): Promise<{
     useSyncStore.getState().setPendingSyncCount?.(remaining);
 
     if (result.processedIds && result.processedIds.length > 0 && remaining === 0) {
-      const { lists: currentLists, folders: currentFolders } = useTodoDataStore.getState();
-      await saveSidebarToIndexedDB(currentLists, currentFolders);
+      const { lists: currentLists, folders: currentFolders, tasks: currentTasks } = useTodoDataStore.getState();
+      await saveSidebarToIndexedDB(currentLists, currentFolders, currentTasks);
       customToast.success("Cambios sincronizados correctamente con la nube");
     }
 
