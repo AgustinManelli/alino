@@ -182,3 +182,29 @@ a {
   text-decoration: underline dotted #87189d;
   text-underline-offset: 4px;
 }
+
+em-emoji {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+  overflow: visible !important;
+}
+
+em-emoji .emoji-mart-emoji {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+em-emoji .emoji-mart-emoji>span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}

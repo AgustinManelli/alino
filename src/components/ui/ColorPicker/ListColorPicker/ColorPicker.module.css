@@ -1,6 +1,7 @@
 .pickerContainer {
   position: relative;
   display: flex;
+  align-items: center;
   height: 100%;
   width: fit-content;
 }
@@ -10,13 +11,19 @@
   align-items: center;
   justify-content: center;
   width: fit-content;
-  height: fit-content;
   border: none;
   border-radius: 10px;
   cursor: pointer;
   background-color: transparent;
-  transition: background-color 0.1 ease-in-out;
+  transition: background-color 0.1s ease-in-out;
   height: 100%;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-right: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  line-height: 1;
+  box-sizing: border-box;
 }
 
 .renderIconContainer {
@@ -24,15 +31,26 @@
   justify-content: center;
   align-items: center;
   margin: 0px 4.5px;
+  flex-shrink: 0;
+  line-height: 1;
+  overflow: visible;
+}
+
+.renderIconContainer span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .arrowContainer {
   position: relative;
   display: flex;
-  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
   height: fit-content;
   margin-right: 5px;
-  width: 16px;
 }
 
 .modalContainer {

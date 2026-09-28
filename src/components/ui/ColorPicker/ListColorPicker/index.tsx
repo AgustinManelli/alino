@@ -152,17 +152,10 @@ export function ColorPicker({
                 }}
               />
             ) : (
-              <div
-                style={{
-                  width: big ? "20px" : "16px",
-                  height: big ? "20px" : "16px",
-                }}
-              >
-                <EmojiMartComponent
-                  shortcodes={emoji}
-                  size={big ? "20px" : "16px"}
-                />
-              </div>
+              <EmojiMartComponent
+                shortcodes={emoji}
+                size={big ? "20px" : "16px"}
+              />
             )}
           </div>
 

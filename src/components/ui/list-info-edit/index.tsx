@@ -182,7 +182,10 @@ export const ListInfoEdit = memo(function ListInfoEdit({
       <div className={styles.colorPickerContainer}>
         <AnimatePresence mode="wait">
           {isNameChange ? (
-            <motion.div key="picker-view" style={{ height: "100%" }}>
+            <motion.div
+              key="picker-view"
+              className={styles.pickerViewWrapper}
+            >
               <ColorPicker
                 key={uniqueId}
                 color={colorTemp}

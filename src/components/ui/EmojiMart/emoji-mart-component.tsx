@@ -86,7 +86,18 @@ export function EmojiMartComponent(props: EmojiMartComponentProps) {
 
   return (
     <EmojiErrorBoundary>
-      <em-emoji {...props} set="native"></em-emoji>
+      <em-emoji
+        {...props}
+        set="native"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          lineHeight: 1,
+          verticalAlign: "middle",
+          ...props.style,
+        }}
+      ></em-emoji>
     </EmojiErrorBoundary>
   );
 }

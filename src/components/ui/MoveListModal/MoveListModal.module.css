@@ -1,73 +1,253 @@
-.container {
+.modalBackground {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-}
-
-.subtitle {
-  font-size: 13px;
-  color: var(--text-not-available);
-  margin: 0;
-}
-
-.optionsList {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 280px;
-  overflow-y: auto;
-}
-
-.optionItem {
-  display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background-color: var(--background-over-container-solid);
-  border: 1px solid var(--border-container-color);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-  width: 100%;
+  z-index: 1000;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 20px);
+  padding-right: calc(env(safe-area-inset-right, 0px) + 20px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);
+  padding-left: calc(env(safe-area-inset-left, 0px) + 20px);
   box-sizing: border-box;
 }
 
-.optionItem:hover {
-  background-color: var(--background-over-container-hover);
-  border-color: var(--hover-over-container);
-}
-
-.optionActive {
-  border-color: var(--primary-color);
-  background-color: var(--background-over-container-hover);
-}
-
-.optionLeft {
+.modalContainer {
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 28px;
+  width: 100%;
+  max-width: 440px;
+  padding: 24px;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow:
+    rgba(12, 20, 66, 0.02) 0px 4px 12px,
+    rgba(12, 20, 66, 0.08) 0px 30px 80px;
+  max-height: 85vh;
 }
 
-.rootIconWrapper {
+.modalHeader {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-not-available);
+  flex-direction: column;
+  gap: 4px;
 }
 
-.folderIconWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.modalTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
 }
 
-.optionName {
+.modalSubtitle {
   font-size: 13px;
+  color: var(--text-not-available);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.listHighlight {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.itemsListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.itemsListContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.itemsListContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.itemsListContainer::-webkit-scrollbar-thumb {
+  background-color: var(--border-container-color);
+  border-radius: 3px;
+}
+
+.itemCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--background-over-container);
+  padding: 10px 14px;
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1px solid var(--border-container-color);
+  gap: 12px;
+  user-select: none;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+  font-family: inherit;
+  outline: none;
+}
+
+.itemCard:hover {
+  background-color: var(--background-over-container-hover);
+  border-color: var(--border-container-color);
+}
+
+.itemCard:active {
+  transform: scale(0.995);
+}
+
+.itemCardSelected {
+  background-color: var(--background-over-container-hover);
+  border-color: var(--alino-primary-color);
+}
+
+.itemMain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.iconBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.itemNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.itemName {
+  font-size: 14px;
   font-weight: 500;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 220px;
+}
+
+.currentBadge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 6px;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  color: var(--text-not-available);
+  flex-shrink: 0;
+  letter-spacing: 0.2px;
+}
+
+.itemMeta {
+  font-size: 12px;
+  color: var(--text-not-available);
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 2px;
+}
+
+.emptyNote {
+  font-size: 13px;
+  color: var(--text-not-available);
+  text-align: center;
+  padding: 14px 16px;
+  background: var(--background-over-container);
+  border-radius: 14px;
+  border: 1px dashed var(--border-container-color);
+  line-height: 1.4;
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.modalButton {
+  flex: 1;
+  height: 40px;
+  border-radius: 14px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+  transition:
+    background-color 0.2s ease,
+    filter 0.2s ease,
+    opacity 0.2s ease;
+  border: 1px solid var(--border-container-color);
+  background-color: var(--background-over-container);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  outline: none;
+}
+
+.modalButton:hover:not(:disabled) {
+  background-color: var(--background-over-container-hover);
+}
+
+.moveButton {
+  background-color: var(--alino-primary-color);
+  color: #ffffff;
+  border: 1px solid transparent;
+}
+
+.moveButton:hover:not(:disabled) {
+  opacity: 0.9;
+  background-color: var(--alino-primary-color);
+}
+
+.moveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media only screen and (max-width: 850px) and (display-mode: standalone) {
+  .modalBackground {
+    height: 100vh;
+  }
 }

@@ -95,6 +95,16 @@
 
 .emojiContainer span {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.pickerViewWrapper {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes fadeSlideIn {
