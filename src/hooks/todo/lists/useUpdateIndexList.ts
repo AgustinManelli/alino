@@ -5,6 +5,13 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { updateIndexList } from "@/lib/api/list/actions";
 import { readFolderMembershipCount, makeMembershipCountPayload, handleError } from "@/store/todoUtils";
 
+import {
+  saveSingleListToIndexedDB,
+  saveSidebarToIndexedDB,
+  enqueueSyncMutation,
+  isNetworkError,
+} from "@/lib/offline/sidebarSync";
+
 export function useUpdateIndexList() {
   const [isPending, setIsPending] = useState(false);
 
@@ -61,12 +68,37 @@ export function useUpdateIndexList() {
         };
       });
 
+      const updatedState = useTodoDataStore.getState();
+      const updatedList = updatedState.lists.find((l) => l.list_id === list_id);
+      if (updatedList) {
+        await saveSingleListToIndexedDB(updatedList);
+      }
+      saveSidebarToIndexedDB(updatedState.lists, updatedState.folders);
+
+      const payload = { list_id, folder_id, rank, index: 0 };
+
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        await enqueueSyncMutation("update_list_index", "list", payload);
+        setIsPending(false);
+        return;
+      }
+
       const { error } = await updateIndexList(list_id, folder_id, rank);
 
       if (error) {
+        if (isNetworkError(error)) {
+          await enqueueSyncMutation("update_list_index", "list", payload);
+          setIsPending(false);
+          return;
+        }
         throw new Error(error);
       }
     } catch (err) {
+      if (isNetworkError(err)) {
+        await enqueueSyncMutation("update_list_index", "list", { list_id, folder_id, rank, index: 0 });
+        setIsPending(false);
+        return;
+      }
       useTodoDataStore.setState((state) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === list_id

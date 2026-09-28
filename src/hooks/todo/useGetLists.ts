@@ -6,6 +6,8 @@ import { useSyncStore } from "@/store/useSyncStore";
 import { getLists } from "@/lib/api/list/actions";
 import { handleError } from "@/store/todoUtils";
 
+import { saveSidebarToIndexedDB, loadSidebarFromIndexedDB, isNetworkError } from "@/lib/offline/sidebarSync";
+
 export function useGetLists() {
   const [isPending, setIsPending] = useState(false);
   const addLoading = useSyncStore((state) => state.addLoading);
@@ -24,17 +26,36 @@ export function useGetLists() {
         throw new Error(error);
       }
 
+      const lists = data?.lists ?? [];
+      const folders = data?.folders ?? [];
+
       useTodoDataStore.setState({
-        lists: data?.lists ?? [],
+        lists,
         tasks: data?.tasks ?? [],
-        folders: data?.folders ?? [],
+        folders,
         listsPagination: {
           root: { page: 0, hasMore: data?.hasMoreRoot ?? false },
         },
         initialFetch: true,
       });
 
+      saveSidebarToIndexedDB(lists, folders);
     } catch (err) {
+      if (isNetworkError(err)) {
+        const local = await loadSidebarFromIndexedDB();
+        if (local.lists.length > 0 || local.folders.length > 0) {
+          useTodoDataStore.setState({
+            lists: local.lists,
+            folders: local.folders,
+            tasks: [],
+            listsPagination: {
+              root: { page: 0, hasMore: false },
+            },
+            initialFetch: true,
+          });
+          return;
+        }
+      }
       handleError(err);
     } finally {
       setIsPending(false);

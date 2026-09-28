@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
 import { useVerifyAndFetchList } from "@/hooks/todo/lists/useVerifyAndFetchList";
+import { isListDeleted } from "@/lib/offline/sidebarSync";
 import { Manager } from "./manager";
 
 import styles from "./todo.module.css";
@@ -24,6 +25,7 @@ export const Todo = ({ list }: { list: string }) => {
   );
 
   const [isValidating, setIsValidating] = useState(() => {
+    if (isListDeleted(list)) return false;
     if (pendingListId === list) return false;
     return !useTodoDataStore.getState().lists.some((l) => l.list_id === list);
   });
@@ -40,6 +42,11 @@ export const Todo = ({ list }: { list: string }) => {
 
     const validate = async () => {
       if (!initialFetch) return;
+
+      if (isListDeleted(list)) {
+        if (isMounted) router.replace("/alino-app");
+        return;
+      }
 
       if (setList) {
         if (isMounted) setIsValidating(false);

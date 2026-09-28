@@ -5,6 +5,12 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { updatePinnedFolder } from "@/lib/api/list/actions";
 import { handleError } from "@/store/todoUtils";
 
+import {
+  saveSingleFolderToIndexedDB,
+  enqueueSyncMutation,
+  isNetworkError,
+} from "@/lib/offline/sidebarSync";
+
 export function useUpdatePinnedFolder() {
   const [isPending, setIsPending] = useState(false);
 
@@ -28,11 +34,32 @@ export function useUpdatePinnedFolder() {
         ),
       }));
 
+      const updatedFolder = useTodoDataStore.getState().folders.find((f) => f.folder_id === folder_id);
+      if (updatedFolder) await saveSingleFolderToIndexedDB(updatedFolder);
+
+      const payload = { folder_id, pinned, rank: originalFolder.rank ?? "" };
+
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        await enqueueSyncMutation("update_folder_pinned", "folder", payload);
+        setIsPending(false);
+        return;
+      }
+
       const result = await updatePinnedFolder(folder_id, pinned);
       if (result?.error) {
+        if (isNetworkError(result.error)) {
+          await enqueueSyncMutation("update_folder_pinned", "folder", payload);
+          setIsPending(false);
+          return;
+        }
         throw new Error(result.error);
       }
     } catch (err) {
+      if (isNetworkError(err)) {
+        await enqueueSyncMutation("update_folder_pinned", "folder", { folder_id, pinned, rank: originalFolder.rank ?? "" });
+        setIsPending(false);
+        return;
+      }
       useTodoDataStore.setState((state) => ({
         folders: state.folders.map((f) =>
           f.folder_id === folder_id ? { ...f, pinned: previousPinned } : f

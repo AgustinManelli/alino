@@ -191,98 +191,60 @@ export async function getLists(): Promise<{
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
-    const [pinnedResult, pinnedFoldersResult, mixedResult] = await Promise.all([
+    const [membershipsResult, foldersResult] = await Promise.all([
       supabase
         .from("list_memberships")
         .select(`*, list: lists (*, tasks(count))`)
         .eq("user_id", user.id)
-        .eq("pinned", true)
-        .is("folder", null)
-        .order("rank", { ascending: true }),
+        .order("rank", { ascending: true, nullsFirst: false }),
       supabase
         .from("list_folders")
         .select(`*`)
         .eq("user_id", user.id)
-        .eq("pinned", true)
-        .order("rank", { ascending: true }),
-      supabase.rpc("get_paginated_sidebar", {
-        p_user_id: user.id,
-        p_page_limit: SIDEBAR_PAGE_SIZE,
-        p_offset: 0,
-      }),
+        .order("rank", { ascending: true, nullsFirst: false }),
     ]);
 
-    if (pinnedResult.error) {
-      throw new Error("No se pudieron obtener las listas fijadas.");
+    if (membershipsResult.error) {
+      throw new Error("No se pudieron obtener las listas.");
     }
-    if (mixedResult.error) {
-      throw new Error(
-        "No se pudo inicializar la barra lateral. Intentalo nuevamente."
-      );
+    if (foldersResult.error) {
+      throw new Error("No se pudieron obtener las carpetas.");
     }
 
-    const rows = (mixedResult.data ?? []) as SidebarRpcRow[];
-
-    const folders: FolderType[] = [];
-    const unpinnedLists: ListsType[] = [];
-    const seenFolderIds = new Set<string>();
-
-    (pinnedFoldersResult.data ?? []).forEach((p: any) => {
-      seenFolderIds.add(p.folder_id);
-      folders.push({
-        folder_id: p.folder_id,
-        folder_name: p.folder_name,
-        folder_color: p.folder_color,
-        folder_description: p.folder_description,
-        user_id: p.user_id,
-        updated_at: p.updated_at,
-        created_at: p.created_at,
-        index: p.index,
-        pinned: true,
-        rank: p.rank,
-        memberships: [{ count: 0 }],
-      });
-    });
-
-    rows.forEach((item) => {
-      if (item.item_type === "folder") {
-        const p = item.payload as SidebarFolderPayload;
-        if (!seenFolderIds.has(p.folder_id)) {
-          seenFolderIds.add(p.folder_id);
-          folders.push({
-            folder_id: p.folder_id,
-            folder_name: p.folder_name,
-            folder_color: p.folder_color,
-            folder_description: p.folder_description,
-            user_id: p.user_id,
-            updated_at: p.updated_at,
-            created_at: p.created_at,
-            index: p.index,
-            pinned: p.pinned ?? false,
-            rank: p.rank,
-            memberships: p.memberships ?? [{ count: 0 }],
-          });
-        }
-      } else if (item.item_type === "list") {
-        unpinnedLists.push(item.payload as ListsType);
-      }
-    });
-
-    const allLists = [
-      ...((pinnedResult.data as ListsType[]) ?? []),
-      ...unpinnedLists,
-    ];
+    const rawLists = (membershipsResult.data as ListsType[]) ?? [];
     const listsWithCounts = await attachUncompletedTaskCounts(
       supabase,
-      allLists
+      rawLists
     );
+
+    const folderListCounts: Record<string, number> = {};
+    for (const l of listsWithCounts) {
+      if (l.folder) {
+        folderListCounts[l.folder] = (folderListCounts[l.folder] || 0) + 1;
+      }
+    }
+
+    const rawFolders = (foldersResult.data ?? []) as any[];
+    const folders: FolderType[] = rawFolders.map((f) => ({
+      folder_id: f.folder_id,
+      folder_name: f.folder_name,
+      folder_color: f.folder_color,
+      folder_description: f.folder_description,
+      user_id: f.user_id,
+      updated_at: f.updated_at,
+      created_at: f.created_at,
+      index: f.index,
+      pinned: f.pinned ?? false,
+      rank: f.rank,
+      memberships: [{ count: folderListCounts[f.folder_id] ?? 0 }],
+    }));
 
     return {
       data: {
         lists: listsWithCounts,
         tasks: [],
         folders,
-        hasMoreRoot: rows.length >= SIDEBAR_PAGE_SIZE,
+        hasMoreRoot: false,
       },
     };
   } catch (error: unknown) {

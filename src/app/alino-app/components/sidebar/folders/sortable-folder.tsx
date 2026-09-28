@@ -20,7 +20,7 @@ import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useDeleteFolder } from "@/hooks/todo/folders/useDeleteFolder";
 import { useDeleteFolderWithContents } from "@/hooks/todo/folders/useDeleteFolderWithContents";
-import { useFetchListsPage } from "@/hooks/todo/lists/useFetchListsPage";
+
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -100,26 +100,12 @@ export const SortableFolder = memo(function SortableFolder({
     ),
   );
 
-  const { fetchListsPage } = useFetchListsPage();
-  const fetchListsPageRef = useRef(fetchListsPage);
-  useEffect(() => {
-    fetchListsPageRef.current = fetchListsPage;
-  }, [fetchListsPage]);
-
-  const folderPagination = useTodoDataStore(
-    (state) => state.listsPagination[folder.folder_id]
-  );
-  const isFetchingFolderLists = useTodoDataStore(
-    (state) => state.fetchingListsQueue[folder.folder_id]
-  );
-
-  const hasFetched = !!folderPagination;
-
   const listsCount = useMemo(() => {
+    if (lists) return lists.length;
     return Array.isArray(folder.memberships) && folder.memberships.length > 0
       ? folder.memberships[0].count
       : 0;
-  }, [folder.memberships]);
+  }, [folder.memberships, lists]);
 
   const sortedLists = useMemo(() => {
     if (!lists || lists.length === 0) return lists;
@@ -289,34 +275,7 @@ export const SortableFolder = memo(function SortableFolder({
     },
   });
 
-  useEffect(() => {
-    if (open && !folderPagination) {
-      fetchListsPage(folder.folder_id);
-    }
-  }, [open, folder.folder_id, folderPagination, fetchListsPage]);
 
-  useEffect(() => {
-    if (!open || !hasFetched || !scrollContainerRef.current) return;
-
-    const container = scrollContainerRef.current;
-    const folderId = folder.folder_id;
-
-    const tryFetch = () => {
-      const { listsPagination, fetchingListsQueue } =
-        useTodoDataStore.getState();
-      const hasMore = listsPagination[folderId]?.hasMore ?? false;
-      const isFetching = fetchingListsQueue[folderId] ?? false;
-      if (!hasMore || isFetching) return;
-
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      if (scrollTop + clientHeight >= scrollHeight - 40) {
-        fetchListsPage(folderId);
-      }
-    };
-
-    container.addEventListener("scroll", tryFetch, { passive: true });
-    return () => container.removeEventListener("scroll", tryFetch);
-  }, [open, hasFetched, fetchListsPage, folder.folder_id]);
 
   const dynamicStyle = useMemo(() => {
     let borderColor = "var(--border-container-color)";
@@ -598,28 +557,17 @@ export const SortableFolder = memo(function SortableFolder({
           style={{ maxHeight: sidebarCollapsed ? "260px" : "290px" }}
         >
           <SortableContext
-            items={hasFetched ? listIds || [] : []}
+            items={listIds || []}
             strategy={verticalListSortingStrategy}
           >
             <AnimatePresence mode="wait">
-              {!hasFetched ? (
-                <motion.div
-                  key="loading"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className={styles.loadingContainer}
-                >
-                  <LoadingIcon className={styles.loadingIcon} />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="content"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className={styles.motionListWrapper}
-                >
-                  <div ref={newListContainerRef} className={styles.newListFormWrapper}>
+              <motion.div
+                key="content"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className={styles.motionListWrapper}
+              >
+                <div ref={newListContainerRef} className={styles.newListFormWrapper}>
                     <AnimatePresence mode="popLayout">
                       {isCreatingList && (
                         <motion.div
@@ -699,18 +647,11 @@ export const SortableFolder = memo(function SortableFolder({
                         <ListCard list={list} inFolder />
                       </motion.div>
                     ))
-                  ) : !isFetchingFolderLists ? (
+                  ) : (
                     <p className={styles.emptyIndicator}>Arrastra una lista aquí</p>
-                  ) : null}
-
-                  {isFetchingFolderLists && (
-                    <div className={styles.loadingContainer}>
-                      <LoadingIcon className={styles.loadingIcon} />
-                    </div>
                   )}
                   <div className={styles.sentinel} />
                 </motion.div>
-              )}
             </AnimatePresence>
           </SortableContext>
         </motion.div>

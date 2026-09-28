@@ -34,6 +34,7 @@ import { ModalRenderer } from "@/components/ui/ModalRenderer";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useGlobalShortcutsListener } from "@/hooks/useKeyboardShortcuts";
+import { useOfflineSync } from "@/lib/offline/useOfflineSync";
 
 interface Props {
   children: React.ReactNode;
@@ -41,6 +42,7 @@ interface Props {
 
 export const AppContent = ({ children }: Props) => {
   useGlobalShortcutsListener();
+  useOfflineSync();
   const user = useUserDataStore((state) => state.user);
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const { sidebarCollapsed, sidebarPosition } = useUserPreferencesStore();

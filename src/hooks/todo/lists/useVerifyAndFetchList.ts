@@ -3,11 +3,17 @@
 import { useState, useCallback } from "react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { ListsType } from "@/lib/schemas/database.types";
+import { isListDeleted } from "@/lib/offline/sidebarSync";
 
 export function useVerifyAndFetchList() {
   const [isPending, setIsPending] = useState(false);
 
   const verifyAndFetchList = useCallback(async (listId: string) => {
+    if (isListDeleted(listId)) {
+      setIsPending(false);
+      return false;
+    }
+
     setIsPending(true);
     const state = useTodoDataStore.getState();
     if (state.lists.some((l) => l.list_id === listId)) {
@@ -20,6 +26,11 @@ export function useVerifyAndFetchList() {
         "@/lib/api/list/actions"
       );
       const result = await getSingleListsAsMembership(listId);
+
+      if (isListDeleted(listId)) {
+        setIsPending(false);
+        return false;
+      }
 
       if (result?.data) {
         useTodoDataStore.setState((s) => ({

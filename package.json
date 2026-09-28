@@ -43,6 +43,7 @@
     "blobatar": "^2.7.0",
     "chrono-node": "^2.9.0",
     "countries-and-timezones": "^3.10.0",
+    "dexie": "^4.4.6",
     "dotenv": "^17.4.2",
     "emoji-mart": "^5.6.0",
     "emoji-palette": "^0.0.3",

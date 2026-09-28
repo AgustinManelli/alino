@@ -29,7 +29,6 @@ import { useShallow } from "zustand/shallow";
 import { usePlatformInfoStore } from "@/store/usePlatformInfoStore";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
-import { useFetchListsPage } from "@/hooks/todo/lists/useFetchListsPage";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useSidebarSelectionStore } from "@/store/useSidebarSelectionStore";
@@ -51,9 +50,6 @@ import {
   SidebarRightOpen,
 } from "@/components/ui/icons/icons";
 import styles from "./Navbar.module.css";
-
-/** Píxeles desde el fondo del scroll a partir de los cuales se dispara el fetch. */
-const SCROLL_THRESHOLD_PX = 120;
 
 export const Navbar = () => {
   //Estado global del sidebar (cerrado / abierto) manejado de manera global con zustand
@@ -99,55 +95,7 @@ export const Navbar = () => {
   const initialFetch = useTodoDataStore(
     useShallow((state) => state.initialFetch),
   );
-  const fetchingListsQueue = useTodoDataStore(
-    useShallow((state) => state.fetchingListsQueue),
-  );
-  const { fetchListsPage } = useFetchListsPage();
-
   const navbarContainerRef = useRef<HTMLDivElement | null>(null);
-  const fetchListsPageRef = useRef(fetchListsPage);
-  useEffect(() => {
-    fetchListsPageRef.current = fetchListsPage;
-  }, [fetchListsPage]);
-
-  useEffect(() => {
-    if (!initialFetch) return;
-
-    const container = document.getElementById("list-container");
-    if (!container) return;
-
-    let rafId: number | null = null;
-    const tryFetch = () => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        const { listsPagination, fetchingListsQueue: queue } =
-          useTodoDataStore.getState();
-        const hasMore = listsPagination["root"]?.hasMore ?? false;
-        const isFetching = queue["root"] ?? false;
-        if (!hasMore || isFetching) return;
-
-        const { scrollTop, scrollHeight, clientHeight } = container;
-        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-        if (distanceFromBottom < SCROLL_THRESHOLD_PX) {
-          fetchListsPageRef.current("root");
-        }
-      });
-    };
-
-    tryFetch();
-
-    container.addEventListener("scroll", tryFetch, { passive: true });
-
-    const ro = new ResizeObserver(tryFetch);
-    ro.observe(container);
-
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      container.removeEventListener("scroll", tryFetch);
-      ro.disconnect();
-    };
-  }, [initialFetch]);
 
   useEffect(() => {
     if (sidebarCollapsed && isSelectionMode) {
@@ -288,26 +236,6 @@ export const Navbar = () => {
                 <>
                   <HomeCard key={"homecard"} />
                   <DraggableBoard />
-                  {fetchingListsQueue["root"] && (
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        padding: "15px 0",
-                        width: "100%",
-                      }}
-                    >
-                      <LoadingIcon
-                        style={{
-                          width: "15px",
-                          height: "auto",
-                          stroke: "var(--text)",
-                          strokeWidth: "2.5",
-                        }}
-                      />
-                    </div>
-                  )}
                 </>
               )}
             </div>

@@ -1,14 +1,23 @@
 "use client"
 
 import { useState, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { deleteMultipleItems } from "@/lib/api/list/actions";
 import { handleError, readFolderMembershipCount, makeMembershipCountPayload } from "@/store/todoUtils";
 import { useSidebarSelectionStore, SelectionItem } from "@/store/useSidebarSelectionStore";
+import {
+  markListAsDeleted,
+  unmarkListAsDeleted,
+  removeListFromIndexedDB,
+  removeFolderFromIndexedDB,
+} from "@/lib/offline/sidebarSync";
 
 export function useDeleteMultipleItems() {
   const [isPending, setIsPending] = useState(false);
   const cancelSelectionMode = useSidebarSelectionStore((s) => s.cancelSelectionMode);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleDeleteMultiple = useCallback(async (
     selectedItems: SelectionItem[],
@@ -25,7 +34,7 @@ export function useDeleteMultipleItems() {
       .map((x) => x.id);
 
     const folderIdsToDelete = folderOptions.map((o) => o.folderId);
-    
+
     const listsInDeleteFolders = state.lists.filter(
       (l) => l.folder && folderIdsToDelete.includes(l.folder)
     );
@@ -44,6 +53,19 @@ export function useDeleteMultipleItems() {
         .filter((l) => l.folder && deleteContentsFolderIds.includes(l.folder))
         .map((l) => l.list_id),
     ]);
+
+    listIdsToDelete.forEach((id) => {
+      markListAsDeleted(id);
+      removeListFromIndexedDB(id);
+    });
+    folderIdsToDelete.forEach((id) => {
+      removeFolderFromIndexedDB(id);
+    });
+
+    const currentListMatch = pathname.match(/\/alino-app\/([^/]+)/);
+    if (currentListMatch && listIdsToDelete.has(currentListMatch[1])) {
+      router.replace("/alino-app");
+    }
 
     useTodoDataStore.setState((s) => {
       const updatedFolders = s.folders.filter(
@@ -74,6 +96,7 @@ export function useDeleteMultipleItems() {
     );
 
     if (result?.error) {
+      listIdsToDelete.forEach((id) => unmarkListAsDeleted(id));
       handleError(result.error);
       useTodoDataStore.setState({
         folders: prevFolders,
@@ -86,7 +109,7 @@ export function useDeleteMultipleItems() {
 
     setIsPending(false);
     return result;
-  }, [cancelSelectionMode]);
+  }, [cancelSelectionMode, pathname, router]);
 
   return { deleteMultiple: handleDeleteMultiple, isPending };
 }

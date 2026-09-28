@@ -9,6 +9,13 @@ import { calculateNewRank, calcRankForInsertion, compareRanks } from "@/lib/lexo
 import { insertList } from "@/lib/api/list/actions";
 import { ListsType } from "@/lib/schemas/database.types";
 
+import {
+  saveSingleListToIndexedDB,
+  removeListFromIndexedDB,
+  enqueueSyncMutation,
+  isNetworkError,
+} from "@/lib/offline/sidebarSync";
+
 export function useInsertList() {
   const [isPending, setIsPending] = useState(false);
 
@@ -35,16 +42,16 @@ export function useInsertList() {
       targetRank ??
       (folder_id
         ? calcRankForInsertion(
-            lists
-              .filter((l) => l.folder === folder_id)
-              .sort((a, b) =>
-                compareRanks(
-                  { rank: a.rank, id: a.list_id },
-                  { rank: b.rank, id: b.list_id }
-                )
-              ),
-            0
-          )
+          lists
+            .filter((l) => l.folder === folder_id)
+            .sort((a, b) =>
+              compareRanks(
+                { rank: a.rank, id: a.list_id },
+                { rank: b.rank, id: b.list_id }
+              )
+            ),
+          0
+        )
         : calculateNewRank(lists, folders));
 
     const optimistic: ListsType = {
@@ -93,6 +100,24 @@ export function useInsertList() {
         };
       });
 
+      await saveSingleListToIndexedDB(optimistic);
+
+      const payload = {
+        list_id: optimisticId,
+        name,
+        color,
+        icon,
+        rank,
+        index,
+        folder_id,
+      };
+
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        await enqueueSyncMutation("insert_list", "list", payload);
+        setIsPending(false);
+        return { error: null, list_id: optimisticId };
+      }
+
       const { error } = await insertList(
         optimisticId,
         name,
@@ -104,11 +129,31 @@ export function useInsertList() {
       );
 
       if (error) {
+        if (isNetworkError(error)) {
+          await enqueueSyncMutation("insert_list", "list", payload);
+          setIsPending(false);
+          return { error: null, list_id: optimisticId };
+        }
         throw new Error(error || "No se recibieron datos del servidor.");
       }
       setIsPending(false);
       return { error: null, list_id: optimisticId };
     } catch (err) {
+      if (isNetworkError(err)) {
+        await enqueueSyncMutation("insert_list", "list", {
+          list_id: optimisticId,
+          name,
+          color,
+          icon,
+          rank,
+          index,
+          folder_id,
+        });
+        setIsPending(false);
+        return { error: null, list_id: optimisticId };
+      }
+
+      await removeListFromIndexedDB(optimisticId);
       useTodoDataStore.setState((state) => {
         let updatedFolders = state.folders;
         if (folder_id) {

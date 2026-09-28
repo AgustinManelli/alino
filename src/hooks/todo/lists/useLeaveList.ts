@@ -1,15 +1,29 @@
 "use client"
 
 import { useState, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { leaveList } from "@/lib/api/list/actions";
 import { readFolderMembershipCount, makeMembershipCountPayload, handleError } from "@/store/todoUtils";
+import {
+  markListAsDeleted,
+  unmarkListAsDeleted,
+  removeListFromIndexedDB,
+} from "@/lib/offline/sidebarSync";
 
 export function useLeaveList() {
   const [isPending, setIsPending] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleLeaveList = useCallback(async (list_id: string) => {
     setIsPending(true);
+    markListAsDeleted(list_id);
+
+    if (pathname === `/alino-app/${list_id}`) {
+      router.replace("/alino-app");
+    }
+
     const state = useTodoDataStore.getState();
     const leavingList = state.lists.find((l) => l.list_id === list_id);
     const folderId = leavingList?.folder ?? null;
@@ -39,15 +53,18 @@ export function useLeaveList() {
       };
     });
 
+    await removeListFromIndexedDB(list_id);
+
     const result = await leaveList(list_id);
 
     if (result?.error) {
+      unmarkListAsDeleted(list_id);
       handleError(result.error);
       useTodoDataStore.setState({ lists: prevLists, tasks: prevTasks, folders: prevFolders });
     }
 
     setIsPending(false);
-  }, []);
+  }, [pathname, router]);
 
   return { leaveList: handleLeaveList, isPending };
 }

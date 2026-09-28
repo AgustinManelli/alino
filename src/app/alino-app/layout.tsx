@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
 import { getUser } from "@/lib/api/user/actions";
+import { getLists } from "@/lib/api/list/actions";
 import { UserStoreProvider } from "@/components/providers/UserStoreProvider";
 import { type UserPreferences } from "@/store/useUserPreferencesStore";
 
@@ -15,7 +16,10 @@ export default async function AlinoAppLayout({
 }: {
   children?: React.ReactNode;
 }) {
-  const userResult = await getUser();
+  const [userResult, listsResult] = await Promise.all([
+    getUser(),
+    getLists(),
+  ]);
 
   if (userResult.error || !userResult.data?.user) {
     redirect("/sign-in");
@@ -43,6 +47,7 @@ export default async function AlinoAppLayout({
         user={user}
         initialSidebarCollapsed={initialSidebarCollapsed}
         initialSidebarPosition={initialSidebarPosition}
+        initialListsData={listsResult?.data ?? null}
       >
         <AppContent>{children}</AppContent>
       </UserStoreProvider>

@@ -2,9 +2,16 @@
 
 import { type ReactNode, useRef, useEffect } from "react";
 import { type StoreApi } from "zustand";
-import { UserType } from "@/lib/schemas/database.types";
+import { UserType, ListsType, FolderType } from "@/lib/schemas/database.types";
 import { createUserDataStore, UserStoreContext, type UserState } from "@/store/useUserDataStore";
 import { getUserCosmeticsCatalogAction } from "@/lib/api/cosmetics/actions";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
+import {
+  saveSidebarToIndexedDB,
+  loadSidebarFromIndexedDB,
+  reconcileWithOfflineState,
+  isListDeleted,
+} from "@/lib/offline/sidebarSync";
 
 import { createUserPreferencesStore, UserPreferencesContext } from "@/store/useUserPreferencesStore";
 
@@ -13,9 +20,20 @@ interface Props {
   user: UserType | null;
   initialSidebarCollapsed: boolean;
   initialSidebarPosition: "left" | "right";
+  initialListsData?: {
+    lists: ListsType[];
+    folders: FolderType[];
+    hasMoreRoot: boolean;
+  } | null;
 }
 
-export const UserStoreProvider = ({ children, user, initialSidebarCollapsed, initialSidebarPosition }: Props) => {
+export const UserStoreProvider = ({
+  children,
+  user,
+  initialSidebarCollapsed,
+  initialSidebarPosition,
+  initialListsData,
+}: Props) => {
   const storeRef = useRef<StoreApi<UserState> | null>(null);
   const prefsStoreRef = useRef<any>(null);
 
@@ -31,6 +49,65 @@ export const UserStoreProvider = ({ children, user, initialSidebarCollapsed, ini
       sidebarPosition: initialSidebarPosition,
     });
   }
+
+  if (initialListsData && !useTodoDataStore.getState().initialFetch) {
+    useTodoDataStore.setState({
+      lists: (initialListsData.lists ?? []).filter((l) => !isListDeleted(l.list_id)),
+      folders: initialListsData.folders ?? [],
+      tasks: [],
+      listsPagination: {
+        root: { page: 0, hasMore: initialListsData.hasMoreRoot ?? false },
+      },
+      initialFetch: true,
+    });
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function hydrateSidebar() {
+      if (!initialListsData) {
+        const local = await loadSidebarFromIndexedDB();
+        if (isMounted && (local.lists.length > 0 || local.folders.length > 0)) {
+          useTodoDataStore.setState({
+            lists: local.lists,
+            folders: local.folders,
+            tasks: [],
+            listsPagination: {
+              root: { page: 0, hasMore: false },
+            },
+            initialFetch: true,
+          });
+        }
+        return;
+      }
+
+      const reconciled = await reconcileWithOfflineState(
+        initialListsData.lists ?? [],
+        initialListsData.folders ?? []
+      );
+
+      if (isMounted) {
+        useTodoDataStore.setState({
+          lists: reconciled.lists,
+          folders: reconciled.folders,
+          tasks: [],
+          listsPagination: {
+            root: { page: 0, hasMore: initialListsData.hasMoreRoot ?? false },
+          },
+          initialFetch: true,
+        });
+
+        await saveSidebarToIndexedDB(reconciled.lists, reconciled.folders);
+      }
+    }
+
+    hydrateSidebar();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialListsData]);
 
   useEffect(() => {
     try {

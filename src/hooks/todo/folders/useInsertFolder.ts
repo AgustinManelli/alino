@@ -9,6 +9,13 @@ import { calculateNewRank } from "@/lib/lexorank";
 import { insertFolder } from "@/lib/api/list/actions";
 import { FolderType } from "@/lib/schemas/database.types";
 
+import {
+  saveSingleFolderToIndexedDB,
+  removeFolderFromIndexedDB,
+  enqueueSyncMutation,
+  isNetworkError,
+} from "@/lib/offline/sidebarSync";
+
 export function useInsertFolder() {
   const [isPending, setIsPending] = useState(false);
 
@@ -25,7 +32,6 @@ export function useInsertFolder() {
     const index = calculateNewIndex(lists, folders);
     const now = new Date().toISOString();
 
-    // const { rank: serverRank } = await getNextRankForUser(); comentado porque por el momento en 100 items no es un problema real este
     const rank = calculateNewRank(lists, folders);
 
     const optimistic: FolderType = {
@@ -44,6 +50,22 @@ export function useInsertFolder() {
     try {
       useTodoDataStore.setState((state) => ({ folders: [...state.folders, optimistic] }));
 
+      await saveSingleFolderToIndexedDB(optimistic);
+
+      const payload = {
+        folder_id: optimisticId,
+        folder_name,
+        folder_color,
+        index,
+        rank,
+      };
+
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        await enqueueSyncMutation("insert_folder", "folder", payload);
+        setIsPending(false);
+        return;
+      }
+
       const { error } = await insertFolder(
         optimisticId,
         folder_name,
@@ -53,9 +75,27 @@ export function useInsertFolder() {
       );
 
       if (error) {
+        if (isNetworkError(error)) {
+          await enqueueSyncMutation("insert_folder", "folder", payload);
+          setIsPending(false);
+          return;
+        }
         throw new Error(error || "No se recibieron datos del servidor.");
       }
     } catch (err) {
+      if (isNetworkError(err)) {
+        await enqueueSyncMutation("insert_folder", "folder", {
+          folder_id: optimisticId,
+          folder_name,
+          folder_color,
+          index,
+          rank,
+        });
+        setIsPending(false);
+        return;
+      }
+
+      await removeFolderFromIndexedDB(optimisticId);
       useTodoDataStore.setState((state) => ({
         folders: state.folders.filter((f) => f.folder_id !== optimisticId),
       }));

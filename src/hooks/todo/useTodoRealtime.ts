@@ -17,6 +17,11 @@ import {
   makeMembershipCountPayload,
 } from "@/store/todoUtils";
 
+import {
+  saveSingleListToIndexedDB,
+  removeListFromIndexedDB,
+} from "@/lib/offline/sidebarSync";
+
 export function useTodoRealtime() {
   const { lists, tasks, folders, completedTasks, updateState } = useTodoDataStore();
 
@@ -43,14 +48,20 @@ export function useTodoRealtime() {
         lists: [...currentLists, newItemForStore],
       });
     }
+
+    await saveSingleListToIndexedDB(newItemForStore);
   }, [updateState]);
 
-  const onDeleteList = useCallback((list: MembershipRow) => {
+  const onDeleteList = useCallback((list: { list_id: string; user_id?: string }) => {
     const user = globalUserStore?.getState().user;
-    if (user && user.user_id && list.user_id !== user.user_id) return;
+    if (user && user.user_id && list.user_id && list.user_id !== user.user_id) {
+      return;
+    }
 
     const state = useTodoDataStore.getState();
     const deletedList = state.lists.find((l) => l.list_id === list.list_id);
+    if (!deletedList) return;
+
     const folderId = deletedList?.folder ?? null;
 
     const updatedFolders = folderId
@@ -69,28 +80,47 @@ export function useTodoRealtime() {
       tasks: state.tasks.filter((t) => t.list_id !== list.list_id),
       folders: updatedFolders,
     });
+
+    removeListFromIndexedDB(list.list_id);
   }, [updateState]);
 
   const onUpdateList = useCallback((updatedList: ListsRow) => {
     const currentLists = useTodoDataStore.getState().lists;
-    updateState({
-      lists: currentLists.map((currentItem) =>
-        currentItem.list.list_id === updatedList.list_id
-          ? { ...currentItem, list: { ...currentItem.list, ...updatedList } }
-          : currentItem
-      ),
-    });
+    const nextLists = currentLists.map((currentItem) =>
+      currentItem.list.list_id === updatedList.list_id
+        ? { ...currentItem, list: { ...currentItem.list, ...updatedList } }
+        : currentItem
+    );
+
+    updateState({ lists: nextLists });
+
+    const target = nextLists.find(
+      (currentItem) => currentItem.list.list_id === updatedList.list_id
+    );
+    if (target) {
+      saveSingleListToIndexedDB(target);
+    }
   }, [updateState]);
 
   const onUpdateMembership = useCallback((updatedMembership: MembershipRow) => {
+    const user = globalUserStore?.getState().user;
+    if (user?.user_id && updatedMembership.user_id !== user.user_id) return;
+
     const currentLists = useTodoDataStore.getState().lists;
-    updateState({
-      lists: currentLists.map((currentItem) =>
-        currentItem.list_id === updatedMembership.list_id
-          ? { ...currentItem, ...updatedMembership }
-          : currentItem
-      ),
-    });
+    const nextLists = currentLists.map((currentItem) =>
+      currentItem.list_id === updatedMembership.list_id
+        ? { ...currentItem, ...updatedMembership }
+        : currentItem
+    );
+
+    updateState({ lists: nextLists });
+
+    const target = nextLists.find(
+      (currentItem) => currentItem.list_id === updatedMembership.list_id
+    );
+    if (target) {
+      saveSingleListToIndexedDB(target);
+    }
   }, [updateState]);
 
   const onAddTask = useCallback((task: TaskType | any) => {
