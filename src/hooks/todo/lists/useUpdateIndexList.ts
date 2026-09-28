@@ -23,6 +23,7 @@ export function useUpdateIndexList() {
     }
     const previousFolder = explicitPreviousFolder !== undefined ? explicitPreviousFolder : originalList.folder;
     const previousRank = originalList.rank;
+    const previousPinned = originalList.pinned;
 
     try {
       useTodoDataStore.setState((state) => {
@@ -49,7 +50,12 @@ export function useUpdateIndexList() {
           folders: newFolders,
           lists: state.lists.map((currentItem) =>
             currentItem.list_id === list_id
-              ? { ...currentItem, folder: folder_id, rank }
+              ? {
+                  ...currentItem,
+                  folder: folder_id,
+                  rank,
+                  pinned: folder_id !== null ? false : currentItem.pinned,
+                }
               : currentItem
           ),
         };
@@ -64,7 +70,12 @@ export function useUpdateIndexList() {
       useTodoDataStore.setState((state) => ({
         lists: state.lists.map((currentItem) =>
           currentItem.list_id === list_id
-            ? { ...currentItem, folder: previousFolder, rank: previousRank }
+            ? {
+                ...currentItem,
+                folder: previousFolder,
+                rank: previousRank,
+                pinned: previousPinned,
+              }
             : currentItem
         ),
       }));

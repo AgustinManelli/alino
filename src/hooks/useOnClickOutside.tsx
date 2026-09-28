@@ -27,7 +27,11 @@ export const useOnClickOutside = (
       ) {
         return;
       }
-      if (ignoreClass && (e.target as Element).closest(`.${ignoreClass}`)) {
+      const targetElement =
+        e.target instanceof Element
+          ? e.target
+          : (e.target as Node)?.parentElement;
+      if (ignoreClass && targetElement?.closest?.(`.${ignoreClass}`)) {
         return;
       }
       savedHandler.current(e);

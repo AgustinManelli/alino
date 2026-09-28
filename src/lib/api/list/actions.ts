@@ -197,6 +197,7 @@ export async function getLists(): Promise<{
         .select(`*, list: lists (*, tasks(count))`)
         .eq("user_id", user.id)
         .eq("pinned", true)
+        .is("folder", null)
         .order("rank", { ascending: true }),
       supabase
         .from("list_folders")
@@ -408,9 +409,22 @@ export const updateIndexList = async (
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
+    const updatePayload: {
+      folder: string | null;
+      rank: string;
+      pinned?: boolean;
+    } = {
+      folder: folder_id,
+      rank: rank,
+    };
+
+    if (folder_id !== null) {
+      updatePayload.pinned = false;
+    }
+
     const { data, error } = await supabase
       .from("list_memberships")
-      .update({ folder: folder_id, rank: rank })
+      .update(updatePayload)
       .eq("list_id", list_id)
       .eq("user_id", user.id);
 

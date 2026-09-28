@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { globalUserStore } from "@/store/useUserDataStore";
 import { calculateNewIndex, handleError, readFolderMembershipCount, makeMembershipCountPayload } from "@/store/todoUtils";
-import { calculateNewRank } from "@/lib/lexorank";
+import { calculateNewRank, calcRankForInsertion, compareRanks } from "@/lib/lexorank";
 import { insertList } from "@/lib/api/list/actions";
 import { ListsType } from "@/lib/schemas/database.types";
 
@@ -16,7 +16,8 @@ export function useInsertList() {
     name: string,
     color: string,
     icon: string | null,
-    folder_id?: string | null
+    folder_id?: string | null,
+    targetRank?: string | null
   ) => {
     setIsPending(true);
     const user = globalUserStore?.getState().user;
@@ -30,7 +31,21 @@ export function useInsertList() {
     const index = calculateNewIndex(lists, folders);
     const now = new Date().toISOString();
 
-    const rank = calculateNewRank(lists, folders);
+    const rank =
+      targetRank ??
+      (folder_id
+        ? calcRankForInsertion(
+            lists
+              .filter((l) => l.folder === folder_id)
+              .sort((a, b) =>
+                compareRanks(
+                  { rank: a.rank, id: a.list_id },
+                  { rank: b.rank, id: b.list_id }
+                )
+              ),
+            0
+          )
+        : calculateNewRank(lists, folders));
 
     const optimistic: ListsType = {
       folder: folder_id ?? null,

@@ -27,7 +27,7 @@ export function PinnedLists({
   const itemsToRender: PinnedItem[] =
     pinnedItems ?? [
       ...pinnedFolders.map((f) => ({ kind: "folder" as const, id: f.folder_id, data: f })),
-      ...pinned.map((l) => ({ kind: "list" as const, id: l.list_id, data: l })),
+      ...pinned.filter((l) => l.folder == null).map((l) => ({ kind: "list" as const, id: l.list_id, data: l })),
     ];
 
   const hasPinned = itemsToRender.length > 0;

@@ -308,6 +308,7 @@
 }
 
 .motionListWrapper {
+  position: relative;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -455,12 +456,13 @@
   }
 
   :global(.collapsed) .listWrapper a,
-  :global(.collapsed) .listWrapper [data-in-folder="true"] {
+  :global(.collapsed) .listWrapper [data-in-folder="true"],
+  :global(.collapsed) .listWrapper .newListCard {
     height: 33px !important;
     min-height: 33px !important;
     padding: 0 4px !important;
     border-radius: 8px !important;
-    gap: 0 !important;
+    gap: 4px !important;
   }
 
   :global(.collapsed) .emptyIndicator {
@@ -478,56 +480,69 @@
   min-width: 24px;
 }
 
-.newListForm {
+.newListCard {
   display: flex;
+  position: relative;
+  justify-content: flex-start;
   align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  background-color: var(--background-over-container-solid);
-  border: 1px solid var(--border-container-color);
-  border-radius: 10px;
-  margin-bottom: 5px;
-  height: 33px;
+  background-color: var(--background-over-container);
+  border-radius: 15px;
+  padding: 7px 10px;
+  gap: 10px;
+  height: 45px;
+  min-height: 45px;
+  width: 100%;
   box-sizing: border-box;
+  flex-shrink: 0;
+  z-index: 2;
 }
 
-.newListDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.newListColorPicker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
   flex-shrink: 0;
-  background-color: #87189d;
 }
 
 .newListInput {
   flex: 1;
   min-width: 0;
+  height: 100%;
   background: transparent;
   border: none;
   outline: none;
-  font-size: 12px;
-  color: var(--text);
+  font-size: 14px;
   font-family: inherit;
+  color: var(--text);
+  border-radius: 10px;
 }
 
 .newListInput::placeholder {
-  color: var(--text-not-available);
+  color: var(--placeholder-text-color);
 }
 
-.newListActionBtn {
-  background: transparent;
+.newListSendButton {
   border: none;
+  background-color: transparent;
   cursor: pointer;
-  padding: 2px;
-  border-radius: 4px;
-  color: var(--text-not-available);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: 8px;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
 }
 
-.newListActionBtn:hover {
-  color: var(--text);
+.newListSendButton:hover:not(:disabled) {
   background-color: var(--background-over-container-hover);
+}
+
+.newListSendButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }

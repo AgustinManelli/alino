@@ -81,7 +81,7 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
     }
 
     const pLists: PinnedItem[] = (lists ?? [])
-      .filter((l) => l.pinned === true)
+      .filter((l) => l.pinned === true && l.folder == null)
       .map((l) => ({ kind: "list" as const, id: l.list_id, data: l }));
 
     const pFolders: PinnedItem[] = (folders ?? [])

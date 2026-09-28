@@ -316,8 +316,10 @@ export const Navbar = () => {
             {isSelectionMode ? (
               <div className={styles.selectionBar}>
                 <div className={styles.selectionCount}>
-                  {!sidebarCollapsed && <span>{selectedItems.length} seleccionados</span>}
-                  {sidebarCollapsed && <span>{selectedItems.length}</span>}
+                  <span>
+                    {selectedItems.length}{" "}
+                    {selectedItems.length === 1 ? "seleccionado" : "seleccionados"}
+                  </span>
                 </div>
                 <div className={styles.selectionButtons}>
                   <button
@@ -325,7 +327,7 @@ export const Navbar = () => {
                     onClick={cancelSelectionMode}
                     title="Cancelar"
                   >
-                    {!sidebarCollapsed ? "Cancelar" : "✕"}
+                    Cancelar
                   </button>
                   <button
                     className={styles.selectionDeleteButton}
@@ -333,7 +335,7 @@ export const Navbar = () => {
                     disabled={selectedItems.length === 0}
                     title="Eliminar"
                   >
-                    {!sidebarCollapsed ? "Eliminar" : "🗑️"}
+                    Eliminar
                   </button>
                 </div>
               </div>

@@ -132,6 +132,25 @@
   .active {
     left: initial;
   }
+
+  .selectionBar {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .selectionCount {
+    font-size: 12px;
+  }
+
+  .selectionButtons {
+    gap: 5px;
+  }
+
+  .selectionCancelButton,
+  .selectionDeleteButton {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
 }
 
 .navbarHeader {
@@ -299,30 +318,40 @@
   height: 45px;
   width: 100%;
   animation: slideUp 0.2s ease-out;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
 .selectionCount {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text);
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
 }
 
 .selectionButtons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .selectionCancelButton,
 .selectionDeleteButton {
   border: none;
   background: transparent;
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 8px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .selectionCancelButton {

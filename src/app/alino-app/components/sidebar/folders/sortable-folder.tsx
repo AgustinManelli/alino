@@ -33,14 +33,17 @@ import { FolderInfoEdit } from "@/components/ui/folder-info-edit";
 
 import { useUpdatePinnedFolder } from "@/hooks/todo/folders/useUpdatePinnedFolder";
 import { useInsertList } from "@/hooks/todo/lists/useInsertList";
+import { ColorPicker } from "@/components/ui/ColorPicker/ListColorPicker";
+import { hexColorSchema, shortcodeEmojiSchema } from "@/lib/schemas/list/validation";
+import { customToast } from "@/lib/toasts";
 
 import { FolderType, ListsType } from "@/lib/schemas/database.types";
 import { variants } from "../draggable-board/animations/variants";
 import { useModalStore } from "@/store/useModalStore";
 
-import { DeleteIcon, Edit, LoadingIcon, Pin, Unpin, PlusBoxIcon, Check } from "@/components/ui/icons/icons";
+import { DeleteIcon, Edit, LoadingIcon, Pin, Unpin, PlusBoxIcon, SendIcon } from "@/components/ui/icons/icons";
 import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
-import { compareRanks } from "@/lib/lexorank";
+import { compareRanks, calcRankForInsertion } from "@/lib/lexorank";
 import styles from "./SortableFolder.module.css";
 
 const EDIT_ICON = <Edit className={styles.iconAction} />;
@@ -139,7 +142,46 @@ export const SortableFolder = memo(function SortableFolder({
 
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [newListColor, setNewListColor] = useState<string>("#87189d");
+  const [newListEmoji, setNewListEmoji] = useState<string | null>(null);
   const newListInputRef = useRef<HTMLInputElement | null>(null);
+  const newListContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const handleSetNewListColor = useCallback(
+    (newColor: string | null, isTyping?: boolean) => {
+      if (isTyping) {
+        setNewListColor(newColor || "#87189d");
+        setNewListEmoji(null);
+        return;
+      }
+      const validation = hexColorSchema.safeParse(newColor);
+      if (!validation.success) {
+        setNewListColor("#87189d");
+        setNewListEmoji(null);
+        customToast.error(validation.error.issues[0].message);
+        return;
+      }
+      setNewListColor(newColor || "#87189d");
+      newListInputRef.current?.focus();
+    },
+    []
+  );
+
+  const handleSetNewListEmoji = useCallback((newEmoji: string | null) => {
+    const validation = shortcodeEmojiSchema.safeParse(newEmoji);
+    if (!validation.success) {
+      setNewListEmoji(null);
+      customToast.error(validation.error.issues[0].message);
+    } else {
+      setNewListEmoji(newEmoji);
+    }
+    newListInputRef.current?.focus();
+  }, []);
+
+  const resetNewListColor = useCallback(() => {
+    setNewListColor("#87189d");
+    setNewListEmoji(null);
+  }, []);
 
   const handlePin = useCallback(() => {
     updatePinnedFolder(folder.folder_id, !folder.pinned);
@@ -149,24 +191,55 @@ export const SortableFolder = memo(function SortableFolder({
     if (!open) {
       setOpen(true);
     }
+    setNewListName("");
+    setNewListColor("#87189d");
+    setNewListEmoji(null);
     setIsCreatingList(true);
     setTimeout(() => {
       newListInputRef.current?.focus();
+      scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     }, 50);
   }, [open, setOpen]);
 
   const handleSaveNewList = useCallback(async () => {
     const formatText = newListName.replace(/\s+/g, " ").trim();
     if (!formatText || formatText.length > 30) return;
+    const finalColor = newListColor || "#87189d";
+    const finalEmoji = newListEmoji;
     setIsCreatingList(false);
     setNewListName("");
-    await insertList(formatText, "#87189d", null, folder.folder_id);
-  }, [newListName, insertList, folder.folder_id]);
+    setNewListColor("#87189d");
+    setNewListEmoji(null);
+    const topRank = calcRankForInsertion(sortedLists ?? [], 0);
+    await insertList(formatText, finalColor, finalEmoji, folder.folder_id, topRank);
+  }, [newListName, newListColor, newListEmoji, sortedLists, insertList, folder.folder_id]);
 
   const handleCancelNewList = useCallback(() => {
     setIsCreatingList(false);
     setNewListName("");
+    setNewListColor("#87189d");
+    setNewListEmoji(null);
   }, []);
+
+  useOnClickOutside(
+    newListContainerRef as React.RefObject<HTMLElement>,
+    (e) => {
+      if (!isCreatingList) return;
+      const target = (e?.target instanceof Element
+        ? e.target
+        : (e?.target as Node)?.parentElement) as HTMLElement | null;
+      if (
+        target?.closest?.(
+          ".color-picker-portal, .emoji-mart-picker, .ignore-sidebar-close, [id*='color-picker-container']"
+        )
+      ) {
+        return;
+      }
+      handleCancelNewList();
+    },
+    [],
+    "ignore-sidebar-close"
+  );
 
   useDndMonitor({
     onDragOver: (event) => {
@@ -544,49 +617,70 @@ export const SortableFolder = memo(function SortableFolder({
                   animate={{ opacity: 1 }}
                   className={styles.motionListWrapper}
                 >
-                  {isCreatingList && (
-                    <div className={styles.newListForm}>
-                      <span className={styles.newListDot} />
-                      <input
-                        ref={newListInputRef}
-                        type="text"
-                        placeholder="Nombre de la lista..."
-                        maxLength={30}
-                        value={newListName}
-                        onChange={(e) => setNewListName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleSaveNewList();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            handleCancelNewList();
-                          }
+                  <AnimatePresence mode="popLayout">
+                    {isCreatingList && (
+                      <motion.div
+                        key="folder-new-list-card"
+                        ref={newListContainerRef}
+                        className={styles.newListCard}
+                        initial={animations ? { scale: 0.98, opacity: 0 } : undefined}
+                        animate={animations ? { scale: 1, opacity: 1 } : undefined}
+                        exit={animations ? { scale: 0.98, opacity: 0 } : undefined}
+                        transition={{
+                          duration: 0.18,
+                          ease: "easeOut",
                         }}
-                        className={styles.newListInput}
-                        aria-label="Nombre de la nueva lista"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleSaveNewList}
-                        disabled={!newListName.trim()}
-                        className={styles.newListActionBtn}
-                        title="Crear lista"
-                        aria-label="Crear lista"
                       >
-                        <Check style={{ width: "14px", height: "14px" }} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleCancelNewList}
-                        className={styles.newListActionBtn}
-                        title="Cancelar"
-                        aria-label="Cancelar creación de lista"
-                      >
-                        <DeleteIcon style={{ width: "14px", height: "14px" }} />
-                      </button>
-                    </div>
-                  )}
+                        <div className={styles.newListColorPicker}>
+                          <ColorPicker
+                            color={newListColor}
+                            setColor={handleSetNewListColor}
+                            emoji={newListEmoji}
+                            setEmoji={handleSetNewListEmoji}
+                            setOriginalColor={resetNewListColor}
+                            uniqueId={`folder-${folder.folder_id}-new-list`}
+                          />
+                        </div>
+                        <input
+                          ref={newListInputRef}
+                          autoFocus
+                          maxLength={30}
+                          type="text"
+                          placeholder="Nombre de la lista"
+                          value={newListName}
+                          onChange={(e) => setNewListName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleSaveNewList();
+                            } else if (e.key === "Escape") {
+                              e.preventDefault();
+                              handleCancelNewList();
+                            }
+                          }}
+                          className={styles.newListInput}
+                          aria-label="Nombre de la lista"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSaveNewList}
+                          onMouseDown={(e) => e.preventDefault()}
+                          disabled={!newListName.trim()}
+                          className={styles.newListSendButton}
+                          title="Crear lista"
+                          aria-label="Crear lista"
+                        >
+                          <SendIcon
+                            style={{
+                              width: 18,
+                              stroke: "var(--icon-color)",
+                              strokeWidth: 2,
+                            }}
+                          />
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   {sortedLists && sortedLists.length > 0 ? (
                     sortedLists.map((list, index) => (
                       <motion.div
