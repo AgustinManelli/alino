@@ -4,10 +4,18 @@ import React, { useRef, useState, useCallback, memo, useEffect } from "react";
 import { motion } from "motion/react";
 import { getEmojiDominantColor } from "@/utils/getEmojiDominantColor";
 
+import dynamic from "next/dynamic";
 import { ClientOnlyPortal } from "../../ClientOnlyPortal";
 import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
-import { EmojiMartPicker } from "@/components/ui/EmojiMart/emoji-mart-picker";
 import colorsData from "../colors.json";
+
+const EmojiMartPicker = dynamic(
+  () =>
+    import("@/components/ui/EmojiMart/emoji-mart-picker").then(
+      (m) => m.EmojiMartPicker,
+    ),
+  { ssr: false },
+);
 
 import { useModalUbication } from "@/hooks/useModalUbication";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";

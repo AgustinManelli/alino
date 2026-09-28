@@ -52,7 +52,7 @@ export const getUser = cache(async () => {
       throw new Error("No se pudo obtener el usuario.");
     }
 
-    return { data: { user: data as UserType } };
+    return { data: { user: data as unknown as UserType } };
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE,
@@ -838,7 +838,6 @@ export const deleteAccountAction = async (
       return { error: "El nombre de usuario ingresado no coincide." };
     }
 
-    // 1. Eliminar datos en la base de datos pública (cascada a tareas, listas, etc.)
     const { error: dbError } = await supabase
       .from("users")
       .delete()
@@ -850,7 +849,6 @@ export const deleteAccountAction = async (
       };
     }
 
-    // 2. Si existe la clave de servicio, eliminar el usuario de auth.users
     if (
       process.env.SUPABASE_SERVICE_ROLE_KEY &&
       process.env.NEXT_PUBLIC_SUPABASE_URL

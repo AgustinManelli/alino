@@ -6,11 +6,17 @@ import { AnimatePresence } from "motion/react";
 import { signOutLocal } from "@/lib/auth/actions";
 import { useNavigationLoader } from "@/hooks/useNavigationLoader";
 
+import dynamic from "next/dynamic";
 import { ModalBox } from "@/components/ui/modal-options-box";
-import { ConfigModal } from "../config-modal";
 import { CloudIndicator } from "./cloud-indicator";
 import { ThemeSelector } from "@/components/ui/theme-selector";
-import ConfigUser from "../config-user";
+
+const ConfigModal = dynamic(
+  () => import("../config-modal").then((m) => m.ConfigModal),
+  { ssr: false },
+);
+
+const ConfigUser = dynamic(() => import("../config-user"), { ssr: false });
 
 import {
   Config,

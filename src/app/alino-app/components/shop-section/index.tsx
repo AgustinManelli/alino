@@ -7,13 +7,21 @@ import { useUserDataStore } from "@/store/useUserDataStore";
 import { ModalBox } from "@/components/ui/modal-options-box";
 import { AlinoCoinIcon } from "@/components/ui/alino-coins-icon";
 import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
+import dynamic from "next/dynamic";
 import { buyCosmeticAction } from "@/lib/api/cosmetics/actions";
 import { CosmeticItem } from "@/lib/schemas/database.types";
 import { getCosmeticTranslation, getCoinPackTranslation } from "@/lib/i18n/helpers";
-import { ShopGalleryModal } from "@/app/alino-app/components/shop-gallery-modal";
 import { customToast } from "@/lib/toasts";
 import styles from "./ShopSection.module.css";
 import { CounterAnimation } from "@/components/ui/CounterAnimation";
+
+const ShopGalleryModal = dynamic(
+  () =>
+    import("@/app/alino-app/components/shop-gallery-modal").then(
+      (m) => m.ShopGalleryModal,
+    ),
+  { ssr: false },
+);
 
 export const ShopSection = () => {
   const { t } = useTranslation(["shop", "common"]);
@@ -25,7 +33,7 @@ export const ShopSection = () => {
 
   const currentUser = useUserDataStore((state) => state.user);
   const {
-    coins,
+    coins: storeCoins,
     coinPacks,
     cosmetics,
     isLoading,
@@ -36,9 +44,21 @@ export const ShopSection = () => {
     setCoins,
   } = useShopStore();
 
+  const userCoins = currentUser?.alino_coins ?? 0;
+  const coins = storeCoins || userCoins;
+
   useEffect(() => {
-    fetchShopData();
-  }, [fetchShopData]);
+    const rawUserCoins = currentUser?.alino_coins;
+    if (typeof rawUserCoins === "number" && useShopStore.getState().coins === 0) {
+      setCoins(rawUserCoins);
+    }
+  }, [currentUser?.alino_coins, setCoins]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchShopData();
+    }
+  }, [isOpen, fetchShopData]);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -326,10 +346,12 @@ export const ShopSection = () => {
         </ModalBox>
       )}
 
-      <ShopGalleryModal
-        isOpen={isGalleryOpen}
-        onClose={() => setIsGalleryOpen(false)}
-      />
+      {isGalleryOpen && (
+        <ShopGalleryModal
+          isOpen={isGalleryOpen}
+          onClose={() => setIsGalleryOpen(false)}
+        />
+      )}
     </div>
   );
 };

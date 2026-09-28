@@ -2138,12 +2138,22 @@ export type TaskType = Omit<TaskRow, "created_by"> & {
 type MembershipInfo = Pick<MembershipRow, "role" | "shared_since">;
 export type UserWithMembershipRole = UserProfile & MembershipInfo;
 
+export type UserPrivatePreferences = {
+  extra_ai_credits: number;
+  initial_username_prompt_shown: boolean;
+  initial_guide_show: boolean;
+  preferences: Json | null;
+  country_code: string | null;
+  dashboard_layout: Json | null;
+  active_widgets: Json | null;
+};
+
 export type UserType = Database["public"]["Tables"]["users"]["Row"] & {
-  user_private: Database["public"]["Tables"]["user_private"]["Row"] | null;
+  alino_coins: number;
+  xp: number;
+  tier: Database["public"]["Enums"]["subscription_tier"];
+  user_private: UserPrivatePreferences | null;
   subscriptions?: Database["public"]["Tables"]["subscriptions"]["Row"][];
-  tier?: Database["public"]["Enums"]["subscription_tier"];
-  alino_coins?: number | null;
-  xp?: number | null;
 };
 
 export type InvitationRow =

@@ -8,17 +8,30 @@ import { RealtimeProvider } from "@/components/providers/RealtimeProvider";
 import { useSidebarStateStore } from "@/store/useSidebarStateStore";
 import { useDeferredLoading } from "@/hooks/useDeferredLoading";
 
+import dynamic from "next/dynamic";
 import { ConfigSection } from "./components/config-section";
 import { Sidebar } from "./components/sidebar";
 import { NotificationsSection } from "./components/notifications";
 import { StreakSection } from "./components/streak-section";
 import { ShopSection } from "./components/shop-section";
 import { AchievementsSection } from "./components/achievements-section";
-import { AchievementsGalleryModal } from "./components/achievements-gallery";
-import dynamic from "next/dynamic";
 import { CompanionOverlayHost } from "./components/CompanionOverlayHost";
-import { AIAssistantChat } from "./components/ai-assistant-chat";
 import { hasAIFeatureAccess } from "@/lib/ai/permissions";
+import { useAchievementsStore } from "@/store/useAchievementsStore";
+
+const AIAssistantChat = dynamic(
+  () =>
+    import("./components/ai-assistant-chat").then((m) => m.AIAssistantChat),
+  { ssr: false },
+);
+
+const AchievementsGalleryModal = dynamic(
+  () =>
+    import("./components/achievements-gallery").then(
+      (m) => m.AchievementsGalleryModal,
+    ),
+  { ssr: false },
+);
 
 const InitialUserConfiguration = dynamic(
   () =>
@@ -47,6 +60,9 @@ export const AppContent = ({ children }: Props) => {
   const isMobile = usePlatformInfoStore((state) => state.isMobile);
   const { sidebarCollapsed, sidebarPosition } = useUserPreferencesStore();
   const canAccessAssistantChat = hasAIFeatureAccess(user?.tier, "assistant_chat");
+  const isAchievementsGalleryOpen = useAchievementsStore(
+    (state) => state.isGalleryOpen,
+  );
 
   const [showConfiguration, setShowConfiguration] = useState(
     user?.user_private?.initial_username_prompt_shown ?? false,
@@ -100,7 +116,7 @@ export const AppContent = ({ children }: Props) => {
       </AnimatePresence>
       <RealtimeProvider />
       <ModalRenderer />
-      <AchievementsGalleryModal />
+      {isAchievementsGalleryOpen && <AchievementsGalleryModal />}
       <CompanionOverlayHost />
       {canAccessAssistantChat && <AIAssistantChat />}
       <section className={styles.topButtons}>

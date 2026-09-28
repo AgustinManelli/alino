@@ -2,12 +2,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-
-// import data from "@emoji-mart/data/sets/15/apple.json";
-
-import data from "./apple.json";
-
 import { Picker } from "emoji-mart";
+import { loadEmojiMartData } from "./initEmojiMart";
 
 export function EmojiMartPicker(props) {
   const ref = useRef(null);
@@ -18,11 +14,17 @@ export function EmojiMartPicker(props) {
   }
 
   useEffect(() => {
-    instance.current = new Picker({
-      ...props,
-      ref,
-      set: "native",
-    });
+    let isCancelled = false;
+
+    loadEmojiMartData(true).then((emojiData) => {
+      if (isCancelled || !ref.current) return;
+
+      instance.current = new Picker({
+        ...props,
+        data: emojiData,
+        ref,
+        set: "native",
+      });
 
     var style = document.createElement("style");
     style.innerHTML = `
@@ -191,9 +193,11 @@ export function EmojiMartPicker(props) {
     text-align: center;
   }
 `;
-    instance.current.shadowRoot.appendChild(style);
+      instance.current.shadowRoot?.appendChild(style);
+    });
 
     return () => {
+      isCancelled = true;
       instance.current = null;
     };
   }, []);

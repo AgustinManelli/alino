@@ -15,6 +15,8 @@ import {
 
 import { createUserPreferencesStore, UserPreferencesContext } from "@/store/useUserPreferencesStore";
 
+import { useShopStore } from "@/store/useShopStore";
+
 interface Props {
   children: ReactNode;
   user: UserType | null;
@@ -39,6 +41,10 @@ export const UserStoreProvider = ({
 
   if (!storeRef.current) {
     storeRef.current = createUserDataStore({ user });
+    const initialCoins = user?.alino_coins;
+    if (typeof initialCoins === "number" && useShopStore.getState().coins === 0) {
+      useShopStore.setState({ coins: initialCoins });
+    }
   }
 
   if (!prefsStoreRef.current) {

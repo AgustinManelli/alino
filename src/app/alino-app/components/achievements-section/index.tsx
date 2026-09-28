@@ -43,9 +43,11 @@ export const AchievementsSection: React.FC = () => {
   } = useAchievementsStore();
 
   useEffect(() => {
-    fetchAchievements();
-    syncAchievements();
-  }, [fetchAchievements, syncAchievements]);
+    if (isOpen) {
+      fetchAchievements();
+      syncAchievements();
+    }
+  }, [isOpen, fetchAchievements, syncAchievements]);
 
   const currentLevel = currentUser?.level ?? overview?.level ?? 1;
   const currentXp = currentUser?.xp ?? overview?.xp ?? 0;

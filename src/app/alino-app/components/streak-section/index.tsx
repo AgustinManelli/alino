@@ -30,8 +30,10 @@ export const StreakSection = () => {
   } = useShopStore();
 
   useEffect(() => {
-    fetchStreak();
-  }, [fetchStreak]);
+    if (isOpen) {
+      fetchStreak();
+    }
+  }, [isOpen, fetchStreak]);
 
   const streakCount = streak?.current_streak ?? 0;
   const maxStreak = streak?.max_streak ?? 0;
