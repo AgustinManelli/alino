@@ -1,18 +1,25 @@
 {
   "version": "0.1.0",
+  "id": "/",
   "name": "Alino",
   "short_name": "Alino",
   "description": "Organiza tu día a día de una forma fácil y sencilla.",
-  "theme_color": "#ffffff",
+  "theme_color": "#F0F0F0",
   "background_color": "#ffffff",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "/sign-in",
+  "start_url": "/",
   "lang": "es",
   "dir": "ltr",
   "categories": ["productivity", "todo"],
   "icons": [
+    {
+      "src": "/apple-touch-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/manifest-icon-192.maskable.png",
       "sizes": "192x192",

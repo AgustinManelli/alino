@@ -6,6 +6,7 @@ import { MobileSizeListener } from "@/hooks/useMobileSizeListener";
 import { WpaDownloadModal } from "@/components/ui/wpa-download-modal";
 import { Loader } from "@/components/ui/loader";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import Pwa from "@/components/providers/pwa";
 
 import { inter, roboto, poppins, jetbrainsMono } from "../lib/fonts";
 import "./globals.css";
@@ -36,7 +37,118 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: APP_DEFAULT_TITLE,
-    // startUpImage: [],
+    startupImage: [
+      // iPhone 16 Pro Max, 15 Pro Max, 15 Plus, 14 Pro Max
+      {
+        url: "/splash/apple-splash-dark-1290-2796.png",
+        media:
+          "(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)",
+      },
+      {
+        url: "/splash/apple-splash-light-1290-2796.png",
+        media:
+          "(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)",
+      },
+      // iPhone 16 Pro, 15 Pro, 15, 14 Pro
+      {
+        url: "/splash/apple-splash-dark-1179-2556.png",
+        media:
+          "(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)",
+      },
+      {
+        url: "/splash/apple-splash-light-1179-2556.png",
+        media:
+          "(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)",
+      },
+      // iPhone 16 Plus, 14 Plus, 13 Pro Max, 12 Pro Max
+      {
+        url: "/splash/apple-splash-dark-1284-2778.png",
+        media:
+          "(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)",
+      },
+      {
+        url: "/splash/apple-splash-light-1284-2778.png",
+        media:
+          "(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)",
+      },
+      // iPhone 14, 13 Pro, 13, 12 Pro, 12
+      {
+        url: "/splash/apple-splash-dark-1170-2532.png",
+        media:
+          "(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)",
+      },
+      {
+        url: "/splash/apple-splash-light-1170-2532.png",
+        media:
+          "(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)",
+      },
+      // iPhone 11 Pro Max, XS Max
+      {
+        url: "/splash/apple-splash-dark-1242-2688.png",
+        media:
+          "(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)",
+      },
+      {
+        url: "/splash/apple-splash-light-1242-2688.png",
+        media:
+          "(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)",
+      },
+      // iPhone 11, XR
+      {
+        url: "/splash/apple-splash-dark-828-1792.png",
+        media:
+          "(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: dark)",
+      },
+      {
+        url: "/splash/apple-splash-light-828-1792.png",
+        media:
+          "(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: light)",
+      },
+      // iPhone 13 mini, 12 mini, 11 Pro, XS, X
+      {
+        url: "/splash/apple-splash-dark-1125-2436.png",
+        media:
+          "(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)",
+      },
+      {
+        url: "/splash/apple-splash-light-1125-2436.png",
+        media:
+          "(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)",
+      },
+      // iPhone SE, 8, 7, 6s
+      {
+        url: "/splash/apple-splash-dark-750-1334.png",
+        media:
+          "(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: dark)",
+      },
+      {
+        url: "/splash/apple-splash-light-750-1334.png",
+        media:
+          "(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: light)",
+      },
+      // iPad Pro 12.9"
+      {
+        url: "/splash/apple-splash-dark-2048-2732.png",
+        media:
+          "(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: dark)",
+      },
+      {
+        url: "/splash/apple-splash-light-2048-2732.png",
+        media:
+          "(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: light)",
+      },
+      // iPad Pro 11", Air 10.9"
+      {
+        url: "/splash/apple-splash-dark-1668-2388.png",
+        media:
+          "(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: dark)",
+      },
+      {
+        url: "/splash/apple-splash-light-1668-2388.png",
+        media:
+          "(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: light)",
+      },
+    ],
   },
   icons: {
     icon: [
@@ -50,6 +162,13 @@ export const metadata: Metadata = {
         rel: "icon",
         url: "/favicon.ico",
         media: "(prefers-color-scheme: dark)",
+      },
+    ],
+    apple: [
+      {
+        url: "/apple-touch-icon-180.png",
+        sizes: "180x180",
+        type: "image/png",
       },
     ],
   },
@@ -110,6 +229,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className}`}>
         <ThemeProvider>
+          <Pwa />
           <MobileSizeListener />
           <Toaster
             position="bottom-right"
