@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useCallback, memo, useEffect } from "react";
 import { motion } from "motion/react";
-import { generatePalette } from "emoji-palette";
+import { getEmojiDominantColor } from "@/utils/getEmojiDominantColor";
 
 import { ClientOnlyPortal } from "../../ClientOnlyPortal";
 import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
@@ -79,8 +79,7 @@ export function ColorPicker({
   const onEmojiSelect = useCallback(
     (selectedEmoji: EmojiType) => {
       setEmoji(selectedEmoji.shortcodes as string);
-      const palette: string[] = generatePalette(selectedEmoji.native);
-      const dominantColor: string = palette[Math.floor(palette.length / 2)];
+      const dominantColor = getEmojiDominantColor(selectedEmoji.native);
       setColor(dominantColor);
       setIsOpenPicker(false);
     },

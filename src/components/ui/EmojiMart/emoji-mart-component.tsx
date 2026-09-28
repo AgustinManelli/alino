@@ -22,6 +22,7 @@ declare global {
         native?: string;
         fallback?: string;
         skin?: number | string;
+        spritesheet?: boolean | string;
       };
     }
   }
@@ -85,7 +86,7 @@ export function EmojiMartComponent(props: EmojiMartComponentProps) {
 
   return (
     <EmojiErrorBoundary>
-      <em-emoji {...props} set="apple"></em-emoji>
+      <em-emoji {...props} set="native"></em-emoji>
     </EmojiErrorBoundary>
   );
 }

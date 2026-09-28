@@ -18,7 +18,11 @@ export function EmojiMartPicker(props) {
   }
 
   useEffect(() => {
-    instance.current = new Picker({ ...props, ref });
+    instance.current = new Picker({
+      ...props,
+      ref,
+      set: "native",
+    });
 
     var style = document.createElement("style");
     style.innerHTML = `
@@ -185,10 +189,6 @@ export function EmojiMartPicker(props) {
     transform: scale(var(--emoji-scale, 1)) translateZ(0);
     transition: transform 0.2s;
     text-align: center;
-  }
-
-  .category button span span {
-    background-image: url("/emojis-apple.png") !important;
   }
 `;
     instance.current.shadowRoot.appendChild(style);

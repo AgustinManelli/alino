@@ -11,7 +11,10 @@ export const loadEmojiMartData = (): Promise<void> => {
       import("./apple.json"),
     ])
       .then(([{ init }, dataModule]) => {
-        init({ data: dataModule.default || dataModule });
+        init({
+          data: dataModule.default || dataModule,
+          set: "native",
+        });
       })
       .catch((err) => {
         console.error("Error al cargar emoji-mart asíncronamente:", err);
