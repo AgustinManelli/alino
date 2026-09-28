@@ -480,6 +480,14 @@
   min-width: 24px;
 }
 
+.newListFormWrapper {
+  width: 100%;
+}
+
+.newListFormWrapper:empty {
+  display: none;
+}
+
 .newListCard {
   display: flex;
   position: relative;

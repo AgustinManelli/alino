@@ -52,6 +52,8 @@ const PIN_ICON = <Pin className={styles.iconAction} />;
 const UNPIN_ICON = <Unpin className={styles.iconAction} />;
 const NEW_LIST_ICON = <PlusBoxIcon className={styles.iconAction} />;
 
+const EMPTY_EXCLUDES: React.RefObject<HTMLElement>[] = [];
+
 interface SortableFolderProps {
   folder: FolderType;
   lists: ListsType[] | null;
@@ -237,7 +239,7 @@ export const SortableFolder = memo(function SortableFolder({
       }
       handleCancelNewList();
     },
-    [],
+    EMPTY_EXCLUDES,
     "ignore-sidebar-close"
   );
 
@@ -617,70 +619,71 @@ export const SortableFolder = memo(function SortableFolder({
                   animate={{ opacity: 1 }}
                   className={styles.motionListWrapper}
                 >
-                  <AnimatePresence mode="popLayout">
-                    {isCreatingList && (
-                      <motion.div
-                        key="folder-new-list-card"
-                        ref={newListContainerRef}
-                        className={styles.newListCard}
-                        initial={animations ? { scale: 0.98, opacity: 0 } : undefined}
-                        animate={animations ? { scale: 1, opacity: 1 } : undefined}
-                        exit={animations ? { scale: 0.98, opacity: 0 } : undefined}
-                        transition={{
-                          duration: 0.18,
-                          ease: "easeOut",
-                        }}
-                      >
-                        <div className={styles.newListColorPicker}>
-                          <ColorPicker
-                            color={newListColor}
-                            setColor={handleSetNewListColor}
-                            emoji={newListEmoji}
-                            setEmoji={handleSetNewListEmoji}
-                            setOriginalColor={resetNewListColor}
-                            uniqueId={`folder-${folder.folder_id}-new-list`}
-                          />
-                        </div>
-                        <input
-                          ref={newListInputRef}
-                          autoFocus
-                          maxLength={30}
-                          type="text"
-                          placeholder="Nombre de la lista"
-                          value={newListName}
-                          onChange={(e) => setNewListName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleSaveNewList();
-                            } else if (e.key === "Escape") {
-                              e.preventDefault();
-                              handleCancelNewList();
-                            }
+                  <div ref={newListContainerRef} className={styles.newListFormWrapper}>
+                    <AnimatePresence mode="popLayout">
+                      {isCreatingList && (
+                        <motion.div
+                          key="folder-new-list-card"
+                          className={styles.newListCard}
+                          initial={animations ? { scale: 0.98, opacity: 0 } : undefined}
+                          animate={animations ? { scale: 1, opacity: 1 } : undefined}
+                          exit={animations ? { scale: 0.98, opacity: 0 } : undefined}
+                          transition={{
+                            duration: 0.18,
+                            ease: "easeOut",
                           }}
-                          className={styles.newListInput}
-                          aria-label="Nombre de la lista"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleSaveNewList}
-                          onMouseDown={(e) => e.preventDefault()}
-                          disabled={!newListName.trim()}
-                          className={styles.newListSendButton}
-                          title="Crear lista"
-                          aria-label="Crear lista"
                         >
-                          <SendIcon
-                            style={{
-                              width: 18,
-                              stroke: "var(--icon-color)",
-                              strokeWidth: 2,
+                          <div className={styles.newListColorPicker}>
+                            <ColorPicker
+                              color={newListColor}
+                              setColor={handleSetNewListColor}
+                              emoji={newListEmoji}
+                              setEmoji={handleSetNewListEmoji}
+                              setOriginalColor={resetNewListColor}
+                              uniqueId={`folder-${folder.folder_id}-new-list`}
+                            />
+                          </div>
+                          <input
+                            ref={newListInputRef}
+                            autoFocus
+                            maxLength={30}
+                            type="text"
+                            placeholder="Nombre de la lista"
+                            value={newListName}
+                            onChange={(e) => setNewListName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleSaveNewList();
+                              } else if (e.key === "Escape") {
+                                e.preventDefault();
+                                handleCancelNewList();
+                              }
                             }}
+                            className={styles.newListInput}
+                            aria-label="Nombre de la lista"
                           />
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                          <button
+                            type="button"
+                            onClick={handleSaveNewList}
+                            onMouseDown={(e) => e.preventDefault()}
+                            disabled={!newListName.trim()}
+                            className={styles.newListSendButton}
+                            title="Crear lista"
+                            aria-label="Crear lista"
+                          >
+                            <SendIcon
+                              style={{
+                                width: 18,
+                                stroke: "var(--icon-color)",
+                                strokeWidth: 2,
+                              }}
+                            />
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                   {sortedLists && sortedLists.length > 0 ? (
                     sortedLists.map((list, index) => (
                       <motion.div
