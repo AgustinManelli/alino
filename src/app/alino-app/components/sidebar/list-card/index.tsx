@@ -9,7 +9,7 @@ import {
   memo,
   useCallback,
 } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useSortable } from "@dnd-kit/sortable";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
@@ -81,8 +81,12 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
 
   const taskCount = useTodoDataStore(
     useCallback(
-      (state) => readTaskCount(list, state.tasks),
-      [list.list_id, list.list.tasks],
+      (state) => {
+        const currentList =
+          state.lists.find((l) => l.list_id === list.list_id) ?? list;
+        return readTaskCount(currentList, state.tasks);
+      },
+      [list],
     ),
   );
 
@@ -99,15 +103,25 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
     (state) => state.setPendingListId,
   );
 
-  const router = useRouter();
-
   const isSelectionMode = useSidebarSelectionStore((s) => s.isSelectionMode);
-  const selectedItems = useSidebarSelectionStore((s) => s.selectedItems);
   const toggleItemSelection = useSidebarSelectionStore((s) => s.toggleItemSelection);
   const startSelectionMode = useSidebarSelectionStore((s) => s.startSelectionMode);
 
-  const isSelected = selectedItems.some((x) => x.id === list.list_id);
-  const isParentFolderSelected = !!(list.folder && selectedItems.some((x) => x.id === list.folder && x.kind === "folder"));
+  const isSelected = useSidebarSelectionStore(
+    useCallback((s) => s.selectedItems.some((x) => x.id === list.list_id), [list.list_id]),
+  );
+  const isParentFolderSelected = useSidebarSelectionStore(
+    useCallback(
+      (s) =>
+        Boolean(
+          list.folder &&
+            s.selectedItems.some(
+              (x) => x.id === list.folder && x.kind === "folder",
+            ),
+        ),
+      [list.folder],
+    ),
+  );
   const checkboxDisabled = isParentFolderSelected;
 
   const divRef = useRef<HTMLInputElement | null>(null);
@@ -345,11 +359,6 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
           className={`${styles.container}${isSelectionMode ? " " + styles.selectionMode : ""}`}
           data-in-folder={inFolder || !!list.folder}
           href={isSelectionMode || isNameChange || isDragging ? "#" : `/alino-app/${list.list_id}`}
-          onMouseEnter={() => {
-            if (!isSelectionMode && !isNameChange && !isDragging) {
-              router.prefetch(`/alino-app/${list.list_id}`);
-            }
-          }}
           onClick={(e) => {
             if (isSelectionMode) {
               e.preventDefault();
@@ -381,9 +390,9 @@ export const ListCard = memo(({ list, inFolder = false }: ListCardProps) => {
           <AnimatePresence>
             {isSelectionMode && (
               <motion.div
-                initial={{ width: 0, opacity: 0, marginRight: -7 }}
-                animate={{ width: 24, opacity: 1, marginRight: 0 }}
-                exit={{ width: 0, opacity: 0, marginRight: -7 }}
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 24, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
                 transition={{ type: "spring", stiffness: 500, damping: 32 }}
                 style={{ overflow: "hidden", flexShrink: 0 }}
                 onClick={(e) => {

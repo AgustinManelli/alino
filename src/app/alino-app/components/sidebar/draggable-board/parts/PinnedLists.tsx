@@ -38,10 +38,16 @@ export function PinnedLists({
         if (item.kind === "folder") {
           const folder = item.data;
           const folderLists =
-            ("childrens" in item && item.childrens
+            "childrens" in item && item.childrens
               ? item.childrens
-              : allLists.filter((l) => l.folder === folder.folder_id)
-            ).slice().sort((a, b) => compareRanks({ rank: a.rank, id: a.list_id }, { rank: b.rank, id: b.list_id }));
+              : allLists
+                  .filter((l) => l.folder === folder.folder_id)
+                  .sort((a, b) =>
+                    compareRanks(
+                      { rank: a.rank, id: a.list_id },
+                      { rank: b.rank, id: b.list_id },
+                    ),
+                  );
 
           return (
             <motion.div

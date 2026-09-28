@@ -4,13 +4,13 @@ import { useCallback, useRef, memo, CSSProperties } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { FolderType } from "@/lib/schemas/database.types";
+import { FolderColorPicker } from "../ColorPicker/FolderColorPicker";
 
 import { hexColorSchema } from "@/lib/schemas/list/validation";
 import { useUpdateDataFolder } from "@/hooks/todo/folders/useUpdateDataFolder";
 
 import { Check, FolderClosed, FolderOpen } from "@/components/ui/icons/icons";
 import styles from "./FolderInfoEdit.module.css";
-import { FolderColorPicker } from "../ColorPicker/FolderColorPicker";
 
 interface Props {
   folder: FolderType;
@@ -36,7 +36,7 @@ const motionTransition = {
   duration: 0.3,
 };
 
-export const FolderInfoEdit = memo(function ListInfoEdit({
+export const FolderInfoEdit = memo(function FolderInfoEdit({
   folder,
   isNameChange,
   setIsNameChange,
@@ -154,7 +154,7 @@ export const FolderInfoEdit = memo(function ListInfoEdit({
             </motion.div>
           ) : folderOpen ? (
             <motion.div
-              key="emoji-view"
+              key="folder-open-view"
               transition={motionTransition}
               className={styles.emojiContainer}
             >
@@ -170,7 +170,7 @@ export const FolderInfoEdit = memo(function ListInfoEdit({
             </motion.div>
           ) : (
             <motion.div
-              key="emoji-view"
+              key="folder-closed-view"
               transition={motionTransition}
               className={styles.emojiContainer}
             >
@@ -206,15 +206,21 @@ export const FolderInfoEdit = memo(function ListInfoEdit({
               defaultValue={folder.folder_name}
               ref={inputRef}
               onKeyDown={handleKeyDown}
-              id={`folder-info-edit-container`}
+              id={`folder-info-edit-container-${folder.folder_id}`}
+              aria-label="Nombre de la carpeta"
             />
-          ) : (
+          ) : !hideText ? (
             <span className={styles.listName}>{folder.folder_name}</span>
-          )}
+          ) : null}
         </AnimatePresence>
       </div>
       {isNameChange && (
-        <button onClick={handleSaveClick} className={styles.checkButton}>
+        <button
+          onClick={handleSaveClick}
+          className={styles.checkButton}
+          aria-label="Guardar cambios"
+          title="Guardar"
+        >
           <Check className={styles.checkIconStyle} />
         </button>
       )}

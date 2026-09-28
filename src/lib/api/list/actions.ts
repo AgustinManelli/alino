@@ -87,6 +87,37 @@ interface SidebarRpcRow {
   payload: SidebarListPayload | SidebarFolderPayload;
 }
 
+async function attachUncompletedTaskCounts(
+  supabase: any,
+  lists: ListsType[]
+): Promise<ListsType[]> {
+  if (!lists || lists.length === 0) return lists;
+  const listIds = lists.map((l) => l.list_id).filter(Boolean);
+  if (listIds.length === 0) return lists;
+
+  const { data: tasksData } = await supabase
+    .from("tasks")
+    .select("list_id")
+    .in("list_id", listIds)
+    .or("completed.is.null,completed.eq.false");
+
+  const counts: Record<string, number> = {};
+  for (const id of listIds) counts[id] = 0;
+  if (tasksData) {
+    for (const t of tasksData) {
+      counts[t.list_id] = (counts[t.list_id] || 0) + 1;
+    }
+  }
+
+  return lists.map((l) => ({
+    ...l,
+    list: {
+      ...l.list,
+      tasks: [{ count: counts[l.list_id] ?? 0 }],
+    },
+  }));
+}
+
 export async function getSingleListsAsMembership(list_id: string) {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
@@ -102,7 +133,11 @@ export async function getSingleListsAsMembership(list_id: string) {
       throw new Error("No se pudo obtener la lista.");
     }
 
-    return { data: membershipData as ListsType };
+    const [listWithCount] = await attachUncompletedTaskCounts(supabase, [
+      membershipData as ListsType,
+    ]);
+
+    return { data: listWithCount };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { error: error.message };
@@ -232,9 +267,18 @@ export async function getLists(): Promise<{
       }
     });
 
+    const allLists = [
+      ...((pinnedResult.data as ListsType[]) ?? []),
+      ...unpinnedLists,
+    ];
+    const listsWithCounts = await attachUncompletedTaskCounts(
+      supabase,
+      allLists
+    );
+
     return {
       data: {
-        lists: [...((pinnedResult.data as ListsType[]) ?? []), ...unpinnedLists],
+        lists: listsWithCounts,
         tasks: [],
         folders,
         hasMoreRoot: rows.length >= SIDEBAR_PAGE_SIZE,
@@ -290,7 +334,11 @@ export const getPaginatedLists = async (
         .range(from, from + limit - 1);
 
       if (error) throw new Error("No se pudieron cargar las listas.");
-      return { data: (qData as ListsType[]) ?? [] };
+      const listsWithCounts = await attachUncompletedTaskCounts(
+        supabase,
+        (qData as ListsType[]) ?? []
+      );
+      return { data: listsWithCounts };
     } else {
       const { data: mixData, error } = await supabase.rpc(
         "get_paginated_sidebar",
@@ -328,7 +376,23 @@ export const getPaginatedLists = async (
         }
       });
 
-      return { data: items };
+      const listItems = items.filter(
+        (i): i is ListsType => (i as any)._item_type === "list"
+      );
+      const listsWithCounts = await attachUncompletedTaskCounts(
+        supabase,
+        listItems
+      );
+      const listCountsMap = new Map(listsWithCounts.map((l) => [l.list_id, l]));
+
+      const finalItems = items.map((i) => {
+        if ((i as any)._item_type === "list") {
+          return listCountsMap.get((i as ListsType).list_id) ?? i;
+        }
+        return i;
+      });
+
+      return { data: finalItems };
     }
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
@@ -546,19 +610,30 @@ export const updatePinnedFolder = async (
 export const duplicateList = async (
   source_list_id: string,
   new_list_id: string,
-  new_name: string,
   rank: string,
-  index: number
+  index: number,
+  new_name?: string
 ) => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
-    const { data, error } = await supabase.rpc("duplicate_list", {
+    const rpcParams: {
+      p_source_list_id: string;
+      p_new_list_id: string;
+      p_rank: string;
+      p_index: number;
+      p_new_name?: string;
+    } = {
       p_source_list_id: source_list_id,
       p_new_list_id: new_list_id,
-      p_new_name: new_name,
       p_rank: rank,
       p_index: index,
-    });
+    };
+
+    if (new_name) {
+      rpcParams.p_new_name = new_name;
+    }
+
+    const { data, error } = await supabase.rpc("duplicate_list", rpcParams);
 
     if (error) {
       throw new Error(error.message || "No se pudo duplicar la lista.");

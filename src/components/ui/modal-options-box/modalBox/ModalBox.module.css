@@ -4,7 +4,8 @@
   backdrop-filter: blur(15px) saturate(180%);
   -webkit-backdrop-filter: blur(15px) saturate(180%);
   border: 1px solid var(--border-container-color);
-  width: fit-content;
+  width: max-content;
+  max-width: calc(100vw - 20px);
   height: fit-content;
   border-radius: 20px;
   display: flex;
@@ -40,13 +41,12 @@
   background-color: var(--border-container-color);
 }
 .content {
-  width: fit-content;
+  width: 200px;
   height: fit-content;
   display: flex;
   gap: 5px;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  min-width: 200px;
   padding: 10px;
 }

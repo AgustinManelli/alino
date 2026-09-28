@@ -49,6 +49,10 @@
   color: var(--text);
   font-size: 12px;
   font-weight: 500;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .subtitleWrapper {
@@ -62,6 +66,10 @@
   color: var(--text-not-available);
   font-size: 10px;
   font-weight: 500;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tierBadge {

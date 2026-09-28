@@ -1,6 +1,6 @@
 .mobileButton {
   position: absolute;
-  top: 0;
+  top: calc(env(safe-area-inset-top, 0px) + 15px);
   left: 0;
   width: 40px;
   height: 40px;
@@ -28,6 +28,8 @@
   z-index: 100;
   transform: translateX(0%);
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 15px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 15px);
 }
 
 .navbarContainer.open {
@@ -45,6 +47,7 @@
   gap: 0px;
   padding: 35px 0px 15px 0px;
   background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
   border-radius: 30px;
   box-shadow:
     rgba(12, 20, 66, 0.02) 0px 4px 12px,
@@ -93,7 +96,7 @@
   flex-direction: column;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 10px 15px 20px 15px;
+  padding: 10px 10px 20px 10px;
 }
 
 .elementsSection::-webkit-scrollbar {
@@ -240,8 +243,8 @@
 
 @media only screen and (min-width: 851px) {
   :global(.collapsed) .navbarContainer {
-    width: 75px !important;
-    min-width: 75px !important;
+    width: 67px !important;
+    min-width: 67px !important;
   }
 
   :global(.collapsed) .logoContainer {

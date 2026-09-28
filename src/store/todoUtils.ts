@@ -10,11 +10,11 @@ export function readTaskCount(
   list: ListsType,
   fallbackTasks: TaskType[]
 ): number {
-  const payload = list.list.tasks;
+  const payload = list?.list?.tasks;
   if (Array.isArray(payload) && payload.length > 0) {
     return payload[0].count;
   }
-  return fallbackTasks.filter((t) => t.list_id === list.list_id).length;
+  return fallbackTasks.filter((t) => t.list_id === list?.list_id && !t.completed).length;
 }
 
 export function readFolderMembershipCount(
@@ -50,7 +50,9 @@ export function getBatchInjectedState(
 
   const countsByList: Record<string, number> = {};
   for (const t of toAdd) {
-    countsByList[t.list_id] = (countsByList[t.list_id] ?? 0) + 1;
+    if (!t.completed) {
+      countsByList[t.list_id] = (countsByList[t.list_id] ?? 0) + 1;
+    }
   }
 
   const updatedLists = currentLists.map((l) => {

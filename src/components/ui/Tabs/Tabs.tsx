@@ -26,6 +26,7 @@ export interface TabsProps {
   textColor?: string;
   activeTextColor?: string;
   hoverTextColor?: string;
+  preventBlur?: boolean;
 }
 
 export const Tabs: React.FC<TabsProps> = ({
@@ -43,6 +44,7 @@ export const Tabs: React.FC<TabsProps> = ({
   textColor,
   activeTextColor,
   hoverTextColor,
+  preventBlur,
 }) => {
   const generatedId = useId().replace(/:/g, "");
   const effectiveLayoutId = layoutId
@@ -71,6 +73,11 @@ export const Tabs: React.FC<TabsProps> = ({
           <button
             key={option.id}
             className={`${styles.tab} ${isActive ? styles.tabActive : ""}`}
+            onMouseDown={(e) => {
+              if (preventBlur) {
+                e.preventDefault();
+              }
+            }}
             onClick={() => !disabled && onChange(option.id)}
             type="button"
             disabled={disabled}

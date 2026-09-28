@@ -55,13 +55,13 @@ export function useTodoRealtime() {
 
     const updatedFolders = folderId
       ? state.folders.map((f) => {
-          if (f.folder_id !== folderId) return f;
-          const currentCount = readFolderMembershipCount(f, state.lists);
-          return {
-            ...f,
-            memberships: makeMembershipCountPayload(Math.max(0, currentCount - 1)),
-          };
-        })
+        if (f.folder_id !== folderId) return f;
+        const currentCount = readFolderMembershipCount(f, state.lists);
+        return {
+          ...f,
+          memberships: makeMembershipCountPayload(Math.max(0, currentCount - 1)),
+        };
+      })
       : state.folders;
 
     updateState({
@@ -102,9 +102,12 @@ export function useTodoRealtime() {
     }
 
     let updatedLists = state.lists;
-    if (!existingTask) {
+    if (!existingTask && !task.completed) {
       updatedLists = state.lists.map((currentItem) => {
-        if (currentItem.list.list_id === task.list_id) {
+        if (
+          currentItem.list.list_id === task.list_id ||
+          currentItem.list_id === task.list_id
+        ) {
           const currentCount = readTaskCount(currentItem, state.tasks);
           return {
             ...currentItem,
@@ -118,28 +121,92 @@ export function useTodoRealtime() {
       });
     }
 
-    updateState({
-      tasks: [taskToInsert, ...state.tasks].filter(
-        (t, index, self) =>
-          index === self.findIndex((tt) => tt.task_id === t.task_id),
-      ),
-      lists: updatedLists,
-    });
+    if (task.completed) {
+      updateState({
+        completedTasks: [taskToInsert, ...state.completedTasks].filter(
+          (t, index, self) =>
+            index === self.findIndex((tt) => tt.task_id === t.task_id),
+        ),
+        lists: updatedLists,
+      });
+    } else {
+      updateState({
+        tasks: [taskToInsert, ...state.tasks].filter(
+          (t, index, self) =>
+            index === self.findIndex((tt) => tt.task_id === t.task_id),
+        ),
+        lists: updatedLists,
+      });
+    }
   }, [updateState]);
 
   const onUpdateTask = useCallback((task: TaskType | any) => {
-    const currentTasks = useTodoDataStore.getState().tasks;
-    updateState({
-      tasks: currentTasks.map((t) => {
-        if (t.task_id === task.task_id) {
-          // Preservamos el objeto created_by previo si el incoming es solo un string o ID
-          const createdBy =
-            typeof task.created_by === "string" ? t.created_by : task.created_by;
-          return { ...t, ...task, created_by: createdBy };
+    const state = useTodoDataStore.getState();
+    const existingActive = state.tasks.find((t) => t.task_id === task.task_id);
+    const existingCompleted = state.completedTasks.find((t) => t.task_id === task.task_id);
+    const existingTask = existingActive ?? existingCompleted;
+
+    let updatedLists = state.lists;
+    if (
+      existingTask &&
+      typeof task.completed === "boolean" &&
+      existingTask.completed !== task.completed
+    ) {
+      const listId = task.list_id || existingTask.list_id;
+      updatedLists = state.lists.map((currentItem) => {
+        if (
+          currentItem.list.list_id === listId ||
+          currentItem.list_id === listId
+        ) {
+          const currentCount = readTaskCount(currentItem, state.tasks);
+          const newCount = task.completed
+            ? Math.max(0, currentCount - 1)
+            : currentCount + 1;
+          return {
+            ...currentItem,
+            list: {
+              ...currentItem.list,
+              tasks: makeTaskCountPayload(newCount),
+            },
+          };
         }
-        return t;
-      }),
-    });
+        return currentItem;
+      });
+    }
+
+    const createdBy =
+      typeof task.created_by === "string" && existingTask
+        ? existingTask.created_by
+        : task.created_by;
+    const mergedTask = { ...(existingTask || {}), ...task, created_by: createdBy };
+
+    if (task.completed === true) {
+      updateState({
+        tasks: state.tasks.filter((t) => t.task_id !== task.task_id),
+        completedTasks: [
+          mergedTask,
+          ...state.completedTasks.filter((t) => t.task_id !== task.task_id),
+        ],
+        lists: updatedLists,
+      });
+    } else if (task.completed === false) {
+      updateState({
+        completedTasks: state.completedTasks.filter((t) => t.task_id !== task.task_id),
+        tasks: [
+          mergedTask,
+          ...state.tasks.filter((t) => t.task_id !== task.task_id),
+        ],
+        lists: updatedLists,
+      });
+    } else {
+      updateState({
+        tasks: state.tasks.map((t) => (t.task_id === task.task_id ? mergedTask : t)),
+        completedTasks: state.completedTasks.map((t) =>
+          t.task_id === task.task_id ? mergedTask : t
+        ),
+        lists: updatedLists,
+      });
+    }
   }, [updateState]);
 
   const onDeleteTask = useCallback((task: { task_id: string }) => {
@@ -147,9 +214,12 @@ export function useTodoRealtime() {
     const existingTask = state.tasks.find((t) => t.task_id === task.task_id);
 
     let updatedLists = state.lists;
-    if (existingTask) {
+    if (existingTask && !existingTask.completed) {
       updatedLists = state.lists.map((currentItem) => {
-        if (currentItem.list.list_id === existingTask.list_id) {
+        if (
+          currentItem.list.list_id === existingTask.list_id ||
+          currentItem.list_id === existingTask.list_id
+        ) {
           const currentCount = readTaskCount(currentItem, state.tasks);
           return {
             ...currentItem,

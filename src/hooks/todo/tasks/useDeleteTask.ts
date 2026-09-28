@@ -21,9 +21,12 @@ export function useDeleteTask() {
 
     useTodoDataStore.setState((state) => {
       let updatedLists = state.lists;
-      if (originalTask) {
+      if (originalTask && !originalTask.completed) {
         updatedLists = state.lists.map((currentItem) => {
-          if (currentItem.list.list_id === originalTask.list_id) {
+          if (
+            currentItem.list.list_id === originalTask.list_id ||
+            currentItem.list_id === originalTask.list_id
+          ) {
             const currentCount = readTaskCount(currentItem, state.tasks);
             return {
               ...currentItem,

@@ -65,7 +65,13 @@ export const Navbar = () => {
     })),
   );
 
-  const { sidebarCollapsed, sidebarPosition, setSidebarCollapsed } = useUserPreferencesStore();
+  const { sidebarCollapsed, sidebarPosition, setSidebarCollapsed } = useUserPreferencesStore(
+    useShallow((state) => ({
+      sidebarCollapsed: state.sidebarCollapsed,
+      sidebarPosition: state.sidebarPosition,
+      setSidebarCollapsed: state.setSidebarCollapsed,
+    })),
+  );
 
   const isSelectionMode = useSidebarSelectionStore((s) => s.isSelectionMode);
   const selectedItems = useSidebarSelectionStore((s) => s.selectedItems);
@@ -110,18 +116,23 @@ export const Navbar = () => {
     const container = document.getElementById("list-container");
     if (!container) return;
 
+    let rafId: number | null = null;
     const tryFetch = () => {
-      const { listsPagination, fetchingListsQueue: queue } =
-        useTodoDataStore.getState();
-      const hasMore = listsPagination["root"]?.hasMore ?? false;
-      const isFetching = queue["root"] ?? false;
-      if (!hasMore || isFetching) return;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const { listsPagination, fetchingListsQueue: queue } =
+          useTodoDataStore.getState();
+        const hasMore = listsPagination["root"]?.hasMore ?? false;
+        const isFetching = queue["root"] ?? false;
+        if (!hasMore || isFetching) return;
 
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-      if (distanceFromBottom < SCROLL_THRESHOLD_PX) {
-        fetchListsPageRef.current("root");
-      }
+        const { scrollTop, scrollHeight, clientHeight } = container;
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+        if (distanceFromBottom < SCROLL_THRESHOLD_PX) {
+          fetchListsPageRef.current("root");
+        }
+      });
     };
 
     tryFetch();
@@ -132,6 +143,7 @@ export const Navbar = () => {
     ro.observe(container);
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       container.removeEventListener("scroll", tryFetch);
       ro.disconnect();
     };
@@ -183,10 +195,11 @@ export const Navbar = () => {
       )}
 
       {/*Contenedor del sidebar */}
-      <div
+      <aside
         className={`${styles.navbarContainer} ${navbarStatus ? styles.open : ""}`}
         ref={navbarContainerRef}
         id="navbar-all-container"
+        aria-label="Barra lateral de navegación"
       >
         <div className={styles.navbar}>
           <div className={styles.navbarHeader}>
@@ -206,6 +219,8 @@ export const Navbar = () => {
                 onClick={handleToggleCollapse}
                 className={styles.collapsedHeaderButton}
                 title="Expandir"
+                aria-label="Expandir barra lateral"
+                aria-expanded={false}
               >
                 <div className={styles.collapsedLogo}>
                   <IconAlinoMotion
@@ -239,6 +254,8 @@ export const Navbar = () => {
                     className={styles.collapseButton}
                     data-sidebar-position={sidebarPosition}
                     title="Contraer"
+                    aria-label="Contraer barra lateral"
+                    aria-expanded={true}
                   >
                     {collapseIcon}
                   </button>
@@ -325,7 +342,7 @@ export const Navbar = () => {
             )}
           </div>
         </div>
-      </div>
+      </aside>
     </>
   );
 };

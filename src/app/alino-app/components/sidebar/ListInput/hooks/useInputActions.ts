@@ -47,7 +47,7 @@ export const useInputActions = ({
       setColor(DEFAULT_FOLDER_COLOR);
     }
 
-    setTimeout(() => inputRef.current?.focus(), 10);
+    inputRef.current?.focus();
   }, [color, DEFAULT_COLOR, DEFAULT_FOLDER_COLOR, inputRef]);
 
   const handleSetColor = useCallback(

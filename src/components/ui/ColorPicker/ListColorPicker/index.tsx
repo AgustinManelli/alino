@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useRef, useState, useCallback, memo, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import { generatePalette } from "emoji-palette";
 
+import { ClientOnlyPortal } from "../../ClientOnlyPortal";
 import { EmojiMartComponent } from "@/components/ui/EmojiMart/emoji-mart-component";
 import { EmojiMartPicker } from "@/components/ui/EmojiMart/emoji-mart-picker";
 import colorsData from "../colors.json";
@@ -207,9 +207,8 @@ export function ColorPicker({
         </motion.button>
       </motion.div>
 
-      {createPortal(
-        <>
-          {isOpenPicker && (
+      <ClientOnlyPortal>
+        {isOpenPicker && (
             <motion.section
               className={`${styles.modalContainer} ignore-sidebar-close color-picker-portal`}
               ref={portalRef}
@@ -370,9 +369,7 @@ export function ColorPicker({
               )}
             </motion.section>
           )}
-        </>,
-        document.body,
-      )}
+      </ClientOnlyPortal>
     </>
   );
 }

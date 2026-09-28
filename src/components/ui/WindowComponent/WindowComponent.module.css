@@ -1,17 +1,17 @@
 .windowContainer {
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100dvh;
+  width: 100vw;
+  height: 100lvh;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 100;
+  box-sizing: border-box;
   padding-top: calc(env(safe-area-inset-top, 0px) + 15px);
   padding-right: calc(env(safe-area-inset-right, 0px) + 15px);
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 15px);
   padding-left: calc(env(safe-area-inset-left, 0px) + 15px);
-  box-sizing: border-box;
 }
 
 .glow {
@@ -493,27 +493,5 @@
     background-color: var(--background-over-container);
     border-color: var(--border-container-color);
     color: var(--text);
-  }
-}
-
-@media only screen and (max-width: 600px) {
-  .windowContainer {
-    padding: 10px 8px;
-  }
-
-  .windowModalWithSidebar {
-    height: 94%;
-    border-radius: 22px;
-  }
-}
-
-@media only screen and (max-width: 850px) and (display-mode: standalone) {
-  .windowContainer {
-    height: 100dvh;
-    padding: 10px 8px;
-  }
-
-  .windowModalWithSidebar {
-    height: 100%;
   }
 }

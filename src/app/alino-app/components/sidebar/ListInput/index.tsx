@@ -153,6 +153,7 @@ export const ListInput = () => {
           >
             <motion.div
               className={styles.tabsAbsoluteWrapper}
+              onMouseDown={(e) => e.preventDefault()}
               initial={animations ? { opacity: 0, y: 10, scale: 0.95 } : undefined}
               animate={animations ? { opacity: 1, y: 0, scale: 1 } : undefined}
               exit={animations ? { opacity: 0, y: 6, scale: 0.95 } : undefined}
@@ -173,6 +174,7 @@ export const ListInput = () => {
                 onChange={(id) => handleToggleType(id === "list")}
                 layoutId="list-input-type-tab"
                 className={styles.typeTabs}
+                preventBlur
               />
             </motion.div>
 
@@ -205,9 +207,16 @@ export const ListInput = () => {
               onChange={(e) => setInputValue(e.target.value)}
               className={styles.inputText}
               onKeyDown={handleKeyDown}
+              aria-label={`Nombre de la ${isList ? "lista" : "carpeta"}`}
             />
 
-            <button className={styles.sendButton} onClick={handleSend}>
+            <button
+              className={styles.sendButton}
+              onClick={handleSend}
+              onMouseDown={(e) => e.preventDefault()}
+              aria-label={`Crear ${isList ? "lista" : "carpeta"}`}
+              title={`Crear ${isList ? "lista" : "carpeta"}`}
+            >
               <SendIcon
                 style={{
                   width: 18,
@@ -230,6 +239,8 @@ export const ListInput = () => {
             className={styles.button}
             transition={SPRING_TRANSITION}
             {...motionProps}
+            aria-label="Crear nueva lista o carpeta"
+            title="Crear nueva lista o carpeta"
           >
             <PlusBoxIcon
               style={{ width: 18, stroke: "var(--icon-color)", strokeWidth: 2 }}

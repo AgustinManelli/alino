@@ -24,20 +24,9 @@ export function useClearCompletedTasks() {
         tasks: state.tasks.filter(
           (t) => !(t.list_id === list_id && t.completed === true)
         ),
-        lists: state.lists.map((l) => {
-          if (l.list_id === list_id) {
-            const currentCount = readTaskCount(l, state.tasks);
-            const newCount = Math.max(0, currentCount - completedCount);
-            return {
-              ...l,
-              list: {
-                ...l.list,
-                tasks: makeTaskCountPayload(newCount),
-              },
-            };
-          }
-          return l;
-        }),
+        completedTasks: state.completedTasks.filter(
+          (t) => t.list_id !== list_id
+        ),
       }));
 
       const result = await clearCompletedTasks(list_id);

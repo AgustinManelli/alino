@@ -10,7 +10,14 @@ export async function GET(request: Request) {
     next = "/";
   }
 
-  const origin = requestUrl.origin;
+  // Detecta el dominio y protocolo reales enviados por Cloudflare Tunnel o el proxy
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
+
+  const origin = forwardedHost
+    ? `\({forwardedProto}://\){forwardedHost}`
+    : requestUrl.origin;
+
   const targetBase = `${origin}/alino-app`;
 
   if (code) {
@@ -30,7 +37,7 @@ export async function GET(request: Request) {
         .is("country_code", null);
 
       const finalPath = next === "/" ? "" : next;
-      return NextResponse.redirect(`${targetBase}${finalPath}`);
+      return NextResponse.redirect(`\({targetBase}\){finalPath}`);
     }
 
     const errorUrl = new URL(`${origin}/sign-in`);

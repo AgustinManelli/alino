@@ -17,7 +17,7 @@
   overflow-y: auto;
   scrollbar-width: none;
   overscroll-behavior: contain;
-  padding-top: 130px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 170px);
 }
 
 .dashboardContent::-webkit-scrollbar {
@@ -35,7 +35,7 @@
   justify-content: flex-end;
   align-items: center;
   gap: 15px;
-  padding-top: 40px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 80px);
   z-index: +1;
 }
 
@@ -93,11 +93,9 @@
   position: relative;
   font-size: 24px;
   font-weight: 900;
-  background: -webkit-linear-gradient(
-    45deg,
-    rgb(173, 243, 255) 0%,
-    rgb(106, 195, 255)
-  );
+  background: -webkit-linear-gradient(45deg,
+      rgb(173, 243, 255) 0%,
+      rgb(106, 195, 255));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

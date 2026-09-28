@@ -3,8 +3,8 @@
 import { useCallback, useRef, memo } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
-import { ColorPicker } from "@/components/ui/ColorPicker/ListColorPicker";
 import { ListsType } from "@/lib/schemas/database.types";
+import { ColorPicker } from "@/components/ui/ColorPicker/ListColorPicker";
 
 import { hexColorSchema } from "@/lib/schemas/list/validation";
 import { useUpdateDataList } from "@/hooks/todo/lists/useUpdateDataList";
@@ -230,16 +230,22 @@ export const ListInfoEdit = memo(function ListInfoEdit({
               ref={inputRef}
               onKeyDown={handleKeyDown}
               id={`list-info-edit-container-${uniqueId}`}
+              aria-label="Nombre de la lista"
             />
-          ) : (
+          ) : !hideText ? (
             <span className={styles.listName} style={inputStyle}>
               {list.list.list_name}
             </span>
-          )}
+          ) : null}
         </AnimatePresence>
       </div>
       {isNameChange && (
-        <button onClick={handleSaveClick} className={styles.checkButton}>
+        <button
+          onClick={handleSaveClick}
+          className={styles.checkButton}
+          aria-label="Guardar cambios"
+          title="Guardar"
+        >
           <Check className={styles.checkIconStyle} />
         </button>
       )}

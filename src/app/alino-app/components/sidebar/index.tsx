@@ -6,10 +6,8 @@ import { useGetLists } from "@/hooks/todo/useGetLists";
 
 import { Navbar } from "./Navbar";
 
-//INIT EMOJI-MART
-import { init } from "emoji-mart";
-import data from "@/components/ui/EmojiMart/apple.json";
-init({ data });
+import { loadEmojiMartData } from "@/components/ui/EmojiMart/initEmojiMart";
+
 
 export const Sidebar = () => {
   const executedRef = useRef(false);
@@ -24,6 +22,7 @@ export const Sidebar = () => {
       await fetchLists();
     };
     fetchInitialData();
+    loadEmojiMartData();
   }, []);
 
   return <Navbar />;

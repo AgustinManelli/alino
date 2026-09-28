@@ -14,6 +14,8 @@ export const NavbarButton = ({ navbarOpened, toggleNavbar }: Props) => {
       className={styles.mobileButton}
       onClick={toggleNavbar}
       style={{ opacity: navbarOpened ? 0 : 1, scale: navbarOpened ? 0 : 1 }}
+      aria-label={navbarOpened ? "Cerrar menú de navegación" : "Abrir menú de navegación"}
+      aria-expanded={navbarOpened}
     >
       <MenuIcon
         style={{

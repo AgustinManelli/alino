@@ -11,16 +11,35 @@ export type PinnedItem =
 
 export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
   const combinedItems = useMemo<NormalizedItem[]>(() => {
-    const foldersNorm: NormalizedItem[] = (folders ?? []).map((f) => ({
-      id: f.folder_id,
-      kind: "folder" as const,
-      data: f,
-      childrens: lists
-        .filter((ls) => ls.folder === f.folder_id)
-        .map((ls) => ({ ...ls, _sortId: ls.list_id }))
-        .sort((a, b) => compareRanks({ rank: a.rank, id: a.list_id }, { rank: b.rank, id: b.list_id })),
-      rank: f.rank ?? "",
-    }));
+    const listsByFolder = new Map<string, ListsType[]>();
+    for (const ls of lists ?? []) {
+      if (ls.folder) {
+        let group = listsByFolder.get(ls.folder);
+        if (!group) {
+          group = [];
+          listsByFolder.set(ls.folder, group);
+        }
+        group.push(ls);
+      }
+    }
+
+    const foldersNorm: NormalizedItem[] = (folders ?? []).map((f) => {
+      const folderLists = listsByFolder.get(f.folder_id) ?? [];
+      return {
+        id: f.folder_id,
+        kind: "folder" as const,
+        data: f,
+        childrens: folderLists
+          .map((ls) => ({ ...ls, _sortId: ls.list_id }))
+          .sort((a, b) =>
+            compareRanks(
+              { rank: a.rank, id: a.list_id },
+              { rank: b.rank, id: b.list_id },
+            ),
+          ),
+        rank: f.rank ?? "",
+      };
+    });
 
     const listsNorm: NormalizedItem[] = (lists ?? []).map((l) => ({
       id: l.list_id,
@@ -32,7 +51,6 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
 
     return [...foldersNorm, ...listsNorm].sort((a, b) => compareRanks(a, b));
   }, [lists, folders]);
-
 
   const topLevelItems = useMemo(
     () =>
@@ -57,6 +75,11 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
   );
 
   const pinnedItems = useMemo<PinnedItem[]>(() => {
+    const combinedMap = new Map<string, NormalizedItem>();
+    for (const item of combinedItems) {
+      combinedMap.set(item.id, item);
+    }
+
     const pLists: PinnedItem[] = (lists ?? [])
       .filter((l) => l.pinned === true)
       .map((l) => ({ kind: "list" as const, id: l.list_id, data: l }));
@@ -64,7 +87,7 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
     const pFolders: PinnedItem[] = (folders ?? [])
       .filter((f) => f.pinned === true)
       .map((f) => {
-        const itemInCombined = combinedItems.find((ci) => ci.id === f.folder_id);
+        const itemInCombined = combinedMap.get(f.folder_id);
         return {
           kind: "folder" as const,
           id: f.folder_id,
@@ -95,15 +118,5 @@ export function useCombinedItems(lists: ListsType[], folders: FolderType[]) {
     });
   }, [lists, folders, combinedItems]);
 
-  const pinnedLists = useMemo(
-    () => (lists ?? []).filter((l) => l.pinned === true),
-    [lists],
-  );
-
-  const pinnedFolders = useMemo(
-    () => (folders ?? []).filter((f) => f.pinned === true),
-    [folders],
-  );
-
-  return { combinedItems, topLevelItems, combinedIds, pinnedItems, pinnedLists, pinnedFolders };
+  return { combinedItems, topLevelItems, combinedIds, pinnedItems };
 }

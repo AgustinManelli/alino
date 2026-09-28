@@ -316,4 +316,6 @@
   justify-content: center;
   z-index: 10;
   flex-shrink: 0;
+  width: 24px;
+  min-width: 24px;
 }

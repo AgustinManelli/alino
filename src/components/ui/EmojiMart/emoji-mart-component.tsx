@@ -1,16 +1,51 @@
-// @ts-nocheck
 "use client";
 
-import React, { Component } from "react";
+import React, {
+  Component,
+  useEffect,
+  type ReactNode,
+  type ErrorInfo,
+} from "react";
+import { loadEmojiMartData } from "./initEmojiMart";
 
-class EmojiErrorBoundary extends Component {
-  state = { hasError: false };
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      "em-emoji": React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      > & {
+        shortcodes?: string;
+        size?: number | string;
+        set?: string;
+        id?: string;
+        native?: string;
+        fallback?: string;
+        skin?: number | string;
+      };
+    }
+  }
+}
 
-  static getDerivedStateFromError() {
+interface EmojiErrorBoundaryProps {
+  children?: ReactNode;
+}
+
+interface EmojiErrorBoundaryState {
+  hasError: boolean;
+}
+
+class EmojiErrorBoundary extends Component<
+  EmojiErrorBoundaryProps,
+  EmojiErrorBoundaryState
+> {
+  state: EmojiErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): EmojiErrorBoundaryState {
     return { hasError: true };
   }
 
-  componentDidCatch(error) {
+  componentDidCatch(error: Error, errorInfo?: ErrorInfo) {
 
   }
 
@@ -22,7 +57,22 @@ class EmojiErrorBoundary extends Component {
   }
 }
 
-export function EmojiMartComponent(props) {
+export interface EmojiMartComponentProps
+  extends React.HTMLAttributes<HTMLElement> {
+  shortcodes?: string;
+  size?: number | string;
+  set?: string;
+  id?: string;
+  native?: string;
+  fallback?: string;
+  skin?: number | string;
+}
+
+export function EmojiMartComponent(props: EmojiMartComponentProps) {
+  useEffect(() => {
+    loadEmojiMartData();
+  }, []);
+
   const shortcodes = props.shortcodes;
 
   if (!shortcodes || typeof shortcodes !== "string") {

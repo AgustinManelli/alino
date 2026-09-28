@@ -6,9 +6,11 @@ import {
   useSensors,
   MouseSensor,
   TouchSensor,
+  KeyboardSensor,
   MeasuringStrategy,
   type Modifier,
 } from "@dnd-kit/core";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 
 export function useDndSensors() {
   const sensors = useSensors(
@@ -17,7 +19,10 @@ export function useDndSensors() {
     }),
     useSensor(TouchSensor, {
       activationConstraint: { delay: 200, tolerance: 6 },
-    })
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   const measuring = useMemo(
