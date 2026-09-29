@@ -1,6 +1,13 @@
 // lib/schemas/notification.types.ts
 
-export type NotificationType = "list_invitation" | "app_update" | "system";
+export type NotificationType =
+  | "list_invitation"
+  | "app_update"
+  | "system"
+  | "daily_digest"
+  | "task_due"
+  | "streak_danger"
+  | "engagement_nudge";
 
 export type Notification = {
   notification_id: string;
@@ -16,6 +23,10 @@ export type Notification = {
     inviter_username?: string;
     inviter_avatar_url?: string;
     invitation_status?: "pending" | "accepted" | "rejected" | null;
+    task_id?: string;
+    target_date?: string;
+    streak?: number;
+    date?: string;
   };
   is_global: boolean;
   created_at: string;
@@ -51,6 +62,30 @@ export function getNotificationDisplay(
       return {
         title: notification.title || "Nueva actualización",
         content: notification.content || "",
+      };
+
+    case "daily_digest":
+      return {
+        title: notification.title || "☀️ Resumen de productividad",
+        content: notification.content || "Revisa tus tareas del día.",
+      };
+
+    case "task_due":
+      return {
+        title: notification.title || "⏰ Tarea por vencer",
+        content: notification.content || "Tienes una tarea próxima a su hora límite.",
+      };
+
+    case "streak_danger":
+      return {
+        title: notification.title || "🔥 ¡Racha en peligro!",
+        content: notification.content || "Completa una tarea para mantener tu racha viva.",
+      };
+
+    case "engagement_nudge":
+      return {
+        title: notification.title || "✨ Notificación de Alino",
+        content: notification.content || "Novedades y objetivos en tu cuenta.",
       };
 
     case "system":

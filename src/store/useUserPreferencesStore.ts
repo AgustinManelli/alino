@@ -18,6 +18,15 @@ export interface UserPreferences {
   compactView: boolean;
   language: SupportedLanguage;
 
+  dailyDigestEnabled: boolean;
+  dailyDigestTime: string;
+  dueRemindersEnabled: boolean;
+  dueLeadTimeMinutes: number;
+  streakSaverEnabled: boolean;
+  streakSaverTime: string;
+  engagementNudgesEnabled: boolean;
+  timezone: string;
+
   initializePreferences: (prefs: any) => void;
   loadFallbackPreferences: () => void;
   toggleAnimations: () => void;
@@ -30,6 +39,14 @@ export interface UserPreferences {
   setFirstDayOfWeek: (day: "monday" | "sunday") => void;
   toggleCompactView: () => void;
   setLanguage: (lang: SupportedLanguage) => void;
+  setDailyDigestEnabled: (enabled: boolean) => void;
+  setDailyDigestTime: (time: string) => void;
+  setDueRemindersEnabled: (enabled: boolean) => void;
+  setDueLeadTimeMinutes: (minutes: number) => void;
+  setStreakSaverEnabled: (enabled: boolean) => void;
+  setStreakSaverTime: (time: string) => void;
+  setEngagementNudgesEnabled: (enabled: boolean) => void;
+  setTimezone: (tz: string) => void;
 }
 
 export const UserPreferencesContext = createContext<StoreApi<UserPreferences> | undefined>(undefined);
@@ -93,6 +110,15 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
     firstDayOfWeek: (merged.firstDayOfWeek as "monday" | "sunday") ?? "monday",
     compactView: merged.compactView ?? false,
     language: initialLang,
+
+    dailyDigestEnabled: merged.dailyDigestEnabled ?? (merged as any).daily_digest_enabled ?? true,
+    dailyDigestTime: merged.dailyDigestTime ?? (merged as any).daily_digest_time ?? "09:00",
+    dueRemindersEnabled: merged.dueRemindersEnabled ?? (merged as any).due_reminders_enabled ?? true,
+    dueLeadTimeMinutes: merged.dueLeadTimeMinutes ?? (merged as any).due_lead_time_minutes ?? 30,
+    streakSaverEnabled: merged.streakSaverEnabled ?? (merged as any).streak_saver_enabled ?? true,
+    streakSaverTime: merged.streakSaverTime ?? (merged as any).streak_saver_time ?? "20:00",
+    engagementNudgesEnabled: merged.engagementNudgesEnabled ?? (merged as any).engagement_nudges_enabled ?? true,
+    timezone: merged.timezone ?? (merged as any).user_timezone ?? (typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "America/Argentina/Buenos_Aires") ?? "America/Argentina/Buenos_Aires",
 
     initializePreferences: (prefs: Partial<UserPreferences>) => {
       const { animations, ...rest } = prefs;
@@ -169,6 +195,54 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
       syncWithDatabase({ language: lang });
       i18n.changeLanguage(lang);
     },
+
+    setDailyDigestEnabled: (enabled: boolean) => {
+      set({ dailyDigestEnabled: enabled });
+      persistToLocalStorage({ dailyDigestEnabled: enabled });
+      syncWithDatabase({ dailyDigestEnabled: enabled });
+    },
+
+    setDailyDigestTime: (time: string) => {
+      set({ dailyDigestTime: time });
+      persistToLocalStorage({ dailyDigestTime: time });
+      syncWithDatabase({ dailyDigestTime: time });
+    },
+
+    setDueRemindersEnabled: (enabled: boolean) => {
+      set({ dueRemindersEnabled: enabled });
+      persistToLocalStorage({ dueRemindersEnabled: enabled });
+      syncWithDatabase({ dueRemindersEnabled: enabled });
+    },
+
+    setDueLeadTimeMinutes: (minutes: number) => {
+      set({ dueLeadTimeMinutes: minutes });
+      persistToLocalStorage({ dueLeadTimeMinutes: minutes });
+      syncWithDatabase({ dueLeadTimeMinutes: minutes });
+    },
+
+    setStreakSaverEnabled: (enabled: boolean) => {
+      set({ streakSaverEnabled: enabled });
+      persistToLocalStorage({ streakSaverEnabled: enabled });
+      syncWithDatabase({ streakSaverEnabled: enabled });
+    },
+
+    setStreakSaverTime: (time: string) => {
+      set({ streakSaverTime: time });
+      persistToLocalStorage({ streakSaverTime: time });
+      syncWithDatabase({ streakSaverTime: time });
+    },
+
+    setEngagementNudgesEnabled: (enabled: boolean) => {
+      set({ engagementNudgesEnabled: enabled });
+      persistToLocalStorage({ engagementNudgesEnabled: enabled });
+      syncWithDatabase({ engagementNudgesEnabled: enabled });
+    },
+
+    setTimezone: (tz: string) => {
+      set({ timezone: tz });
+      persistToLocalStorage({ timezone: tz });
+      syncWithDatabase({ timezone: tz });
+    },
   }));
 
   if (typeof window !== "undefined") {
@@ -196,8 +270,9 @@ const getFallbackStore = () => {
     let initialCompactView = false;
     let initialLanguage: SupportedLanguage = DEFAULT_LANGUAGE;
 
+    let stored: any = {};
     try {
-      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
       initialCollapsed = stored.sidebarCollapsed ?? false;
       initialPosition = stored.sidebarPosition ?? "left";
       initialAnimations = stored.animations ?? true;
@@ -210,6 +285,20 @@ const getFallbackStore = () => {
       initialLanguage = stored.language ?? DEFAULT_LANGUAGE;
     } catch (_) { }
 
+    const initialDailyDigestEnabled = stored.dailyDigestEnabled ?? true;
+    const initialDailyDigestTime = stored.dailyDigestTime ?? "09:00";
+    const initialDueRemindersEnabled = stored.dueRemindersEnabled ?? true;
+    const initialDueLeadTimeMinutes = stored.dueLeadTimeMinutes ?? 30;
+    const initialStreakSaverEnabled = stored.streakSaverEnabled ?? true;
+    const initialStreakSaverTime = stored.streakSaverTime ?? "20:00";
+    const initialEngagementNudgesEnabled = stored.engagementNudgesEnabled ?? true;
+    const initialTimezone =
+      stored.timezone ??
+      (typeof Intl !== "undefined"
+        ? Intl.DateTimeFormat().resolvedOptions().timeZone
+        : "America/Argentina/Buenos_Aires") ??
+      "America/Argentina/Buenos_Aires";
+
     fallbackStore = createUserPreferencesStore({
       sidebarCollapsed: initialCollapsed,
       sidebarPosition: initialPosition,
@@ -221,6 +310,14 @@ const getFallbackStore = () => {
       firstDayOfWeek: initialFirstDayOfWeek,
       compactView: initialCompactView,
       language: initialLanguage,
+      dailyDigestEnabled: initialDailyDigestEnabled,
+      dailyDigestTime: initialDailyDigestTime,
+      dueRemindersEnabled: initialDueRemindersEnabled,
+      dueLeadTimeMinutes: initialDueLeadTimeMinutes,
+      streakSaverEnabled: initialStreakSaverEnabled,
+      streakSaverTime: initialStreakSaverTime,
+      engagementNudgesEnabled: initialEngagementNudgesEnabled,
+      timezone: initialTimezone,
     });
   }
   return fallbackStore;

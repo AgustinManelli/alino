@@ -271,6 +271,81 @@
   background-color: var(--background-over-container-hover);
 }
 
+.timeInput {
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color-scheme: dark light;
+}
+
+.timeInput:hover {
+  border-color: var(--border-container-color-hover);
+  background-color: var(--background-over-container-hover);
+}
+
+.timeInput:focus {
+  border-color: var(--alino-primary-color);
+  box-shadow: 0 0 0 2px rgba(135, 24, 157, 0.2);
+}
+
+.selectInput {
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selectInput:hover {
+  border-color: var(--border-container-color-hover);
+  background-color: var(--background-over-container-hover);
+}
+
+.selectInput:focus {
+  border-color: var(--alino-primary-color);
+}
+
+.notificationNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background-color: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  font-size: 12px;
+  color: var(--text-not-available);
+}
+
+.notificationNoticeText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notificationNoticeTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+
+
 @media only screen and (max-width: 850px) {
   .configModalContainer {
     flex-direction: column;

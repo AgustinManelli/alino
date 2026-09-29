@@ -94,3 +94,28 @@ export const updateInvitationList = async (
     return { error: (error as Error).message };
   }
 };
+
+export async function sendTestNotificationAction() {
+  try {
+    const { user } = await getAuthenticatedSupabaseClient();
+    const { createClient } = await import("@supabase/supabase-js");
+    const { sendTestNotificationToUser } = await import(
+      "@/lib/notifications/notificationDispatcher"
+    );
+
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+
+    const result = await sendTestNotificationToUser(user.id, supabaseAdmin);
+    return { success: true, result };
+  } catch (error: any) {
+    console.error("Error sending test notification:", error);
+    return {
+      success: false,
+      error: error?.message || "Error al enviar notificación de prueba",
+    };
+  }
+}

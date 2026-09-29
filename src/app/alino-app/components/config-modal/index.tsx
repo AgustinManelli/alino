@@ -65,6 +65,18 @@ export function ConfigModal({ handleCloseConfig }: Props) {
     toggleCompactView,
     language,
     setLanguage,
+    dailyDigestEnabled,
+    dailyDigestTime,
+    setDailyDigestEnabled,
+    setDailyDigestTime,
+    dueRemindersEnabled,
+    dueLeadTimeMinutes,
+    setDueRemindersEnabled,
+    setDueLeadTimeMinutes,
+    streakSaverEnabled,
+    setStreakSaverEnabled,
+    timezone,
+    setTimezone,
   } = useUserPreferencesStore();
 
   const {
@@ -180,6 +192,12 @@ Versión: v0.1.0 (pre-alpha)`;
         body: JSON.stringify(subscription),
       });
       setIsSubscribed(true);
+      if (typeof Intl !== "undefined") {
+        const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (detectedTz && detectedTz !== timezone) {
+          setTimezone(detectedTz);
+        }
+      }
       customToast.success("¡Te has suscrito a las notificaciones!");
     } catch (err: unknown) {
       const message =
@@ -601,11 +619,20 @@ Versión: v0.1.0 (pre-alpha)`;
               style={{ display: "flex", flexDirection: "column", gap: "20px" }}
             >
               <SectionContainer
-                sectionTitle="Notificaciones push"
-                sectionDescription="Recibe recordatorios de tus tareas y novedades importantes directamente en tu navegador o dispositivo móvil."
+                sectionTitle="Notificaciones en este navegador"
+                sectionDescription="Recibe alertas incluso cuando Alino no esté abierto en pantalla. Requiere conceder permiso en tu navegador o sistema."
                 configElements={[
                   {
-                    text: <>Activar notificaciones push</>,
+                    text: (
+                      <div className={styles.infoCol}>
+                        <span>Activar notificaciones en el navegador</span>
+                        <span className={styles.infoSubtext}>
+                          {isSubscribed
+                            ? "Suscripción activa para recibir alertas push"
+                            : "Activa la suscripción para que el sistema pueda enviarte avisos"}
+                        </span>
+                      </div>
+                    ),
                     elementAction: (
                       <Switch
                         value={isSubscribed}
@@ -617,6 +644,142 @@ Versión: v0.1.0 (pre-alpha)`;
                   },
                 ]}
               />
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "20px",
+                  opacity: isSubscribed ? 1 : 0.45,
+                  pointerEvents: isSubscribed ? "auto" : "none",
+                  transition: "opacity 0.25s ease",
+                }}
+              >
+                <SectionContainer
+                  sectionTitle="Resumen diario de productividad"
+                  sectionDescription={
+                    isSubscribed
+                      ? "Recibe un resumen cada mañana con tus tareas previstas para hoy y prioridades para arrancar enfocado."
+                      : "Activa las notificaciones en este navegador arriba para habilitar esta opción."
+                  }
+                  configElements={[
+                    {
+                      text: <>Resumen matutino de tareas</>,
+                      elementAction: (
+                        <Switch
+                          value={isSubscribed ? dailyDigestEnabled : false}
+                          action={() => setDailyDigestEnabled(!dailyDigestEnabled)}
+                          width={40}
+                          disabled={!isSubscribed || isLoading}
+                        />
+                      ),
+                    },
+                    ...(isSubscribed && dailyDigestEnabled
+                      ? [
+                        {
+                          text: (
+                            <div className={styles.infoCol}>
+                              <span>Hora del resumen</span>
+                              <span className={styles.infoSubtext}>
+                                Hora a la que recibirás el resumen matutino (zona horaria: {timezone.replace(/_/g, " ")})
+                              </span>
+                            </div>
+                          ),
+                          elementAction: (
+                            <input
+                              type="time"
+                              className={styles.timeInput}
+                              value={dailyDigestTime}
+                              onChange={(e) => setDailyDigestTime(e.target.value)}
+                              disabled={!isSubscribed}
+                            />
+                          ),
+                        },
+                      ]
+                      : []),
+                  ]}
+                />
+
+                <SectionContainer
+                  sectionTitle="Aviso de tarea por vencer"
+                  sectionDescription={
+                    isSubscribed
+                      ? "Recibe un recordatorio automático antes de que se cumpla la fecha u hora límite de una tarea pendiente."
+                      : "Activa las notificaciones en este navegador arriba para habilitar esta opción."
+                  }
+                  configElements={[
+                    {
+                      text: <>Avisarme antes del vencimiento</>,
+                      elementAction: (
+                        <Switch
+                          value={isSubscribed ? dueRemindersEnabled : false}
+                          action={() => setDueRemindersEnabled(!dueRemindersEnabled)}
+                          width={40}
+                          disabled={!isSubscribed || isLoading}
+                        />
+                      ),
+                    },
+                    ...(isSubscribed && dueRemindersEnabled
+                      ? [
+                        {
+                          text: (
+                            <div className={styles.infoCol}>
+                              <span>Anticipación del aviso</span>
+                              <span className={styles.infoSubtext}>
+                                Con cuánto tiempo previo deseas recibir el recordatorio
+                              </span>
+                            </div>
+                          ),
+                          elementAction: (
+                            <select
+                              className={styles.selectInput}
+                              value={dueLeadTimeMinutes}
+                              onChange={(e) =>
+                                setDueLeadTimeMinutes(Number(e.target.value))
+                              }
+                              disabled={!isSubscribed}
+                            >
+                              <option value={15}>15 minutos antes</option>
+                              <option value={30}>30 minutos antes</option>
+                              <option value={60}>1 hora antes</option>
+                              <option value={120}>2 horas antes</option>
+                            </select>
+                          ),
+                        },
+                      ]
+                      : []),
+                  ]}
+                />
+
+                <SectionContainer
+                  sectionTitle="Racha en peligro"
+                  sectionDescription={
+                    isSubscribed
+                      ? "Aviso automático unas horas antes de que caduque el día para evitar que pierdas tu racha activa o consumas un protector."
+                      : "Activa las notificaciones en este navegador arriba para habilitar esta opción."
+                  }
+                  configElements={[
+                    {
+                      text: (
+                        <div className={styles.infoCol}>
+                          <span>Alerta automática de racha en peligro</span>
+                          <span className={styles.infoSubtext}>
+                            Se calcula automáticamente antes de medianoche si tu racha está en riesgo o consumirá un protector
+                          </span>
+                        </div>
+                      ),
+                      elementAction: (
+                        <Switch
+                          value={isSubscribed ? streakSaverEnabled : false}
+                          action={() => setStreakSaverEnabled(!streakSaverEnabled)}
+                          width={40}
+                          disabled={!isSubscribed || isLoading}
+                        />
+                      ),
+                    },
+                  ]}
+                />
+              </div>
             </motion.div>
           )}
 
