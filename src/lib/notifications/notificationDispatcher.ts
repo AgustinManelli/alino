@@ -1,6 +1,5 @@
 import webpush, { type PushSubscription } from "web-push";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { NotificationType } from "@/lib/schemas/notification.types";
 
 let webPushConfigured = false;
 
@@ -28,13 +27,26 @@ function ensureWebPushConfig() {
   }
 }
 
+export function stripHtml(input: string | null | undefined): string {
+  if (!input) return "";
+  return input
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export interface SendPushParams {
   userId: string;
   title: string;
   body: string;
   url?: string;
   icon?: string;
-  tag?: string;
   supabaseAdmin: SupabaseClient;
 }
 
@@ -96,103 +108,12 @@ export async function sendPushToUser({
   return { sent, failed };
 }
 
-export interface CreateNotificationParams {
-  userId: string;
-  type: NotificationType;
-  title: string;
-  content: string;
-  metadata?: Record<string, any>;
-  supabaseAdmin: SupabaseClient;
-}
-
-export async function createNotificationRecord({
-  userId,
-  type,
-  title,
-  content,
-  metadata = {},
-  supabaseAdmin,
-}: CreateNotificationParams) {
-  try {
-    const { data: notif, error: notifError } = await supabaseAdmin
-      .from("notifications")
-      .insert({
-        target_user_id: userId,
-        type,
-        title,
-        content,
-        is_global: false,
-        metadata,
-      })
-      .select("id")
-      .single();
-
-    if (notifError) {
-      console.error("[notifications] Error inserting into notifications:", notifError);
-      return null;
-    }
-
-    if (notif?.id) {
-      const { error: userNotifErr } = await supabaseAdmin
-        .from("user_notifications")
-        .upsert(
-          {
-            notification_id: notif.id,
-            user_id: userId,
-            read: false,
-            deleted: false,
-          },
-          { onConflict: "notification_id,user_id" }
-        );
-
-      if (userNotifErr) {
-        console.warn("[notifications] user_notifications upsert note:", userNotifErr.message);
-      }
-    }
-
-    return notif?.id || null;
-  } catch (err) {
-    console.error("[notifications] Unexpected error creating record:", err);
-    return null;
-  }
-}
-
-export async function sendPushAndRecordNotification({
-  userId,
-  type,
-  title,
-  content,
-  metadata = {},
-  url = "/alino-app",
-  supabaseAdmin,
-}: {
-  userId: string;
-  type: NotificationType;
-  title: string;
-  content: string;
-  metadata?: Record<string, any>;
-  url?: string;
-  supabaseAdmin: SupabaseClient;
-}) {
-  const [pushResult, notifId] = await Promise.all([
-    sendPushToUser({
-      userId,
-      title,
-      body: content,
-      url,
-      supabaseAdmin,
-    }),
-    createNotificationRecord({
-      userId,
-      type,
-      title,
-      content,
-      metadata,
-      supabaseAdmin,
-    }),
-  ]);
-
-  return { pushResult, notifId };
+export interface PushDispatchLog {
+  last_daily_digest_date?: string;
+  alerted_tasks?: Record<string, string>;
+  last_streak_danger_date?: string;
+  last_engagement_nudge_at?: string;
+  last_engagement_organize_at?: string;
 }
 
 export function getUserLocalTime(timezone: string) {
@@ -247,16 +168,10 @@ export async function evaluateAndDispatchUserNotifications(
   const streakSaverEnabled = prefs.streakSaverEnabled ?? prefs.streak_saver_enabled ?? true;
   const timezone = prefs.timezone ?? prefs.user_timezone ?? "America/Argentina/Buenos_Aires";
 
+  const dispatchLog: PushDispatchLog = { ...(prefs.push_dispatch_log || {}) };
+  let hasLogUpdates = false;
+
   const userTime = getUserLocalTime(timezone);
-
-  const { data: recentNotifications } = await supabaseAdmin
-    .from("notifications")
-    .select("id, type, metadata, created_at")
-    .eq("target_user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(30);
-
-  const notificationsList = recentNotifications || [];
 
   const { data: userMemberships } = await supabaseAdmin
     .from("list_memberships")
@@ -276,59 +191,59 @@ export async function evaluateAndDispatchUserNotifications(
   }
 
   if (dailyDigestEnabled) {
-    const [targetHour, targetMinute] = dailyDigestTime.split(":").map((v: string) => parseInt(v, 10) || 0);
+    const [targetHour, targetMinute] = dailyDigestTime
+      .split(":")
+      .map((v: string) => parseInt(v, 10) || 0);
+
     const isPastTargetTime =
       userTime.hour > targetHour ||
       (userTime.hour === targetHour && userTime.minute >= targetMinute);
 
-    if (isPastTargetTime) {
-      const alreadySentDaily = notificationsList.some(
-        (n: any) => n.type === "daily_digest" && n.metadata?.date === userTime.dateStr
-      );
+    const alreadySentDaily = dispatchLog.last_daily_digest_date === userTime.dateStr;
 
-      if (!alreadySentDaily) {
-        let dueTodayCount = 0;
-        let overdueCount = 0;
+    if (isPastTargetTime && !alreadySentDaily) {
+      let dueTodayCount = 0;
+      let overdueCount = 0;
 
-        for (const t of pendingTasks) {
-          if (t.target_date) {
-            const taskDate = t.target_date.slice(0, 10);
-            if (taskDate === userTime.dateStr) {
-              dueTodayCount++;
-            } else if (taskDate < userTime.dateStr) {
-              overdueCount++;
-            }
+      for (const t of pendingTasks) {
+        if (t.target_date) {
+          const taskDate = t.target_date.slice(0, 10);
+          if (taskDate === userTime.dateStr) {
+            dueTodayCount++;
+          } else if (taskDate < userTime.dateStr) {
+            overdueCount++;
           }
         }
-
-        let title = "☀️ Resumen de hoy";
-        let body = "";
-
-        if (dueTodayCount > 0) {
-          body = overdueCount > 0
-            ? `Tienes ${dueTodayCount} ${dueTodayCount === 1 ? "tarea para hoy" : "tareas para hoy"} y ${overdueCount} atrasadas. ¡A por ellas!`
-            : `Tienes ${dueTodayCount} ${dueTodayCount === 1 ? "tarea prevista" : "tareas previstas"} para hoy. ¡Haz que tu día rinda!`;
-        } else if (overdueCount > 0) {
-          title = "☀️ Tareas pendientes";
-          body = `Tienes ${overdueCount} ${overdueCount === 1 ? "tarea pendiente" : "tareas pendientes"} esperando tu atención. ¡Buen momento para avanzar!`;
-        } else if (pendingTasks.length > 0) {
-          body = `Tienes ${pendingTasks.length} tareas organizadas. ¡Dedica unos minutos a planificar tu jornada!`;
-        } else {
-          title = "☀️ ¡Todo al día!";
-          body = "No tienes tareas pendientes para hoy. ¡Aprovecha para descansar o definir nuevos objetivos!";
-        }
-
-        await sendPushAndRecordNotification({
-          userId,
-          type: "daily_digest",
-          title,
-          content: body,
-          metadata: { date: userTime.dateStr, task_count: pendingTasks.length },
-          supabaseAdmin,
-        });
-
-        dispatched.push("daily_digest");
       }
+
+      let title = "☀️ Resumen de hoy";
+      let body = "";
+
+      if (dueTodayCount > 0) {
+        body = overdueCount > 0
+          ? `Tienes ${dueTodayCount} ${dueTodayCount === 1 ? "tarea para hoy" : "tareas para hoy"} y ${overdueCount} atrasadas. ¡A por ellas!`
+          : `Tienes ${dueTodayCount} ${dueTodayCount === 1 ? "tarea prevista" : "tareas previstas"} para hoy. ¡Haz que tu día rinda!`;
+      } else if (overdueCount > 0) {
+        title = "☀️ Tareas pendientes";
+        body = `Tienes ${overdueCount} ${overdueCount === 1 ? "tarea pendiente" : "tareas pendientes"} esperando tu atención. ¡Buen momento para avanzar!`;
+      } else if (pendingTasks.length > 0) {
+        body = `Tienes ${pendingTasks.length} tareas organizadas. ¡Dedica unos minutos a planificar tu jornada!`;
+      } else {
+        title = "☀️ ¡Todo al día!";
+        body = "No tienes tareas pendientes para hoy. ¡Aprovecha para descansar o definir nuevos objetivos!";
+      }
+
+      await sendPushToUser({
+        userId,
+        title,
+        body,
+        url: "/alino-app",
+        supabaseAdmin,
+      });
+
+      dispatchLog.last_daily_digest_date = userTime.dateStr;
+      hasLogUpdates = true;
+      dispatched.push("daily_digest");
     }
   }
 
@@ -336,17 +251,19 @@ export async function evaluateAndDispatchUserNotifications(
     const nowMs = Date.now();
     const maxDueTimeMs = nowMs + Math.max(5, dueLeadTimeMinutes + 10) * 60 * 1000;
 
+    const currentAlertedTasks = { ...(dispatchLog.alerted_tasks || {}) };
+    for (const [tId, tDate] of Object.entries(currentAlertedTasks)) {
+      if (new Date(tDate).getTime() < nowMs - 2 * 86400000) {
+        delete currentAlertedTasks[tId];
+      }
+    }
+
     for (const task of pendingTasks) {
       if (!task.target_date) continue;
       const targetTimeMs = new Date(task.target_date).getTime();
 
       if (targetTimeMs > nowMs && targetTimeMs <= maxDueTimeMs) {
-        const alreadyAlerted = notificationsList.some(
-          (n: any) =>
-            n.type === "task_due" &&
-            n.metadata?.task_id === task.task_id &&
-            n.metadata?.target_date === task.target_date
-        );
+        const alreadyAlerted = Boolean(currentAlertedTasks[task.task_id]);
 
         if (!alreadyAlerted) {
           const minutesRemaining = Math.max(
@@ -354,21 +271,21 @@ export async function evaluateAndDispatchUserNotifications(
             Math.round((targetTimeMs - nowMs) / 60000)
           );
 
+          const cleanContent = stripHtml(task.task_content) || "Tarea pendiente";
           const title = "⏰ Tarea por vencer";
-          const body = `"${task.task_content}" vence en ${minutesRemaining} ${minutesRemaining === 1 ? "minuto" : "minutos"}. ¡No lo olvides!`;
+          const body = `"${cleanContent}" vence en ${minutesRemaining} ${minutesRemaining === 1 ? "minuto" : "minutos"}. ¡No lo olvides!`;
 
-          await sendPushAndRecordNotification({
+          await sendPushToUser({
             userId,
-            type: "task_due",
             title,
-            content: body,
-            metadata: {
-              task_id: task.task_id,
-              target_date: task.target_date,
-            },
+            body,
+            url: "/alino-app",
             supabaseAdmin,
           });
 
+          currentAlertedTasks[task.task_id] = task.target_date;
+          dispatchLog.alerted_tasks = currentAlertedTasks;
+          hasLogUpdates = true;
           dispatched.push(`task_due:${task.task_id}`);
         }
       }
@@ -379,9 +296,7 @@ export async function evaluateAndDispatchUserNotifications(
     const hoursUntilMidnight = 24 - (userTime.hour + userTime.minute / 60);
 
     if (hoursUntilMidnight <= 3.5 && hoursUntilMidnight > 0) {
-      const alreadySentStreakAlert = notificationsList.some(
-        (n: any) => n.type === "streak_danger" && n.metadata?.date === userTime.dateStr
-      );
+      const alreadySentStreakAlert = dispatchLog.last_streak_danger_date === userTime.dateStr;
 
       if (!alreadySentStreakAlert) {
         let currentStreak = 0;
@@ -441,30 +356,27 @@ export async function evaluateAndDispatchUserNotifications(
             body = `No te quedan protectores disponibles. Completa al menos una tarea antes de medianoche para salvar tu racha.`;
           }
 
-          await sendPushAndRecordNotification({
+          await sendPushToUser({
             userId,
-            type: "streak_danger",
             title,
-            content: body,
-            metadata: {
-              streak: currentStreak,
-              date: userTime.dateStr,
-              will_consume_protector: totalProtectors > 0,
-              protectors_count: totalProtectors,
-            },
+            body,
+            url: "/alino-app",
             supabaseAdmin,
           });
 
+          dispatchLog.last_streak_danger_date = userTime.dateStr;
+          hasLogUpdates = true;
           dispatched.push("streak_danger");
         }
       }
     }
   }
 
-  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const hasRecentEngagementNudge = notificationsList.some(
-    (n: any) => n.type === "engagement_nudge" && n.created_at >= twentyFourHoursAgo
-  );
+  const nowMs = Date.now();
+  const lastNudgeMs = dispatchLog.last_engagement_nudge_at
+    ? new Date(dispatchLog.last_engagement_nudge_at).getTime()
+    : 0;
+  const hasRecentEngagementNudge = nowMs - lastNudgeMs < 24 * 60 * 60 * 1000;
 
   if (!hasRecentEngagementNudge) {
     try {
@@ -486,15 +398,16 @@ export async function evaluateAndDispatchUserNotifications(
           ? `Completaste el logro "${unclaimed[0].title}". ¡Entra a Alino y reclama tus Alino Coins y XP!`
           : `Tienes ${unclaimed.length} recompensas de logros esperando por ti. ¡Entra a recogerlas!`;
 
-        await sendPushAndRecordNotification({
+        await sendPushToUser({
           userId,
-          type: "engagement_nudge",
           title,
-          content: body,
-          metadata: { subcategory: "unclaimed_rewards", count: unclaimed.length },
+          body,
+          url: "/alino-app",
           supabaseAdmin,
         });
 
+        dispatchLog.last_engagement_nudge_at = new Date().toISOString();
+        hasLogUpdates = true;
         dispatched.push("engagement_nudge:unclaimed_rewards");
       } else {
         const nearCompletion = achievements.find(
@@ -511,44 +424,60 @@ export async function evaluateAndDispatchUserNotifications(
           const title = "🎯 ¡Estás muy cerca de un logro!";
           const body = `Estás al ${percentage}% de "${nearCompletion.title}". ¡Completa un paso más y desbloquéalo hoy!`;
 
-          await sendPushAndRecordNotification({
+          await sendPushToUser({
             userId,
-            type: "engagement_nudge",
             title,
-            content: body,
-            metadata: {
-              subcategory: "near_achievement",
-              achievement_code: nearCompletion.code,
-            },
+            body,
+            url: "/alino-app",
             supabaseAdmin,
           });
 
+          dispatchLog.last_engagement_nudge_at = new Date().toISOString();
+          hasLogUpdates = true;
           dispatched.push("engagement_nudge:near_achievement");
         } else if (pendingTasks.length > 0 && userTime.hour >= 11 && userTime.hour <= 17) {
-          const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-          const hasRecentNudge48 = notificationsList.some(
-            (n: any) => n.type === "engagement_nudge" && n.created_at >= fortyEightHoursAgo
-          );
+          const lastOrganizeMs = dispatchLog.last_engagement_organize_at
+            ? new Date(dispatchLog.last_engagement_organize_at).getTime()
+            : 0;
+          const hasRecentOrganize = nowMs - lastOrganizeMs < 48 * 60 * 60 * 1000;
 
-          if (!hasRecentNudge48) {
+          if (!hasRecentOrganize) {
             const title = "✨ Organiza tu día en Alino";
-            const body = `Tus pendientes te esperan. Tómate 2 minutos para despejar tu mente y avanzar en tus metas.`;
+            const body = "Tus pendientes te esperan. Tómate 2 minutos para despejar tu mente y avanzar en tus metas.";
 
-            await sendPushAndRecordNotification({
+            await sendPushToUser({
               userId,
-              type: "engagement_nudge",
               title,
-              content: body,
-              metadata: { subcategory: "organize_nudge" },
+              body,
+              url: "/alino-app",
               supabaseAdmin,
             });
 
+            dispatchLog.last_engagement_nudge_at = new Date().toISOString();
+            dispatchLog.last_engagement_organize_at = new Date().toISOString();
+            hasLogUpdates = true;
             dispatched.push("engagement_nudge:organize_nudge");
           }
         }
       }
     } catch (err) {
       console.error("[notifications] Error in loyalty/achievements evaluation:", err);
+    }
+  }
+
+  if (hasLogUpdates) {
+    try {
+      await supabaseAdmin
+        .from("user_private")
+        .update({
+          preferences: {
+            ...prefs,
+            push_dispatch_log: dispatchLog,
+          },
+        })
+        .eq("user_id", userId);
+    } catch (err) {
+      console.error("[notifications] Error saving push_dispatch_log to user_private:", err);
     }
   }
 
@@ -591,15 +520,14 @@ export async function sendTestNotificationToUser(
   supabaseAdmin: SupabaseClient
 ) {
   const title = "✨ Notificaciones de Alino activadas";
-  const content =
+  const body =
     "¡Tu configuración de notificaciones funciona a la perfección! Recibirás tus resúmenes y alertas a tiempo.";
 
-  return await sendPushAndRecordNotification({
+  return await sendPushToUser({
     userId,
-    type: "system",
     title,
-    content,
-    metadata: { test: true, timestamp: new Date().toISOString() },
+    body,
+    url: "/alino-app",
     supabaseAdmin,
   });
 }

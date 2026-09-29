@@ -1,13 +1,7 @@
-// lib/schemas/notification.types.ts
-
 export type NotificationType =
   | "list_invitation"
   | "app_update"
-  | "system"
-  | "daily_digest"
-  | "task_due"
-  | "streak_danger"
-  | "engagement_nudge";
+  | "system";
 
 export type Notification = {
   notification_id: string;
