@@ -4,10 +4,6 @@
     {
       "path": "/api/cron/process-phases",
       "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/notifications",
-      "schedule": "*/15 * * * *"
     }
   ]
 }
