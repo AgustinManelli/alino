@@ -17,7 +17,7 @@ import {
   removeFolderFromIndexedDB,
   isListDeleted,
 } from "@/lib/offline/sidebarSync";
-import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
+
 
 export const RealtimeProvider = () => {
   const supabase = createClient();
@@ -438,55 +438,6 @@ export const RealtimeProvider = () => {
       });
     }
   }, [user?.show_activity_status, user?.user_id, supabase]);
-
-  const dueRemindersEnabled = useUserPreferencesStore((s) => s.dueRemindersEnabled);
-  const dueLeadTimeMinutes = useUserPreferencesStore((s) => s.dueLeadTimeMinutes);
-  const tasks = useTodoDataStore((s) => s.tasks);
-  const alertedTasksRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (!dueRemindersEnabled || !tasks || tasks.length === 0) return;
-
-    const checkUpcomingTasks = () => {
-      const now = Date.now();
-      const leadMs = (dueLeadTimeMinutes || 30) * 60 * 1000;
-
-      for (const t of tasks) {
-        if (!t.target_date || t.completed) continue;
-        const targetMs = new Date(t.target_date).getTime();
-        const diffMs = targetMs - now;
-
-        if (diffMs > 0 && diffMs <= leadMs) {
-          const alertKey = `${t.task_id}-${t.target_date}`;
-          if (!alertedTasksRef.current.has(alertKey)) {
-            alertedTasksRef.current.add(alertKey);
-            const minutesLeft = Math.max(1, Math.round(diffMs / 60000));
-            const title = "⏰ Tarea por vencer";
-            const content = `"${t.task_content}" vence en ${minutesLeft} ${minutesLeft === 1 ? "minuto" : "minutos"}.`;
-
-            customToast.info(title, content);
-
-            if (
-              typeof window !== "undefined" &&
-              "Notification" in window &&
-              Notification.permission === "granted"
-            ) {
-              try {
-                new Notification(title, {
-                  body: content,
-                  icon: "/manifest-icon-192.maskable.png",
-                });
-              } catch (_) {}
-            }
-          }
-        }
-      }
-    };
-
-    checkUpcomingTasks();
-    const interval = setInterval(checkUpcomingTasks, 45000);
-    return () => clearInterval(interval);
-  }, [dueRemindersEnabled, dueLeadTimeMinutes, tasks]);
 
   return null;
 };
