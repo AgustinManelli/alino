@@ -58,10 +58,12 @@ export const UserStoreProvider = ({
   }
 
   if (initialListsData && !useTodoDataStore.getState().initialFetch) {
+    const rawTasks = initialListsData.tasks ?? [];
     useTodoDataStore.setState({
       lists: (initialListsData.lists ?? []).filter((l) => !isListDeleted(l.list_id)),
       folders: initialListsData.folders ?? [],
-      tasks: initialListsData.tasks ?? [],
+      tasks: rawTasks.filter((t) => !t.completed),
+      completedTasks: rawTasks.filter((t) => t.completed === true),
       listsPagination: {
         root: { page: 0, hasMore: initialListsData.hasMoreRoot ?? false },
       },
@@ -76,10 +78,12 @@ export const UserStoreProvider = ({
       if (!initialListsData) {
         const local = await loadSidebarFromIndexedDB();
         if (isMounted && (local.lists.length > 0 || local.folders.length > 0 || local.tasks.length > 0)) {
+          const rawTasks = local.tasks ?? [];
           useTodoDataStore.setState({
             lists: local.lists,
             folders: local.folders,
-            tasks: local.tasks ?? [],
+            tasks: rawTasks.filter((t) => !t.completed),
+            completedTasks: rawTasks.filter((t) => t.completed === true),
             listsPagination: {
               root: { page: 0, hasMore: false },
             },
@@ -96,10 +100,12 @@ export const UserStoreProvider = ({
       );
 
       if (isMounted) {
+        const rawTasks = reconciled.tasks ?? initialListsData.tasks ?? [];
         useTodoDataStore.setState({
           lists: reconciled.lists,
           folders: reconciled.folders,
-          tasks: reconciled.tasks ?? initialListsData.tasks ?? [],
+          tasks: rawTasks.filter((t) => !t.completed),
+          completedTasks: rawTasks.filter((t) => t.completed === true),
           listsPagination: {
             root: { page: 0, hasMore: initialListsData.hasMoreRoot ?? false },
           },
@@ -109,7 +115,7 @@ export const UserStoreProvider = ({
         await saveSidebarToIndexedDB(
           reconciled.lists,
           reconciled.folders,
-          reconciled.tasks ?? initialListsData.tasks ?? []
+          rawTasks
         );
       }
     }

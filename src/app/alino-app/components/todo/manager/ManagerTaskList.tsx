@@ -5,7 +5,6 @@ import { AnimatePresence } from "motion/react";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useSyncStore } from "@/store/useSyncStore";
 import { useUpdateTaskRank } from "@/hooks/todo/tasks/useUpdateTaskRank";
-import { useFetchTasksPage } from "@/hooks/todo/tasks/useFetchTasksPage";
 import { useFetchCompletedTasksPage } from "@/hooks/todo/tasks/useFetchCompletedTasksPage";
 import { useDeferredLoading } from "@/hooks/useDeferredLoading";
 import {
@@ -49,25 +48,65 @@ export const ManagerTaskList = memo(function ManagerTaskList({
   loadingCompleted,
   currentViewId,
 }: ManagerTaskListProps) {
-  const { tasks, completedTasks, hasMoreTasks, hasMoreCompletedTasks } =
+  const { tasks, completedTasks, hasMoreCompletedTasks, taskSort } =
     useTodoDataStore();
   const loadingQueue = useSyncStore((state) => state.loadingQueue);
   const showDeferredSkeleton = useDeferredLoading(loadingQueue > 0, 150);
   const { updateTaskRank } = useUpdateTaskRank();
-  const { fetchTasksPage } = useFetchTasksPage();
   const { fetchCompletedTasksPage } = useFetchCompletedTasksPage();
 
   const [draggedTask, setDraggedTask] = useState<TaskType | null>(null);
   const prevFilteredCountRef = useRef(0);
   const prevListIdRef = useRef<string | null>(null);
 
-  const filteredTasks = useMemo(
-    () => tasks.filter((task) => task.list_id === setList?.list_id),
-    [tasks, setList?.list_id],
+  const filteredTasks = useMemo(() => {
+    const listTasks = tasks.filter(
+      (task) => task.list_id === setList?.list_id && !task.completed
+    );
+
+    switch (taskSort) {
+      case "due_asc":
+        return [...listTasks].sort((a, b) => {
+          if (!a.target_date) return 1;
+          if (!b.target_date) return -1;
+          return (
+            new Date(a.target_date).getTime() -
+            new Date(b.target_date).getTime()
+          );
+        });
+      case "due_desc":
+        return [...listTasks].sort((a, b) => {
+          if (!a.target_date) return 1;
+          if (!b.target_date) return -1;
+          return (
+            new Date(b.target_date).getTime() -
+            new Date(a.target_date).getTime()
+          );
+        });
+      case "alpha_asc":
+        return [...listTasks].sort((a, b) =>
+          a.task_content.localeCompare(b.task_content)
+        );
+      case "alpha_desc":
+        return [...listTasks].sort((a, b) =>
+          b.task_content.localeCompare(a.task_content)
+        );
+      default:
+        return [...listTasks].sort((a, b) => {
+          if (!a.rank) return 1;
+          if (!b.rank) return -1;
+          return a.rank.localeCompare(b.rank);
+        });
+    }
+  }, [tasks, setList?.list_id, taskSort]);
+
+  const filteredCompletedTasks = useMemo(
+    () => completedTasks.filter((t) => t.list_id === setList?.list_id),
+    [completedTasks, setList?.list_id]
   );
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
   const handleDragStart = useCallback(
@@ -75,7 +114,7 @@ export const ManagerTaskList = memo(function ManagerTaskList({
       const task = tasks.find((t) => t.task_id === e.active.id);
       if (task) setDraggedTask(task);
     },
-    [tasks],
+    [tasks]
   );
 
   const handleDragEnd = useCallback(
@@ -100,18 +139,18 @@ export const ManagerTaskList = memo(function ManagerTaskList({
       const newRank = calcNewRank(lexoOrder, newAscIndex);
       updateTaskRank(active.id as string, newRank);
     },
-    [tasks, setList?.list_id, updateTaskRank],
+    [tasks, setList?.list_id, updateTaskRank]
   );
 
   useEffect(() => {
     if (!currentViewId) return;
     if (prevListIdRef.current !== currentViewId) {
-      fetchTasksPage(currentViewId, true);
+      useTodoDataStore.setState({ currentListId: currentViewId });
       prevListIdRef.current = currentViewId;
       prevFilteredCountRef.current = 0;
       if (scrollRef.current) scrollRef.current.scrollTop = 0;
     }
-  }, [currentViewId, fetchTasksPage, scrollRef]);
+  }, [currentViewId, scrollRef]);
 
   useEffect(() => {
     if (showCompleted) return;
@@ -138,26 +177,17 @@ export const ManagerTaskList = memo(function ManagerTaskList({
         currentViewId
       ) {
         fetchCompletedTasksPage(currentViewId, false);
-      } else if (
-        !showCompleted &&
-        hasMoreTasks &&
-        loadingQueue === 0 &&
-        currentViewId
-      ) {
-        fetchTasksPage(currentViewId, false);
       }
     }
   }, [
-    hasMoreTasks,
-    loadingQueue,
     currentViewId,
-    fetchTasksPage,
     showCompleted,
     hasMoreCompletedTasks,
     loadingCompleted,
     fetchCompletedTasksPage,
     scrollRef,
   ]);
+
 
   useEffect(() => {
     const scrollEl = scrollRef.current;
@@ -171,7 +201,7 @@ export const ManagerTaskList = memo(function ManagerTaskList({
     return (
       <div className={styles.tasks}>
         <AnimatePresence mode="popLayout" initial={false}>
-          {completedTasks.map((task) => (
+          {filteredCompletedTasks.map((task) => (
             <TaskCardStatic key={task.task_id} task={task} />
           ))}
         </AnimatePresence>
@@ -193,7 +223,7 @@ export const ManagerTaskList = memo(function ManagerTaskList({
               ))}
           </div>
         )}
-        {!loadingCompleted && completedTasks.length === 0 && (
+        {!loadingCompleted && filteredCompletedTasks.length === 0 && (
           <div className={styles.emptyTrash}>
             <TaskRemoveIcon
               className={styles.emptyTrashIcon}

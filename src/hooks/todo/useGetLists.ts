@@ -43,7 +43,8 @@ export function useGetLists() {
 
       useTodoDataStore.setState({
         lists: reconciled.lists,
-        tasks: reconciled.tasks,
+        tasks: (reconciled.tasks ?? []).filter((t) => !t.completed),
+        completedTasks: (reconciled.tasks ?? []).filter((t) => t.completed === true),
         folders: reconciled.folders,
         listsPagination: {
           root: { page: 0, hasMore: data?.hasMoreRoot ?? false },
@@ -57,10 +58,12 @@ export function useGetLists() {
       if (isNetworkError(err)) {
         const local = await loadSidebarFromIndexedDB();
         if (local.lists.length > 0 || local.folders.length > 0 || local.tasks.length > 0) {
+          const rawTasks = local.tasks ?? [];
           useTodoDataStore.setState({
             lists: local.lists,
             folders: local.folders,
-            tasks: local.tasks ?? [],
+            tasks: rawTasks.filter((t) => !t.completed),
+            completedTasks: rawTasks.filter((t) => t.completed === true),
             listsPagination: {
               root: { page: 0, hasMore: false },
             },

@@ -50,10 +50,9 @@ export const Manager = memo(function Manager({
     setShowCompleted(next);
     if (next) {
       setIsReordering(false);
-      if (currentViewId) fetchCompletedTasksPage(currentViewId, true);
       if (scrollRef.current) scrollRef.current.scrollTop = 0;
     }
-  }, [showCompleted, currentViewId, fetchCompletedTasksPage]);
+  }, [showCompleted]);
 
   useEffect(() => {
     if (setList?.list.color) {
