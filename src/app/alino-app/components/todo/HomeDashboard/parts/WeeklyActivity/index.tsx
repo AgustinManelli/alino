@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { useWeeklyActivity } from "@/hooks/dashboard/useWeeklyActivity";
+import { useMemo } from "react";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useWidgetPreview } from "@/context/WidgetPreviewContext";
-import { Skeleton } from "@/components/ui/skeleton";
 import styles from "./WeeklyActivity.module.css";
 
 import { WeeklyActivityPreview } from "./WeeklyActivityPreview";
@@ -11,31 +10,40 @@ import { WeeklyActivityPreview } from "./WeeklyActivityPreview";
 const DAYS_ES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 export const WeeklyActivity = () => {
-  const { data, isLoading, fetchWeeklyActivity } = useWeeklyActivity();
+  const completedTasks = useTodoDataStore((state) => state.completedTasks);
+  const initialFetch = useTodoDataStore((state) => state.initialFetch);
   const isPreview = useWidgetPreview();
-
-  useEffect(() => {
-    if (!isPreview) {
-      fetchWeeklyActivity();
-    }
-  }, [fetchWeeklyActivity, isPreview]);
 
   if (isPreview) {
     return <WeeklyActivityPreview />;
   }
 
   const displayData = useMemo(() => {
-    if (data.length === 7) return data;
-
     return Array.from({ length: 7 }).map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const localDateStr = `${year}-${month}-${day}`;
+
+      const count = completedTasks.filter((t) => {
+        const dateVal = t.completed_at || t.updated_at;
+        if (!dateVal) return false;
+        const taskDate = new Date(dateVal);
+        const tYear = taskDate.getFullYear();
+        const tMonth = String(taskDate.getMonth() + 1).padStart(2, "0");
+        const tDay = String(taskDate.getDate()).padStart(2, "0");
+        return `${tYear}-${tMonth}-${tDay}` === localDateStr;
+      }).length;
+
       return {
-        date: d.toISOString().split("T")[0],
-        completed_count: 0,
+        date: localDateStr,
+        dayOfWeek: d.getDay(),
+        completed_count: count,
       };
     });
-  }, [data]);
+  }, [completedTasks]);
 
   const maxCount = useMemo(() => {
     const max = Math.max(...displayData.map((d) => d.completed_count), 0);
@@ -46,34 +54,27 @@ export const WeeklyActivity = () => {
     return displayData.reduce((acc, curr) => acc + curr.completed_count, 0);
   }, [displayData]);
 
-  const showStats = !isLoading && (data.length > 0 || isPreview);
+  const showStats = initialFetch;
 
   return (
     <div className={styles.activityContainer}>
-      <div 
+      <div
         className={styles.summaryText}
         style={{ opacity: showStats ? 1 : 0, transition: "opacity 0.3s" }}
       >
-        {!isPreview ? (
-          `${totalCompleted} ${totalCompleted === 1 ? "tarea completada" : "tareas completadas"} esta semana`
-        ) : (
-          "Modo vista previa"
-        )}
+        {`${totalCompleted} ${totalCompleted === 1 ? "tarea completada" : "tareas completadas"} esta semana`}
       </div>
 
       <div className={styles.chartWrapper}>
         {displayData.map((day, idx) => {
-          const dateObj = isPreview ? new Date() : new Date(day.date + "T12:00:00");
-          if (isPreview) dateObj.setDate(dateObj.getDate() - (6 - idx));
-          
-          const dayName = DAYS_ES[dateObj.getDay()];
+          const dayName = DAYS_ES[day.dayOfWeek];
           const heightPercent = (day.completed_count / maxCount) * 100;
 
           return (
             <div key={day.date || idx} className={styles.barGroup}>
               <div className={styles.barContainer}>
-                <div 
-                  className={styles.bar} 
+                <div
+                  className={styles.bar}
                   style={{ height: `${Math.max(heightPercent, 5)}%` }}
                 >
                   <span className={styles.barValue}>{day.completed_count}</span>
@@ -87,3 +88,4 @@ export const WeeklyActivity = () => {
     </div>
   );
 };
+

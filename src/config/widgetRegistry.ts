@@ -21,13 +21,6 @@ export const WIDGET_COMPONENTS: WidgetComponentMap = {
       ).then((m) => m.UpcomingTask),
     { ssr: false },
   ),
-  weather: dynamic(
-    () =>
-      import(
-        "@/app/alino-app/components/todo/HomeDashboard/parts/Weather"
-      ).then((m) => m.Weather),
-    { ssr: false },
-  ),
   "new-features": dynamic(
     () =>
       import(
@@ -95,13 +88,6 @@ export const WIDGET_PREVIEWS: PreviewComponentMap = {
       import(
         "@/app/alino-app/components/todo/HomeDashboard/parts/UpcomingTasks/UpcomingTasksPreview"
       ).then((m) => m.UpcomingTasksPreview),
-    { ssr: false },
-  ),
-  weather: dynamic(
-    () =>
-      import(
-        "@/app/alino-app/components/todo/HomeDashboard/parts/Weather/WeatherPreview"
-      ).then((m) => m.WeatherPreview),
     { ssr: false },
   ),
   "new-features": dynamic(

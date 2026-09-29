@@ -1,10 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
-
-import { useDashboardStore } from "@/store/useDashboardStore";
-import { useFetchDashboardData } from "@/hooks/dashboard/useFetchDashboardData";
+import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWidgetPreview } from "@/context/WidgetPreviewContext";
 
@@ -12,34 +9,30 @@ import { SummaryPreview } from "./SummaryPreview";
 import styles from "./Summary.module.css";
 
 export const Summary = () => {
-  const { fetchDashboardData } = useFetchDashboardData();
-  const { total_tasks, completed_tasks, hasFetchedData } = useDashboardStore(
+  const { tasks, completedTasks, initialFetch } = useTodoDataStore(
     useShallow((state) => ({
-      total_tasks: state.total_tasks,
-      completed_tasks: state.completed_tasks,
-      hasFetchedData: state.hasFetchedData,
+      tasks: state.tasks,
+      completedTasks: state.completedTasks,
+      initialFetch: state.initialFetch,
     })),
   );
   const isPreview = useWidgetPreview();
-
-  useEffect(() => {
-    if (!hasFetchedData) {
-      fetchDashboardData();
-    }
-  }, [hasFetchedData, fetchDashboardData]);
 
   if (isPreview) {
     return <SummaryPreview />;
   }
 
-  const init = hasFetchedData;
+  const activeCount = tasks.length;
+  const completedCount = completedTasks.length;
+  const total_tasks = activeCount + completedCount;
+  const completed_tasks = completedCount;
   const percentage =
     total_tasks > 0 ? Math.round((completed_tasks / total_tasks) * 100) : 0;
 
   return (
     <div className={styles.summaryContainer}>
       <div className={styles.percentageWrapper}>
-        {init ? (
+        {initialFetch ? (
           <>
             <span className={styles.percentageNumber}>{percentage}</span>
             <span className={styles.percentageSymbol}>%</span>
@@ -52,7 +45,7 @@ export const Summary = () => {
       </div>
 
       <div className={styles.statsInfo}>
-        {init ? (
+        {initialFetch ? (
           `${total_tasks} ${total_tasks === 1 ? "Tarea total" : "Tareas totales"}`
         ) : (
           <Skeleton
@@ -64,9 +57,9 @@ export const Summary = () => {
       <div className={styles.progressBarWrapper}>
         <div
           className={styles.progressBar}
-          style={{ width: init ? `${percentage}%` : "0%" }}
+          style={{ width: initialFetch ? `${percentage}%` : "0%" }}
         >
-          {init && percentage > 10 && (
+          {initialFetch && percentage > 10 && (
             <span className={styles.completedCount}>
               {completed_tasks} completadas
             </span>
@@ -76,3 +69,4 @@ export const Summary = () => {
     </div>
   );
 };
+

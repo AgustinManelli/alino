@@ -14,3 +14,18 @@ export const tierSatisfies = (userTier: string, required: string): boolean => {
   const requiredLevel = TIER_ORDER[required as WidgetTier] ?? 0;
   return currentLevel >= requiredLevel;
 };
+
+export const ONLINE_REQUIRED_WIDGETS = new Set<string>([
+  "streak",
+  "achievements",
+  "new-features",
+  "ai-planner",
+]);
+
+export const isWidgetOnlineOnly = (
+  widgetKey: string,
+  widgetSource?: string
+): boolean => {
+  if (widgetSource === "embedded") return true;
+  return ONLINE_REQUIRED_WIDGETS.has(widgetKey);
+};

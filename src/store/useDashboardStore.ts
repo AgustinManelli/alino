@@ -13,38 +13,6 @@ import {
 } from "@/lib/schemas/dashboard.types";
 import { WidgetLimits } from "@/lib/schemas/dashboard.types";
 
-type HourlyData = {
-  time: string;
-  temperature: number;
-  weatherCode: number;
-  emoji: React.ReactNode;
-  isDay: boolean;
-};
-
-type WeatherState = {
-  temperature: number | null;
-  tempMin: number | null;
-  tempMax: number | null;
-  description: string | null;
-  emoji: React.ReactNode | null;
-  location: string | null;
-  loading: boolean;
-  error: string | null;
-  weatherType:
-    | "sunny"
-    | "cloudy-day"
-    | "cloudy-night"
-    | "rainy"
-    | "rainy-day"
-    | "rainy-night"
-    | "stormy"
-    | "snowy"
-    | "foggy"
-    | "night"
-    | "default";
-  hourlyForecast: HourlyData[];
-};
-
 type DashboardStore = {
   widgetInstances: WidgetInstance[];
   predefinedWidgets: PredefinedWidget[];
@@ -56,7 +24,6 @@ type DashboardStore = {
   upcoming_tasks: DashboardData["upcoming_tasks"];
   due_today_tasks: DashboardData["due_today_tasks"];
   app_updates: AppUpdatesType[];
-  weather: WeatherState;
   isConfigLoaded: boolean;
   isFetchingData: boolean;
   isFetchingAppUpdates: boolean;
@@ -67,7 +34,6 @@ type DashboardStore = {
   setWidgetInstances: (instances: WidgetInstance[]) => void;
   setLayout: (layout: ResponsiveLayouts) => void;
   setActiveWidgets: (widgets: string[]) => void;
-  setWeather: (data: WeatherState) => void;
   invalidateDashboardData: () => void;
 };
 
@@ -83,18 +49,6 @@ export const useDashboardStore = create<DashboardStore>()((set) => ({
   upcoming_tasks: [],
   due_today_tasks: [],
   app_updates: [],
-  weather: {
-    temperature: null,
-    tempMin: null,
-    tempMax: null,
-    description: null,
-    emoji: null,
-    location: null,
-    loading: true,
-    error: null,
-    weatherType: "default",
-    hourlyForecast: [],
-  },
   isConfigLoaded: false,
   isFetchingData: false,
   isFetchingAppUpdates: false,
@@ -109,8 +63,6 @@ export const useDashboardStore = create<DashboardStore>()((set) => ({
   setLayout: (layout) => set({ layout }),
 
   setActiveWidgets: (widgets) => set({ activeWidgets: widgets }),
-
-  setWeather: (data) => set({ weather: data }),
 
   invalidateDashboardData: () =>
     set({

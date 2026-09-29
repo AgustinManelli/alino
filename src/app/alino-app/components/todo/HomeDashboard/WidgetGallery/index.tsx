@@ -10,10 +10,12 @@ import {
   Information,
   Cross,
 } from "@/components/ui/icons/icons";
-import { tierSatisfies } from "@/config/widgets.registry";
+import { tierSatisfies, isWidgetOnlineOnly } from "@/config/widgets.registry";
 import { useInstallWidget } from "@/hooks/dashboard/useInstallWidget";
 import { useUninstallWidget } from "@/hooks/dashboard/useUninstallWidget";
 import { useDashboardStore } from "@/store/useDashboardStore";
+import { useSyncStore } from "@/store/useSyncStore";
+import { customToast } from "@/lib/toasts";
 import { UserWidgetRow } from "@/lib/schemas/database.types";
 import { PredefinedWidget } from "@/lib/schemas/dashboard.types";
 import { WindowComponent } from "@/components/ui/WindowComponent";
@@ -56,6 +58,7 @@ const TIERS = [
 export const WidgetGallery = ({ onClose, userTier }: Props) => {
   const openModal = useModalStore((s) => s.open);
   const activeWidgets = useDashboardStore((s) => s.activeWidgets);
+  const isOnline = useSyncStore((s) => s.isOnline);
   const { installWidget, isPending: isInstalling } = useInstallWidget();
   const { uninstallWidget, isPending: isUninstalling } = useUninstallWidget();
 
@@ -87,6 +90,55 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
   const fetchCatalog = useCallback(async () => {
     setIsLoading(true);
     try {
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        const predefined = (
+          useDashboardStore.getState().predefinedWidgets || []
+        ).filter((w) => w.id !== "weather");
+
+        let filtered = predefined;
+        if (selectedCategory && selectedCategory !== "all") {
+          filtered = filtered.filter((w) => w.category === selectedCategory);
+        }
+        if (selectedTier && selectedTier !== "all") {
+          filtered = filtered.filter((w) => w.tierRequired === selectedTier);
+        }
+        if (debouncedSearch && debouncedSearch.trim()) {
+          const term = debouncedSearch.trim().toLowerCase();
+          filtered = filtered.filter(
+            (w) =>
+              w.name.toLowerCase().includes(term) ||
+              (w.description?.toLowerCase().includes(term) ?? false),
+          );
+        }
+
+        const pageSize = 6;
+        const totalCount = filtered.length;
+        const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+        const paged = filtered.slice(
+          (currentPage - 1) * pageSize,
+          currentPage * pageSize,
+        );
+
+        const categoryCounts: Record<string, number> = {
+          all: predefined.length,
+        };
+        for (const item of predefined) {
+          if (item.category) {
+            categoryCounts[item.category] =
+              (categoryCounts[item.category] ?? 0) + 1;
+          }
+        }
+
+        setCatalogData({
+          widgets: paged,
+          totalCount,
+          currentPage,
+          totalPages,
+          categoryCounts,
+        });
+        return;
+      }
+
       const res = await getWidgetsCatalogPaginated({
         search: debouncedSearch,
         category: selectedCategory,
@@ -95,7 +147,10 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
         pageSize: 6,
       });
       if (res.data) {
-        setCatalogData(res.data);
+        setCatalogData({
+          ...res.data,
+          widgets: res.data.widgets.filter((w) => w.id !== "weather"),
+        });
       }
     } finally {
       setIsLoading(false);
@@ -109,6 +164,10 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
   }, [activeSection, fetchCatalog]);
 
   const fetchMyWidgets = useCallback(async () => {
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      setMyEmbeddedWidgets([]);
+      return;
+    }
     const { data } = await getUserEmbeddedWidgets();
     setMyEmbeddedWidgets(data ?? []);
   }, []);
@@ -135,6 +194,11 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
     const canUse = tierSatisfies(userTier, def.tierRequired);
 
     if (isThisActionPending(def.id)) return;
+
+    if (!isOnline && isWidgetOnlineOnly(def.id)) {
+      customToast.error("Este widget requiere conexión a internet para usarse.");
+      return;
+    }
 
     setTargetWidgetId(def.id);
     try {
@@ -272,9 +336,8 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
                     <button
                       key={tier.id}
                       type="button"
-                      className={`${styles.tierChip} ${
-                        isActive ? styles.tierChipActive : ""
-                      }`}
+                      className={`${styles.tierChip} ${isActive ? styles.tierChipActive : ""
+                        }`}
                       onClick={() => handleSelectTier(tier.id)}
                     >
                       {tier.id === "pro" && (
@@ -297,122 +360,120 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
               </span>
             </div>
 
-                <div className={styles.scrollArea}>
-                  {widgetsList.length > 0 ? (
-                    <div className={styles.grid}>
-                      {widgetsList.map((def: PredefinedWidget) => {
-                        const isInstalled = activeWidgets.includes(def.id);
-                        const canUse = tierSatisfies(userTier, def.tierRequired);
-                        const isPending = isThisActionPending(def.id);
+            <div className={styles.scrollArea}>
+              {widgetsList.length > 0 ? (
+                <div className={styles.grid}>
+                  {widgetsList.map((def: PredefinedWidget) => {
+                    const isInstalled = activeWidgets.includes(def.id);
+                    const canUse = tierSatisfies(userTier, def.tierRequired);
+                    const isPending = isThisActionPending(def.id);
 
-                        let buttonLabel = "Instalar";
-                        if (isInstalled) {
-                          buttonLabel = isPending ? "Desinstalando..." : "Desinstalar";
-                        } else if (isPending) {
-                          buttonLabel = "Instalando...";
-                        } else if (!canUse) {
-                          buttonLabel = `Requiere ${TIER_LABELS[def.tierRequired]}`;
-                        }
+                    let buttonLabel = "Instalar";
+                    if (isInstalled) {
+                      buttonLabel = isPending ? "Desinstalando..." : "Desinstalar";
+                    } else if (isPending) {
+                      buttonLabel = "Instalando...";
+                    } else if (!canUse) {
+                      buttonLabel = `Requiere ${TIER_LABELS[def.tierRequired]}`;
+                    }
 
-                        return (
+                    return (
+                      <div
+                        key={def.id}
+                        className={`${styles.card} ${isInstalled ? styles.cardInstalled : ""
+                          }`}
+                      >
+                        <div className={styles.cardHeader}>
                           <div
-                            key={def.id}
-                            className={`${styles.card} ${
-                              isInstalled ? styles.cardInstalled : ""
-                            }`}
+                            className={styles.cardTierBadge}
+                            data-tier={def.tierRequired}
                           >
-                            <div className={styles.cardHeader}>
-                              <div
-                                className={styles.cardTierBadge}
-                                data-tier={def.tierRequired}
-                              >
-                                {def.tierRequired !== "free" && (
-                                  <Crown
-                                    style={{
-                                      width: "12px",
-                                      height: "12px",
-                                      strokeWidth: 2,
-                                      stroke: "rgb(255, 200, 100)",
-                                    }}
-                                  />
-                                )}
-                                <span>{TIER_LABELS[def.tierRequired]}</span>
-                              </div>
-                              <span className={styles.cardCategory}>
-                                {def.category}
-                              </span>
-                            </div>
-
-                            <h3 className={styles.cardTitle}>{def.name}</h3>
-                            <p className={styles.cardDesc}>{def.description}</p>
-
-                            <WidgetPreview
-                              componentKey={def.componentKey}
-                              title={def.name}
-                            />
-
-                            <button
-                              className={`${styles.cardAction} ${
-                                isInstalled ? styles.cardActionRemove : ""
-                              }`}
-                              onClick={() => handleWidgetAction(def)}
-                              disabled={isPending}
-                            >
-                              {buttonLabel}
-                            </button>
+                            {def.tierRequired !== "free" && (
+                              <Crown
+                                style={{
+                                  width: "12px",
+                                  height: "12px",
+                                  strokeWidth: 2,
+                                  stroke: "rgb(255, 200, 100)",
+                                }}
+                              />
+                            )}
+                            <span>{TIER_LABELS[def.tierRequired]}</span>
                           </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className={styles.emptyState}>
-                      <p>No se encontraron widgets con los filtros aplicados.</p>
-                      <span className={styles.emptySubtext}>
-                        Prueba buscando con otros términos o seleccionando otra categoría.
-                      </span>
-                    </div>
-                  )}
-                </div>
+                          <span className={styles.cardCategory}>
+                            {def.category}
+                          </span>
+                        </div>
 
-                {totalPages > 1 && (
-                  <footer className={styles.paginationBar}>
-                    <span className={styles.pageInfo}>
-                      Página {currentPage} de {totalPages}
-                    </span>
-                    <div className={styles.pageButtons}>
-                      <button
-                        className={styles.pageBtn}
-                        onClick={() => setCurrentPage((p: number) => Math.max(p - 1, 1))}
-                        disabled={currentPage <= 1 || isLoading}
-                      >
-                        Anterior
-                      </button>
-                      <button
-                        className={styles.pageBtn}
-                        onClick={() =>
-                          setCurrentPage((p: number) => Math.min(p + 1, totalPages))
-                        }
-                        disabled={currentPage >= totalPages || isLoading}
-                      >
-                        Siguiente
-                      </button>
-                    </div>
-                  </footer>
-                )}
-              </>
-            ) : (
-              <div className={styles.scrollArea}>
-                <EmbeddedWidgetManager
-                  widgets={myEmbeddedWidgets}
-                  activeWidgets={activeWidgets}
-                  userTier={userTier}
-                  onInstall={(id: string) => installWidget(id, id)}
-                  onUninstall={(id: string) => uninstallWidget(id)}
-                  onChange={fetchMyWidgets}
-                />
-              </div>
+                        <h3 className={styles.cardTitle}>{def.name}</h3>
+                        <p className={styles.cardDesc}>{def.description}</p>
+
+                        <WidgetPreview
+                          componentKey={def.componentKey}
+                          title={def.name}
+                        />
+
+                        <button
+                          className={`${styles.cardAction} ${isInstalled ? styles.cardActionRemove : ""
+                            }`}
+                          onClick={() => handleWidgetAction(def)}
+                          disabled={isPending}
+                        >
+                          {buttonLabel}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <p>No se encontraron widgets con los filtros aplicados.</p>
+                  <span className={styles.emptySubtext}>
+                    Prueba buscando con otros términos o seleccionando otra categoría.
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {totalPages > 1 && (
+              <footer className={styles.paginationBar}>
+                <span className={styles.pageInfo}>
+                  Página {currentPage} de {totalPages}
+                </span>
+                <div className={styles.pageButtons}>
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() => setCurrentPage((p: number) => Math.max(p - 1, 1))}
+                    disabled={currentPage <= 1 || isLoading}
+                  >
+                    Anterior
+                  </button>
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() =>
+                      setCurrentPage((p: number) => Math.min(p + 1, totalPages))
+                    }
+                    disabled={currentPage >= totalPages || isLoading}
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </footer>
             )}
-          </main>
+          </>
+        ) : (
+          <div className={styles.scrollArea}>
+            <EmbeddedWidgetManager
+              widgets={myEmbeddedWidgets}
+              activeWidgets={activeWidgets}
+              userTier={userTier}
+              onInstall={(id: string) => installWidget(id, id)}
+              onUninstall={(id: string) => uninstallWidget(id)}
+              onChange={fetchMyWidgets}
+            />
+          </div>
+        )}
+      </main>
     </WindowComponent>
   );
 };

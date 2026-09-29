@@ -5,7 +5,6 @@ import {
   Information,
   Clock,
   IAStars,
-  Cloud,
   StreakFlameIcon,
 } from "@/components/ui/icons/icons";
 
@@ -28,12 +27,6 @@ const WIDGET_UI_META: Record<string, WidgetUiMeta> = {
     color: "#b700ff",
     scrollable: true,
     colSpan: 2,
-  },
-  weather: {
-    icon: React.createElement(Cloud, { style: { width: "16px" } }),
-    color: "#64748b",
-    withoutHeader: true,
-    withoutTopPadding: true,
   },
   "new-features": {
     icon: React.createElement(Information),

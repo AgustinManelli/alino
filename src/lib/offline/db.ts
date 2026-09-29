@@ -22,11 +22,21 @@ export interface SyncQueueItem {
   retryCount: number;
 }
 
+export interface DashboardCacheItem {
+  key: string;
+  widgetInstances: any[];
+  layout: any;
+  predefinedWidgets: any[];
+  widgetLimits?: any;
+  updatedAt: number;
+}
+
 export class AlinoOfflineDB extends Dexie {
   lists!: Table<ListsType, string>;
   folders!: Table<FolderType, string>;
   tasks!: Table<TaskType, string>;
   syncQueue!: Table<SyncQueueItem, string>;
+  dashboard!: Table<DashboardCacheItem, string>;
 
   constructor() {
     super("AlinoOfflineDB");
@@ -40,6 +50,13 @@ export class AlinoOfflineDB extends Dexie {
       folders: "folder_id, pinned, rank",
       tasks: "task_id, list_id, completed, rank",
       syncQueue: "id, entity, action, timestamp",
+    });
+    this.version(3).stores({
+      lists: "list_id, folder, pinned, rank",
+      folders: "folder_id, pinned, rank",
+      tasks: "task_id, list_id, completed, rank",
+      syncQueue: "id, entity, action, timestamp",
+      dashboard: "key",
     });
   }
 }

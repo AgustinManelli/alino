@@ -2133,6 +2133,7 @@ export type UserProfile = Pick<
 >;
 export type TaskType = Omit<TaskRow, "created_by"> & {
   created_by: UserProfile | null;
+  completed_at?: string | null;
 };
 
 type MembershipInfo = Pick<MembershipRow, "role" | "shared_since">;

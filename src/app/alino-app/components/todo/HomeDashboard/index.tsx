@@ -6,16 +6,18 @@ import { ResponsiveLayouts } from "react-grid-layout";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useUIStore } from "@/store/useUIStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { useSyncStore } from "@/store/useSyncStore";
 import { useLoadDashboard } from "@/hooks/dashboard/useLoadDashboard";
 import { useDashboardLayoutActions } from "@/hooks/dashboard/useDashboardLayoutActions";
 import { useSaveWidgetLayouts } from "@/hooks/dashboard/useSaveWidgetLayouts";
 import { useUninstallWidget } from "@/hooks/dashboard/useUninstallWidget";
 
-import { tierSatisfies } from "@/config/widgets.registry";
+import { tierSatisfies, isWidgetOnlineOnly } from "@/config/widgets.registry";
 import { getWidgetComponent } from "@/config/widgetRegistry";
 import WIDGET_UI_META from "@/config/widgetUiMeta";
 
 import { UpgradePlaceholder } from "./parts/UpgradePlaceholder";
+import { OfflinePlaceholder } from "./parts/OfflinePlaceholder";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
 import {
   DraggableBentoGrid,
@@ -70,6 +72,7 @@ const useDateAndGreeting = () => {
 export const HomeDashboard = () => {
   const setBlurredFx = useUIStore((state) => state.setColor);
   const user = useUserDataStore((state) => state.user);
+  const isOnline = useSyncStore((state) => state.isOnline);
 
   const { layout, isConfigLoaded, setLayout, widgetInstances } =
     useDashboardStore();
@@ -120,7 +123,12 @@ export const HomeDashboard = () => {
 
   const bentoItems: BentoItem[] = useMemo(() => {
     return widgetInstances
-      .filter((inst) => inst.isInstalled && inst.pwIsActive !== false)
+      .filter(
+        (inst) =>
+          inst.isInstalled &&
+          inst.pwIsActive !== false &&
+          inst.widgetKey !== "weather",
+      )
       .map((inst): BentoItem | null => {
         if (inst.widgetSource === "predefined") {
           const key = inst.componentKey ?? inst.widgetKey;
@@ -128,15 +136,34 @@ export const HomeDashboard = () => {
 
           if (!WidgetComponent) return null;
 
+          const meta = WIDGET_UI_META[key] ?? {
+            icon: null,
+            color: "#6366f1",
+          };
+
           const isAllowed = tierSatisfies(
             userTier,
             inst.pwTierRequired ?? "free",
           );
 
-          const meta = WIDGET_UI_META[key] ?? {
-            icon: null,
-            color: "#6366f1",
-          };
+          const requiresOnline = isWidgetOnlineOnly(key, inst.widgetSource);
+
+          if (!isOnline && requiresOnline) {
+            return {
+              id: inst.widgetKey,
+              title: inst.pwName ?? inst.widgetKey,
+              icon: meta.icon,
+              color: meta.color,
+              content: (
+                <OfflinePlaceholder
+                  widgetName={inst.pwName ?? inst.widgetKey}
+                />
+              ),
+              withoutTopPadding: meta.withoutTopPadding ?? false,
+              withoutHeader: meta.withoutHeader ?? false,
+              scrollable: false,
+            };
+          }
 
           return {
             id: inst.widgetKey,
@@ -155,6 +182,24 @@ export const HomeDashboard = () => {
         }
 
         if (inst.widgetSource === "embedded" && inst.uwUrl) {
+          if (!isOnline) {
+            return {
+              id: inst.widgetKey,
+              title: inst.uwTitle ?? "Widget",
+              icon: <Link style={{ width: "16px" }} />,
+              color: "#6366f1",
+              content: (
+                <OfflinePlaceholder
+                  widgetName={inst.uwTitle ?? "Widget embebido"}
+                  reason="Los widgets embebidos requieren conexión a internet para cargar su contenido."
+                />
+              ),
+              withoutTopPadding: true,
+              withoutHeader: false,
+              scrollable: false,
+            };
+          }
+
           return {
             id: inst.widgetKey,
             title: inst.uwTitle ?? "Widget",
@@ -177,7 +222,7 @@ export const HomeDashboard = () => {
         return null;
       })
       .filter(isBentoItem);
-  }, [widgetInstances, userTier, isEdit]);
+  }, [widgetInstances, userTier, isEdit, isOnline]);
 
   const displayName = useMemo(
     () => user?.display_name?.split(" ")[0] ?? "Bienvenido",
@@ -196,7 +241,7 @@ export const HomeDashboard = () => {
     }
   }, [autoSortLayout, isEdit]);
 
-  const { scheduleSave } = useSaveWidgetLayouts();
+  const { saveLayouts } = useSaveWidgetLayouts();
 
   const handleFinishEdit = useCallback(() => {
     if (JSON.stringify(layout) !== JSON.stringify(tempLayout)) {
@@ -224,10 +269,10 @@ export const HomeDashboard = () => {
       });
 
       setWidgetInstances(newInstances);
-      scheduleSave();
+      saveLayouts(newInstances);
     }
     setIsEdit(false);
-  }, [layout, tempLayout, setLayout, scheduleSave]);
+  }, [layout, tempLayout, setLayout, saveLayouts]);
 
   const effectiveLayout = isEdit ? tempLayout : layout;
 
