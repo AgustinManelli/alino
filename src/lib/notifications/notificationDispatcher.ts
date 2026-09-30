@@ -1,45 +1,22 @@
-import webpush, { type PushSubscription } from "web-push";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { collectDueReminders } from "./collectors/collectDueReminders";
+import { collectStreakAlerts } from "./collectors/collectStreakAlerts";
+import { collectDailyDigests } from "./collectors/collectDailyDigests";
+import { collectEngagementNudges } from "./collectors/collectEngagementNudges";
+import {
+  sendNotificationJobs,
+  sendPushToSubscriptionsDirect,
+} from "./notificationSender";
+import { stripHtml } from "./messageBuilders";
+import { getUserLocalTime } from "./timeUtils";
+import type {
+  CollectorContext,
+  DispatchSummary,
+  NotificationJob,
+  PushSubscriptionItem,
+} from "./types";
 
-let webPushConfigured = false;
-
-function ensureWebPushConfig() {
-  if (webPushConfigured) return true;
-  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  const privateKey = process.env.VAPID_PRIVATE_KEY;
-
-  if (!publicKey || !privateKey) {
-    console.warn("[web-push] VAPID keys not configured in environment variables.");
-    return false;
-  }
-
-  try {
-    webpush.setVapidDetails(
-      "mailto:ayuda@alino.online",
-      publicKey,
-      privateKey
-    );
-    webPushConfigured = true;
-    return true;
-  } catch (err) {
-    console.error("[web-push] Error setting VAPID details:", err);
-    return false;
-  }
-}
-
-export function stripHtml(input: string | null | undefined): string {
-  if (!input) return "";
-  return input
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+export { stripHtml, getUserLocalTime };
 
 export interface SendPushParams {
   userId: string;
@@ -55,464 +32,47 @@ export async function sendPushToUser({
   title,
   body,
   url = "/alino-app",
-  icon = "/manifest-icon-192.maskable.png",
   supabaseAdmin,
 }: SendPushParams): Promise<{ sent: number; failed: number }> {
-  if (!ensureWebPushConfig()) {
-    return { sent: 0, failed: 0 };
-  }
-
   const { data: subscriptions, error } = await supabaseAdmin
     .from("push_subscriptions")
     .select("endpoint, p256dh, auth")
     .eq("user_id", userId);
 
-  if (error || !subscriptions || subscriptions.length === 0) {
+  if (error) {
+    console.error(`[notifications] Error fetching subscriptions for user ${userId}:`, error.message);
     return { sent: 0, failed: 0 };
   }
 
-  const payload = JSON.stringify({
+  if (!subscriptions || subscriptions.length === 0) {
+    return { sent: 0, failed: 0 };
+  }
+
+  const dummyContext: CollectorContext = {
+    supabaseAdmin,
+    now: new Date(),
+    nowMs: Date.now(),
+    isTimeBudgetExhausted: () => false,
+    subscribersMap: new Map(),
+    userTimezonesMap: new Map(),
+    userPreferencesMap: new Map(),
+    errorsCount: { value: 0 },
+  };
+
+  const dummyJob: NotificationJob = {
+    userId,
+    kind: "task_due",
+    dedupKey: `direct_${Date.now()}`,
     title,
     body,
-    icon,
-    data: { url },
-  });
+    url,
+    tag: "alino-direct",
+    ttl: 3600,
+    urgency: "high",
+    priority: 1,
+  };
 
-  let sent = 0;
-  let failed = 0;
-
-  await Promise.allSettled(
-    subscriptions.map(async (sub) => {
-      try {
-        const subObject: PushSubscription = {
-          endpoint: sub.endpoint,
-          keys: { p256dh: sub.p256dh, auth: sub.auth },
-        };
-        await webpush.sendNotification(subObject, payload);
-        sent++;
-      } catch (err: any) {
-        failed++;
-        if (err?.statusCode === 410 || err?.statusCode === 404) {
-          console.log(`[web-push] Stale subscription detected: ${sub.endpoint}. Removing.`);
-          await supabaseAdmin
-            .from("push_subscriptions")
-            .delete()
-            .eq("endpoint", sub.endpoint);
-        } else {
-          console.error("[web-push] Delivery error:", err?.message || err);
-        }
-      }
-    })
-  );
-
-  return { sent, failed };
-}
-
-export interface PushDispatchLog {
-  last_daily_digest_date?: string;
-  alerted_tasks?: Record<string, string>;
-  last_streak_danger_date?: string;
-  last_engagement_nudge_at?: string;
-  last_engagement_organize_at?: string;
-}
-
-export function getUserLocalTime(timezone: string) {
-  try {
-    const now = new Date();
-    const formatter = new Intl.DateTimeFormat("en-CA", {
-      timeZone: timezone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-    const parts = formatter.formatToParts(now);
-    const getPart = (type: string) => parts.find((p) => p.type === type)?.value || "";
-    const year = getPart("year");
-    const month = getPart("month");
-    const day = getPart("day");
-    const hour = parseInt(getPart("hour"), 10) || 0;
-    const minute = parseInt(getPart("minute"), 10) || 0;
-    const dateStr = `${year}-${month}-${day}`;
-    const timeStr = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
-    return { dateStr, timeStr, hour, minute };
-  } catch {
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 10);
-    const hour = now.getUTCHours();
-    const minute = now.getUTCMinutes();
-    const timeStr = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
-    return { dateStr, timeStr, hour, minute };
-  }
-}
-
-export async function evaluateAndDispatchUserNotifications(
-  userId: string,
-  supabaseAdmin: SupabaseClient
-): Promise<{ dispatched: string[] }> {
-  const dispatched: string[] = [];
-
-  const { data: userPrivate } = await supabaseAdmin
-    .from("user_private")
-    .select("preferences")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  const prefs = (userPrivate?.preferences || {}) as Record<string, any>;
-  const dailyDigestEnabled = prefs.dailyDigestEnabled ?? prefs.daily_digest_enabled ?? true;
-  const dailyDigestTime = prefs.dailyDigestTime ?? prefs.daily_digest_time ?? "09:00";
-  const dueRemindersEnabled = prefs.dueRemindersEnabled ?? prefs.due_reminders_enabled ?? true;
-  const dueLeadTimeMinutes = Number(prefs.dueLeadTimeMinutes ?? prefs.due_lead_time_minutes ?? 30);
-  const streakSaverEnabled = prefs.streakSaverEnabled ?? prefs.streak_saver_enabled ?? true;
-  const timezone = prefs.timezone ?? prefs.user_timezone ?? "America/Argentina/Buenos_Aires";
-
-  const dispatchLog: PushDispatchLog = { ...(prefs.push_dispatch_log || {}) };
-  let hasLogUpdates = false;
-
-  const userTime = getUserLocalTime(timezone);
-
-  const { data: userMemberships } = await supabaseAdmin
-    .from("list_memberships")
-    .select("list_id")
-    .eq("user_id", userId);
-
-  const listIds = (userMemberships || []).map((m: any) => m.list_id);
-
-  let pendingTasks: Array<{ task_id: string; task_content: string; target_date: string | null }> = [];
-  if (listIds.length > 0) {
-    const { data: tasksData } = await supabaseAdmin
-      .from("tasks")
-      .select("task_id, task_content, target_date")
-      .in("list_id", listIds)
-      .eq("completed", false);
-    pendingTasks = tasksData || [];
-  }
-
-  if (dailyDigestEnabled) {
-    const [targetHour, targetMinute] = dailyDigestTime
-      .split(":")
-      .map((v: string) => parseInt(v, 10) || 0);
-
-    const isPastTargetTime =
-      userTime.hour > targetHour ||
-      (userTime.hour === targetHour && userTime.minute >= targetMinute);
-
-    const alreadySentDaily = dispatchLog.last_daily_digest_date === userTime.dateStr;
-
-    if (isPastTargetTime && !alreadySentDaily) {
-      let dueTodayCount = 0;
-      let overdueCount = 0;
-
-      for (const t of pendingTasks) {
-        if (t.target_date) {
-          const taskDate = t.target_date.slice(0, 10);
-          if (taskDate === userTime.dateStr) {
-            dueTodayCount++;
-          } else if (taskDate < userTime.dateStr) {
-            overdueCount++;
-          }
-        }
-      }
-
-      let title = "☀️ Resumen de hoy";
-      let body = "";
-
-      if (dueTodayCount > 0) {
-        body = overdueCount > 0
-          ? `Tienes ${dueTodayCount} ${dueTodayCount === 1 ? "tarea para hoy" : "tareas para hoy"} y ${overdueCount} atrasadas. ¡A por ellas!`
-          : `Tienes ${dueTodayCount} ${dueTodayCount === 1 ? "tarea prevista" : "tareas previstas"} para hoy. ¡Haz que tu día rinda!`;
-      } else if (overdueCount > 0) {
-        title = "☀️ Tareas pendientes";
-        body = `Tienes ${overdueCount} ${overdueCount === 1 ? "tarea pendiente" : "tareas pendientes"} esperando tu atención. ¡Buen momento para avanzar!`;
-      } else if (pendingTasks.length > 0) {
-        body = `Tienes ${pendingTasks.length} tareas organizadas. ¡Dedica unos minutos a planificar tu jornada!`;
-      } else {
-        title = "☀️ ¡Todo al día!";
-        body = "No tienes tareas pendientes para hoy. ¡Aprovecha para descansar o definir nuevos objetivos!";
-      }
-
-      await sendPushToUser({
-        userId,
-        title,
-        body,
-        url: "/alino-app",
-        supabaseAdmin,
-      });
-
-      dispatchLog.last_daily_digest_date = userTime.dateStr;
-      hasLogUpdates = true;
-      dispatched.push("daily_digest");
-    }
-  }
-
-  if (dueRemindersEnabled && pendingTasks.length > 0) {
-    const nowMs = Date.now();
-    const maxDueTimeMs = nowMs + Math.max(5, dueLeadTimeMinutes + 10) * 60 * 1000;
-
-    const currentAlertedTasks = { ...(dispatchLog.alerted_tasks || {}) };
-    for (const [tId, tDate] of Object.entries(currentAlertedTasks)) {
-      if (new Date(tDate).getTime() < nowMs - 2 * 86400000) {
-        delete currentAlertedTasks[tId];
-      }
-    }
-
-    for (const task of pendingTasks) {
-      if (!task.target_date) continue;
-      const targetTimeMs = new Date(task.target_date).getTime();
-
-      if (targetTimeMs > nowMs && targetTimeMs <= maxDueTimeMs) {
-        const alreadyAlerted = Boolean(currentAlertedTasks[task.task_id]);
-
-        if (!alreadyAlerted) {
-          const minutesRemaining = Math.max(
-            1,
-            Math.round((targetTimeMs - nowMs) / 60000)
-          );
-
-          const cleanContent = stripHtml(task.task_content) || "Tarea pendiente";
-          const title = "⏰ Tarea por vencer";
-          const body = `"${cleanContent}" vence en ${minutesRemaining} ${minutesRemaining === 1 ? "minuto" : "minutos"}. ¡No lo olvides!`;
-
-          await sendPushToUser({
-            userId,
-            title,
-            body,
-            url: "/alino-app",
-            supabaseAdmin,
-          });
-
-          currentAlertedTasks[task.task_id] = task.target_date;
-          dispatchLog.alerted_tasks = currentAlertedTasks;
-          hasLogUpdates = true;
-          dispatched.push(`task_due:${task.task_id}`);
-        }
-      }
-    }
-  }
-
-  if (streakSaverEnabled) {
-    const hoursUntilMidnight = 24 - (userTime.hour + userTime.minute / 60);
-
-    if (hoursUntilMidnight <= 3.5 && hoursUntilMidnight > 0) {
-      const alreadySentStreakAlert = dispatchLog.last_streak_danger_date === userTime.dateStr;
-
-      if (!alreadySentStreakAlert) {
-        let currentStreak = 0;
-        let isActiveToday = false;
-        let totalProtectors = 0;
-
-        try {
-          const { data: streakData, error: streakErr } = await supabaseAdmin.rpc(
-            "get_user_streak_data",
-            { p_user_id: userId, p_timezone: timezone }
-          );
-
-          if (!streakErr && streakData) {
-            currentStreak = streakData.current_streak || 0;
-            isActiveToday = Boolean(streakData.is_active_today);
-            const freeLeft = Math.max(
-              0,
-              (streakData.free_protectors_limit || 0) - (streakData.free_protectors_used || 0)
-            );
-            const purchased = streakData.purchased_protectors || 0;
-            totalProtectors = freeLeft + purchased;
-          } else {
-            const { data: streakRow } = await supabaseAdmin
-              .from("user_streaks")
-              .select("current_streak, last_completion_date")
-              .eq("user_id", userId)
-              .maybeSingle();
-
-            if (streakRow) {
-              currentStreak = streakRow.current_streak || 0;
-              isActiveToday = streakRow.last_completion_date === userTime.dateStr;
-            }
-          }
-        } catch {
-          const { data: streakRow } = await supabaseAdmin
-            .from("user_streaks")
-            .select("current_streak, last_completion_date")
-            .eq("user_id", userId)
-            .maybeSingle();
-
-          if (streakRow) {
-            currentStreak = streakRow.current_streak || 0;
-            isActiveToday = streakRow.last_completion_date === userTime.dateStr;
-          }
-        }
-
-        if (currentStreak > 0 && !isActiveToday) {
-          const hoursCeil = Math.max(1, Math.ceil(hoursUntilMidnight));
-          let title = "";
-          let body = "";
-
-          if (totalProtectors > 0) {
-            title = "🛡️ Tu racha usará un protector esta noche";
-            body = `Faltan ~${hoursCeil} horas para medianoche. Completa una tarea hoy para no gastar tus protectores (${totalProtectors} disponible${totalProtectors > 1 ? "s" : ""}).`;
-          } else {
-            title = `🔥 ¡Tu racha de ${currentStreak} ${currentStreak === 1 ? "día" : "días"} está por perderse!`;
-            body = `No te quedan protectores disponibles. Completa al menos una tarea antes de medianoche para salvar tu racha.`;
-          }
-
-          await sendPushToUser({
-            userId,
-            title,
-            body,
-            url: "/alino-app",
-            supabaseAdmin,
-          });
-
-          dispatchLog.last_streak_danger_date = userTime.dateStr;
-          hasLogUpdates = true;
-          dispatched.push("streak_danger");
-        }
-      }
-    }
-  }
-
-  const nowMs = Date.now();
-  const lastNudgeMs = dispatchLog.last_engagement_nudge_at
-    ? new Date(dispatchLog.last_engagement_nudge_at).getTime()
-    : 0;
-  const hasRecentEngagementNudge = nowMs - lastNudgeMs < 24 * 60 * 60 * 1000;
-
-  if (!hasRecentEngagementNudge) {
-    try {
-      const { data: achievementsOverview } = await supabaseAdmin.rpc(
-        "get_user_achievements_overview",
-        { p_user_id: userId }
-      );
-
-      const overview = achievementsOverview as any;
-      const achievements: Array<any> = overview?.achievements || [];
-
-      const unclaimed = achievements.filter(
-        (a) => a.is_completed === true && a.is_claimed === false
-      );
-
-      if (unclaimed.length > 0) {
-        const title = "🎁 ¡Tienes recompensas listas para reclamar!";
-        const body = unclaimed.length === 1
-          ? `Completaste el logro "${unclaimed[0].title}". ¡Entra a Alino y reclama tus Alino Coins y XP!`
-          : `Tienes ${unclaimed.length} recompensas de logros esperando por ti. ¡Entra a recogerlas!`;
-
-        await sendPushToUser({
-          userId,
-          title,
-          body,
-          url: "/alino-app",
-          supabaseAdmin,
-        });
-
-        dispatchLog.last_engagement_nudge_at = new Date().toISOString();
-        hasLogUpdates = true;
-        dispatched.push("engagement_nudge:unclaimed_rewards");
-      } else {
-        const nearCompletion = achievements.find(
-          (a) =>
-            !a.is_completed &&
-            a.target_value > 0 &&
-            (a.current_progress / a.target_value) >= 0.8
-        );
-
-        if (nearCompletion) {
-          const percentage = Math.round(
-            (nearCompletion.current_progress / nearCompletion.target_value) * 100
-          );
-          const title = "🎯 ¡Estás muy cerca de un logro!";
-          const body = `Estás al ${percentage}% de "${nearCompletion.title}". ¡Completa un paso más y desbloquéalo hoy!`;
-
-          await sendPushToUser({
-            userId,
-            title,
-            body,
-            url: "/alino-app",
-            supabaseAdmin,
-          });
-
-          dispatchLog.last_engagement_nudge_at = new Date().toISOString();
-          hasLogUpdates = true;
-          dispatched.push("engagement_nudge:near_achievement");
-        } else if (pendingTasks.length > 0 && userTime.hour >= 11 && userTime.hour <= 17) {
-          const lastOrganizeMs = dispatchLog.last_engagement_organize_at
-            ? new Date(dispatchLog.last_engagement_organize_at).getTime()
-            : 0;
-          const hasRecentOrganize = nowMs - lastOrganizeMs < 48 * 60 * 60 * 1000;
-
-          if (!hasRecentOrganize) {
-            const title = "✨ Organiza tu día en Alino";
-            const body = "Tus pendientes te esperan. Tómate 2 minutos para despejar tu mente y avanzar en tus metas.";
-
-            await sendPushToUser({
-              userId,
-              title,
-              body,
-              url: "/alino-app",
-              supabaseAdmin,
-            });
-
-            dispatchLog.last_engagement_nudge_at = new Date().toISOString();
-            dispatchLog.last_engagement_organize_at = new Date().toISOString();
-            hasLogUpdates = true;
-            dispatched.push("engagement_nudge:organize_nudge");
-          }
-        }
-      }
-    } catch (err) {
-      console.error("[notifications] Error in loyalty/achievements evaluation:", err);
-    }
-  }
-
-  if (hasLogUpdates) {
-    try {
-      await supabaseAdmin
-        .from("user_private")
-        .update({
-          preferences: {
-            ...prefs,
-            push_dispatch_log: dispatchLog,
-          },
-        })
-        .eq("user_id", userId);
-    } catch (err) {
-      console.error("[notifications] Error saving push_dispatch_log to user_private:", err);
-    }
-  }
-
-  return { dispatched };
-}
-
-export async function dispatchAllNotifications(supabaseAdmin: SupabaseClient) {
-  const { data: subs, error } = await supabaseAdmin
-    .from("push_subscriptions")
-    .select("user_id");
-
-  if (error || !subs || subs.length === 0) {
-    return { processedUsers: 0, dispatchedCount: 0 };
-  }
-
-  const userIds = Array.from(new Set(subs.map((s: any) => s.user_id as string)));
-  let dispatchedCount = 0;
-
-  const CONCURRENCY = 5;
-  for (let i = 0; i < userIds.length; i += CONCURRENCY) {
-    const chunk = userIds.slice(i, i + CONCURRENCY);
-    const results = await Promise.allSettled(
-      chunk.map((uid) => evaluateAndDispatchUserNotifications(uid, supabaseAdmin))
-    );
-
-    for (const res of results) {
-      if (res.status === "fulfilled") {
-        dispatchedCount += res.value.dispatched.length;
-      } else {
-        console.error("[cron-notifications] Error processing user:", res.reason);
-      }
-    }
-  }
-
-  return { processedUsers: userIds.length, dispatchedCount };
+  return sendPushToSubscriptionsDirect(subscriptions, dummyJob, dummyContext);
 }
 
 export async function sendTestNotificationToUser(
@@ -530,4 +90,249 @@ export async function sendTestNotificationToUser(
     url: "/alino-app",
     supabaseAdmin,
   });
+}
+
+export interface DispatchOptions {
+  timeBudgetMs?: number;
+}
+
+export async function dispatchAllNotifications(
+  supabaseAdmin: SupabaseClient,
+  options: DispatchOptions = {}
+): Promise<DispatchSummary> {
+  const startTime = Date.now();
+  const timeBudgetMs = options.timeBudgetMs || 40_000;
+  const isTimeBudgetExhausted = () => Date.now() - startTime >= timeBudgetMs;
+
+  const errorsCount = { value: 0 };
+  let timeBudgetExceeded = false;
+  let unprocessedUsersCount = 0;
+
+  const subscribersMap = new Map<string, PushSubscriptionItem[]>();
+  let page = 0;
+  const PAGE_SIZE = 1000;
+
+  while (true) {
+    if (isTimeBudgetExhausted()) {
+      timeBudgetExceeded = true;
+      break;
+    }
+
+    const { data: pageData, error: pageError } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("user_id, endpoint, p256dh, auth")
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+    if (pageError) {
+      console.error("[notifications] Error loading push subscriptions page:", pageError.message);
+      errorsCount.value++;
+      break;
+    }
+
+    if (!pageData || pageData.length === 0) break;
+
+    for (const sub of pageData) {
+      const list = subscribersMap.get(sub.user_id) || [];
+      list.push({ endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth });
+      subscribersMap.set(sub.user_id, list);
+    }
+
+    if (pageData.length < PAGE_SIZE) break;
+    page++;
+  }
+
+  const subscriberIds = Array.from(subscribersMap.keys());
+  const userTimezonesMap = new Map<string, string>();
+  const userPreferencesMap = new Map<string, Record<string, any>>();
+
+  const CHUNK_SIZE = 150;
+  for (let i = 0; i < subscriberIds.length; i += CHUNK_SIZE) {
+    if (isTimeBudgetExhausted()) {
+      timeBudgetExceeded = true;
+      unprocessedUsersCount = subscriberIds.length - i;
+      break;
+    }
+
+    const chunk = subscriberIds.slice(i, i + CHUNK_SIZE);
+    const [usersRes, privRes] = await Promise.all([
+      supabaseAdmin
+        .from("users")
+        .select("user_id, timezone")
+        .in("user_id", chunk),
+      supabaseAdmin
+        .from("user_private")
+        .select("user_id, preferences")
+        .in("user_id", chunk),
+    ]);
+
+    if (usersRes.error) {
+      console.error("[notifications] Error loading users timezone chunk:", usersRes.error.message);
+      errorsCount.value++;
+    } else if (usersRes.data) {
+      for (const u of usersRes.data) {
+        if (u.timezone) userTimezonesMap.set(u.user_id, u.timezone);
+      }
+    }
+
+    if (privRes.error) {
+      console.error("[notifications] Error loading user_private preferences chunk:", privRes.error.message);
+      errorsCount.value++;
+    } else if (privRes.data) {
+      for (const p of privRes.data) {
+        const prefs = (p.preferences || {}) as Record<string, any>;
+        userPreferencesMap.set(p.user_id, prefs);
+        if (!userTimezonesMap.has(p.user_id) && prefs.timezone) {
+          userTimezonesMap.set(p.user_id, prefs.timezone);
+        }
+      }
+    }
+  }
+
+  const now = new Date();
+  const ctx: CollectorContext = {
+    supabaseAdmin,
+    now,
+    nowMs: now.getTime(),
+    isTimeBudgetExhausted,
+    subscribersMap,
+    userTimezonesMap,
+    userPreferencesMap,
+    errorsCount,
+  };
+
+  const rawJobs: NotificationJob[] = [];
+
+  const dueJobs = await collectDueReminders(ctx);
+  rawJobs.push(...dueJobs);
+
+  if (!isTimeBudgetExhausted()) {
+    const streakJobs = await collectStreakAlerts(ctx);
+    rawJobs.push(...streakJobs);
+  } else {
+    timeBudgetExceeded = true;
+  }
+
+  if (!isTimeBudgetExhausted()) {
+    const digestJobs = await collectDailyDigests(ctx);
+    rawJobs.push(...digestJobs);
+  } else {
+    timeBudgetExceeded = true;
+  }
+
+  if (!isTimeBudgetExhausted()) {
+    const nudgeJobs = await collectEngagementNudges(ctx);
+    rawJobs.push(...nudgeJobs);
+  } else {
+    timeBudgetExceeded = true;
+  }
+
+  const jobsByUser = new Map<string, NotificationJob[]>();
+  for (const job of rawJobs) {
+    const existing = jobsByUser.get(job.userId) || [];
+    existing.push(job);
+    jobsByUser.set(job.userId, existing);
+  }
+
+  const finalJobs: NotificationJob[] = [];
+  for (const userJobList of Array.from(jobsByUser.values())) {
+    userJobList.sort((a: NotificationJob, b: NotificationJob) => a.priority - b.priority);
+    finalJobs.push(userJobList[0]);
+  }
+
+  const sendResults = await sendNotificationJobs(finalJobs, ctx, 15);
+
+  return {
+    status: "success",
+    timestamp: new Date().toISOString(),
+    processedUsers: subscriberIds.length,
+    dispatchedCount: sendResults.dispatchedCount,
+    dueRemindersSent: sendResults.dueRemindersSent,
+    dailyDigestsSent: sendResults.dailyDigestsSent,
+    streakDangerSent: sendResults.streakDangerSent,
+    engagementNudgesSent: sendResults.engagementNudgesSent,
+    errorsCount: errorsCount.value,
+    timeBudgetExceeded,
+    unprocessedUsersCount,
+    durationMs: Date.now() - startTime,
+  };
+}
+
+export async function evaluateAndDispatchUserNotifications(
+  userId: string,
+  supabaseAdmin: SupabaseClient
+): Promise<{ dispatched: string[] }> {
+  const dispatched: string[] = [];
+
+  const { data: subs, error: subsError } = await supabaseAdmin
+    .from("push_subscriptions")
+    .select("endpoint, p256dh, auth")
+    .eq("user_id", userId);
+
+  if (subsError || !subs || subs.length === 0) {
+    return { dispatched };
+  }
+
+  const [userRes, privRes] = await Promise.all([
+    supabaseAdmin
+      .from("users")
+      .select("user_id, timezone")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("user_private")
+      .select("preferences")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
+
+  const timezone =
+    userRes.data?.timezone ||
+    (privRes.data?.preferences as any)?.timezone ||
+    "America/Argentina/Buenos_Aires";
+
+  const prefs = (privRes.data?.preferences || {}) as Record<string, any>;
+
+  const subscribersMap = new Map<string, PushSubscriptionItem[]>();
+  subscribersMap.set(userId, subs);
+
+  const userTimezonesMap = new Map<string, string>();
+  userTimezonesMap.set(userId, timezone);
+
+  const userPreferencesMap = new Map<string, Record<string, any>>();
+  userPreferencesMap.set(userId, prefs);
+
+  const now = new Date();
+  const ctx: CollectorContext = {
+    supabaseAdmin,
+    now,
+    nowMs: now.getTime(),
+    isTimeBudgetExhausted: () => false,
+    subscribersMap,
+    userTimezonesMap,
+    userPreferencesMap,
+    errorsCount: { value: 0 },
+  };
+
+  const rawJobs: NotificationJob[] = [];
+  const dueJobs = await collectDueReminders(ctx);
+  rawJobs.push(...dueJobs);
+
+  const streakJobs = await collectStreakAlerts(ctx);
+  rawJobs.push(...streakJobs);
+
+  const digestJobs = await collectDailyDigests(ctx);
+  rawJobs.push(...digestJobs);
+
+  const nudgeJobs = await collectEngagementNudges(ctx);
+  rawJobs.push(...nudgeJobs);
+
+  rawJobs.sort((a: NotificationJob, b: NotificationJob) => a.priority - b.priority);
+
+  if (rawJobs.length > 0) {
+    const jobToExecute = rawJobs[0];
+    await sendNotificationJobs([jobToExecute], ctx, 1);
+    dispatched.push(jobToExecute.kind);
+  }
+
+  return { dispatched };
 }

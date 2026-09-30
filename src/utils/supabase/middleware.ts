@@ -7,6 +7,7 @@ const PUBLIC_PATHS = [
   "/api/push/trigger",
   "/api/webhooks",
   "/api/cron/process-phases",
+  "/api/cron/notifications",
 ];
 
 export async function updateSession(request: NextRequest) {
