@@ -204,8 +204,10 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
 
     setDailyDigestTime: (time: string) => {
       set({ dailyDigestTime: time });
-      persistToLocalStorage({ dailyDigestTime: time });
-      syncWithDatabase({ dailyDigestTime: time });
+      if (/^\d{1,2}:\d{2}$/.test(time)) {
+        persistToLocalStorage({ dailyDigestTime: time });
+        syncWithDatabase({ dailyDigestTime: time });
+      }
     },
 
     setDueRemindersEnabled: (enabled: boolean) => {
@@ -215,9 +217,10 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
     },
 
     setDueLeadTimeMinutes: (minutes: number) => {
-      set({ dueLeadTimeMinutes: minutes });
-      persistToLocalStorage({ dueLeadTimeMinutes: minutes });
-      syncWithDatabase({ dueLeadTimeMinutes: minutes });
+      const valid = Number(minutes) || 30;
+      set({ dueLeadTimeMinutes: valid });
+      persistToLocalStorage({ dueLeadTimeMinutes: valid });
+      syncWithDatabase({ dueLeadTimeMinutes: valid });
     },
 
     setStreakSaverEnabled: (enabled: boolean) => {

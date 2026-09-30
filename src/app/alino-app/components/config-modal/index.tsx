@@ -691,6 +691,11 @@ Versión: v0.1.0 (pre-alpha)`;
                               className={styles.timeInput}
                               value={dailyDigestTime}
                               onChange={(e) => setDailyDigestTime(e.target.value)}
+                              onBlur={(e) => {
+                                if (!e.target.value) {
+                                  setDailyDigestTime("09:00");
+                                }
+                              }}
                               disabled={!isSubscribed}
                             />
                           ),
