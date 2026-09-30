@@ -552,6 +552,8 @@ export const updateUserPreferences = async (preferences: Record<string, unknown>
 
     if (updateError) throw updateError;
 
+    revalidatePath("/alino-app", "layout");
+
     return { data: mergedPreferences };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };

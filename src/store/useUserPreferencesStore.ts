@@ -93,7 +93,10 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
 
   const syncWithDatabase = async (prefs: Partial<UserPreferences>) => {
     try {
-      await updateUserPreferences(prefs);
+      const res = await updateUserPreferences(prefs);
+      if (res && "error" in res && res.error) {
+        console.error("Failed to sync preferences with database:", res.error);
+      }
     } catch (err) {
       console.error("Failed to sync preferences with database:", err);
     }
@@ -203,10 +206,13 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
     },
 
     setDailyDigestTime: (time: string) => {
-      set({ dailyDigestTime: time });
-      if (/^\d{1,2}:\d{2}$/.test(time)) {
-        persistToLocalStorage({ dailyDigestTime: time });
-        syncWithDatabase({ dailyDigestTime: time });
+      const cleanTime = (time || "").slice(0, 5);
+      if (/^\d{1,2}:\d{2}$/.test(cleanTime)) {
+        set({ dailyDigestTime: cleanTime });
+        persistToLocalStorage({ dailyDigestTime: cleanTime });
+        syncWithDatabase({ dailyDigestTime: cleanTime });
+      } else {
+        set({ dailyDigestTime: time });
       }
     },
 

@@ -694,6 +694,8 @@ Versión: v0.1.0 (pre-alpha)`;
                               onBlur={(e) => {
                                 if (!e.target.value) {
                                   setDailyDigestTime("09:00");
+                                } else if (/^\d{1,2}:\d{2}/.test(e.target.value)) {
+                                  setDailyDigestTime(e.target.value.slice(0, 5));
                                 }
                               }}
                               disabled={!isSubscribed}
