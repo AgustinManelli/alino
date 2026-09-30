@@ -25,19 +25,23 @@ export async function collectDailyDigests(
       ctx.userTimezonesMap.get(userId) ||
       prefs.timezone ||
       "America/Argentina/Buenos_Aires";
-    const dailyDigestTime =
+    const rawDigestTime =
       prefs.dailyDigestTime ?? prefs.daily_digest_time ?? "09:00";
     const userTime = getUserLocalTime(timezone);
 
-    const [targetHour, targetMinute] = dailyDigestTime
-      .split(":")
-      .map((v: string) => parseInt(v, 10) || 0);
+    const timeMatch =
+      typeof rawDigestTime === "string" &&
+      rawDigestTime.match(/^(\d{1,2}):(\d{2})$/);
+    const targetHour = timeMatch ? parseInt(timeMatch[1], 10) : 9;
+    const targetMinute = timeMatch ? parseInt(timeMatch[2], 10) : 0;
 
-    const isPastTargetTime =
-      userTime.hour > targetHour ||
-      (userTime.hour === targetHour && userTime.minute >= targetMinute);
+    const currentMinutes = userTime.hour * 60 + userTime.minute;
+    const targetMinutes = targetHour * 60 + targetMinute;
+    const diffMinutes = currentMinutes - targetMinutes;
 
-    if (isPastTargetTime) {
+    const isTimeToDeliver = diffMinutes >= 0 && diffMinutes <= 300;
+
+    if (isTimeToDeliver) {
       morningCandidates.push({
         userId,
         todayDate: userTime.dateStr,
@@ -50,6 +54,28 @@ export async function collectDailyDigests(
   }
 
   const candidateIds = morningCandidates.map((c) => c.userId);
+  const todayDates = Array.from(new Set(morningCandidates.map((c) => c.todayDate)));
+
+  const { data: existingDispatches } = await ctx.supabaseAdmin
+    .from("notification_dispatches")
+    .select("user_id, dedup_key")
+    .eq("kind", "daily_digest")
+    .in("user_id", candidateIds)
+    .in("dedup_key", todayDates);
+
+  const alreadySentSet = new Set(
+    (existingDispatches || []).map((d: any) => `${d.user_id}:${d.dedup_key}`)
+  );
+
+  const pendingCandidates = morningCandidates.filter(
+    (c) => !alreadySentSet.has(`${c.userId}:${c.todayDate}`)
+  );
+
+  if (pendingCandidates.length === 0) {
+    return jobs;
+  }
+
+  const pendingIds = pendingCandidates.map((c) => c.userId);
   const CHUNK_SIZE = 150;
   const countRows: Array<{
     user_id: string;
@@ -58,9 +84,9 @@ export async function collectDailyDigests(
     total_pending: number | string;
   }> = [];
 
-  for (let i = 0; i < candidateIds.length; i += CHUNK_SIZE) {
+  for (let i = 0; i < pendingIds.length; i += CHUNK_SIZE) {
     if (ctx.isTimeBudgetExhausted()) break;
-    const chunk = candidateIds.slice(i, i + CHUNK_SIZE);
+    const chunk = pendingIds.slice(i, i + CHUNK_SIZE);
     const { data: rows, error: rpcError } = await ctx.supabaseAdmin.rpc(
       "get_users_digest_task_counts",
       { p_user_ids: chunk }
@@ -79,7 +105,7 @@ export async function collectDailyDigests(
     countsMap.set(r.user_id, r);
   }
 
-  for (const candidate of morningCandidates) {
+  for (const candidate of pendingCandidates) {
     if (ctx.isTimeBudgetExhausted()) break;
 
     const counts = countsMap.get(candidate.userId);

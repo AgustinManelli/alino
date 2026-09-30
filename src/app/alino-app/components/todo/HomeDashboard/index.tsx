@@ -294,7 +294,7 @@ export const HomeDashboard = () => {
         enabled: true,
       },
       {
-        name: "Auto-ordenar layout",
+        name: "Reordenar widgets",
         icon: <ReloadIcon className={styles.configOptionButton} />,
         action: handleAutoSortDashboard,
         enabled: true,
@@ -357,6 +357,7 @@ export const HomeDashboard = () => {
                       className={styles.galleryButton}
                     >
                       <GridPlusIcon className={styles.buttonConfig} />
+                      <span>Más widgets</span>
                     </button>
                     <ConfigMenu
                       iconWidth="25px"
