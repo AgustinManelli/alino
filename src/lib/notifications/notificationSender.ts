@@ -137,16 +137,22 @@ export async function sendNotificationJobs(
     const subs = ctx.subscribersMap.get(job.userId);
     if (!subs || subs.length === 0) return;
 
+    const keysToClaim =
+      job.allDedupKeys && job.allDedupKeys.length > 0
+        ? job.allDedupKeys
+        : [job.dedupKey];
+
+    const records = keysToClaim.map((k) => ({
+      user_id: job.userId,
+      kind: job.kind,
+      dedup_key: k,
+      dispatched_at: new Date().toISOString(),
+    }));
+
     const { data: claimData, error: claimError } = await ctx.supabaseAdmin
       .from("notification_dispatches")
-      .insert({
-        user_id: job.userId,
-        kind: job.kind,
-        dedup_key: job.dedupKey,
-        dispatched_at: new Date().toISOString(),
-      })
-      .select("id")
-      .maybeSingle();
+      .insert(records)
+      .select("id");
 
     if (claimError) {
       if (claimError.code === "23505") {
@@ -157,15 +163,15 @@ export async function sendNotificationJobs(
       return;
     }
 
-    const claimId = claimData?.id;
+    const claimIds = (claimData || []).map((c: any) => c.id);
     const { sent } = await sendPushToSubscriptionsDirect(subs, job, ctx);
 
     if (sent === 0) {
-      if (claimId) {
+      if (claimIds.length > 0) {
         await ctx.supabaseAdmin
           .from("notification_dispatches")
           .delete()
-          .eq("id", claimId);
+          .in("id", claimIds);
       }
       return;
     }

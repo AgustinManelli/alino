@@ -23,6 +23,7 @@ export interface NotificationJob {
   userId: string;
   kind: NotificationKind;
   dedupKey: string;
+  allDedupKeys?: string[];
   title: string;
   body: string;
   url: string;

@@ -154,11 +154,15 @@ export async function collectDueReminders(
     );
 
     const dedupKey = `${firstTask.task_id}:${firstTask.target_date}`;
+    const allDedupKeys = qualifiedTasks.map(
+      (t: TaskDueItem) => `${t.task_id}:${t.target_date}`
+    );
 
     jobs.push({
       userId,
       kind: "task_due",
       dedupKey,
+      allDedupKeys,
       title: message.title,
       body: message.body,
       url: "/alino-app",
