@@ -9,12 +9,17 @@ import {
   SearchTermSchema,
   SearchUserSchema,
 } from "@/lib/schemas/user/validation";
-import { ProfileStats, FeatureUsage, ActiveSubscription } from "@/lib/schemas/user.types";
+import {
+  ProfileStats,
+  FeatureUsage,
+  ActiveSubscription,
+} from "@/lib/schemas/user.types";
 import { UserType } from "@/lib/schemas/database.types";
 
 import { fileTypeFromBuffer } from "file-type";
 import { blobatar } from "blobatar";
 import { resolvePlanPrice } from "@/config/regionalPricing";
+import { redeemPromotionAction } from "@/lib/api/promotions/actions";
 
 const AUTH_ERROR_MESSAGE = "User is not logged in or authentication failed";
 const UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
@@ -59,7 +64,6 @@ export const getUser = cache(async () => {
     };
   }
 });
-
 
 export const setUsernameFirstTime = async (username: string) => {
   try {
@@ -172,7 +176,8 @@ export const updateUserProfile = async (updates: {
       return { error: error.message };
     }
     revalidatePath("/alino-app", "layout");
-    const oldAvatar = (data as { old_avatar_url?: string } | null)?.old_avatar_url;
+    const oldAvatar = (data as { old_avatar_url?: string } | null)
+      ?.old_avatar_url;
 
     if (oldAvatar && avatarToSave && oldAvatar !== avatarToSave) {
       const oldPath = extractStoragePath(oldAvatar, "avatars");
@@ -199,8 +204,6 @@ export const saveBlobatarAvatarAction = async (
 ): Promise<{ data?: { avatar_url?: string }; error?: string }> => {
   return updateUserProfile({ avatar_url: `blobatar:${seed}` });
 };
-
-
 
 export const getUserProfileStats = async (): Promise<{
   data?: ProfileStats;
@@ -304,8 +307,6 @@ export const uploadAvatarAction = async (
   }
 };
 
-
-
 export const getActiveSubscription = async (): Promise<{
   data?: ActiveSubscription;
   error?: string;
@@ -329,31 +330,32 @@ export const cancelSubscriptionAction = async (): Promise<{
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
     const { data: sub, error } = await supabase
-      .from('subscriptions')
-      .select('id, subscription_id, gateway, status')
-      .eq('user_id', user.id)
-      .in('status', ['active', 'trialing'])
-      .order('current_period_end', { ascending: false })
+      .from("subscriptions")
+      .select("id, subscription_id, gateway, status")
+      .eq("user_id", user.id)
+      .in("status", ["active", "trialing"])
+      .order("current_period_end", { ascending: false })
       .limit(1)
       .single();
 
-    if (error || !sub) return { error: "No tienes una suscripción activa para cancelar." };
+    if (error || !sub)
+      return { error: "No tienes una suscripción activa para cancelar." };
 
     if (sub.gateway === "mercadopago" && sub.subscription_id) {
       const { cancelMPSubscription } = await import("./payments");
       await cancelMPSubscription(sub.subscription_id);
 
       await supabase
-        .from('subscriptions')
-        .update({ cancel_at_period_end: true, status: 'canceled' })
-        .eq('id', sub.id);
+        .from("subscriptions")
+        .update({ cancel_at_period_end: true, status: "canceled" })
+        .eq("id", sub.id);
 
       return { data: "Suscripción cancelada con éxito." };
     } else if (sub.gateway === "promo" || sub.gateway === "manual") {
       await supabase
-        .from('subscriptions')
-        .update({ cancel_at_period_end: true, status: 'canceled' })
-        .eq('id', sub.id);
+        .from("subscriptions")
+        .update({ cancel_at_period_end: true, status: "canceled" })
+        .eq("id", sub.id);
 
       return { data: "Suscripción cancelada con éxito." };
     }
@@ -373,7 +375,13 @@ export const checkTrialEligibility = async (): Promise<{
     const { supabase } = await getAuthenticatedSupabaseClient();
     const { data, error } = await supabase.rpc("check_trial_eligibility");
     if (error) return { error: error.message };
-    return { data: data as { eligible: boolean; trial_days: number; offer_phase_days: number } };
+    return {
+      data: data as {
+        eligible: boolean;
+        trial_days: number;
+        offer_phase_days: number;
+      },
+    };
   } catch (error: unknown) {
     if (error instanceof Error) return { error: error.message };
     return { error: "Error desconocido." };
@@ -388,33 +396,33 @@ export const redeemPromoCodeAction = async (
     granted_tier: string;
     new_end_date: string;
     duration: number;
+    coins_added?: number;
+    benefits?: Array<{
+      benefit_type: string;
+      payload: Record<string, unknown>;
+    }>;
   };
   error?: string;
 }> => {
-  try {
-    if (!code?.trim()) return { error: "El código no puede estar vacío." };
-    const { supabase } = await getAuthenticatedSupabaseClient();
-    const { data, error } = await supabase.rpc("redeem_promo_code", {
-      p_code: code.trim().toUpperCase(),
-    });
-    if (error) return { error: error.message };
-    return {
-      data: data as {
-        message: string;
-        granted_tier: string;
-        new_end_date: string;
-        duration: number;
-      },
-    };
-  } catch (error: unknown) {
-    if (error instanceof Error) return { error: error.message };
-    return { error: "Error al canjear el código." };
+  const result = await redeemPromotionAction(code);
+  if (!result.success || !result.data) {
+    return { error: result.error || "Error al canjear el código." };
   }
+  return {
+    data: {
+      message: "",
+      granted_tier: result.data.subscription_tier || "free",
+      new_end_date: result.data.subscription_end_date || "",
+      duration: 0,
+      coins_added: result.data.coins_added,
+      benefits: result.data.benefits,
+    },
+  };
 };
 
 export const getSubscriptionByExternalId = async (
   subscriptionId: string,
-  gateway: "stripe" | "mercadopago"
+  gateway: "stripe" | "mercadopago",
 ): Promise<{
   data?: { tier: string; status: string; current_period_end?: string };
   error?: string;
@@ -426,7 +434,7 @@ export const getSubscriptionByExternalId = async (
       {
         p_subscription_id: subscriptionId,
         p_gateway: gateway,
-      }
+      },
     );
     if (error) return { error: error.message };
     return {
@@ -483,7 +491,7 @@ export const getAvailablePlansAction = async () => {
 export const createCheckoutSessionAction = async (
   gateway: "stripe" | "mercadopago",
   planId: string,
-  payerEmail: string
+  payerEmail: string,
 ): Promise<{
   data?: { url: string; subscriptionId?: string };
   error?: string;
@@ -507,8 +515,6 @@ export const createCheckoutSessionAction = async (
   }
 };
 
-
-
 export const getFeatureUsageAction = async (
   featureKey: string,
 ): Promise<{ data?: FeatureUsage; error?: string }> => {
@@ -525,7 +531,9 @@ export const getFeatureUsageAction = async (
   }
 };
 
-export const updateUserPreferences = async (preferences: Record<string, unknown>) => {
+export const updateUserPreferences = async (
+  preferences: Record<string, unknown>,
+) => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
 
@@ -546,7 +554,7 @@ export const updateUserPreferences = async (preferences: Record<string, unknown>
       .from("user_private")
       .update({
         preferences: mergedPreferences,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq("user_id", user.id);
 
@@ -629,7 +637,9 @@ export const applyReferralCodeAction = async (
     };
 
     if (!parsed.success) {
-      return { error: parsed.error || "No se pudo aplicar el código de referido." };
+      return {
+        error: parsed.error || "No se pudo aplicar el código de referido.",
+      };
     }
 
     revalidatePath("/alino-app", "layout");
@@ -689,7 +699,9 @@ export const getUserReferralStatsAction = async (): Promise<{
     };
 
     if (!parsed.success) {
-      return { error: parsed.error || "Error al obtener estadísticas de referidos." };
+      return {
+        error: parsed.error || "Error al obtener estadísticas de referidos.",
+      };
     }
 
     return {
@@ -727,7 +739,9 @@ export const claimReferralMilestoneAction = async (): Promise<{
 }> => {
   try {
     const { supabase } = await getAuthenticatedSupabaseClient();
-    const { data, error } = await supabase.rpc("claim_referral_milestone_reward");
+    const { data, error } = await supabase.rpc(
+      "claim_referral_milestone_reward",
+    );
 
     if (error) return { error: error.message };
 
@@ -740,7 +754,10 @@ export const claimReferralMilestoneAction = async (): Promise<{
     };
 
     if (!parsed.success) {
-      return { error: parsed.error || "No se pudo reclamar la recompensa de referidos." };
+      return {
+        error:
+          parsed.error || "No se pudo reclamar la recompensa de referidos.",
+      };
     }
 
     revalidatePath("/alino-app", "layout");
@@ -773,7 +790,8 @@ export const updateUserSecuritySettingsAction = async (settings: {
         .eq("user_id", user.id)
         .single();
 
-      const existingPrefs = (priv?.preferences as Record<string, unknown>) || {};
+      const existingPrefs =
+        (priv?.preferences as Record<string, unknown>) || {};
       await supabase
         .from("user_private")
         .update({ preferences: { ...existingPrefs, ...settings } })
@@ -820,7 +838,7 @@ export const exportUserDataAction = async (): Promise<{
 };
 
 export const deleteAccountAction = async (
-  confirmationUsername: string
+  confirmationUsername: string,
 ): Promise<{ error: string | null }> => {
   try {
     const { supabase, user } = await getAuthenticatedSupabaseClient();
@@ -835,7 +853,7 @@ export const deleteAccountAction = async (
     if (
       !dbUser ||
       dbUser.username.trim().toLowerCase() !==
-      confirmationUsername.trim().toLowerCase()
+        confirmationUsername.trim().toLowerCase()
     ) {
       return { error: "El nombre de usuario ingresado no coincide." };
     }
@@ -861,10 +879,10 @@ export const deleteAccountAction = async (
         );
         const admin = createAdminClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL,
-          process.env.SUPABASE_SERVICE_ROLE_KEY
+          process.env.SUPABASE_SERVICE_ROLE_KEY,
         );
         await admin.auth.admin.deleteUser(user.id);
-      } catch { }
+      } catch {}
     }
 
     return { error: null };
@@ -873,5 +891,3 @@ export const deleteAccountAction = async (
     return { error: msg };
   }
 };
-
-

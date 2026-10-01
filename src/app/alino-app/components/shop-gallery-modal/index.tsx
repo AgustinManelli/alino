@@ -510,8 +510,25 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
             isBannerClickable ? styles.heroBannerClickable : ""
           }`}
           onClick={isBannerClickable ? handleBannerClick : undefined}
+          onKeyDown={
+            isBannerClickable
+              ? (event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    handleBannerClick();
+                  }
+                }
+              : undefined
+          }
           role={isBannerClickable ? "button" : undefined}
           tabIndex={isBannerClickable ? 0 : undefined}
+          aria-label={
+            isBannerClickable
+              ? t("shop:banner.openAction", {
+                  defaultValue: "Abrir promoción",
+                })
+              : undefined
+          }
         >
           <div className={styles.heroContent}>
             {bannerData?.eyebrow && (

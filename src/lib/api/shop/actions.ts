@@ -1,7 +1,9 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
+import { redeemPromotionAction } from "@/lib/api/promotions/actions";
 import {
   resolveRegionalPrice,
   FormattedRegionalPrice,
@@ -63,6 +65,10 @@ export interface RedeemResult {
   success: boolean;
   coins_added?: number;
   new_balance?: number;
+  benefits?: Array<{
+    benefit_type: string;
+    payload: Record<string, unknown>;
+  }>;
   message?: string;
   error?: string;
   errorCode?: string;
@@ -152,35 +158,21 @@ export async function getShopCatalogAction(): Promise<{
 export async function redeemPromoCodeAction(
   code: string,
 ): Promise<RedeemResult> {
-  try {
-    const { supabase } = await getAuth();
-    const { data, error } = await supabase.rpc("redeem_coin_promo_code", {
-      p_code: code,
-    });
-    if (error) {
-      const errCode = error.message || error.code || "GENERIC_ERROR";
-      return {
-        success: false,
-        errorCode: errCode,
-        error: errCode,
-      };
-    }
-    const result = data as RedeemResult;
-    return {
-      success: true,
-      coins_added: result.coins_added,
-      new_balance: result.new_balance,
-      message: result.message,
-    };
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "GENERIC_ERROR";
-    const errorCode = message === "No autenticado." ? "UNAUTHORIZED" : message;
+  const result = await redeemPromotionAction(code);
+  if (!result.success || !result.data) {
     return {
       success: false,
-      errorCode,
-      error: errorCode,
+      errorCode: result.errorCode || "GENERIC_ERROR",
+      error: result.error || "GENERIC_ERROR",
     };
   }
+  return {
+    success: true,
+    coins_added: result.data.coins_added,
+    new_balance: result.data.new_balance,
+    benefits: result.data.benefits,
+    message: "",
+  };
 }
 
 export async function buyStreakPackageAction(
@@ -188,9 +180,13 @@ export async function buyStreakPackageAction(
 ): Promise<PurchaseResult> {
   try {
     const { supabase } = await getAuth();
-    const { data, error } = await supabase.rpc("purchase_streak_protectors", {
-      p_package_id: packageId,
-    });
+    const { data, error } = await supabase.rpc(
+      "purchase_streak_protectors_v2",
+      {
+        p_package_id: packageId,
+        p_idempotency_key: randomUUID(),
+      },
+    );
     if (error) {
       const code = error.message || error.code || "GENERIC_ERROR";
       return {
@@ -278,8 +274,9 @@ export async function buyAICreditsAction(packId: string): Promise<{
 }> {
   try {
     const { supabase } = await getAuth();
-    const { data, error } = await supabase.rpc("buy_ai_credits_with_coins", {
+    const { data, error } = await supabase.rpc("buy_ai_credits_with_coins_v2", {
       p_pack_id: packId,
+      p_idempotency_key: randomUUID(),
     });
     if (error) {
       console.error("[buyAICreditsAction] Supabase RPC error:", error);

@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
 import {
@@ -22,7 +23,7 @@ export async function getUserAchievementsAction(): Promise<{
     const { supabase, user } = await getAuth();
     const { data, error } = await supabase.rpc(
       "get_user_achievements_overview",
-      { p_user_id: user.id }
+      { p_user_id: user.id },
     );
     if (error) throw new Error(error.message);
     return { data: data as unknown as AchievementsOverview };
@@ -37,12 +38,13 @@ export async function getUserAchievementsAction(): Promise<{
 }
 
 export async function claimAchievementRewardAction(
-  achievementId: string
+  achievementId: string,
 ): Promise<ClaimRewardResult> {
   try {
     const { supabase } = await getAuth();
-    const { data, error } = await supabase.rpc("claim_achievement_reward", {
+    const { data, error } = await supabase.rpc("claim_achievement_reward_v2", {
       p_achievement_id: achievementId,
+      p_idempotency_key: randomUUID(),
     });
     if (error) throw new Error(error.message);
     return data as unknown as ClaimRewardResult;

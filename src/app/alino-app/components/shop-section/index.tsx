@@ -17,6 +17,7 @@ import {
 import { customToast } from "@/lib/toasts";
 import styles from "./ShopSection.module.css";
 import { CounterAnimation } from "@/components/ui/CounterAnimation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ShopGalleryModal = dynamic(
   () =>
@@ -34,6 +35,7 @@ export const ShopSection = () => {
   const [isPurchasingCosmeticId, setIsPurchasingCosmeticId] = useState<
     string | null
   >(null);
+  const [hasRequestedShopData, setHasRequestedShopData] = useState(false);
   const iconRef = useRef<HTMLDivElement>(null);
 
   const currentUser = useUserDataStore((state) => state.user);
@@ -42,6 +44,7 @@ export const ShopSection = () => {
     coinPacks,
     cosmetics,
     isLoading,
+    error: shopError,
     isRedeeming,
     fetchShopData,
     redeemPromoCode,
@@ -50,7 +53,10 @@ export const ShopSection = () => {
   } = useShopStore();
 
   const userCoins = currentUser?.alino_coins ?? 0;
-  const coins = storeCoins || userCoins;
+  const coins = isLoading && storeCoins === 0 ? userCoins : storeCoins;
+  const isShopContentLoading =
+    isLoading ||
+    (!hasRequestedShopData && coinPacks.length === 0 && cosmetics.length === 0);
 
   useEffect(() => {
     const rawUserCoins = currentUser?.alino_coins;
@@ -64,19 +70,20 @@ export const ShopSection = () => {
 
   useEffect(() => {
     if (isOpen) {
-      fetchShopData();
+      setHasRequestedShopData(true);
+      fetchShopData(false, { includeCosmetics: true });
     }
   }, [isOpen, fetchShopData]);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsOpen((prev) => {
-      const next = !prev;
-      if (next) {
-        fetchShopData();
-      }
-      return next;
-    });
+    setIsOpen((prev) => !prev);
+  };
+
+  const handleTriggerKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    setIsOpen((prev) => !prev);
   };
 
   const handleClose = () => setIsOpen(false);
@@ -162,8 +169,11 @@ export const ShopSection = () => {
       <div
         ref={iconRef}
         onClick={handleToggle}
+        onKeyDown={handleTriggerKeyDown}
         className={styles.triggerBtn}
-        aria-label="Abrir Tienda"
+        aria-label={t("shop:openShop", { defaultValue: "Abrir tienda" })}
+        aria-expanded={isOpen}
+        aria-controls="alino-shop-compact-panel"
         role="button"
         tabIndex={0}
         style={{
@@ -182,7 +192,11 @@ export const ShopSection = () => {
           iconRef={iconRef}
           headerSlot={headerSlot}
         >
-          <div className={styles.panel}>
+          <div
+            className={styles.panel}
+            id="alino-shop-compact-panel"
+            aria-busy={isShopContentLoading}
+          >
             <section className={styles.packsSection}>
               <div className={styles.sectionHeader}>
                 <span className={styles.sectionTitle}>
@@ -193,67 +207,112 @@ export const ShopSection = () => {
               </div>
 
               <div className={styles.packsList}>
-                {coinPacks.map((pack) => {
-                  const packTrans = getCoinPackTranslation(pack);
-                  const priceFormatted = pack.resolved_price?.formatted || "";
-                  return (
-                    <div key={pack.id} className={styles.packCard}>
-                      <div className={styles.packLeft}>
-                        <div className={styles.packIconWrap}>
-                          <AlinoCoinIcon amount={pack.coins_amount} size={20} />
-                        </div>
-                        <div className={styles.packInfo}>
-                          <div className={styles.packNameRow}>
-                            <span className={styles.packName}>
-                              {packTrans.name}
-                            </span>
-                            {packTrans.tag && (
-                              <span className={styles.packTag}>
-                                {packTrans.tag}
-                              </span>
-                            )}
+                {isShopContentLoading ? (
+                  <>
+                    {[0, 1].map((index) => (
+                      <div
+                        key={`pack-skeleton-${index}`}
+                        className={styles.packCard}
+                        aria-hidden="true"
+                      >
+                        <div className={styles.packLeft}>
+                          <Skeleton
+                            style={{
+                              width: "36px",
+                              height: "36px",
+                              borderRadius: "9px",
+                            }}
+                            delay={index * 0.12}
+                          />
+                          <div className={styles.packInfo}>
+                            <Skeleton
+                              style={{
+                                width: index === 0 ? "124px" : "98px",
+                                height: "12px",
+                                borderRadius: "5px",
+                              }}
+                              delay={index * 0.12}
+                            />
+                            <Skeleton
+                              style={{
+                                width: "76px",
+                                height: "10px",
+                                borderRadius: "5px",
+                              }}
+                              delay={index * 0.12}
+                            />
                           </div>
-                          <span className={styles.packCoins}>
-                            {pack.coins_amount} {t("shop:packs.coinsUnit")}
+                        </div>
+                        <div className={styles.packRight}>
+                          <Skeleton
+                            style={{
+                              width: "54px",
+                              height: "18px",
+                              borderRadius: "6px",
+                            }}
+                            delay={index * 0.12}
+                          />
+                          <Skeleton
+                            style={{
+                              width: "64px",
+                              height: "9px",
+                              borderRadius: "5px",
+                            }}
+                            delay={index * 0.12}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  coinPacks.map((pack) => {
+                    const packTrans = getCoinPackTranslation(pack);
+                    const priceFormatted = pack.resolved_price?.formatted || "";
+                    return (
+                      <div key={pack.id} className={styles.packCard}>
+                        <div className={styles.packLeft}>
+                          <div className={styles.packIconWrap}>
+                            <AlinoCoinIcon
+                              amount={pack.coins_amount}
+                              size={20}
+                            />
+                          </div>
+                          <div className={styles.packInfo}>
+                            <div className={styles.packNameRow}>
+                              <span className={styles.packName}>
+                                {packTrans.name}
+                              </span>
+                              {packTrans.tag && (
+                                <span className={styles.packTag}>
+                                  {packTrans.tag}
+                                </span>
+                              )}
+                            </div>
+                            <span className={styles.packCoins}>
+                              {pack.coins_amount} {t("shop:packs.coinsUnit")}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className={styles.packRight}>
+                          <div className={styles.packPriceChip}>
+                            <span>{priceFormatted}</span>
+                          </div>
+                          <span className={styles.soonBadge}>
+                            {t("common:comingSoon")}
                           </span>
                         </div>
                       </div>
+                    );
+                  })
+                )}
 
-                      <div className={styles.packRight}>
-                        <div className={styles.packPriceChip}>
-                          <span>{priceFormatted}</span>
-                        </div>
-                        <span className={styles.soonBadge}>
-                          {t("common:comingSoon")}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {coinPacks.length === 0 && !isLoading && (
-                  <div className={styles.packCard}>
-                    <div className={styles.packLeft}>
-                      <div className={styles.packIconWrap}>
-                        <AlinoCoinIcon amount={100} size={20} />
-                      </div>
-                      <div className={styles.packInfo}>
-                        <span className={styles.packName}>
-                          {t("shop:packs.defaultPackName")}
-                        </span>
-                        <span className={styles.packCoins}>
-                          100 {t("shop:packs.coinsUnit")}
-                        </span>
-                      </div>
-                    </div>
-                    <div className={styles.packRight}>
-                      <div className={styles.packPriceChip}>
-                        <span>$1.99</span>
-                      </div>
-                      <span className={styles.soonBadge}>
-                        {t("common:comingSoon")}
-                      </span>
-                    </div>
+                {coinPacks.length === 0 && !isShopContentLoading && (
+                  <div className={styles.emptyCosmetics}>
+                    {shopError ||
+                      t("shop:packs.empty", {
+                        defaultValue: "No hay paquetes disponibles.",
+                      })}
                   </div>
                 )}
               </div>
@@ -296,7 +355,62 @@ export const ShopSection = () => {
               </div>
 
               <div className={styles.cosmeticsList}>
-                {previewCosmetics.length > 0 ? (
+                {isShopContentLoading ? (
+                  [0, 1, 2].map((index) => (
+                    <div
+                      key={`cosmetic-skeleton-${index}`}
+                      className={styles.cosmeticCard}
+                      aria-hidden="true"
+                    >
+                      <div className={styles.cosmeticLeft}>
+                        <Skeleton
+                          style={{
+                            width: "38px",
+                            height: "38px",
+                            borderRadius: "10px",
+                          }}
+                          delay={index * 0.12}
+                        />
+                        <div className={styles.cosmeticInfo}>
+                          <Skeleton
+                            style={{
+                              width: index === 0 ? "128px" : "96px",
+                              height: "12px",
+                              borderRadius: "5px",
+                            }}
+                            delay={index * 0.12}
+                          />
+                          <Skeleton
+                            style={{
+                              width: "156px",
+                              height: "10px",
+                              borderRadius: "5px",
+                            }}
+                            delay={index * 0.12}
+                          />
+                        </div>
+                      </div>
+                      <div className={styles.cosmeticRight}>
+                        <Skeleton
+                          style={{
+                            width: "48px",
+                            height: "18px",
+                            borderRadius: "6px",
+                          }}
+                          delay={index * 0.12}
+                        />
+                        <Skeleton
+                          style={{
+                            width: "58px",
+                            height: "26px",
+                            borderRadius: "8px",
+                          }}
+                          delay={index * 0.12}
+                        />
+                      </div>
+                    </div>
+                  ))
+                ) : previewCosmetics.length > 0 ? (
                   previewCosmetics.map((item) => {
                     const cosmeticTrans = getCosmeticTranslation(item);
                     return (
@@ -349,6 +463,10 @@ export const ShopSection = () => {
                       </div>
                     );
                   })
+                ) : shopError ? (
+                  <div className={styles.emptyCosmetics} role="alert">
+                    {shopError}
+                  </div>
                 ) : (
                   <div className={styles.emptyCosmetics}>
                     {t("shop:cosmetics.allOwned")}

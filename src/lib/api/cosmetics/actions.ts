@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
 import {
@@ -24,30 +25,31 @@ export async function getUserCosmeticsCatalogAction(): Promise<{
 
     await supabase.rpc("sync_user_level_cosmetics", { p_user_id: user.id });
 
-    const [userRes, cosmeticsRes, userCosmeticsRes, tierRes] = await Promise.all([
-      supabase
-        .from("users")
-        .select("equipped_frame_id, equipped_overlay_id, level")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("cosmetics")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true }),
-      supabase
-        .from("user_cosmetics")
-        .select("cosmetic_id")
-        .eq("user_id", user.id),
-      supabase.rpc("get_user_tier", { p_user_id: user.id }),
-    ]);
+    const [userRes, cosmeticsRes, userCosmeticsRes, tierRes] =
+      await Promise.all([
+        supabase
+          .from("users")
+          .select("equipped_frame_id, equipped_overlay_id, level")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("cosmetics")
+          .select("*")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("user_cosmetics")
+          .select("cosmetic_id")
+          .eq("user_id", user.id),
+        supabase.rpc("get_user_tier", { p_user_id: user.id }),
+      ]);
 
     if (cosmeticsRes.error) throw new Error(cosmeticsRes.error.message);
 
     const userTier = (tierRes.data as string) ?? "free";
     const isPro = tierSatisfies(userTier, "pro");
     const ownedIds = new Set(
-      (userCosmeticsRes.data || []).map((uc) => uc.cosmetic_id)
+      (userCosmeticsRes.data || []).map((uc) => uc.cosmetic_id),
     );
     const equippedFrameId = userRes.data?.equipped_frame_id ?? null;
     const equippedOverlayId = userRes.data?.equipped_overlay_id ?? null;
@@ -70,7 +72,10 @@ export async function getUserCosmeticsCatalogAction(): Promise<{
 
     const inventoryCosmetics: CosmeticItem[] = allCosmetics
       .filter((cosmetic) => {
-        if (cosmetic.id === "overlay_golden_crown" || cosmetic.code === "overlay_golden_crown") {
+        if (
+          cosmetic.id === "overlay_golden_crown" ||
+          cosmetic.code === "overlay_golden_crown"
+        ) {
           return false;
         }
         return (
@@ -186,7 +191,7 @@ export async function getLevelRewardsCatalogAction(): Promise<{
     if (error) throw new Error(error.message);
 
     const items: CosmeticItem[] = (data as unknown as CosmeticItem[]).filter(
-      (c) => !c.tier_required || c.tier_required === "free"
+      (c) => !c.tier_required || c.tier_required === "free",
     );
 
     return { data: items };
@@ -202,7 +207,7 @@ export async function getLevelRewardsCatalogAction(): Promise<{
 
 export async function equipCosmeticAction(
   cosmeticId: string | null,
-  type: "frame" | "overlay"
+  type: "frame" | "overlay",
 ): Promise<{
   success: boolean;
   equipped_id: string | null;
@@ -225,10 +230,14 @@ export async function equipCosmeticAction(
           .maybeSingle();
 
         if (ownCheck) {
-          const updateField = type === "frame" ? "equipped_frame_id" : "equipped_overlay_id";
+          const updateField =
+            type === "frame" ? "equipped_frame_id" : "equipped_overlay_id";
           await supabase
             .from("users")
-            .update({ [updateField]: cosmeticId, updated_at: new Date().toISOString() })
+            .update({
+              [updateField]: cosmeticId,
+              updated_at: new Date().toISOString(),
+            })
             .eq("user_id", user.id);
           return { success: true, equipped_id: cosmeticId };
         }
@@ -271,8 +280,9 @@ export async function buyCosmeticAction(cosmeticId: string): Promise<{
 }> {
   try {
     const { supabase } = await getAuth();
-    const { data, error } = await supabase.rpc("buy_cosmetic_with_coins", {
+    const { data, error } = await supabase.rpc("buy_cosmetic_with_coins_v2", {
       p_cosmetic_id: cosmeticId,
+      p_idempotency_key: randomUUID(),
     });
     if (error) {
       const code = error.message || error.code || "GENERIC_ERROR";

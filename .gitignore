@@ -41,6 +41,7 @@ schema.sql
 
 /supabase
 /supabase/.temp/
+/supabase/.branches/
 
 scripts
 

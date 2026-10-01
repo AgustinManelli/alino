@@ -28,6 +28,9 @@ export interface CoinMovement {
   transaction_type: string;
   description: string;
   reference_id?: string | null;
+  reference_type?: string | null;
+  metadata?: Record<string, unknown> | null;
+  idempotency_key?: string | null;
   created_at: string;
 }
 
@@ -46,7 +49,7 @@ export interface TransactionsHistoryResult {
 export async function getUserTransactionsHistoryAction(
   filter: "all" | "subscriptions" | "coin_packs" | "coin_movements" = "all",
   limit: number = 60,
-  offset: number = 0
+  offset: number = 0,
 ): Promise<{
   data?: TransactionsHistoryResult;
   error?: string;
@@ -58,60 +61,26 @@ export async function getUserTransactionsHistoryAction(
       return { error: "No autenticado." };
     }
 
-    const { data, error } = await supabase.rpc("get_user_transactions_history", {
-      p_filter: filter,
-      p_limit: limit,
-      p_offset: offset,
-    });
+    const { data, error } = await supabase.rpc(
+      "get_user_transactions_history",
+      {
+        p_filter: filter,
+        p_limit: limit,
+        p_offset: offset,
+      },
+    );
 
-    if (error) {
-      const { data: billingData } = await supabase
-        .from("billing_transactions")
-        .select("*")
-        .eq("user_id", authData.user.id)
-        .order("created_at", { ascending: false })
-        .limit(limit);
-
-      const { data: coinsData } = await supabase
-        .from("coin_transactions")
-        .select("*")
-        .eq("user_id", authData.user.id)
-        .order("created_at", { ascending: false })
-        .limit(limit);
-
-      const { data: priv } = await supabase
-        .from("user_private")
-        .select("alino_coins")
-        .eq("user_id", authData.user.id)
-        .maybeSingle();
-
-      const coins = (coinsData as CoinMovement[]) || [];
-      const spent = coins
-        .filter((c: CoinMovement) => c.amount < 0)
-        .reduce((sum: number, c: CoinMovement) => sum + Math.abs(c.amount), 0);
-      const earned = coins
-        .filter((c: CoinMovement) => c.amount > 0)
-        .reduce((sum: number, c: CoinMovement) => sum + c.amount, 0);
-
-      return {
-        data: {
-          billing: (billingData as BillingTransaction[]) || [],
-          coin_movements: coins,
-          summary: {
-            current_coins: priv?.alino_coins ?? 0,
-            total_coins_spent: spent,
-            total_coins_earned: earned,
-          },
-        },
-      };
-    }
+    if (error) throw new Error(error.message);
 
     return {
       data: data as TransactionsHistoryResult,
     };
   } catch (err: unknown) {
     return {
-      error: err instanceof Error ? err.message : "Error al obtener el historial de transacciones.",
+      error:
+        err instanceof Error
+          ? err.message
+          : "Error al obtener el historial de transacciones.",
     };
   }
 }

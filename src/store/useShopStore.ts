@@ -30,7 +30,10 @@ interface ShopStore {
   error: string | null;
   isRedeeming: boolean;
   isPurchasing: boolean;
-  fetchShopData: (force?: boolean) => Promise<void>;
+  fetchShopData: (
+    force?: boolean,
+    options?: { includeCosmetics?: boolean },
+  ) => Promise<void>;
   redeemPromoCode: (code: string) => Promise<{
     success: boolean;
     message?: string;
@@ -74,7 +77,8 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   isRedeeming: false,
   isPurchasing: false,
 
-  fetchShopData: async (force = false) => {
+  fetchShopData: async (force = false, options = {}) => {
+    const { includeCosmetics = false } = options;
     const now = Date.now();
     if (activeShopPromise) {
       return activeShopPromise;
@@ -86,14 +90,17 @@ export const useShopStore = create<ShopStore>((set, get) => ({
     set({ isLoading: true, error: null });
     const request = (async () => {
       try {
-        const [coinsRes, catalogRes, aiPacksRes, cosmeticsRes, bannerRes] =
-          await Promise.all([
+        const [coinsRes, catalogRes, aiPacksRes, bannerRes] = await Promise.all(
+          [
             getUserCoinsAction(),
             getShopCatalogAction(),
             getShopAICreditPacksAction(),
-            getShopCosmeticsCatalogAction({ pageSize: 12 }),
             getActiveShopBannerAction(),
-          ]);
+          ],
+        );
+        const cosmeticsRes = includeCosmetics
+          ? await getShopCosmeticsCatalogAction({ pageSize: 12 })
+          : null;
 
         if (typeof coinsRes.data === "number") {
           set({ coins: coinsRes.data });
@@ -113,18 +120,18 @@ export const useShopStore = create<ShopStore>((set, get) => ({
             set({ coins: aiPacksRes.data.user_coins });
           }
         }
-        if (cosmeticsRes.data?.cosmetics) {
+        if (cosmeticsRes?.data?.cosmetics) {
           set({ cosmetics: cosmeticsRes.data.cosmetics });
         }
-        if (bannerRes?.data !== undefined) {
+        if (bannerRes.data !== undefined) {
           set({ activeBanner: bannerRes.data });
         }
         const errors = [
           coinsRes.error,
           catalogRes.error,
           aiPacksRes.error,
-          cosmeticsRes.error,
-          bannerRes?.error,
+          cosmeticsRes?.error,
+          bannerRes.error,
         ].filter((error): error is string => Boolean(error));
         if (errors.length > 0) {
           set({ error: errors[0] });
@@ -157,8 +164,10 @@ export const useShopStore = create<ShopStore>((set, get) => ({
     set({ isRedeeming: true });
     try {
       const res = await redeemPromoCodeAction(code);
-      if (res.success && typeof res.new_balance === "number") {
-        set({ coins: res.new_balance });
+      if (res.success) {
+        if (typeof res.new_balance === "number") {
+          set({ coins: res.new_balance });
+        }
         return { success: true, message: res.message };
       }
       const errCode = res.errorCode || res.error || "GENERIC_ERROR";

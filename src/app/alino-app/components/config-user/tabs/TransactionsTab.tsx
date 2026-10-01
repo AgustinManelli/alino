@@ -39,14 +39,33 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
   const [filter, setFilter] = useState<FilterType>("all");
   const [data, setData] = useState<TransactionsHistoryResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
+    setError(null);
     getUserTransactionsHistoryAction(filter)
       .then((res) => {
-        if (isMounted && res.data) {
-          setData(res.data);
+        if (!isMounted) return;
+        if (res.error) {
+          setData(null);
+          setError(res.error);
+          return;
+        }
+        setData(res.data ?? null);
+      })
+      .catch((requestError: unknown) => {
+        if (isMounted) {
+          setData(null);
+          setError(
+            requestError instanceof Error
+              ? requestError.message
+              : t("config:account.transactions.loadError", {
+                  defaultValue: "No se pudo cargar el historial.",
+                }),
+          );
         }
       })
       .finally(() => {
@@ -58,21 +77,20 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
     return () => {
       isMounted = false;
     };
-  }, [filter]);
+  }, [filter, reloadKey, t]);
 
   const formatDate = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr);
-      return d.toLocaleDateString(i18n.language === "en" ? "en-US" : "es-AR", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) {
       return dateStr;
     }
+    return d.toLocaleDateString(i18n.language === "en" ? "en-US" : "es-AR", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   const formatCurrency = (amount: number, currency: string = "ARS") => {
@@ -130,37 +148,40 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
   };
 
   const formatCoinMovementDescription = (c: CoinMovement): string => {
-    if (!c.description) return "";
+    const metadata = c.metadata;
+    const localizedName = metadata?.name;
+    let itemName =
+      typeof localizedName === "string"
+        ? localizedName
+        : localizedName && typeof localizedName === "object"
+          ? resolveLocalizedField(localizedName)
+          : "";
 
-    const raw = c.description.trim();
+    if (!itemName && c.description) {
+      const legacyDescription = c.description.trim();
+      if (
+        legacyDescription.startsWith("{") &&
+        legacyDescription.endsWith("}")
+      ) {
+        try {
+          const legacyValue = JSON.parse(legacyDescription) as unknown;
+          itemName = resolveLocalizedField(legacyValue, legacyDescription);
+        } catch {
+          itemName = legacyDescription;
+        }
+      } else {
+        itemName = legacyDescription.includes(":")
+          ? legacyDescription.split(":").slice(1).join(":").trim()
+          : legacyDescription;
+      }
+    }
+
+    itemName ||= c.reference_id || "";
+    if (!itemName) return "";
+
     const typeKey = c.transaction_type
       ? c.transaction_type.replace(/_([a-z])/g, (_, g) => g.toUpperCase())
       : "default";
-
-    let itemName = "";
-
-    if (raw.startsWith("{") && raw.endsWith("}")) {
-      try {
-        const parsed = JSON.parse(raw) as Record<string, unknown>;
-        if (typeof parsed === "object" && parsed !== null) {
-          if (parsed.name) {
-            itemName = resolveLocalizedField(
-              parsed.name,
-              (parsed.code as string) || "",
-            );
-          } else {
-            itemName = resolveLocalizedField(parsed, raw);
-          }
-        }
-      } catch {
-        itemName = raw;
-      }
-    } else if (raw.includes(":")) {
-      const parts = raw.split(":");
-      itemName = parts.slice(1).join(":").trim();
-    } else {
-      itemName = raw;
-    }
 
     if (typeKey) {
       const formatted = t(
@@ -173,7 +194,7 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
       if (formatted) return formatted;
     }
 
-    return raw;
+    return c.description || itemName;
   };
 
   const unifiedList: UnifiedItem[] = React.useMemo(() => {
@@ -200,7 +221,11 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
       });
     }
 
-    list.sort((a, b) => b.date.getTime() - a.date.getTime());
+    list.sort((a, b) => {
+      const timeDifference = b.date.getTime() - a.date.getTime();
+      if (timeDifference !== 0) return timeDifference;
+      return b.item.id.localeCompare(a.item.id);
+    });
     return list;
   }, [data, filter]);
 
@@ -228,7 +253,7 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
         <div className={styles.metricCard}>
           <div className={styles.metricIconWrap}>
             <AlinoCoinIcon
-              amount={data?.summary?.current_coins ?? 100}
+              amount={data?.summary?.current_coins ?? 0}
               size={22}
             />
           </div>
@@ -336,6 +361,29 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
               delay={0.45}
             />
           </>
+        ) : error ? (
+          <div className={styles.emptyState} role="alert">
+            <div className={styles.emptyIcon}>
+              <Alert
+                style={{ width: 22, height: 22, stroke: "currentColor" }}
+              />
+            </div>
+            <span className={styles.emptyTitle}>
+              {t("config:account.transactions.loadError", {
+                defaultValue: "No se pudo cargar el historial.",
+              })}
+            </span>
+            <span className={styles.emptyDesc}>{error}</span>
+            <button
+              type="button"
+              className={styles.filterBtn}
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
+              {t("config:account.transactions.retry", {
+                defaultValue: "Reintentar",
+              })}
+            </button>
+          </div>
         ) : unifiedList.length === 0 ? (
           <div className={styles.emptyState}>
             <div className={styles.emptyIcon}>
