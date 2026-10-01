@@ -2293,10 +2293,11 @@ export interface ClaimRewardResult {
 export interface AICreditPack {
   id: string;
   code: string;
-  name: string;
+  name: string | Record<string, string>;
   credits_amount: number;
+  bonus_amount?: number;
   coins_price: number;
-  tag: string | null;
+  tag: string | Record<string, string> | null;
   sort_order: number;
   is_available: boolean;
   is_active: boolean;

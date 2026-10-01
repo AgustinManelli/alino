@@ -1,6 +1,48 @@
 {
   "title": "Alino Shop",
   "balanceTitle": "Your Alino Coins",
+  "banner": {
+    "eyebrow": "A LITTLE MORE OF EVERYTHING",
+    "title1": "Your next big idea",
+    "title2": "starts here.",
+    "subtitle": "Choose what you need to keep creating without limits."
+  },
+  "tabs": {
+    "coins": "Coins",
+    "aiTokens": "AI Tokens",
+    "cosmetics": "Cosmetics"
+  },
+  "coinsSection": {
+    "title": "Coins for everything you imagine.",
+    "subtitle": "Unlock more possibilities in every moment."
+  },
+  "aiSection": {
+    "title": "AI Tokens to power your flow.",
+    "subtitle": "Unlock more possibilities in every moment."
+  },
+  "cosmeticsSection": {
+    "title": "Customize your avatar and elevate your profile.",
+    "subtitle": "Exclusive frames, accessories, and visual effects for your style."
+  },
+  "cards": {
+    "selectPack": "Choose pack",
+    "coinsUnit": "coins",
+    "tokensUnit": "AI tokens",
+    "giftBonus": "+{{amount}} gift bonus",
+    "tags": {
+      "mostPopular": "MOST POPULAR",
+      "bestValue": "BEST VALUE"
+    },
+    "tiers": {
+      "essential": "Essential",
+      "popular": "Popular",
+      "max": "Max"
+    }
+  },
+  "footer": {
+    "securePurchase": "Secure purchase",
+    "disclaimer": "All your payments are secure"
+  },
   "promo": {
     "title": "Promo Code",
     "subtitle": "Get free coins",
@@ -103,9 +145,9 @@
     "searchPlaceholder": "Search by name or description...",
     "categoriesTitle": "Categories",
     "categories": {
-      "all": "All items",
-      "frame": "Avatar frames",
-      "overlay": "Avatar accessories"
+      "all": "All",
+      "frame": "Frames",
+      "overlay": "Accessories"
     },
     "filtersTitle": "Status",
     "status": {

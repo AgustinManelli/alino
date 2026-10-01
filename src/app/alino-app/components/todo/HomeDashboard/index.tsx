@@ -119,7 +119,8 @@ export const HomeDashboard = () => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const isBentoItem = (item: BentoItem | null): item is BentoItem => item !== null;
+  const isBentoItem = (item: BentoItem | null): item is BentoItem =>
+    item !== null;
 
   const bentoItems: BentoItem[] = useMemo(() => {
     return widgetInstances
@@ -354,6 +355,7 @@ export const HomeDashboard = () => {
                     <button
                       onClick={() => setShowGallery(true)}
                       title="Galería de widgets"
+                      aria-label="Más widgets"
                       className={styles.galleryButton}
                     >
                       <GridPlusIcon className={styles.buttonConfig} />

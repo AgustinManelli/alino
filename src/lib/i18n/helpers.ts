@@ -32,27 +32,55 @@ export function getCosmeticTranslation(item: Pick<CosmeticItem, "id" | "name" | 
   };
 }
 
+export function resolveLocalizedField(
+  value: unknown,
+  fallback = "",
+  targetLang?: string
+): string {
+  if (!value) return fallback;
+  let parsed = value;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+      try {
+        parsed = JSON.parse(trimmed);
+      } catch {
+        return value;
+      }
+    } else {
+      return value;
+    }
+  }
+
+  if (typeof parsed === "object" && parsed !== null) {
+    const record = parsed as Record<string, string>;
+    if (targetLang) {
+      const langKey = targetLang.split("-")[0];
+      return record[langKey] || record[targetLang] || "";
+    }
+    const currentLang = (i18n.language || "es").split("-")[0];
+    return record[currentLang] || record.es || record.en || Object.values(record)[0] || fallback;
+  }
+
+  return String(value);
+}
+
 export interface TranslatedCoinPack {
   name: string;
   tag?: string | null;
+  tagEn?: string | null;
 }
 
-export function getCoinPackTranslation(pack: Pick<CoinPack, "id" | "name"> & { code?: string; tag?: string | null }): TranslatedCoinPack {
-  const name = i18n.t(`shop:packs.items.${pack.id}.name`, {
-    defaultValue: pack.code ? i18n.t(`shop:packs.items.${pack.code}.name`, { defaultValue: pack.name }) : pack.name,
-  });
-
-  let tag = pack.tag;
-  if (pack.tag) {
-    const normalizedTag = pack.tag.toLowerCase().trim().replace(/[\s-]+/g, "_");
-    tag = i18n.t(`shop:packs.tags.${normalizedTag}`, {
-      defaultValue: pack.tag,
-    });
-  }
-
+export function getCoinPackTranslation(
+  pack: { id: string; name: unknown; code?: string; tag?: unknown }
+): TranslatedCoinPack {
+  const name = resolveLocalizedField(pack.name, "");
+  const tag = pack.tag ? resolveLocalizedField(pack.tag, "") : null;
+  const tagEn = pack.tag ? resolveLocalizedField(pack.tag, "", "en") : null;
   return {
     name,
     tag,
+    tagEn,
   };
 }
 
@@ -83,30 +111,36 @@ export function getStreakPackageTranslation(pkg: Pick<StreakPackage, "id" | "nam
 export interface TranslatedAICreditPack {
   name: string;
   tag?: string | null;
+  tagEn?: string | null;
 }
 
 export function getAICreditPackTranslation(
-  pack: Pick<AICreditPack, "id" | "name"> & { code?: string; tag?: string | null }
+  pack: { id: string; name: unknown; code?: string; tag?: unknown }
 ): TranslatedAICreditPack {
-  const name = i18n.t(`shop:ai_credits.packs.${pack.id}.name`, {
-    defaultValue: pack.code
-      ? i18n.t(`shop:ai_credits.packs.${pack.code}.name`, { defaultValue: pack.name })
-      : pack.name,
-  });
-
-  let tag = pack.tag;
-  if (pack.tag) {
-    const normalizedTag = pack.tag.toLowerCase().trim().replace(/[\s-]+/g, "_");
-    tag = i18n.t(`shop:ai_credits.tags.${normalizedTag}`, {
-      defaultValue: i18n.t(`shop:packs.tags.${normalizedTag}`, {
-        defaultValue: pack.tag,
-      }),
-    });
-  }
-
+  const name = resolveLocalizedField(pack.name, "");
+  const tag = pack.tag ? resolveLocalizedField(pack.tag, "") : null;
+  const tagEn = pack.tag ? resolveLocalizedField(pack.tag, "", "en") : null;
   return {
     name,
     tag,
+    tagEn,
   };
 }
+
+import { ShopBanner } from "@/lib/api/shop/actions";
+
+export interface TranslatedBanner {
+  title: string;
+  subtitle: string;
+  eyebrow?: string;
+}
+
+export function getBannerTranslation(banner: ShopBanner): TranslatedBanner {
+  return {
+    title: resolveLocalizedField(banner.title, ""),
+    subtitle: resolveLocalizedField(banner.subtitle, ""),
+    eyebrow: banner.eyebrow ? resolveLocalizedField(banner.eyebrow, "") : undefined,
+  };
+}
+
 

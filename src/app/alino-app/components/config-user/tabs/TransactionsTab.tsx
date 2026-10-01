@@ -20,6 +20,7 @@ import {
   CoinMovement,
   TransactionsHistoryResult,
 } from "@/lib/api/transactions/actions";
+import { resolveLocalizedField } from "@/lib/i18n/helpers";
 import configStyles from "../ConfigUser.module.css";
 import styles from "./TransactionsTab.module.css";
 
@@ -128,14 +129,67 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
     }
   };
 
+  const formatCoinMovementDescription = (c: CoinMovement): string => {
+    if (!c.description) return "";
+
+    const raw = c.description.trim();
+    const typeKey = c.transaction_type
+      ? c.transaction_type.replace(/_([a-z])/g, (_, g) => g.toUpperCase())
+      : "default";
+
+    let itemName = "";
+
+    if (raw.startsWith("{") && raw.endsWith("}")) {
+      try {
+        const parsed = JSON.parse(raw) as Record<string, unknown>;
+        if (typeof parsed === "object" && parsed !== null) {
+          if (parsed.name) {
+            itemName = resolveLocalizedField(
+              parsed.name,
+              (parsed.code as string) || "",
+            );
+          } else {
+            itemName = resolveLocalizedField(parsed, raw);
+          }
+        }
+      } catch {
+        itemName = raw;
+      }
+    } else if (raw.includes(":")) {
+      const parts = raw.split(":");
+      itemName = parts.slice(1).join(":").trim();
+    } else {
+      itemName = raw;
+    }
+
+    if (typeKey) {
+      const formatted = t(
+        `config:account.transactions.descriptions.${typeKey}`,
+        {
+          name: itemName,
+          defaultValue: "",
+        },
+      );
+      if (formatted) return formatted;
+    }
+
+    return raw;
+  };
+
   const unifiedList: UnifiedItem[] = React.useMemo(() => {
     if (!data) return [];
     const list: UnifiedItem[] = [];
 
-    if (filter === "all" || filter === "subscriptions" || filter === "coin_packs") {
+    if (
+      filter === "all" ||
+      filter === "subscriptions" ||
+      filter === "coin_packs"
+    ) {
       (data.billing || []).forEach((b) => {
-        if (filter === "subscriptions" && b.transaction_type !== "subscription") return;
-        if (filter === "coin_packs" && b.transaction_type !== "coin_pack") return;
+        if (filter === "subscriptions" && b.transaction_type !== "subscription")
+          return;
+        if (filter === "coin_packs" && b.transaction_type !== "coin_pack")
+          return;
         list.push({ kind: "billing", item: b, date: new Date(b.created_at) });
       });
     }
@@ -150,7 +204,8 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
     return list;
   }, [data, filter]);
 
-  const currentTier = user?.tier && user.tier !== "free" ? user.tier.toUpperCase() : "FREE";
+  const currentTier =
+    user?.tier && user.tier !== "free" ? user.tier.toUpperCase() : "FREE";
 
   return (
     <motion.div
@@ -172,7 +227,10 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
       <div className={styles.metricsGrid}>
         <div className={styles.metricCard}>
           <div className={styles.metricIconWrap}>
-            <AlinoCoinIcon amount={data?.summary?.current_coins ?? 100} size={22} />
+            <AlinoCoinIcon
+              amount={data?.summary?.current_coins ?? 100}
+              size={22}
+            />
           </div>
           <div className={styles.metricInfo}>
             <span className={styles.metricValue}>
@@ -186,7 +244,14 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
 
         <div className={styles.metricCard}>
           <div className={styles.metricIconWrap}>
-            <Crown style={{ width: 18, height: 18, stroke: "currentColor", color: "#eab308" }} />
+            <Crown
+              style={{
+                width: 18,
+                height: 18,
+                stroke: "currentColor",
+                color: "#eab308",
+              }}
+            />
           </div>
           <div className={styles.metricInfo}>
             <span className={styles.metricValue}>{currentTier}</span>
@@ -198,7 +263,14 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
 
         <div className={styles.metricCard}>
           <div className={styles.metricIconWrap}>
-            <ReceiptIcon style={{ width: 18, height: 18, stroke: "currentColor", color: "#38bdf8" }} />
+            <ReceiptIcon
+              style={{
+                width: 18,
+                height: 18,
+                stroke: "currentColor",
+                color: "#38bdf8",
+              }}
+            />
           </div>
           <div className={styles.metricInfo}>
             <span className={styles.metricValue}>
@@ -247,15 +319,29 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
       <div className={styles.transactionsList}>
         {isLoading ? (
           <>
-            <Skeleton style={{ width: "100%", height: "64px", borderRadius: "12px" }} delay={0} />
-            <Skeleton style={{ width: "100%", height: "64px", borderRadius: "12px" }} delay={0.15} />
-            <Skeleton style={{ width: "100%", height: "64px", borderRadius: "12px" }} delay={0.3} />
-            <Skeleton style={{ width: "100%", height: "64px", borderRadius: "12px" }} delay={0.45} />
+            <Skeleton
+              style={{ width: "100%", height: "64px", borderRadius: "12px" }}
+              delay={0}
+            />
+            <Skeleton
+              style={{ width: "100%", height: "64px", borderRadius: "12px" }}
+              delay={0.15}
+            />
+            <Skeleton
+              style={{ width: "100%", height: "64px", borderRadius: "12px" }}
+              delay={0.3}
+            />
+            <Skeleton
+              style={{ width: "100%", height: "64px", borderRadius: "12px" }}
+              delay={0.45}
+            />
           </>
         ) : unifiedList.length === 0 ? (
           <div className={styles.emptyState}>
             <div className={styles.emptyIcon}>
-              <ReceiptIcon style={{ width: 22, height: 22, stroke: "currentColor" }} />
+              <ReceiptIcon
+                style={{ width: 22, height: 22, stroke: "currentColor" }}
+              />
             </div>
             <span className={styles.emptyTitle}>
               {t("config:account.transactions.empty.title")}
@@ -264,10 +350,10 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
               {filter === "subscriptions"
                 ? t("config:account.transactions.empty.subscriptions")
                 : filter === "coin_packs"
-                ? t("config:account.transactions.empty.coinPacks")
-                : filter === "coin_movements"
-                ? t("config:account.transactions.empty.coinMovements")
-                : t("config:account.transactions.empty.all")}
+                  ? t("config:account.transactions.empty.coinPacks")
+                  : filter === "coin_movements"
+                    ? t("config:account.transactions.empty.coinMovements")
+                    : t("config:account.transactions.empty.all")}
             </span>
           </div>
         ) : (
@@ -285,7 +371,13 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
                       }`}
                     >
                       {isSub ? (
-                        <Crown style={{ width: 17, height: 17, stroke: "currentColor" }} />
+                        <Crown
+                          style={{
+                            width: 17,
+                            height: 17,
+                            stroke: "currentColor",
+                          }}
+                        />
                       ) : (
                         <AlinoCoinIcon amount={100} size={18} />
                       )}
@@ -300,7 +392,9 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
                         )}
                         <span className={styles.badgeType}>
                           {isSub
-                            ? t("config:account.transactions.types.subscription")
+                            ? t(
+                                "config:account.transactions.types.subscription",
+                              )
                             : t("config:account.transactions.types.coinPack")}
                         </span>
                       </div>
@@ -308,12 +402,16 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
                         <span>{formatDate(b.created_at)}</span>
                         <span className={styles.txDot} />
                         <span>
-                          {b.gateway === "mercadopago" ? "Mercado Pago" : b.gateway}
+                          {b.gateway === "mercadopago"
+                            ? "Mercado Pago"
+                            : b.gateway}
                         </span>
                         {b.error_message && (
                           <>
                             <span className={styles.txDot} />
-                            <span style={{ color: "#ef4444" }}>{b.error_message}</span>
+                            <span style={{ color: "#ef4444" }}>
+                              {b.error_message}
+                            </span>
                           </>
                         )}
                       </div>
@@ -338,14 +436,18 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
                 <div className={styles.txLeft}>
                   <div
                     className={`${styles.txIconWrap} ${
-                      isPositive ? styles.txIconCoinGained : styles.txIconCoinSpent
+                      isPositive
+                        ? styles.txIconCoinGained
+                        : styles.txIconCoinSpent
                     }`}
                   >
                     <AlinoCoinIcon amount={Math.abs(c.amount)} size={18} />
                   </div>
                   <div className={styles.txMeta}>
                     <div className={styles.txTitleRow}>
-                      <span className={styles.txTitle}>{c.description}</span>
+                      <span className={styles.txTitle}>
+                        {formatCoinMovementDescription(c)}
+                      </span>
                       <span className={styles.badgeType}>
                         {getCoinTypeLabel(c.transaction_type)}
                       </span>
@@ -365,7 +467,9 @@ export function TransactionsTab({ user }: TransactionsTabProps) {
                 <div className={styles.txRight}>
                   <span
                     className={`${styles.txAmount} ${
-                      isPositive ? styles.txAmountPositive : styles.txAmountNegative
+                      isPositive
+                        ? styles.txAmountPositive
+                        : styles.txAmountNegative
                     }`}
                   >
                     {isPositive ? `+${c.amount}` : c.amount}

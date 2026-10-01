@@ -16,5 +16,5 @@ const Style = {
   justifyContent: "center",
   alignItems: "center",
   gap: "20px",
-  overflow: "hidden",
+  // overflow: "hidden",
 } as React.CSSProperties;

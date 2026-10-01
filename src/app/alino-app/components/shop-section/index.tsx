@@ -10,7 +10,10 @@ import { UserAvatar } from "@/components/ui/UserAvatar/UserAvatar";
 import dynamic from "next/dynamic";
 import { buyCosmeticAction } from "@/lib/api/cosmetics/actions";
 import { CosmeticItem } from "@/lib/schemas/database.types";
-import { getCosmeticTranslation, getCoinPackTranslation } from "@/lib/i18n/helpers";
+import {
+  getCosmeticTranslation,
+  getCoinPackTranslation,
+} from "@/lib/i18n/helpers";
 import { customToast } from "@/lib/toasts";
 import styles from "./ShopSection.module.css";
 import { CounterAnimation } from "@/components/ui/CounterAnimation";
@@ -28,7 +31,9 @@ export const ShopSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [promoCode, setPromoCode] = useState("");
-  const [isPurchasingCosmeticId, setIsPurchasingCosmeticId] = useState<string | null>(null);
+  const [isPurchasingCosmeticId, setIsPurchasingCosmeticId] = useState<
+    string | null
+  >(null);
   const iconRef = useRef<HTMLDivElement>(null);
 
   const currentUser = useUserDataStore((state) => state.user);
@@ -49,7 +54,10 @@ export const ShopSection = () => {
 
   useEffect(() => {
     const rawUserCoins = currentUser?.alino_coins;
-    if (typeof rawUserCoins === "number" && useShopStore.getState().coins === 0) {
+    if (
+      typeof rawUserCoins === "number" &&
+      useShopStore.getState().coins === 0
+    ) {
       setCoins(rawUserCoins);
     }
   }, [currentUser?.alino_coins, setCoins]);
@@ -65,7 +73,7 @@ export const ShopSection = () => {
     setIsOpen((prev) => {
       const next = !prev;
       if (next) {
-        fetchShopData(true);
+        fetchShopData();
       }
       return next;
     });
@@ -80,7 +88,7 @@ export const ShopSection = () => {
       customToast.error(
         t("shop:errors.CODE_REQUIRED", {
           defaultValue: t("shop:promo.emptyError"),
-        })
+        }),
       );
       return;
     }
@@ -94,7 +102,7 @@ export const ShopSection = () => {
       customToast.error(
         t(`shop:errors.${code}`, {
           defaultValue: t("shop:errors.GENERIC_ERROR"),
-        })
+        }),
       );
     }
   };
@@ -104,7 +112,7 @@ export const ShopSection = () => {
       customToast.error(
         t("shop:errors.INSUFFICIENT_COINS", {
           defaultValue: t("shop:cosmetics.insufficientCoins"),
-        })
+        }),
       );
       return;
     }
@@ -116,13 +124,15 @@ export const ShopSection = () => {
         setCoins(res.new_balance);
         markCosmeticUnlocked(item.id);
         const trans = getCosmeticTranslation(item);
-        customToast.success(t("shop:cosmetics.purchaseSuccess", { name: trans.name }));
+        customToast.success(
+          t("shop:cosmetics.purchaseSuccess", { name: trans.name }),
+        );
       } else {
         const code = res.errorCode || res.error || "GENERIC_ERROR";
         customToast.error(
           t(`shop:errors.${code}`, {
             defaultValue: t("shop:errors.GENERIC_ERROR"),
-          })
+          }),
         );
       }
     } finally {
@@ -163,10 +173,7 @@ export const ShopSection = () => {
         }}
       >
         <AlinoCoinIcon size={20} />
-        <CounterAnimation
-          value={coins}
-          className={styles.coinsCount}
-        />
+        <CounterAnimation value={coins} className={styles.coinsCount} />
       </div>
 
       {isOpen && (
@@ -179,7 +186,9 @@ export const ShopSection = () => {
             <section className={styles.packsSection}>
               <div className={styles.sectionHeader}>
                 <span className={styles.sectionTitle}>
-                  {t("shop:packs.title", { defaultValue: "Paquetes de monedas" })}
+                  {t("shop:packs.title", {
+                    defaultValue: "Paquetes de monedas",
+                  })}
                 </span>
               </div>
 
@@ -195,9 +204,13 @@ export const ShopSection = () => {
                         </div>
                         <div className={styles.packInfo}>
                           <div className={styles.packNameRow}>
-                            <span className={styles.packName}>{packTrans.name}</span>
+                            <span className={styles.packName}>
+                              {packTrans.name}
+                            </span>
                             {packTrans.tag && (
-                              <span className={styles.packTag}>{packTrans.tag}</span>
+                              <span className={styles.packTag}>
+                                {packTrans.tag}
+                              </span>
                             )}
                           </div>
                           <span className={styles.packCoins}>
@@ -210,7 +223,9 @@ export const ShopSection = () => {
                         <div className={styles.packPriceChip}>
                           <span>{priceFormatted}</span>
                         </div>
-                        <span className={styles.soonBadge}>{t("common:comingSoon")}</span>
+                        <span className={styles.soonBadge}>
+                          {t("common:comingSoon")}
+                        </span>
                       </div>
                     </div>
                   );
@@ -223,15 +238,21 @@ export const ShopSection = () => {
                         <AlinoCoinIcon amount={100} size={20} />
                       </div>
                       <div className={styles.packInfo}>
-                        <span className={styles.packName}>{t("shop:packs.defaultPackName")}</span>
-                        <span className={styles.packCoins}>100 {t("shop:packs.coinsUnit")}</span>
+                        <span className={styles.packName}>
+                          {t("shop:packs.defaultPackName")}
+                        </span>
+                        <span className={styles.packCoins}>
+                          100 {t("shop:packs.coinsUnit")}
+                        </span>
                       </div>
                     </div>
                     <div className={styles.packRight}>
                       <div className={styles.packPriceChip}>
                         <span>$1.99</span>
                       </div>
-                      <span className={styles.soonBadge}>{t("common:comingSoon")}</span>
+                      <span className={styles.soonBadge}>
+                        {t("common:comingSoon")}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -240,7 +261,9 @@ export const ShopSection = () => {
 
             <section className={styles.promoSection}>
               <div className={styles.sectionHeader}>
-                <span className={styles.sectionTitle}>{t("shop:promo.title")}</span>
+                <span className={styles.sectionTitle}>
+                  {t("shop:promo.title")}
+                </span>
               </div>
               <form onSubmit={handleRedeem} className={styles.promoForm}>
                 <div className={styles.promoInputWrapper}>
@@ -258,14 +281,18 @@ export const ShopSection = () => {
                   className={styles.redeemBtn}
                   disabled={isRedeeming || !promoCode.trim()}
                 >
-                  {isRedeeming ? t("shop:promo.redeeming") : t("shop:promo.button")}
+                  {isRedeeming
+                    ? t("shop:promo.redeeming")
+                    : t("shop:promo.button")}
                 </button>
               </form>
             </section>
 
             <section className={styles.cosmeticsSection}>
               <div className={styles.sectionHeader}>
-                <span className={styles.sectionTitle}>{t("shop:cosmetics.title")}</span>
+                <span className={styles.sectionTitle}>
+                  {t("shop:cosmetics.title")}
+                </span>
               </div>
 
               <div className={styles.cosmeticsList}>
@@ -281,19 +308,30 @@ export const ShopSection = () => {
                               username={currentUser?.username}
                               size={38}
                               style={{ borderRadius: "10px" }}
-                              equippedFrameId={item.type === "frame" ? item.id : null}
-                              equippedOverlayId={item.type === "overlay" ? item.id : null}
+                              equippedFrameId={
+                                item.type === "frame" ? item.id : null
+                              }
+                              equippedOverlayId={
+                                item.type === "overlay" ? item.id : null
+                              }
                             />
                           </div>
                           <div className={styles.cosmeticInfo}>
-                            <span className={styles.cosmeticName}>{cosmeticTrans.name}</span>
-                            <p className={styles.cosmeticDesc}>{cosmeticTrans.description}</p>
+                            <span className={styles.cosmeticName}>
+                              {cosmeticTrans.name}
+                            </span>
+                            <p className={styles.cosmeticDesc}>
+                              {cosmeticTrans.description}
+                            </p>
                           </div>
                         </div>
 
                         <div className={styles.cosmeticRight}>
                           <div className={styles.priceChip}>
-                            <AlinoCoinIcon amount={item.coins_price} size={12} />
+                            <AlinoCoinIcon
+                              amount={item.coins_price}
+                              size={12}
+                            />
                             <span>{item.coins_price}</span>
                           </div>
 

@@ -16,7 +16,7 @@ export interface BillingTransaction {
   gateway_payment_id?: string | null;
   payment_method?: string | null;
   error_message?: string | null;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -85,18 +85,18 @@ export async function getUserTransactionsHistoryAction(
         .eq("user_id", authData.user.id)
         .maybeSingle();
 
-      const coins = coinsData || [];
+      const coins = (coinsData as CoinMovement[]) || [];
       const spent = coins
-        .filter((c: any) => c.amount < 0)
-        .reduce((sum: number, c: any) => sum + Math.abs(c.amount), 0);
+        .filter((c: CoinMovement) => c.amount < 0)
+        .reduce((sum: number, c: CoinMovement) => sum + Math.abs(c.amount), 0);
       const earned = coins
-        .filter((c: any) => c.amount > 0)
-        .reduce((sum: number, c: any) => sum + c.amount, 0);
+        .filter((c: CoinMovement) => c.amount > 0)
+        .reduce((sum: number, c: CoinMovement) => sum + c.amount, 0);
 
       return {
         data: {
           billing: (billingData as BillingTransaction[]) || [],
-          coin_movements: (coinsData as CoinMovement[]) || [],
+          coin_movements: coins,
           summary: {
             current_coins: priv?.alino_coins ?? 0,
             total_coins_spent: spent,
@@ -109,9 +109,9 @@ export async function getUserTransactionsHistoryAction(
     return {
       data: data as TransactionsHistoryResult,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     return {
-      error: err?.message || "Error al obtener el historial de transacciones.",
+      error: err instanceof Error ? err.message : "Error al obtener el historial de transacciones.",
     };
   }
 }

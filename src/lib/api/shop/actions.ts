@@ -2,19 +2,42 @@
 
 import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
-import { resolveRegionalPrice, FormattedRegionalPrice } from "@/config/regionalPricing";
+import {
+  resolveRegionalPrice,
+  FormattedRegionalPrice,
+} from "@/config/regionalPricing";
 
 export interface CoinPack {
   id: string;
   code: string;
-  name: string;
+  name: string | Record<string, string>;
   coins_amount: number;
+  bonus_amount?: number;
   regional_prices?: Record<string, { currency: string; amount: number }>;
   resolved_price?: FormattedRegionalPrice;
-  tag: string | null;
+  tag: string | Record<string, string> | null;
   is_available: boolean;
   is_active: boolean;
   sort_order: number;
+}
+
+export interface ShopBanner {
+  id: string;
+  code: string;
+  eyebrow?: Record<string, string> | string | null;
+  title: Record<string, string> | string;
+  subtitle: Record<string, string> | string;
+  image_url?: string | null;
+  link_url?: string | null;
+  action_type?: string | null;
+  action_payload?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  target_languages?: string[] | null;
+  target_countries?: string[] | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
 }
 
 export interface StreakPackage {
@@ -74,7 +97,9 @@ export async function getUserCoinsAction(): Promise<{
     if (error) throw new Error(error.message);
     return { data: (data as number) ?? 0 };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Error al obtener monedas." };
+    return {
+      error: e instanceof Error ? e.message : "Error al obtener monedas.",
+    };
   }
 }
 
@@ -101,7 +126,10 @@ export async function getShopCatalogAction(): Promise<{
 
     const { data, error } = await supabase.rpc("get_shop_catalog");
     if (error) throw new Error(error.message);
-    const catalog = (data as ShopCatalogPayload) ?? { coin_packs: [], streak_packages: [] };
+    const catalog = (data as ShopCatalogPayload) ?? {
+      coin_packs: [],
+      streak_packages: [],
+    };
 
     const resolvedCoinPacks = catalog.coin_packs.map((pack) => ({
       ...pack,
@@ -115,11 +143,15 @@ export async function getShopCatalogAction(): Promise<{
       },
     };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Error al obtener el catálogo." };
+    return {
+      error: e instanceof Error ? e.message : "Error al obtener el catálogo.",
+    };
   }
 }
 
-export async function redeemPromoCodeAction(code: string): Promise<RedeemResult> {
+export async function redeemPromoCodeAction(
+  code: string,
+): Promise<RedeemResult> {
   try {
     const { supabase } = await getAuth();
     const { data, error } = await supabase.rpc("redeem_coin_promo_code", {
@@ -151,7 +183,9 @@ export async function redeemPromoCodeAction(code: string): Promise<RedeemResult>
   }
 }
 
-export async function buyStreakPackageAction(packageId: string): Promise<PurchaseResult> {
+export async function buyStreakPackageAction(
+  packageId: string,
+): Promise<PurchaseResult> {
   try {
     const { supabase } = await getAuth();
     const { data, error } = await supabase.rpc("purchase_streak_protectors", {
@@ -224,7 +258,12 @@ export async function getShopAICreditPacksAction(): Promise<{
       },
     };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Error al obtener paquetes de créditos IA." };
+    return {
+      error:
+        e instanceof Error
+          ? e.message
+          : "Error al obtener paquetes de créditos IA.",
+    };
   }
 }
 
@@ -243,6 +282,7 @@ export async function buyAICreditsAction(packId: string): Promise<{
       p_pack_id: packId,
     });
     if (error) {
+      console.error("[buyAICreditsAction] Supabase RPC error:", error);
       const code = error.message || error.code || "GENERIC_ERROR";
       return {
         success: false,
@@ -273,3 +313,21 @@ export async function buyAICreditsAction(packId: string): Promise<{
   }
 }
 
+export async function getActiveShopBannerAction(
+  countryCode = "AR",
+  language = "es",
+): Promise<{ data?: ShopBanner | null; error?: string }> {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.rpc("get_active_shop_banner", {
+      p_country_code: countryCode,
+      p_language: language,
+    });
+    if (error) {
+      return { data: null };
+    }
+    return { data: (data as ShopBanner) || null };
+  } catch {
+    return { data: null };
+  }
+}

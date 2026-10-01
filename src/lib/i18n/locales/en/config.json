@@ -215,6 +215,16 @@
         "promoCode": "Promo code",
         "defaultCoin": "Coins"
       },
+      "descriptions": {
+        "aiCreditsPurchase": "AI credits pack redemption: {{name}}",
+        "cosmeticPurchase": "Cosmetic purchase: {{name}}",
+        "streakProtectionPurchase": "Streak shields purchase: {{name}}",
+        "coinPackPurchase": "Coin pack purchase: {{name}}",
+        "achievementReward": "Achievement reward: {{name}}",
+        "levelUpReward": "Level up reward: {{name}}",
+        "promoCode": "Promo code redemption: {{name}}",
+        "default": "Coin transaction: {{name}}"
+      },
       "recurring": "Auto-renewal",
       "balanceAfter": "Balance after: {{balance}}"
     },

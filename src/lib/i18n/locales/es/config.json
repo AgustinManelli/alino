@@ -215,6 +215,16 @@
         "promoCode": "Código promocional",
         "defaultCoin": "Monedas"
       },
+      "descriptions": {
+        "aiCreditsPurchase": "Canje de paquete de créditos IA: {{name}}",
+        "cosmeticPurchase": "Compra de cosmético: {{name}}",
+        "streakProtectionPurchase": "Compra de protectores de racha: {{name}}",
+        "coinPackPurchase": "Compra de paquete de monedas: {{name}}",
+        "achievementReward": "Recompensa por logro: {{name}}",
+        "levelUpReward": "Subida de nivel: {{name}}",
+        "promoCode": "Canje de código promocional: {{name}}",
+        "default": "Movimiento de monedas: {{name}}"
+      },
       "recurring": "Cobro automático",
       "balanceAfter": "Saldo posterior: {{balance}}"
     },
