@@ -35,6 +35,9 @@ export async function loadDashboardFull(): Promise<{
       id:             w.id as string,
       name:           w.name as string,
       description:    w.description as string | null,
+      localizedName:  w.localized_name as Record<string, string> | null,
+      localizedDescription:
+        w.localized_description as Record<string, string> | null,
       category:       w.category as string,
       tierRequired:   w.tier_required as PredefinedWidget["tierRequired"],
       isActive:       w.is_active as boolean,
@@ -293,59 +296,31 @@ export async function getWidgetsCatalogPaginated(
     const supabase = createClient();
     const page = Math.max(params.page ?? 1, 1);
     const pageSize = Math.max(params.pageSize ?? 8, 1);
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
 
-    let query = supabase
-      .from("predefined_widgets")
-      .select("*", { count: "exact" })
-      .eq("is_active", true);
+    const { data, error } = await supabase.rpc("get_widgets_catalog_paginated", {
+      p_search: params.search?.trim() ?? "",
+      p_category: params.category ?? "all",
+      p_tier: params.tier ?? "all",
+      p_page: page,
+      p_page_size: pageSize,
+    });
+    if (error) throw new Error(error.message);
 
-    if (params.category && params.category !== "all") {
-      query = query.eq("category", params.category);
-    }
-
-    if (params.tier && params.tier !== "all") {
-      query = query.eq("tier_required", params.tier);
-    }
-
-    if (params.search && params.search.trim()) {
-      const term = params.search.trim();
-      query = query.or(`name.ilike.%${term}%,description.ilike.%${term}%`);
-    }
-
-    query = query.order("sort_order", { ascending: true }).range(from, to);
-
-    const [listResult, categoriesResult] = await Promise.all([
-      query,
-      supabase
-        .from("predefined_widgets")
-        .select("category")
-        .eq("is_active", true),
-    ]);
-
-    if (listResult.error) throw new Error(listResult.error.message);
-
-    const totalCount = listResult.count ?? 0;
-    const totalPages = Math.ceil(totalCount / pageSize);
-
-    const categoryCounts: Record<string, number> = {
-      all: categoriesResult.data?.length ?? 0,
+    const raw = data as {
+      widgets?: Record<string, unknown>[];
+      total_count?: number;
+      total_pages?: number;
+      current_page?: number;
+      category_counts?: Record<string, number>;
     };
-    if (categoriesResult.data) {
-      for (const row of categoriesResult.data) {
-        const cat = (row as { category: string }).category;
-        if (cat) {
-          categoryCounts[cat] = (categoryCounts[cat] ?? 0) + 1;
-        }
-      }
-    }
-
-    const widgets: PredefinedWidget[] = (listResult.data ?? []).map(
+    const widgets: PredefinedWidget[] = (raw.widgets ?? []).map(
       (w: Record<string, unknown>) => ({
         id: w.id as string,
         name: w.name as string,
         description: w.description as string | null,
+        localizedName: w.localized_name as Record<string, string> | null,
+        localizedDescription:
+          w.localized_description as Record<string, string> | null,
         category: w.category as string,
         tierRequired: w.tier_required as PredefinedWidget["tierRequired"],
         isActive: w.is_active as boolean,
@@ -364,10 +339,10 @@ export async function getWidgetsCatalogPaginated(
     return {
       data: {
         widgets,
-        totalCount,
+        totalCount: raw.total_count ?? 0,
         currentPage: page,
-        totalPages,
-        categoryCounts,
+        totalPages: raw.total_pages ?? 1,
+        categoryCounts: raw.category_counts ?? {},
       },
     };
   } catch (e) {

@@ -9,27 +9,33 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-bottom: 5px;
+  padding: 18px 20px;
+  border: 1px solid var(--border-container-color);
+  border-radius: 20px;
+  background: var(--background-over-container);
 }
 
 .sectionContainer {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .sectionTitle {
-  font-size: 11px;
+  margin: 0;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--text-not-available);
-  letter-spacing: 0.08em;
-  padding: 0 10px;
+  color: var(--text);
+  letter-spacing: -0.01em;
 }
 
 .sectionContent {
-  background-color: var(--background-over-container, rgba(255, 255, 255, 0.03));
-  border-radius: 12px;
-  border: 1px solid var(--border-container-color, rgba(255, 255, 255, 0.06));
+  background-color: var(--background-container);
+  border-radius: 20px;
+  border: 1px solid var(--border-container-color);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.02);
   overflow: hidden;
 }
 
@@ -42,7 +48,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 18px 20px;
   gap: 12px;
 }
 
@@ -92,29 +98,30 @@
 }
 
 .installBtn {
-  padding: 6px 12px;
-  border-radius: 8px;
+  min-width: 82px;
+  padding: 8px 12px;
+  border-radius: 10px;
   font-size: 12px;
   font-weight: 700;
-  background: rgba(106, 195, 255, 0.1);
-  border: 1px solid rgba(106, 195, 255, 0.3);
-  color: rgb(106, 195, 255);
+  background: var(--alino-primary-color);
+  border: 1px solid var(--alino-primary-color);
+  color: white;
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .isInstalled {
-  background: rgba(255, 80, 80, 0.05);
-  border-color: rgba(255, 80, 80, 0.2);
-  color: rgb(255, 100, 100);
+  background: var(--background-over-container);
+  border-color: var(--border-container-color);
+  color: var(--text);
 }
 
 .iconBtn {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-container-color);
+  background: var(--background-over-container);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -138,11 +145,22 @@
 .formContainer {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
+  padding: 4px 0;
+}
+
+.formContainer .sectionContainer {
+  padding: 22px;
+  border: 1px solid var(--border-container-color);
+  border-radius: 20px;
+  background: var(--background-container);
 }
 
 .inputGroup {
-  padding: 14px 16px;
+  padding: 14px;
+  border: 1px solid var(--border-container-color);
+  border-radius: 12px;
+  background: var(--background-over-container);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -164,7 +182,11 @@
   font-size: 15px;
   font-weight: 500;
   outline: none;
-  padding: 2px 0;
+  padding: 4px 0;
+}
+
+.input:focus {
+  outline: none;
 }
 
 .input::placeholder {
@@ -176,7 +198,7 @@
   font-size: 11px;
   color: var(--text-not-available);
   opacity: 0.6;
-  padding: 0 10px;
+  padding: 0;
   line-height: 1.4;
 }
 
@@ -188,11 +210,11 @@
 }
 
 .btnPrimary {
-  padding: 10px 24px;
+  padding: 11px 24px;
   border-radius: 10px;
-  background: linear-gradient(135deg, rgb(106, 195, 255), rgb(80, 160, 220));
-  border: none;
-  color: #0a0a1e;
+  background: var(--alino-primary-color);
+  border: 1px solid var(--alino-primary-color);
+  color: white;
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
@@ -200,22 +222,22 @@
 }
 
 .btnSecondary {
-  padding: 10px 20px;
+  padding: 11px 20px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-not-available);
+  background: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  color: var(--text);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .btnCreate {
-  padding: 6px 14px;
+  padding: 9px 14px;
   border-radius: 10px;
-  background: rgba(106, 195, 255, 0.1);
-  border: 1px solid rgba(106, 195, 255, 0.2);
-  color: rgb(106, 195, 255);
+  background: var(--alino-primary-color);
+  border: 1px solid var(--alino-primary-color);
+  color: white;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -226,7 +248,7 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 40px 10px;
+  padding: 56px 20px;
   text-align: center;
   color: var(--text-not-available);
   opacity: 0.7;
@@ -235,4 +257,38 @@
 .emptySubtext {
   font-size: 12px;
   opacity: 0.6;
+}
+
+@media (max-width: 640px) {
+  .managerHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .btnCreate {
+    width: 100%;
+  }
+
+  .sectionElement {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .widgetActions {
+    width: 100%;
+  }
+
+  .installBtn {
+    flex: 1;
+  }
+
+  .formActions {
+    flex-direction: column-reverse;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
+    width: 100%;
+  }
 }

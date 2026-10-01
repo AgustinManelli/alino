@@ -1,4 +1,5 @@
 import type { WidgetTier } from "@/types/widgetContract";
+import { getWidgetManifest } from "./widgetRegistry";
 
 export type { WidgetTier };
 
@@ -15,17 +16,10 @@ export const tierSatisfies = (userTier: string, required: string): boolean => {
   return currentLevel >= requiredLevel;
 };
 
-export const ONLINE_REQUIRED_WIDGETS = new Set<string>([
-  "streak",
-  "achievements",
-  "new-features",
-  "ai-planner",
-]);
-
 export const isWidgetOnlineOnly = (
   widgetKey: string,
-  widgetSource?: string
+  widgetSource?: string,
 ): boolean => {
   if (widgetSource === "embedded") return true;
-  return ONLINE_REQUIRED_WIDGETS.has(widgetKey);
+  return getWidgetManifest(widgetKey)?.onlineOnly ?? false;
 };

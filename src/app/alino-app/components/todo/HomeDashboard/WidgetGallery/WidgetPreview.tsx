@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { getWidgetPreview } from "@/config/widgetRegistry";
 import WIDGET_UI_META from "@/config/widgetUiMeta";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import styles from "./WidgetPreview.module.css";
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 export const WidgetPreview = ({ componentKey, title }: Props) => {
   const PreviewComponent = getWidgetPreview(componentKey);
   const meta = WIDGET_UI_META[componentKey] ?? { icon: null, color: "#6366f1" };
+  const animations = useUserPreferencesStore((state) => state.animations);
   const ref = useRef<HTMLDivElement>(null);
 
   const x = useMotionValue(0);
@@ -58,8 +60,8 @@ export const WidgetPreview = ({ componentKey, title }: Props) => {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{
-          rotateX,
-          rotateY,
+          rotateX: animations ? rotateX : 0,
+          rotateY: animations ? rotateY : 0,
           transformStyle: "preserve-3d",
         }}
         className={styles.previewCard}

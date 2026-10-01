@@ -95,6 +95,25 @@ export function resolveLocalizedField(
   return String(value);
 }
 
+export function getWidgetTranslation(widget: {
+  id: string;
+  name: unknown;
+  description?: unknown;
+  localizedName?: unknown;
+  localizedDescription?: unknown;
+}): { name: string; description: string } {
+  return {
+    name: resolveLocalizedField(
+      widget.localizedName ?? widget.name,
+      typeof widget.name === "string" ? widget.name : widget.id,
+    ),
+    description: resolveLocalizedField(
+      widget.localizedDescription ?? widget.description,
+      typeof widget.description === "string" ? widget.description : "",
+    ),
+  };
+}
+
 export interface TranslatedCoinPack {
   name: string;
   tag?: string | null;

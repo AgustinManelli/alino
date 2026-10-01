@@ -25,7 +25,7 @@ export async function getUserCosmeticsCatalogAction(): Promise<{
 
     await supabase.rpc("sync_user_level_cosmetics", { p_user_id: user.id });
 
-    const [userRes, cosmeticsRes, userCosmeticsRes, tierRes] =
+    const [userRes, cosmeticsRes, userCosmeticsRes, loadoutRes, tierRes] =
       await Promise.all([
         supabase
           .from("users")
@@ -41,10 +41,17 @@ export async function getUserCosmeticsCatalogAction(): Promise<{
           .from("user_cosmetics")
           .select("cosmetic_id")
           .eq("user_id", user.id),
+        supabase
+          .from("user_cosmetic_loadout")
+          .select("slot, cosmetic_id")
+          .eq("user_id", user.id),
         supabase.rpc("get_user_tier", { p_user_id: user.id }),
       ]);
 
     if (cosmeticsRes.error) throw new Error(cosmeticsRes.error.message);
+    if (loadoutRes.error && loadoutRes.error.code !== "42P01") {
+      throw new Error(loadoutRes.error.message);
+    }
 
     const userTier = (tierRes.data as string) ?? "free";
     const isPro = tierSatisfies(userTier, "pro");
@@ -53,6 +60,9 @@ export async function getUserCosmeticsCatalogAction(): Promise<{
     );
     const equippedFrameId = userRes.data?.equipped_frame_id ?? null;
     const equippedOverlayId = userRes.data?.equipped_overlay_id ?? null;
+    const loadout = Object.fromEntries(
+      (loadoutRes.data ?? []).map((entry) => [entry.slot, entry.cosmetic_id]),
+    ) as UserCosmeticsOverview["loadout"];
 
     const allCosmetics = (cosmeticsRes.data || []) as unknown as CosmeticItem[];
 
@@ -89,9 +99,9 @@ export async function getUserCosmeticsCatalogAction(): Promise<{
       })
       .map((cosmetic) => {
         const isEquipped =
-          cosmetic.type === "frame"
-            ? equippedFrameId === cosmetic.id
-            : equippedOverlayId === cosmetic.id;
+          (cosmetic.slot && loadout?.[cosmetic.slot] === cosmetic.id) ||
+          (cosmetic.type === "frame" && equippedFrameId === cosmetic.id) ||
+          (cosmetic.type === "overlay" && equippedOverlayId === cosmetic.id);
 
         return {
           ...cosmetic,
@@ -100,10 +110,21 @@ export async function getUserCosmeticsCatalogAction(): Promise<{
         };
       });
 
+    const visualCatalog = allCosmetics.map((cosmetic) => ({
+      ...cosmetic,
+      is_unlocked: ownedIds.has(cosmetic.id),
+      is_equipped:
+        (cosmetic.slot && loadout?.[cosmetic.slot] === cosmetic.id) ||
+        (cosmetic.type === "frame" && equippedFrameId === cosmetic.id) ||
+        (cosmetic.type === "overlay" && equippedOverlayId === cosmetic.id),
+    }));
+
     return {
       data: {
         equipped_frame_id: equippedFrameId,
         equipped_overlay_id: equippedOverlayId,
+        loadout,
+        catalog: visualCatalog,
         cosmetics: inventoryCosmetics,
       },
     };
@@ -215,50 +236,19 @@ export async function equipCosmeticAction(
   errorCode?: string;
 }> {
   try {
-    const { supabase, user } = await getAuth();
-    const { data, error } = await supabase.rpc("equip_cosmetic", {
-      p_cosmetic_id: cosmeticId,
-      p_type: type,
-    });
-    if (error) {
-      if (error.message?.includes("TIER_REQUIRED_PRO") && cosmeticId) {
-        const { data: ownCheck } = await supabase
-          .from("user_cosmetics")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("cosmetic_id", cosmeticId)
-          .maybeSingle();
-
-        if (ownCheck) {
-          const updateField =
-            type === "frame" ? "equipped_frame_id" : "equipped_overlay_id";
-          await supabase
-            .from("users")
-            .update({
-              [updateField]: cosmeticId,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("user_id", user.id);
-          return { success: true, equipped_id: cosmeticId };
-        }
-      }
-      const code = error.message || error.code || "GENERIC_ERROR";
-      return {
-        success: false,
-        equipped_id: null,
-        errorCode: code,
-        error: code,
-      };
-    }
-
-    const result = data as {
-      success: boolean;
-      equipped_id: string | null;
-    };
-
+    const result = cosmeticId
+      ? await equipCosmeticV2Action(
+          cosmeticId,
+          type === "frame" ? "avatar_frame" : "avatar_overlay",
+        )
+      : await unequipCosmeticV2Action(
+          type === "frame" ? "avatar_frame" : "avatar_overlay",
+        );
     return {
-      success: true,
-      equipped_id: result.equipped_id,
+      success: result.success,
+      equipped_id: cosmeticId,
+      error: result.error,
+      errorCode: result.error,
     };
   } catch (e) {
     const message = e instanceof Error ? e.message : "GENERIC_ERROR";
@@ -309,6 +299,50 @@ export async function buyCosmeticAction(cosmeticId: string): Promise<{
       success: false,
       errorCode,
       error: errorCode,
+    };
+  }
+}
+
+export async function equipCosmeticV2Action(
+  cosmeticId: string,
+  slot: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabase } = await getAuth();
+    const { error } = await supabase.rpc("equip_cosmetic_v2", {
+      p_cosmetic_id: cosmeticId,
+      p_slot: slot,
+    });
+    if (error) throw new Error(error.message);
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "No se pudo equipar el cosmético.",
+    };
+  }
+}
+
+export async function unequipCosmeticV2Action(
+  slot: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabase } = await getAuth();
+    const { error } = await supabase.rpc("unequip_cosmetic_v2", {
+      p_slot: slot,
+    });
+    if (error) throw new Error(error.message);
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "No se pudo desequipar el cosmético.",
     };
   }
 }

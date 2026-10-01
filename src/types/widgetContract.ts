@@ -26,10 +26,13 @@ export interface CompanionProps {
 
 export interface WidgetManifest {
   id: string;
-  name: string;
+  componentKey: string;
   category: WidgetCategory;
   tierRequired: WidgetTier;
   defaultDimensions: WidgetDimensions;
+  nameKey: string;
+  descriptionKey: string;
+  onlineOnly?: boolean;
   hasCompanionOverlay?: boolean;
   color?: string;
   withoutHeader?: boolean;

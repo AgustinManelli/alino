@@ -43,6 +43,8 @@ export interface PredefinedWidget {
   id: string;
   name: string;
   description: string | null;
+  localizedName: Record<string, string> | null;
+  localizedDescription: Record<string, string> | null;
   category: string;
   tierRequired: SubscriptionTier;
   isActive: boolean;

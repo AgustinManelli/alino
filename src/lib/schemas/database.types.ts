@@ -607,6 +607,7 @@ export type Database = {
       predefined_widgets: {
         Row: {
           category: string;
+          component_key: string;
           created_at: string;
           default_layout_lg: Json | null;
           default_layout_md: Json | null;
@@ -616,6 +617,8 @@ export type Database = {
           is_active: boolean;
           is_default: boolean;
           is_resizable: boolean;
+          localized_description: Json | null;
+          localized_name: Json | null;
           name: string;
           sort_order: number;
           tier_required: Database["public"]["Enums"]["subscription_tier"];
@@ -623,6 +626,7 @@ export type Database = {
         };
         Insert: {
           category?: string;
+          component_key: string;
           created_at?: string;
           default_layout_lg?: Json | null;
           default_layout_md?: Json | null;
@@ -632,6 +636,8 @@ export type Database = {
           is_active?: boolean;
           is_default?: boolean;
           is_resizable?: boolean;
+          localized_description?: Json | null;
+          localized_name?: Json | null;
           name: string;
           sort_order?: number;
           tier_required?: Database["public"]["Enums"]["subscription_tier"];
@@ -639,6 +645,7 @@ export type Database = {
         };
         Update: {
           category?: string;
+          component_key?: string;
           created_at?: string;
           default_layout_lg?: Json | null;
           default_layout_md?: Json | null;
@@ -648,6 +655,8 @@ export type Database = {
           is_active?: boolean;
           is_default?: boolean;
           is_resizable?: boolean;
+          localized_description?: Json | null;
+          localized_name?: Json | null;
           name?: string;
           sort_order?: number;
           tier_required?: Database["public"]["Enums"]["subscription_tier"];
@@ -1657,6 +1666,10 @@ export type Database = {
         };
         Returns: Json;
       };
+      equip_cosmetic_v2: {
+        Args: { p_cosmetic_id: string; p_slot: string };
+        Returns: Json;
+      };
       get_active_subscription: { Args: never; Returns: Json };
       get_dashboard_widgets: {
         Args: never;
@@ -1844,8 +1857,22 @@ export type Database = {
         Returns: Database["public"]["Enums"]["subscription_tier"];
       };
       get_widget_limits: { Args: never; Returns: Json };
+      get_widgets_catalog_paginated: {
+        Args: {
+          p_category?: string;
+          p_page?: number;
+          p_page_size?: number;
+          p_search?: string;
+          p_tier?: string;
+        };
+        Returns: Json;
+      };
       grant_user_pro_cosmetics: {
         Args: { p_user_id: string };
+        Returns: Json;
+      };
+      unequip_cosmetic_v2: {
+        Args: { p_slot: string };
         Returns: Json;
       };
       increment_rank: { Args: { input_rank: string }; Returns: string };
@@ -2273,9 +2300,77 @@ export interface AchievementsOverview {
   levels?: LevelItem[];
 }
 
-export type CosmeticType = "frame" | "overlay" | "badge";
+export type CosmeticType =
+  | "frame"
+  | "overlay"
+  | "badge"
+  | "effect"
+  | "banner"
+  | "banner_effect";
 export type CosmeticRarity = "common" | "rare" | "epic" | "legendary";
 export type LocalizedText = Record<string, string>;
+export type CosmeticSlot =
+  | "avatar_frame"
+  | "avatar_overlay"
+  | "profile_badge"
+  | "profile_banner"
+  | "banner_effect"
+  | "avatar_effect";
+export type CosmeticStatus =
+  | "draft"
+  | "published"
+  | "coming_soon"
+  | "paused"
+  | "retired";
+
+export interface CosmeticAssetManifest {
+  [assetKey: string]: CosmeticAsset;
+}
+
+export interface CosmeticAssetSource {
+  src: string;
+  type?: "image" | "svg" | "video" | "webp" | "apng" | "gif";
+  width?: number;
+  height?: number;
+  alt?: string;
+}
+
+export interface CosmeticAsset {
+  src: string;
+  type?: "image" | "svg" | "video" | "webp" | "apng" | "gif";
+  width?: number;
+  height?: number;
+  alt?: string;
+  variants?: {
+    animated?: CosmeticAssetSource[];
+    static?: CosmeticAssetSource;
+    reduced_motion?: CosmeticAssetSource;
+  };
+  loop?: boolean;
+  duration_ms?: number;
+  loading?: "eager" | "lazy";
+}
+
+export interface CosmeticVisualManifest {
+  layers?: Array<{
+    asset_key: string;
+    z_index?: number;
+    opacity?: number;
+    transform?: {
+      x?: string;
+      y?: string;
+      scale?: number;
+      rotate?: number;
+    };
+  }>;
+  motion?: {
+    reduced_motion_asset?: string;
+  };
+  responsive?: {
+    min_size?: number;
+    max_size?: number;
+  };
+}
 
 export interface CosmeticItem {
   id: string;
@@ -2291,6 +2386,10 @@ export interface CosmeticItem {
   rarity: CosmeticRarity;
   sort_order: number;
   is_active: boolean;
+  slot?: CosmeticSlot | null;
+  status?: CosmeticStatus;
+  visual_manifest?: CosmeticVisualManifest;
+  asset_manifest?: CosmeticAssetManifest;
   is_unlocked?: boolean;
   is_equipped?: boolean;
   tier_required?: "free" | "student" | "pro" | "ultra" | null;
@@ -2299,6 +2398,8 @@ export interface CosmeticItem {
 export interface UserCosmeticsOverview {
   equipped_frame_id: string | null;
   equipped_overlay_id: string | null;
+  loadout?: Partial<Record<CosmeticSlot, string | null>>;
+  catalog?: CosmeticItem[];
   cosmetics: CosmeticItem[];
 }
 

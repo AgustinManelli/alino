@@ -4,7 +4,10 @@ import { useState, useCallback } from "react";
 import { LayoutItem } from "react-grid-layout";
 import { uninstallWidgetAction } from "@/lib/api/dashboard/actions";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { buildLayoutsFromInstances, compactLayout } from "@/store/dashboardUtils";
+import {
+  buildLayoutsFromInstances,
+  compactLayout,
+} from "@/store/dashboardUtils";
 import { useSaveWidgetLayouts } from "@/hooks/dashboard/useSaveWidgetLayouts";
 import { useSyncStore } from "@/store/useSyncStore";
 
@@ -21,6 +24,9 @@ export function useUninstallWidget() {
 
       const store = useDashboardStore.getState();
       const inst = store.widgetInstances.find((i) => i.widgetKey === widgetKey);
+      const previousInstances = store.widgetInstances;
+      const previousLayout = store.layout;
+      const previousActiveWidgets = store.activeWidgets;
 
       const uninstalledInstances = store.widgetInstances.map((i) =>
         i.widgetKey === widgetKey ? { ...i, isInstalled: false } : i,
@@ -68,8 +74,6 @@ export function useUninstallWidget() {
           .map((i) => i.widgetKey),
       });
 
-      scheduleSave();
-
       const { error } = await uninstallWidgetAction({
         predefinedId:
           inst?.widgetSource === "predefined" ? widgetKey : undefined,
@@ -80,7 +84,13 @@ export function useUninstallWidget() {
       });
 
       if (error) {
-        console.warn("[DashboardStore] uninstallWidget failed:", error);
+        useDashboardStore.setState({
+          widgetInstances: previousInstances,
+          layout: previousLayout,
+          activeWidgets: previousActiveWidgets,
+        });
+      } else {
+        scheduleSave();
       }
 
       setIsPending(false);

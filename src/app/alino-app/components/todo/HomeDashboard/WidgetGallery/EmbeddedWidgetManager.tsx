@@ -104,6 +104,11 @@ export const EmbeddedWidgetManager = ({
           <p className={styles.sectionTitle}>
             {mode === "create" ? "CREAR NUEVO WIDGET" : "EDITAR WIDGET"}
           </p>
+          <p className={styles.sectionDescription}>
+            {mode === "create"
+              ? "Añade una herramienta externa a tu dashboard."
+              : "Actualiza la información de tu widget personalizado."}
+          </p>
           <div className={styles.sectionContent}>
             <div className={styles.inputGroup}>
               <label className={styles.label}>TÍTULO</label>
@@ -116,7 +121,6 @@ export const EmbeddedWidgetManager = ({
                 maxLength={60}
               />
             </div>
-            <div className={styles.configElementSeparator} />
             <div className={styles.inputGroup}>
               <label className={styles.label}>URL DEL WIDGET</label>
               <input
@@ -158,7 +162,12 @@ export const EmbeddedWidgetManager = ({
     <div className={styles.manager}>
       <div className={styles.sectionContainer}>
         <div className={styles.managerHeader}>
-          <p className={styles.sectionTitle}>TUS WIDGETS PERSONALIZADOS</p>
+          <div>
+            <p className={styles.sectionTitle}>TUS WIDGETS PERSONALIZADOS</p>
+            <p className={styles.sectionDescription}>
+              Herramientas externas, calendarios y dashboards en un solo lugar.
+            </p>
+          </div>
           <button
             className={styles.btnCreate}
             onClick={openCreate}

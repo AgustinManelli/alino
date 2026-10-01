@@ -50,6 +50,10 @@ const WIDGET_UI_META: Record<string, WidgetUiMeta> = {
     icon: React.createElement(StreakFlameIcon),
     color: "#f97316",
   },
+  achievements: {
+    icon: React.createElement(TaskDoneIcon),
+    color: "#8b5cf6",
+  },
 };
 
 export default WIDGET_UI_META;

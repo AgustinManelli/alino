@@ -2,8 +2,17 @@
 
 import { type ReactNode, useRef, useEffect } from "react";
 import { type StoreApi } from "zustand";
-import { UserType, ListsType, FolderType, TaskType } from "@/lib/schemas/database.types";
-import { createUserDataStore, UserStoreContext, type UserState } from "@/store/useUserDataStore";
+import {
+  UserType,
+  ListsType,
+  FolderType,
+  TaskType,
+} from "@/lib/schemas/database.types";
+import {
+  createUserDataStore,
+  UserStoreContext,
+  type UserState,
+} from "@/store/useUserDataStore";
 import { getUserCosmeticsCatalogAction } from "@/lib/api/cosmetics/actions";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import {
@@ -13,7 +22,10 @@ import {
   isListDeleted,
 } from "@/lib/offline/sidebarSync";
 
-import { createUserPreferencesStore, UserPreferencesContext } from "@/store/useUserPreferencesStore";
+import {
+  createUserPreferencesStore,
+  UserPreferencesContext,
+} from "@/store/useUserPreferencesStore";
 
 import { useShopStore } from "@/store/useShopStore";
 
@@ -43,7 +55,10 @@ export const UserStoreProvider = ({
   if (!storeRef.current) {
     storeRef.current = createUserDataStore({ user });
     const initialCoins = user?.alino_coins;
-    if (typeof initialCoins === "number" && useShopStore.getState().coins === 0) {
+    if (
+      typeof initialCoins === "number" &&
+      useShopStore.getState().coins === 0
+    ) {
       useShopStore.setState({ coins: initialCoins });
     }
   }
@@ -60,7 +75,9 @@ export const UserStoreProvider = ({
   if (initialListsData && !useTodoDataStore.getState().initialFetch) {
     const rawTasks = initialListsData.tasks ?? [];
     useTodoDataStore.setState({
-      lists: (initialListsData.lists ?? []).filter((l) => !isListDeleted(l.list_id)),
+      lists: (initialListsData.lists ?? []).filter(
+        (l) => !isListDeleted(l.list_id),
+      ),
       folders: initialListsData.folders ?? [],
       tasks: rawTasks.filter((t) => !t.completed),
       completedTasks: rawTasks.filter((t) => t.completed === true),
@@ -77,7 +94,12 @@ export const UserStoreProvider = ({
     async function hydrateSidebar() {
       if (!initialListsData) {
         const local = await loadSidebarFromIndexedDB();
-        if (isMounted && (local.lists.length > 0 || local.folders.length > 0 || local.tasks.length > 0)) {
+        if (
+          isMounted &&
+          (local.lists.length > 0 ||
+            local.folders.length > 0 ||
+            local.tasks.length > 0)
+        ) {
           const rawTasks = local.tasks ?? [];
           useTodoDataStore.setState({
             lists: local.lists,
@@ -96,7 +118,7 @@ export const UserStoreProvider = ({
       const reconciled = await reconcileWithOfflineState(
         initialListsData.lists ?? [],
         initialListsData.folders ?? [],
-        initialListsData.tasks ?? []
+        initialListsData.tasks ?? [],
       );
 
       if (isMounted) {
@@ -115,7 +137,7 @@ export const UserStoreProvider = ({
         await saveSidebarToIndexedDB(
           reconciled.lists,
           reconciled.folders,
-          rawTasks
+          rawTasks,
         );
       }
     }
@@ -127,14 +149,15 @@ export const UserStoreProvider = ({
     };
   }, [initialListsData]);
 
-
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem("user-preferences") || "{}");
+      const stored = JSON.parse(
+        localStorage.getItem("user-preferences") || "{}",
+      );
       if (stored.animations !== undefined) {
         prefsStoreRef.current?.setState({ animations: stored.animations });
       }
-    } catch (_) { }
+    } catch (_) {}
   }, []);
 
   useEffect(() => {
@@ -142,6 +165,11 @@ export const UserStoreProvider = ({
       getUserCosmeticsCatalogAction().then((res) => {
         if (res.data?.cosmetics) {
           storeRef.current?.getState().setCosmeticsCatalog(res.data.cosmetics);
+        }
+        if (res.data?.catalog) {
+          storeRef.current
+            ?.getState()
+            .setCosmeticsVisualCatalog(res.data.catalog);
         }
       });
     }
@@ -155,4 +183,3 @@ export const UserStoreProvider = ({
     </UserStoreContext.Provider>
   );
 };
-

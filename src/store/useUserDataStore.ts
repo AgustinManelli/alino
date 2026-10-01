@@ -14,6 +14,7 @@ export interface UserState {
   aiUsage: FeatureUsage | null;
   referralStats: UserReferralStats | null;
   cosmeticsCatalog: CosmeticItem[] | null;
+  cosmeticsVisualCatalog: CosmeticItem[] | null;
 
   updateUser: (partial: Partial<UserType>) => void;
   setConfigUserActive: (active: boolean) => void;
@@ -21,6 +22,7 @@ export interface UserState {
   setAIUsage: (usage: FeatureUsage) => void;
   setReferralStats: (stats: UserReferralStats) => void;
   setCosmeticsCatalog: (cosmetics: CosmeticItem[] | null) => void;
+  setCosmeticsVisualCatalog: (cosmetics: CosmeticItem[] | null) => void;
 }
 
 export const UserStoreContext = createContext<StoreApi<UserState> | undefined>(
@@ -37,6 +39,7 @@ export const createUserDataStore = (initialState: Partial<UserState> = {}) => {
     aiUsage: null,
     referralStats: null,
     cosmeticsCatalog: null,
+    cosmeticsVisualCatalog: null,
 
     updateUser: (partial) =>
       set((state) => ({
@@ -49,6 +52,8 @@ export const createUserDataStore = (initialState: Partial<UserState> = {}) => {
     setAIUsage: (usage) => set({ aiUsage: usage }),
     setReferralStats: (stats) => set({ referralStats: stats }),
     setCosmeticsCatalog: (cosmetics) => set({ cosmeticsCatalog: cosmetics }),
+    setCosmeticsVisualCatalog: (cosmetics) =>
+      set({ cosmeticsVisualCatalog: cosmetics }),
   }));
 
   if (typeof window !== "undefined") {
@@ -58,7 +63,7 @@ export const createUserDataStore = (initialState: Partial<UserState> = {}) => {
   return store;
 };
 
-export const useUserDataStore = <T,>(selector: (state: UserState) => T): T => {
+export const useUserDataStore = <T>(selector: (state: UserState) => T): T => {
   const store = useContext(UserStoreContext);
   if (!store) {
     throw new Error("Missing UserStoreProvider in the tree");

@@ -461,6 +461,14 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
   };
 
   const getCosmeticActionLabel = (item: CosmeticItem, isBuying: boolean) => {
+    if (item.status === "coming_soon") {
+      return t("shop:cosmetics.comingSoon", { defaultValue: "Próximamente" });
+    }
+    if (item.status === "paused" || item.status === "retired") {
+      return t("shop:cosmetics.unavailable", {
+        defaultValue: "No disponible",
+      });
+    }
     if (item.is_unlocked) {
       return t("shop:cosmetics.owned", { defaultValue: "En inventario" });
     }
@@ -474,6 +482,14 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
     item: CosmeticItem,
     isBuying: boolean,
   ) => {
+    if (item.status === "coming_soon") {
+      return t("shop:cosmetics.comingSoon", { defaultValue: "Próximamente" });
+    }
+    if (item.status === "paused" || item.status === "retired") {
+      return t("shop:cosmetics.unavailable", {
+        defaultValue: "No disponible",
+      });
+    }
     if (item.is_unlocked) {
       return t("shop:cosmetics.owned", { defaultValue: "En inventario" });
     }
@@ -736,6 +752,10 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             const isBuying = purchasingCosmeticId === item.id;
                             const isOwned = item.is_unlocked === true;
                             const canAfford = coins >= item.coins_price;
+                            const isUnavailable =
+                              item.status === "coming_soon" ||
+                              item.status === "paused" ||
+                              item.status === "retired";
 
                             return (
                               <div key={item.id} className={styles.cardDesktop}>
@@ -764,10 +784,16 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                       equippedFrameId={
                                         item.type === "frame" ? item.code : null
                                       }
+                                      equippedFrame={
+                                        item.type === "frame" ? item : null
+                                      }
                                       equippedOverlayId={
                                         item.type === "overlay"
                                           ? item.code
                                           : null
+                                      }
+                                      equippedOverlay={
+                                        item.type === "overlay" ? item : null
                                       }
                                     />
                                   </div>
@@ -787,7 +813,12 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
                                   <button
                                     type="button"
-                                    disabled={isOwned || isBuying || !canAfford}
+                                    disabled={
+                                      isOwned ||
+                                      isBuying ||
+                                      !canAfford ||
+                                      isUnavailable
+                                    }
                                     className={styles.chooseButton}
                                     onClick={() => handleBuyCosmetic(item)}
                                   >
@@ -812,6 +843,10 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             const isBuying = purchasingCosmeticId === item.id;
                             const isOwned = item.is_unlocked === true;
                             const canAfford = coins >= item.coins_price;
+                            const isUnavailable =
+                              item.status === "coming_soon" ||
+                              item.status === "paused" ||
+                              item.status === "retired";
 
                             return (
                               <div key={item.id} className={styles.cardMobile}>
@@ -829,10 +864,16 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                       equippedFrameId={
                                         item.type === "frame" ? item.code : null
                                       }
+                                      equippedFrame={
+                                        item.type === "frame" ? item : null
+                                      }
                                       equippedOverlayId={
                                         item.type === "overlay"
                                           ? item.code
                                           : null
+                                      }
+                                      equippedOverlay={
+                                        item.type === "overlay" ? item : null
                                       }
                                     />
                                   </div>
@@ -869,7 +910,12 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
                                   <button
                                     type="button"
-                                    disabled={isOwned || isBuying || !canAfford}
+                                    disabled={
+                                      isOwned ||
+                                      isBuying ||
+                                      !canAfford ||
+                                      isUnavailable
+                                    }
                                     className={styles.cardMobileChooseBtn}
                                     onClick={() => handleBuyCosmetic(item)}
                                   >

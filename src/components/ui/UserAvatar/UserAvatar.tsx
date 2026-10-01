@@ -8,10 +8,8 @@ import "blobatar/motion.css";
 import { UserIcon } from "@/components/ui/icons/icons";
 import { getBlobatarSeed } from "@/lib/utils/avatar";
 import { useUserDataStore } from "@/store/useUserDataStore";
-import {
-  CosmeticFrameRenderer,
-  CosmeticOverlayRenderer,
-} from "@/config/cosmeticsRegistry";
+import { CosmeticRenderer } from "@/components/ui/CosmeticRenderer";
+import type { CosmeticItem } from "@/lib/schemas/database.types";
 import styles from "./UserAvatar.module.css";
 
 export interface UserAvatarProps {
@@ -24,6 +22,8 @@ export interface UserAvatarProps {
   alt?: string;
   equippedFrameId?: string | null;
   equippedOverlayId?: string | null;
+  equippedFrame?: CosmeticItem | null;
+  equippedOverlay?: CosmeticItem | null;
 }
 
 export const UserAvatar = ({
@@ -36,8 +36,13 @@ export const UserAvatar = ({
   alt = "Avatar",
   equippedFrameId,
   equippedOverlayId,
+  equippedFrame,
+  equippedOverlay,
 }: UserAvatarProps) => {
   const currentUser = useUserDataStore((state) => state.user);
+  const cosmeticsVisualCatalog = useUserDataStore(
+    (state) => state.cosmeticsVisualCatalog,
+  );
 
   const activeFrame = useMemo(() => {
     if (equippedFrameId !== undefined) return equippedFrameId;
@@ -60,18 +65,30 @@ export const UserAvatar = ({
   }, [avatarUrl, username]);
 
   const effectiveRadius = style?.borderRadius ?? (size && size <= 44 ? 10 : 23);
+  const resolvedFrame =
+    equippedFrame ??
+    cosmeticsVisualCatalog?.find((cosmetic) => cosmetic.id === activeFrame) ??
+    null;
+  const resolvedOverlay =
+    equippedOverlay ??
+    cosmeticsVisualCatalog?.find((cosmetic) => cosmetic.id === activeOverlay) ??
+    null;
+  const resolvedEffect =
+    cosmeticsVisualCatalog?.find(
+      (cosmetic) => cosmetic.slot === "avatar_effect" && cosmetic.is_equipped,
+    ) ?? null;
 
   const dimensionStyle: React.CSSProperties = {
     borderRadius: effectiveRadius,
     ...(size
       ? {
-        width: size,
-        height: size,
-        minWidth: size,
-        minHeight: size,
-        maxWidth: size,
-        maxHeight: size,
-      }
+          width: size,
+          height: size,
+          minWidth: size,
+          minHeight: size,
+          maxWidth: size,
+          maxHeight: size,
+        }
       : {}),
     ...style,
   };
@@ -80,11 +97,7 @@ export const UserAvatar = ({
     if (blobatarSeed) {
       return (
         <div className={styles.avatarContainer}>
-          <Blobatar
-            name={blobatarSeed}
-            size={size ?? 36}
-            animate={animate}
-          />
+          <Blobatar name={blobatarSeed} size={size ?? 36} animate={animate} />
         </div>
       );
     }
@@ -118,20 +131,15 @@ export const UserAvatar = ({
   };
 
   return (
-    <div
-      className={`${styles.avatarRoot} ${className}`}
-      style={dimensionStyle}
-    >
-      <CosmeticFrameRenderer
-        code={activeFrame}
+    <div className={`${styles.avatarRoot} ${className}`} style={dimensionStyle}>
+      <CosmeticRenderer cosmetic={resolvedEffect} size={size ?? 36} />
+      <CosmeticRenderer
+        cosmetic={resolvedFrame}
         size={size ?? 36}
         borderRadius={effectiveRadius}
       />
       {renderInnerAvatar()}
-      <CosmeticOverlayRenderer
-        code={activeOverlay}
-        size={size ?? 36}
-      />
+      <CosmeticRenderer cosmetic={resolvedOverlay} size={size ?? 36} />
     </div>
   );
 };
