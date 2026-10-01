@@ -1,0 +1,186 @@
+{
+  "title": "Widget Gallery",
+  "tag": "WIDGETS",
+  "navigation": "Widget sections",
+  "catalog": "Explore widgets",
+  "myWidgets": "My widgets",
+  "singleWidget": "widget available",
+  "multipleWidgets": "{{count}} widgets available",
+  "activeWidget": "installed",
+  "activeWidgets": "installed",
+  "search": "Search widgets by name or description...",
+  "empty": "No widgets found with the applied filters.",
+  "emptySubtext": "Try searching with different terms or selecting another category.",
+  "banner": {
+    "eyebrow": "YOUR SPACE, YOUR WAY",
+    "title": "Design your dashboard.",
+    "accent": "Your space, your way.",
+    "subtitle": "Widgets that adapt to your needs."
+  },
+  "categories": {
+    "all": "All",
+    "productivity": "Productivity",
+    "wellness": "Wellness",
+    "info": "Information",
+    "tools": "Tools"
+  },
+  "tiers": {
+    "all": "All",
+    "free": "Free",
+    "student": "Student",
+    "pro": "Pro",
+    "ultra": "Ultra"
+  },
+  "install": "Install",
+  "installing": "Installing...",
+  "uninstall": "Uninstall",
+  "uninstalling": "Uninstalling...",
+  "requiresTier": "Requires {{tier}}",
+  "footer": "Installed widgets load on demand to keep your app fast and lightweight.",
+  "errors": {
+    "catalog": "Could not load the widget catalog.",
+    "offlineRequired": "This widget requires an internet connection to be used."
+  },
+  "pagination": {
+    "page": "Page {{current}} of {{total}}",
+    "prev": "Previous",
+    "next": "Next"
+  },
+  "myWidgetsSection": {
+    "title": "Your custom widgets",
+    "subtitle": "Add and interact with your custom embedded web integrations."
+  },
+  "items": {
+    "summary": {
+      "name": "Summary",
+      "description": "View overall progress and balance of your completed tasks today.",
+      "totalTasks_one": "{{count}} Total task",
+      "totalTasks_other": "{{count}} Total tasks",
+      "completed_one": "{{count}} completed",
+      "completed_other": "{{count}} completed"
+    },
+    "upcoming-tasks": {
+      "name": "Upcoming Tasks",
+      "description": "Your closest pending tasks sorted chronologically so you never miss anything.",
+      "empty": "You have no pending tasks",
+      "mockTask": "Team design meeting"
+    },
+    "new-features": {
+      "name": "What's New",
+      "description": "Discover the latest improvements, releases, and features added to Alino.",
+      "close": "Close",
+      "categories": {
+        "new_feature": "New Feature",
+        "improvement": "Improvement",
+        "bug_fix": "Bug Fix",
+        "announcement": "Announcement"
+      }
+    },
+    "pomodoro": {
+      "name": "Pomodoro",
+      "description": "Focus timer with Pomodoro technique and configurable rest intervals.",
+      "modes": {
+        "work": "Pomodoro",
+        "shortBreak": "Short",
+        "longBreak": "Long"
+      },
+      "cycles": "Cycles: {{count}}",
+      "reset": "Reset",
+      "settings": "Settings",
+      "pause": "Pause",
+      "start": "Start",
+      "configTitle": "Pomodoro settings",
+      "config": {
+        "data": "Data",
+        "cyclesDone": "Completed cycles",
+        "timesMinutes": "Durations (minutes)",
+        "pomodoro": "Pomodoro",
+        "shortBreak": "Short break",
+        "longBreak": "Long break",
+        "autoStartBreaks": "Auto-start breaks",
+        "autoStartPomodoros": "Auto-start pomodoros",
+        "longBreakInterval": "Cycle interval for long breaks",
+        "every": "Every",
+        "cyclesUnit": "cycles",
+        "soundConfig": "Sound settings",
+        "alarmSound": "Alarm sound",
+        "volume": "Volume ({{volume}}%)",
+        "repetitions": "Repetitions",
+        "browserNotifications": "Browser notifications",
+        "restoreDefaults": "Restore default settings"
+      }
+    },
+    "ai-planner": {
+      "name": "AI Planner",
+      "description": "Automatically create projects, lists, and subtasks from your ideas with AI.",
+      "readyTitle": "All set!",
+      "planMore": "Plan more",
+      "loadingDots": "Designing and organizing structure...",
+      "upgradeNotice": "Exclusive feature for Pro and Ultra users.",
+      "upgradeBtn": "Upgrade plan",
+      "placeholder": "E.g. Organize my month: I have 2 finals and a relocation...",
+      "generate": "Generate",
+      "defaultSuccess": "Your plan and tasks are now saved in your account."
+    },
+    "weekly-activity": {
+      "name": "Weekly Activity",
+      "description": "Interactive chart showing completed task pace over the last 7 days.",
+      "summary_one": "{{count}} task completed this week",
+      "summary_other": "{{count}} tasks completed this week"
+    },
+    "streak": {
+      "name": "Streak",
+      "description": "Keep your daily flame burning, track consecutive days, and manage protectors.",
+      "day": "DAY",
+      "days": "DAYS"
+    },
+    "achievements": {
+      "name": "Achievements",
+      "description": "Reach productivity milestones and claim Alino coin rewards.",
+      "title": "Achievements",
+      "readyBadge_one": "{{count}} ready",
+      "readyBadge_other": "{{count}} ready",
+      "ready": "Ready!",
+      "claim": "Claim",
+      "inProgress": "Completing tasks..."
+    }
+  },
+  "offlinePlaceholder": {
+    "title": "No internet connection",
+    "genericReason": "This widget requires an internet connection to work.",
+    "syncReason": "This widget requires an internet connection to sync {{name}}.",
+    "embeddedReason": "Embedded widgets require an internet connection to load their content."
+  },
+  "upgradePlaceholder": {
+    "title": "{{name}} Locked",
+    "description": "This widget requires a Pro subscription.",
+    "upgradeBtn": "Upgrade to Pro"
+  },
+  "embedded": {
+    "loading": "Loading widget…",
+    "noUrl": "This widget has no URL configured.",
+    "loadError": "Could not load widget. Verify the URL."
+  },
+  "dashboard": {
+    "greetings": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "defaultUser": "Welcome",
+    "todayIs": "Today is",
+    "summarySubtitle": "Here is a summary of your productivity",
+    "actions": {
+      "editDashboard": "Edit dashboard",
+      "autoSort": "Rearrange widgets",
+      "saveChanges": "Save changes",
+      "finish": "Done",
+      "galleryTitle": "Widget gallery",
+      "moreWidgets": "More widgets"
+    },
+    "empty": {
+      "message": "Your dashboard is empty. You can browse the widget gallery to install the ones you like best.",
+      "discoverBtn": "Discover widgets"
+    }
+  }
+}

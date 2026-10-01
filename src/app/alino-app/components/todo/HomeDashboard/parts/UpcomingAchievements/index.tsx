@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useAchievementsStore } from "@/store/useAchievementsStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useWidgetPreview } from "@/context/WidgetPreviewContext";
@@ -14,6 +15,7 @@ import { UpcomingAchievementsPreview } from "./UpcomingAchievementsPreview";
 import styles from "./UpcomingAchievements.module.css";
 
 export const UpcomingAchievementsWidget: React.FC<WidgetProps> = () => {
+  const { t } = useTranslation(["widgets"]);
   const isPreview = useWidgetPreview();
   const currentUser = useUserDataStore((state) => state.user);
 
@@ -87,10 +89,20 @@ export const UpcomingAchievementsWidget: React.FC<WidgetProps> = () => {
     <div className={styles.container} onClick={handleOpenGallery}>
       <div className={styles.headerRow}>
         <div className={styles.headerTitleGroup}>
-          <span className={styles.title}>Logros</span>
+          <span className={styles.title}>
+            {t("widgets:items.achievements.title", "Logros")}
+          </span>
           {unclaimedCount > 0 && (
             <span className={styles.unclaimedBadge}>
-              {unclaimedCount} {unclaimedCount === 1 ? "listo" : "listos"}
+              {t(
+                unclaimedCount === 1
+                  ? "widgets:items.achievements.readyBadge_one"
+                  : "widgets:items.achievements.readyBadge_other",
+                {
+                  count: unclaimedCount,
+                  defaultValue: `${unclaimedCount} ${unclaimedCount === 1 ? "listo" : "listos"}`,
+                },
+              )}
             </span>
           )}
         </div>
@@ -110,7 +122,9 @@ export const UpcomingAchievementsWidget: React.FC<WidgetProps> = () => {
             <div className={styles.featuredTitleRow}>
               <span className={styles.featuredTitle}>{featured.title}</span>
               <span className={styles.featuredPercent}>
-                {isFeaturedReady ? "¡Listo!" : `${featuredPct}%`}
+                {isFeaturedReady
+                  ? t("widgets:items.achievements.ready", "¡Listo!")
+                  : `${featuredPct}%`}
               </span>
             </div>
             <div className={styles.featuredTrack}>
@@ -129,13 +143,17 @@ export const UpcomingAchievementsWidget: React.FC<WidgetProps> = () => {
               disabled={isClaimingId === featured.id}
               onClick={(e) => handleClaim(e, featured)}
             >
-              {isClaimingId === featured.id ? "..." : "Reclamar"}
+              {isClaimingId === featured.id
+                ? "..."
+                : t("widgets:items.achievements.claim", "Reclamar")}
             </button>
           )}
         </div>
       ) : (
         <div className={styles.featuredCard}>
-          <span className={styles.featuredTitle}>Completando tareas...</span>
+          <span className={styles.featuredTitle}>
+            {t("widgets:items.achievements.inProgress", "Completando tareas...")}
+          </span>
         </div>
       )}
 
@@ -169,7 +187,9 @@ export const UpcomingAchievementsWidget: React.FC<WidgetProps> = () => {
                     disabled={isClaimingId === item.id}
                     onClick={(e) => handleClaim(e, item)}
                   >
-                    {isClaimingId === item.id ? "..." : "Reclamar"}
+                    {isClaimingId === item.id
+                      ? "..."
+                      : t("widgets:items.achievements.claim", "Reclamar")}
                   </button>
                 ) : (
                   <div className={styles.compactRewardTag}>

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./OfflinePlaceholder.module.css";
 
 interface Props {
@@ -28,16 +29,28 @@ const WifiOffIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export const OfflinePlaceholder = ({ widgetName, reason }: Props) => {
+  const { t } = useTranslation(["widgets"]);
+
   return (
     <div className={styles.placeholder}>
       <div className={styles.iconWrapper}>
         <WifiOffIcon className={styles.icon} />
       </div>
-      <h3 className={styles.title}>Sin conexión a internet</h3>
+      <h3 className={styles.title}>
+        {t("widgets:offlinePlaceholder.title", "Sin conexión a internet")}
+      </h3>
       <p className={styles.text}>
-        {reason || (widgetName
-          ? `Este widget requiere conexión para sincronizar ${widgetName.toLowerCase()}.`
-          : "Este widget requiere conexión a internet para funcionar.")}
+        {reason ||
+          (widgetName
+            ? t(
+                "widgets:offlinePlaceholder.syncReason",
+                "Este widget requiere conexión para sincronizar {{name}}.",
+                { name: widgetName.toLowerCase() },
+              )
+            : t(
+                "widgets:offlinePlaceholder.genericReason",
+                "Este widget requiere conexión a internet para funcionar.",
+              ))}
       </p>
     </div>
   );

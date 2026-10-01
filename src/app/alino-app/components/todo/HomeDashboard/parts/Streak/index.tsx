@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useStreak, DayHistory } from "@/hooks/dashboard/useStreak";
 import { useWidgetPreview } from "@/context/WidgetPreviewContext";
 import {
@@ -12,6 +13,7 @@ import { WeekHistory } from "@/app/alino-app/components/streak-section/WeekHisto
 import { StreakPreview } from "./StreakPreview";
 
 export const StreakWidget = () => {
+  const { t } = useTranslation(["widgets"]);
   const { streak, isLoading, fetchStreak } = useStreak();
   const isPreview = useWidgetPreview();
 
@@ -84,7 +86,9 @@ export const StreakWidget = () => {
         <div className={styles.countWrapper}>
           <span className={styles.currentStreak}>{currentStreak}</span>
           <span className={styles.streakLabel}>
-            {currentStreak === 1 ? "DÍA" : "DÍAS"}
+            {currentStreak === 1
+              ? t("widgets:items.streak.day", "DÍA")
+              : t("widgets:items.streak.days", "DÍAS")}
           </span>
         </div>
       </div>

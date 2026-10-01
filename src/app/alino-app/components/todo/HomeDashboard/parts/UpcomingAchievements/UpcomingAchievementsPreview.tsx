@@ -1,16 +1,27 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { LevelBadge } from "@/config/levelBadges";
 import { AchievementIllustration } from "@/config/achievementIcons";
 import { AlinoCoinIcon } from "@/components/ui/alino-coins-icon";
 import styles from "./UpcomingAchievements.module.css";
 
 export const UpcomingAchievementsPreview = (_props?: unknown) => {
+  const { t, i18n } = useTranslation(["widgets"]);
+  const isEn = (i18n.language || "es").startsWith("en");
+
   return (
     <div className={styles.container}>
       <div className={styles.headerRow}>
         <div className={styles.headerTitleGroup}>
-          <span className={styles.title}>Logros</span>
-          <span className={styles.unclaimedBadge}>1 listo</span>
+          <span className={styles.title}>
+            {t("widgets:items.achievements.title", "Logros")}
+          </span>
+          <span className={styles.unclaimedBadge}>
+            {t("widgets:items.achievements.readyBadge_one", {
+              count: 1,
+              defaultValue: "1 listo",
+            })}
+          </span>
         </div>
         <LevelBadge level={3} size={22} showLevelNumber={false} />
       </div>
@@ -21,7 +32,9 @@ export const UpcomingAchievementsPreview = (_props?: unknown) => {
         </div>
         <div className={styles.featuredInfo}>
           <div className={styles.featuredTitleRow}>
-            <span className={styles.featuredTitle}>En Movimiento</span>
+            <span className={styles.featuredTitle}>
+              {isEn ? "On the Move" : "En Movimiento"}
+            </span>
             <span className={styles.featuredPercent}>100%</span>
           </div>
           <div className={styles.featuredTrack}>
@@ -32,7 +45,7 @@ export const UpcomingAchievementsPreview = (_props?: unknown) => {
           </div>
         </div>
         <button type="button" className={styles.claimBtnSmall}>
-          Reclamar
+          {t("widgets:items.achievements.claim", "Reclamar")}
         </button>
       </div>
 
@@ -40,7 +53,9 @@ export const UpcomingAchievementsPreview = (_props?: unknown) => {
         <div className={styles.compactItem}>
           <div className={styles.compactLeft}>
             <AchievementIllustration code="first_task" size={16} />
-            <span className={styles.compactTitle}>Primer Paso</span>
+            <span className={styles.compactTitle}>
+              {isEn ? "First Step" : "Primer Paso"}
+            </span>
           </div>
           <div className={styles.compactRight}>
             <div className={styles.compactMiniTrack}>
@@ -59,7 +74,9 @@ export const UpcomingAchievementsPreview = (_props?: unknown) => {
         <div className={styles.compactItem}>
           <div className={styles.compactLeft}>
             <AchievementIllustration code="tasks_10" size={16} />
-            <span className={styles.compactTitle}>Enfoque Total</span>
+            <span className={styles.compactTitle}>
+              {isEn ? "Deep Focus" : "Enfoque Total"}
+            </span>
           </div>
           <div className={styles.compactRight}>
             <div className={styles.compactMiniTrack}>

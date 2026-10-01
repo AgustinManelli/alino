@@ -1,10 +1,15 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { IAStars } from "@/components/ui/icons/icons";
 import styles from "./AIAssistantWidget.module.css";
 
 export const AIAssistantWidgetPreview = () => {
-  const prompt = "Organiza mi semana de estudio para los finales...";
+  const { t } = useTranslation(["widgets"]);
+  const prompt = t(
+    "widgets:items.ai-planner.previewPrompt",
+    "Organiza mi semana de estudio para los finales...",
+  );
   const currentLength = prompt.length;
   const maxLength = 2000;
 
@@ -23,7 +28,7 @@ export const AIAssistantWidgetPreview = () => {
             </span>
             <button className={styles.submitBtn} disabled>
               <IAStars style={{ width: 15, height: 15, strokeWidth: 2 }} />
-              Generar
+              {t("widgets:items.ai-planner.generate", "Generar")}
             </button>
           </div>
         </div>

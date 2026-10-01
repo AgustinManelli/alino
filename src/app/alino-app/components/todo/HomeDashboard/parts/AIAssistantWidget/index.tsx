@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useAITaskGeneration } from "@/hooks/useAITaskGeneration";
 import { IAStars } from "@/components/ui/icons/icons";
 import { motion, AnimatePresence } from "motion/react";
@@ -13,10 +14,11 @@ import { useModalStore } from "@/store/useModalStore";
 import { hasAIFeatureAccess } from "@/lib/ai/permissions";
 
 export default function AIAssistantWidget() {
+  const { t } = useTranslation(["widgets"]);
   const isPreview = useWidgetPreview();
   const [prompt, setPrompt] = useState("");
   const [success, setSuccess] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("Tu plan y tareas ya están guardados en tu cuenta.");
+  const [successMsg, setSuccessMsg] = useState("");
   const {
     generateAndCreateList,
     error: aiError,
@@ -91,15 +93,21 @@ export default function AIAssistantWidget() {
                   strokeWidth: 2,
                 }}
               />
-              <h4 className={styles.successTitle}>¡Todo listo!</h4>
+              <h4 className={styles.successTitle}>
+                {t("widgets:items.ai-planner.readyTitle", "¡Todo listo!")}
+              </h4>
               <p className={styles.successDesc}>
-                {successMsg}
+                {successMsg ||
+                  t(
+                    "widgets:items.ai-planner.defaultSuccess",
+                    "Tu plan y tareas ya están guardados en tu cuenta.",
+                  )}
               </p>
               <button
                 className={styles.resetBtn}
                 onClick={() => setSuccess(false)}
               >
-                Planificar más
+                {t("widgets:items.ai-planner.planMore", "Planificar más")}
               </button>
             </motion.div>
           ) : isProcessing ? (
@@ -116,7 +124,12 @@ export default function AIAssistantWidget() {
                 duration={2}
                 title="Cargando IA"
               />
-              <span className={styles.loadingDots}>Diseñando y organizando estructura...</span>
+              <span className={styles.loadingDots}>
+                {t(
+                  "widgets:items.ai-planner.loadingDots",
+                  "Diseñando y organizando estructura...",
+                )}
+              </span>
             </motion.div>
           ) : (
             <motion.div
@@ -130,13 +143,21 @@ export default function AIAssistantWidget() {
                 <div className={styles.errorState}>
                   {!canGenerateTasks ? (
                     <div className={styles.upgradeNotice}>
-                      <span>Función exclusiva para usuarios Pro y Ultra.</span>
+                      <span>
+                        {t(
+                          "widgets:items.ai-planner.upgradeNotice",
+                          "Función exclusiva para usuarios Pro y Ultra.",
+                        )}
+                      </span>
                       <button
                         type="button"
                         className={styles.upgradeNoticeBtn}
                         onClick={() => openModal({ type: "premium" })}
                       >
-                        Mejorar plan
+                        {t(
+                          "widgets:items.ai-planner.upgradeBtn",
+                          "Mejorar plan",
+                        )}
                       </button>
                     </div>
                   ) : (
@@ -146,7 +167,10 @@ export default function AIAssistantWidget() {
               )}
               <textarea
                 className={styles.textarea}
-                placeholder="Ej. Organiza mi mes: tengo 2 exámenes de la facultad y una mudanza..."
+                placeholder={t(
+                  "widgets:items.ai-planner.placeholder",
+                  "Ej. Organiza mi mes: tengo 2 exámenes de la facultad y una mudanza...",
+                )}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 maxLength={maxLength}
@@ -162,7 +186,7 @@ export default function AIAssistantWidget() {
                   onClick={handleGenerateList}
                 >
                   <IAStars style={{ width: 15, height: 15, strokeWidth: 2 }} />
-                  Generar
+                  {t("widgets:items.ai-planner.generate", "Generar")}
                 </button>
               </div>
             </motion.div>

@@ -1,294 +1,548 @@
 .manager {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
+  width: 100%;
 }
 
 .managerHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  padding: 18px 20px;
+  padding: 16px 20px;
   border: 1px solid var(--border-container-color);
-  border-radius: 20px;
-  background: var(--background-over-container);
+  border-radius: 16px;
+  background-color: var(--background-over-container);
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-.sectionContainer {
+.managerHeaderLeft {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
 }
 
 .sectionTitle {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.01em;
 }
 
-.sectionContent {
-  background-color: var(--background-container);
-  border-radius: 20px;
-  border: 1px solid var(--border-container-color);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    0 1px 2px rgba(0, 0, 0, 0.02);
-  overflow: hidden;
+.sectionDescription {
+  margin: 0;
+  font-size: 12px;
+  color: var(--placeholder-text-color);
+  line-height: 1.4;
 }
 
-.widgetWrapper {
+.btnCreate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid var(--alino-primary-color);
+  background-color: var(--alino-primary-color);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.btnCreate:hover {
+  filter: brightness(1.08);
+}
+
+.btnCreateDisabled {
+  background-color: var(--background-over-container);
+  border-color: var(--border-container-color);
+  color: var(--placeholder-text-color);
+  cursor: not-allowed;
+  filter: none;
+}
+
+.limitWarning {
+  margin: 0;
+  font-size: 12px;
+  color: rgb(255, 180, 50);
+  padding: 8px 12px;
+  border-radius: 10px;
+  background-color: rgba(255, 180, 50, 0.08);
+  border: 1px solid rgba(255, 180, 50, 0.2);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.customWidgetCard {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 20px;
+  padding: 18px;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  height: 240px;
+  min-width: 0;
 }
 
-.sectionElement {
+.customWidgetCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.customWidgetCardInstalled {
+  border-color: rgba(106, 195, 255, 0.4);
+}
+
+.cardHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px;
-  gap: 12px;
-}
-
-.configElementSeparator {
+  gap: 8px;
   width: 100%;
-  height: 1px;
-  background-color: var(--border-container-color, rgba(255, 255, 255, 0.06));
-}
-
-.widgetInfo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  overflow: hidden;
+  min-height: 24px;
 }
 
 .widgetTitle {
   font-size: 14px;
   font-weight: 700;
   color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
-.dotActive {
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background-color: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  color: var(--placeholder-text-color);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.statusBadgeActive {
+  background-color: rgba(106, 195, 255, 0.12);
+  border-color: rgba(106, 195, 255, 0.3);
+  color: var(--alino-secondary-color);
+}
+
+.statusDot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: rgb(106, 195, 255);
+  background-color: var(--alino-secondary-color);
 }
 
-.widgetUrl {
-  font-size: 11px;
-  color: var(--text-not-available);
-  opacity: 0.6;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.widgetActions {
+.cardCenter {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding: 10px 0;
+}
+
+.browserMockup {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 12px 14px;
   gap: 8px;
 }
 
-.installBtn {
-  min-width: 82px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  background: var(--alino-primary-color);
-  border: 1px solid var(--alino-primary-color);
-  color: white;
-  cursor: pointer;
-  transition: all 0.15s;
+.browserHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.isInstalled {
-  background: var(--background-over-container);
-  border-color: var(--border-container-color);
-  color: var(--text);
+.browserDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--border-container-color);
+}
+
+.browserUrlBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  border-radius: 8px;
+  padding: 6px 10px;
+  min-width: 0;
+}
+
+.browserDomain {
+  font-size: 11.5px;
+  color: var(--placeholder-text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: monospace;
+}
+
+.openLinkBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--placeholder-text-color);
+  text-decoration: none;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.openLinkBtn:hover {
+  color: var(--alino-secondary-color);
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  border-top: 1px solid var(--border-container-color);
+  padding-top: 12px;
+}
+
+.cardActionsLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
   border-radius: 8px;
   border: 1px solid var(--border-container-color);
-  background: var(--background-over-container);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-not-available);
+  background-color: var(--background-over-container);
+  color: var(--placeholder-text-color);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
 }
 
 .iconBtn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--background-over-container-hover);
   color: var(--text);
+  border-color: var(--alino-secondary-color);
 }
 
-.btnDanger:hover {
-  background: rgba(255, 80, 80, 0.1);
-  border-color: rgba(255, 80, 80, 0.3);
-  color: rgb(255, 100, 100);
+.iconBtnDanger:hover {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+  background-color: rgba(239, 68, 68, 0.08);
 }
 
-.formContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  padding: 4px 0;
-}
-
-.formContainer .sectionContainer {
-  padding: 22px;
-  border: 1px solid var(--border-container-color);
-  border-radius: 20px;
-  background: var(--background-container);
-}
-
-.inputGroup {
-  padding: 14px;
-  border: 1px solid var(--border-container-color);
-  border-radius: 12px;
-  background: var(--background-over-container);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.label {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--text-not-available);
-  opacity: 0.5;
-  letter-spacing: 0.08em;
-}
-
-.input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--text);
-  font-size: 15px;
-  font-weight: 500;
-  outline: none;
-  padding: 4px 0;
-}
-
-.input:focus {
-  outline: none;
-}
-
-.input::placeholder {
-  color: var(--text-not-available);
-  opacity: 0.3;
-}
-
-.sectionDescription {
-  font-size: 11px;
-  color: var(--text-not-available);
-  opacity: 0.6;
-  padding: 0;
-  line-height: 1.4;
-}
-
-.formActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.btnPrimary {
-  padding: 11px 24px;
-  border-radius: 10px;
-  background: var(--alino-primary-color);
-  border: 1px solid var(--alino-primary-color);
-  color: white;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.btnSecondary {
-  padding: 11px 20px;
-  border-radius: 10px;
-  background: var(--background-over-container);
-  border: 1px solid var(--border-container-color);
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btnCreate {
-  padding: 9px 14px;
-  border-radius: 10px;
-  background: var(--alino-primary-color);
-  border: 1px solid var(--alino-primary-color);
-  color: white;
+.installBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
+  background-color: var(--alino-primary-color);
+  border: 1px solid var(--alino-primary-color);
+  color: #ffffff;
+  transition: all 0.15s ease;
+}
+
+.installBtn:hover {
+  filter: brightness(1.08);
+}
+
+.installBtnRemove {
+  background-color: var(--background-over-container);
+  border-color: var(--border-container-color);
+  color: var(--text);
+}
+
+.installBtnRemove:hover {
+  background-color: var(--background-over-container-hover);
+  border-color: var(--border-container-color);
 }
 
 .emptyState {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 12px;
   padding: 56px 20px;
   text-align: center;
-  color: var(--text-not-available);
-  opacity: 0.7;
+  background-color: var(--background-over-container);
+  border: 1px dashed var(--border-container-color);
+  border-radius: 20px;
 }
 
-.emptySubtext {
+.emptyIconWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--background-container);
+  border: 1px solid var(--border-container-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--placeholder-text-color);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.emptyDesc {
+  margin: 0;
   font-size: 12px;
-  opacity: 0.6;
+  color: var(--placeholder-text-color);
+  max-width: 380px;
+  line-height: 1.45;
 }
 
-@media (max-width: 640px) {
+.modalHeaderBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modalLogo {
+  height: 20px;
+  width: auto;
+  display: flex;
+  align-items: center;
+}
+
+.modalSeparator {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-container-color);
+}
+
+.modalTag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--placeholder-text-color);
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.modalFormHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modalFormTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.modalFormSubtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--placeholder-text-color);
+  line-height: 1.45;
+}
+
+.modalFormFields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inputLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--placeholder-text-color);
+}
+
+.inputContainer {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background-color: var(--background-over-container);
+  border: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.inputContainer:focus-within {
+  border-color: var(--alino-primary-color);
+}
+
+.inputField {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+}
+
+.inputField::placeholder {
+  color: var(--placeholder-text-color);
+}
+
+.infoBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background-color: var(--background-over-container);
+  border: 1px solid var(--border-container-color);
+}
+
+.infoIcon {
+  color: var(--placeholder-text-color);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.infoText {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--placeholder-text-color);
+  line-height: 1.45;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-container-color);
+  box-sizing: border-box;
+}
+
+.btnCancel {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border-container-color);
+  background-color: var(--background-over-container);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnCancel:hover {
+  background-color: var(--background-over-container-hover);
+  color: var(--text);
+}
+
+.btnSubmit {
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid var(--alino-primary-color);
+  background-color: var(--alino-primary-color);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnSubmit:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.btnSubmit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
   .managerHeader {
-    align-items: flex-start;
     flex-direction: column;
-    gap: 14px;
+    align-items: stretch;
   }
 
   .btnCreate {
     width: 100%;
   }
 
-  .sectionElement {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .widgetActions {
-    width: 100%;
-  }
-
-  .installBtn {
-    flex: 1;
-  }
-
-  .formActions {
-    flex-direction: column-reverse;
-  }
-
-  .btnPrimary,
-  .btnSecondary {
-    width: 100%;
+  .customWidgetCard {
+    height: auto;
+    gap: 14px;
   }
 }

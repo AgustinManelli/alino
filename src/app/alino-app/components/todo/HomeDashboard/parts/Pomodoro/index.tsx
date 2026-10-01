@@ -1,7 +1,8 @@
 "use client";
 
 import { memo, useCallback, useMemo, useState } from "react";
-import { stopAlarmSound, usePomodoroStore } from "@/store/usePomodoroStore";
+import { useTranslation } from "react-i18next";
+import { stopAlarmSound, usePomodoroStore, PomodoroMode } from "@/store/usePomodoroStore";
 import { ConfigIcon, PlayIcon, StopIcon } from "@/components/ui/icons/icons";
 import { WindowModal } from "@/components/ui/WindowModal";
 import { PomodoroConfig } from "./PomodoroConfig";
@@ -12,6 +13,7 @@ import { PomodoroPreview } from "./PomodoroPreview";
 import styles from "./Pomodoro.module.css";
 
 export const Pomodoro = memo(() => {
+  const { t } = useTranslation(["widgets"]);
   const [options, setOptions] = useState<boolean>(false);
   const isPreview = useWidgetPreview();
 
@@ -45,11 +47,11 @@ export const Pomodoro = memo(() => {
 
   const tabOptions: TabOption[] = useMemo(
     () => [
-      { id: "work", label: "Pomodoro" },
-      { id: "shortBreak", label: "Corto" },
-      { id: "longBreak", label: "Largo" },
+      { id: "work", label: t("widgets:items.pomodoro.modes.work", "Pomodoro") },
+      { id: "shortBreak", label: t("widgets:items.pomodoro.modes.shortBreak", "Corto") },
+      { id: "longBreak", label: t("widgets:items.pomodoro.modes.longBreak", "Largo") },
     ],
-    [],
+    [t],
   );
 
   if (isPreview) {
@@ -62,7 +64,7 @@ export const Pomodoro = memo(() => {
         <WindowModal
           closeAction={handleCloseOptions}
           crossButton={true}
-          title="Configuración de pomodoro"
+          title={t("widgets:items.pomodoro.configTitle", "Configuración de pomodoro")}
         >
           <PomodoroConfig />
         </WindowModal>
@@ -76,7 +78,7 @@ export const Pomodoro = memo(() => {
           <Tabs
             options={tabOptions}
             activeTab={mode}
-            onChange={(id) => switchMode(id as any)}
+            onChange={(id) => switchMode(id as PomodoroMode)}
             className={styles.tabs}
             layoutId="pomodoro-tabs"
           />
@@ -88,15 +90,19 @@ export const Pomodoro = memo(() => {
           </div>
 
           <div className={styles.statsInfo}>
-            <span>Ciclos: {cycles}</span>
+            <span>
+              {t("widgets:items.pomodoro.cycles", "Ciclos: {{count}}", {
+                count: cycles,
+              })}
+            </span>
             <div className={styles.actions}>
               <span className={styles.resetButton} onClick={resetTimer}>
-                Reiniciar
+                {t("widgets:items.pomodoro.reset", "Reiniciar")}
               </span>
               <button
                 className={styles.configButton}
                 onClick={handleOpenOptions}
-                title="Configurar"
+                title={t("widgets:items.pomodoro.settings", "Configurar")}
               >
                 <ConfigIcon style={{ width: "16px" }} />
               </button>
@@ -113,7 +119,11 @@ export const Pomodoro = memo(() => {
             <button
               className={styles.playPauseBtn}
               onClick={toggleTimer}
-              aria-label={isRunning ? "Pausar" : "Iniciar"}
+              aria-label={
+                isRunning
+                  ? t("widgets:items.pomodoro.pause", "Pausar")
+                  : t("widgets:items.pomodoro.start", "Iniciar")
+              }
             >
               {isRunning ? <StopIcon /> : <PlayIcon />}
             </button>

@@ -49,7 +49,6 @@ interface Props {
 }
 
 type TabType = "coins" | "ai_credits" | "cosmetics";
-type CategoryType = "all" | "frame" | "overlay";
 
 interface ShopSection {
   id: TabType;
@@ -73,6 +72,18 @@ interface DisplayPack {
   rawCoinPack?: CoinPack;
   rawAIPack?: AICreditPack;
 }
+
+interface FilterOption {
+  id: string;
+  label: string;
+}
+
+const RARITY_CLASS: Record<string, string> = {
+  common: styles.rarity_common,
+  rare: styles.rarity_rare,
+  epic: styles.rarity_epic,
+  legendary: styles.rarity_legendary,
+};
 
 interface AnimatedSectionContentProps {
   children: React.ReactNode;
@@ -117,6 +128,369 @@ const AnimatedSectionContent: React.FC<AnimatedSectionContentProps> = ({
   );
 };
 
+interface FilterScrollerProps {
+  options: FilterOption[];
+  value: string;
+  onChange: (id: string) => void;
+  ariaLabel: string;
+  smooth: boolean;
+}
+
+const FilterScroller: React.FC<FilterScrollerProps> = ({
+  options,
+  value,
+  onChange,
+  ariaLabel,
+  smooth,
+}) => {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ start: false, end: false });
+
+  const updateEdges = useCallback(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const start = scroller.scrollLeft > 2;
+    const end =
+      scroller.scrollLeft + scroller.clientWidth < scroller.scrollWidth - 2;
+    setEdges((prev) =>
+      prev.start === start && prev.end === end ? prev : { start, end },
+    );
+  }, []);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    const track = trackRef.current;
+    if (!scroller || !track) return;
+
+    updateEdges();
+    scroller.addEventListener("scroll", updateEdges, { passive: true });
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", updateEdges);
+      return () => {
+        scroller.removeEventListener("scroll", updateEdges);
+        window.removeEventListener("resize", updateEdges);
+      };
+    }
+
+    const observer = new ResizeObserver(updateEdges);
+    observer.observe(scroller);
+    observer.observe(track);
+    return () => {
+      scroller.removeEventListener("scroll", updateEdges);
+      observer.disconnect();
+    };
+  }, [updateEdges, options]);
+
+  const handleSelect = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    id: string,
+  ) => {
+    onChange(id);
+    event.currentTarget.scrollIntoView({
+      behavior: smooth ? "smooth" : "auto",
+      inline: "center",
+      block: "nearest",
+    });
+  };
+
+  return (
+    <div
+      className={styles.scrollerWrap}
+      data-start={edges.start}
+      data-end={edges.end}
+    >
+      <div ref={scrollerRef} className={styles.scroller}>
+        <div
+          ref={trackRef}
+          role="group"
+          aria-label={ariaLabel}
+          className={styles.chipsTrack}
+        >
+          {options.map((option) => {
+            const isActive = value === option.id;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={isActive}
+                className={`${styles.filterChip} ${
+                  isActive ? styles.filterChipActive : ""
+                }`}
+                onClick={(event) => handleSelect(event, option.id)}
+              >
+                <span>{option.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface PackCardProps {
+  pack: DisplayPack;
+  kind: "coins" | "ai_credits";
+  isBuying: boolean;
+  onSelect: (pack: DisplayPack) => void;
+}
+
+const PackCard: React.FC<PackCardProps> = ({
+  pack,
+  kind,
+  isBuying,
+  onSelect,
+}) => {
+  const { t } = useTranslation(["shop", "common"]);
+  const isCoins = kind === "coins";
+
+  const buttonLabel = isBuying
+    ? t("common:loading", { defaultValue: "Cargando..." })
+    : !pack.isAvailable
+      ? t("common:comingSoon", { defaultValue: "Próximamente" })
+      : t("shop:cards.selectPack", { defaultValue: "Elegir pack" });
+
+  return (
+    <article
+      className={`${styles.card} ${pack.isPopular ? styles.cardPopular : ""}`}
+    >
+      <header className={styles.cardHeader}>
+        <h3 className={styles.cardTitle}>{pack.name}</h3>
+        {pack.tag && (
+          <span
+            className={pack.isPopular ? styles.badgePopular : styles.badgeValue}
+          >
+            {pack.tag}
+          </span>
+        )}
+      </header>
+
+      <div className={styles.cardBody}>
+        <div className={styles.iconWrapper}>
+          {isCoins ? (
+            <AlinoCoinIcon amount={pack.amount} size={64} animated={false} />
+          ) : (
+            <div className={styles.aiTokenVisual}>
+              <IAStars
+                style={{
+                  width: 28,
+                  height: 28,
+                  stroke: "rgb(106, 195, 255)",
+                  strokeWidth: 2,
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        <span className={styles.amountNumber}>{pack.amount}</span>
+        <span className={styles.unitLabel}>
+          {isCoins
+            ? t("shop:cards.coinsUnit", { defaultValue: "monedas" })
+            : t("shop:cards.tokensUnit", { defaultValue: "tokens IA" })}
+        </span>
+
+        {pack.bonusAmount ? (
+          <div className={styles.bonusTag}>
+            <IAStars
+              style={{
+                width: 12,
+                height: 12,
+                stroke: "currentColor",
+                strokeWidth: 2,
+              }}
+            />
+            <span>
+              {t("shop:cards.giftBonus", {
+                amount: pack.bonusAmount,
+                defaultValue: `+${pack.bonusAmount} de regalo`,
+              })}
+            </span>
+          </div>
+        ) : null}
+      </div>
+
+      <footer className={styles.cardFooter}>
+        <div className={styles.cardPrice}>
+          {isCoins ? (
+            pack.priceFormatted
+          ) : (
+            <>
+              <AlinoCoinIcon amount={pack.coinsPrice ?? 0} size={18} />
+              <span>{pack.coinsPrice}</span>
+            </>
+          )}
+        </div>
+
+        <button
+          type="button"
+          disabled={isBuying || !pack.isAvailable}
+          className={`${styles.chooseButton} ${
+            pack.isPopular ? styles.chooseButtonPopular : ""
+          }`}
+          onClick={() => onSelect(pack)}
+        >
+          <span>{buttonLabel}</span>
+          <ArrowLeft className={styles.arrowRightIcon} />
+        </button>
+      </footer>
+    </article>
+  );
+};
+
+interface CosmeticCardProps {
+  item: CosmeticItem;
+  isBuying: boolean;
+  canAfford: boolean;
+  avatarUrl?: string | null;
+  username?: string | undefined;
+  onBuy: (item: CosmeticItem) => void;
+}
+
+const CosmeticCard: React.FC<CosmeticCardProps> = ({
+  item,
+  isBuying,
+  canAfford,
+  avatarUrl,
+  username,
+  onBuy,
+}) => {
+  const { t } = useTranslation(["shop", "common"]);
+  const trans = getCosmeticTranslation(item);
+  const isOwned = item.is_unlocked === true;
+  const isUnavailable =
+    item.status === "coming_soon" ||
+    item.status === "paused" ||
+    item.status === "retired";
+
+  let label: string;
+  if (item.status === "coming_soon") {
+    label = t("shop:cosmetics.comingSoon", { defaultValue: "Próximamente" });
+  } else if (item.status === "paused" || item.status === "retired") {
+    label = t("shop:cosmetics.unavailable", { defaultValue: "No disponible" });
+  } else if (isOwned) {
+    label = t("shop:cosmetics.owned", { defaultValue: "En inventario" });
+  } else if (isBuying) {
+    label = t("shop:cosmetics.purchasing", { defaultValue: "Comprando..." });
+  } else {
+    label = t("shop:cosmetics.buy", { defaultValue: "Comprar" });
+  }
+
+  const isLocked = !isOwned && !isUnavailable && !canAfford;
+
+  return (
+    <article className={styles.card}>
+      <header className={styles.cardHeader}>
+        <h3 className={styles.cardTitle}>{trans.name}</h3>
+        <span
+          className={`${styles.badgeValue} ${
+            RARITY_CLASS[item.rarity] ?? styles.rarity_common
+          }`}
+        >
+          {t(`shop:gallery.rarity.${item.rarity}`, {
+            defaultValue: item.rarity,
+          })}
+        </span>
+      </header>
+
+      <div className={styles.cardBody}>
+        <div className={styles.cosmeticPreview}>
+          <UserAvatar
+            avatarUrl={avatarUrl}
+            username={username}
+            size={56}
+            animate="hover"
+            equippedFrameId={item.type === "frame" ? item.code : null}
+            equippedFrame={item.type === "frame" ? item : null}
+            equippedOverlayId={item.type === "overlay" ? item.code : null}
+            equippedOverlay={item.type === "overlay" ? item : null}
+          />
+        </div>
+        <p className={styles.cardDesc}>{trans.description}</p>
+      </div>
+
+      <footer className={styles.cardFooter}>
+        <div className={styles.cardPrice}>
+          <AlinoCoinIcon amount={item.coins_price} size={18} />
+          <span>{item.coins_price}</span>
+        </div>
+
+        <button
+          type="button"
+          disabled={isOwned || isBuying || isUnavailable}
+          className={`${styles.chooseButton} ${
+            isLocked ? styles.chooseButtonLocked : ""
+          }`}
+          onClick={() => onBuy(item)}
+        >
+          <span>{label}</span>
+          {!isOwned && !isUnavailable && (
+            <ArrowLeft className={styles.arrowRightIcon} />
+          )}
+        </button>
+      </footer>
+    </article>
+  );
+};
+
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onChange: (page: number) => void;
+}
+
+const Pagination: React.FC<PaginationProps> = ({
+  currentPage,
+  totalPages,
+  onChange,
+}) => {
+  const { t } = useTranslation(["shop"]);
+
+  return (
+    <footer className={styles.paginationBar}>
+      <span className={styles.paginationInfo}>
+        {t("shop:gallery.pagination.page", {
+          current: currentPage,
+          total: totalPages,
+          defaultValue: `Página ${currentPage} de ${totalPages}`,
+        })}
+      </span>
+      <div className={styles.paginationButtons}>
+        <button
+          type="button"
+          className={styles.paginationBtn}
+          disabled={currentPage <= 1}
+          onClick={() => onChange(Math.max(1, currentPage - 1))}
+        >
+          <ArrowLeft style={{ width: 14, height: 14 }} />
+          <span>
+            {t("shop:gallery.pagination.prev", { defaultValue: "Anterior" })}
+          </span>
+        </button>
+        <button
+          type="button"
+          className={styles.paginationBtn}
+          disabled={currentPage >= totalPages}
+          onClick={() => onChange(Math.min(totalPages, currentPage + 1))}
+        >
+          <span>
+            {t("shop:gallery.pagination.next", { defaultValue: "Siguiente" })}
+          </span>
+          <ArrowLeft
+            style={{
+              width: 14,
+              height: 14,
+              transform: "rotate(180deg)",
+            }}
+          />
+        </button>
+      </div>
+    </footer>
+  );
+};
+
 export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const { t, i18n } = useTranslation(["shop", "common"]);
   const {
@@ -145,7 +519,10 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [purchasingCosmeticId, setPurchasingCosmeticId] = useState<
     string | null
   >(null);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryType>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>(
+    {},
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -258,6 +635,9 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
       if (res.data) {
         setCosmetics(res.data.cosmetics);
         setTotalPages(res.data.total_pages);
+        if (res.data.category_counts) {
+          setCategoryCounts(res.data.category_counts);
+        }
       } else {
         setCosmeticsError(
           res.error ??
@@ -445,58 +825,145 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
       (activeBanner.link_url || activeBanner.action_type !== "none"),
   );
 
-  const handleCategoryChange = (cat: CategoryType) => {
+  const handleCategoryChange = useCallback((cat: string) => {
     setSelectedCategory(cat);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const rarityClass = (rarity: string): string => {
-    const map: Record<string, string> = {
-      common: styles.rarity_common,
-      rare: styles.rarity_rare,
-      epic: styles.rarity_epic,
-      legendary: styles.rarity_legendary,
-    };
-    return map[rarity] ?? styles.rarity_common;
-  };
-
-  const getCosmeticActionLabel = (item: CosmeticItem, isBuying: boolean) => {
-    if (item.status === "coming_soon") {
-      return t("shop:cosmetics.comingSoon", { defaultValue: "Próximamente" });
+  const dynamicCategories = useMemo(() => {
+    const keys = Object.keys(categoryCounts);
+    if (keys.length === 0) {
+      const fromItems = Array.from(
+        new Set(cosmetics.map((c) => c.type).filter(Boolean)),
+      );
+      if (fromItems.length > 0) return ["all", ...fromItems.sort()];
+      return ["all"];
     }
-    if (item.status === "paused" || item.status === "retired") {
-      return t("shop:cosmetics.unavailable", {
-        defaultValue: "No disponible",
+    const others = keys.filter((k) => k !== "all").sort();
+    return ["all", ...others];
+  }, [categoryCounts, cosmetics]);
+
+  const formatCategoryLabel = useCallback(
+    (cat: string) => {
+      if (cat === "all") {
+        return t("shop:gallery.categories.all", { defaultValue: "Todos" });
+      }
+      return t(`shop:gallery.categories.${cat}`, {
+        defaultValue: cat
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase()),
       });
+    },
+    [t],
+  );
+
+  const categoryOptions = useMemo<FilterOption[]>(
+    () =>
+      dynamicCategories.map((id) => ({ id, label: formatCategoryLabel(id) })),
+    [dynamicCategories, formatCategoryLabel],
+  );
+
+  const searchPlaceholder = t("shop:gallery.searchPlaceholder", {
+    defaultValue: "Buscar por nombre o descripción...",
+  });
+
+  const footerDisclaimer = t("shop:footer.disclaimer", { defaultValue: "" });
+
+  const renderPacksContent = () => {
+    if (isLoading) {
+      return (
+        <div className={styles.loadingState}>
+          <AlinoLogoLoader width={100} className={styles.loadingSpinner} />
+        </div>
+      );
     }
-    if (item.is_unlocked) {
-      return t("shop:cosmetics.owned", { defaultValue: "En inventario" });
+    if (shopError && currentPacks.length === 0) {
+      return (
+        <div className={styles.emptyState}>
+          <p className={styles.emptyText}>{shopError}</p>
+        </div>
+      );
     }
-    if (isBuying) {
-      return t("shop:cosmetics.purchasing", { defaultValue: "Comprando..." });
+    if (currentPacks.length === 0) {
+      return (
+        <div className={styles.emptyState}>
+          <p className={styles.emptyText}>
+            {t("shop:ai_credits.noPacks", {
+              defaultValue: "No hay paquetes disponibles en este momento.",
+            })}
+          </p>
+        </div>
+      );
     }
-    return t("shop:cosmetics.buy", { defaultValue: "Comprar" });
+    return (
+      <div className={styles.cardsGrid}>
+        {currentPacks.map((pack) => (
+          <PackCard
+            key={pack.id}
+            pack={pack}
+            kind={activeTab === "coins" ? "coins" : "ai_credits"}
+            isBuying={purchasingId === pack.id}
+            onSelect={
+              activeTab === "coins" ? handleSelectCoinPack : handleSelectAIPack
+            }
+          />
+        ))}
+      </div>
+    );
   };
 
-  const getCosmeticMobileActionLabel = (
-    item: CosmeticItem,
-    isBuying: boolean,
-  ) => {
-    if (item.status === "coming_soon") {
-      return t("shop:cosmetics.comingSoon", { defaultValue: "Próximamente" });
+  const renderCosmeticsContent = () => {
+    if (isLoadingCosmetics) {
+      return (
+        <div className={styles.loadingState}>
+          <AlinoLogoLoader width={100} className={styles.loadingSpinner} />
+        </div>
+      );
     }
-    if (item.status === "paused" || item.status === "retired") {
-      return t("shop:cosmetics.unavailable", {
-        defaultValue: "No disponible",
-      });
+    if (cosmeticsError) {
+      return (
+        <div className={styles.emptyState}>
+          <p className={styles.emptyText}>{cosmeticsError}</p>
+        </div>
+      );
     }
-    if (item.is_unlocked) {
-      return t("shop:cosmetics.owned", { defaultValue: "En inventario" });
+    if (cosmetics.length === 0) {
+      return (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIconWrap}>
+            <Shirt01Icon
+              style={{
+                width: 24,
+                height: 24,
+                stroke: "currentColor",
+                strokeWidth: 1.5,
+              }}
+            />
+          </div>
+          <p className={styles.emptyText}>
+            {t("shop:gallery.empty", {
+              defaultValue:
+                "No se encontraron cosméticos con los filtros actuales.",
+            })}
+          </p>
+        </div>
+      );
     }
-    if (isBuying) {
-      return t("shop:cosmetics.purchasing", { defaultValue: "Comprando..." });
-    }
-    return t("shop:cosmetics.buy", { defaultValue: "Comprar" });
+    return (
+      <div className={styles.cardsGrid}>
+        {cosmetics.map((item) => (
+          <CosmeticCard
+            key={item.id}
+            item={item}
+            isBuying={purchasingCosmeticId === item.id}
+            canAfford={coins >= item.coins_price}
+            avatarUrl={currentUser?.avatar_url}
+            username={currentUser?.username}
+            onBuy={handleBuyCosmetic}
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -581,7 +1048,9 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
             <div className={styles.bannerImageWrapper}>
               <Image
                 src={activeBanner.image_url}
-                alt="Banner promocional"
+                alt={t("shop:banner.imageAlt", {
+                  defaultValue: "Banner promocional",
+                })}
                 width={180}
                 height={95}
                 className={styles.bannerImage}
@@ -591,7 +1060,12 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
         </section>
 
         <section className={styles.tabsContainer}>
-          <nav className={styles.tabsBar}>
+          <nav
+            className={styles.tabsBar}
+            aria-label={t("shop:navigation", {
+              defaultValue: "Secciones de la tienda",
+            })}
+          >
             {sections.map((section) => (
               <button
                 key={section.id}
@@ -660,330 +1134,55 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.18 }}
                 >
-                  <div className={styles.cosmeticsContainer}>
-                    <div className={styles.cosmeticsToolbar}>
-                      <div className={styles.categoryFilters}>
-                        {(["all", "frame", "overlay"] as CategoryType[]).map(
-                          (cat) => (
-                            <button
-                              key={cat}
-                              type="button"
-                              className={`${styles.categoryFilterBtn} ${
-                                selectedCategory === cat
-                                  ? styles.categoryFilterBtnActive
-                                  : ""
-                              }`}
-                              onClick={() => handleCategoryChange(cat)}
-                            >
-                              {t(`shop:gallery.categories.${cat}`, {
-                                defaultValue:
-                                  cat === "all"
-                                    ? "Todos"
-                                    : cat === "frame"
-                                      ? "Marcos"
-                                      : "Accesorios",
-                              })}
-                            </button>
-                          ),
-                        )}
-                      </div>
-
-                      <div className={styles.searchBox}>
-                        <SearchIcon className={styles.searchIcon} />
-                        <input
-                          type="text"
-                          className={styles.searchInput}
-                          placeholder={t("shop:gallery.searchPlaceholder", {
-                            defaultValue: "Buscar por nombre o descripción...",
+                  <div className={styles.toolbar}>
+                    <div className={styles.searchBox}>
+                      <SearchIcon className={styles.searchIcon} />
+                      <input
+                        type="text"
+                        className={styles.searchInput}
+                        placeholder={searchPlaceholder}
+                        aria-label={searchPlaceholder}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          className={styles.searchClearBtn}
+                          onClick={() => setSearchQuery("")}
+                          aria-label={t("common:clear", {
+                            defaultValue: "Limpiar búsqueda",
                           })}
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        {searchQuery && (
-                          <button
-                            type="button"
-                            className={styles.searchClearBtn}
-                            onClick={() => setSearchQuery("")}
-                            aria-label="Limpiar búsqueda"
-                          >
-                            <Cross style={{ width: 11, height: 11 }} />
-                          </button>
-                        )}
-                      </div>
+                        >
+                          <Cross style={{ width: 11, height: 11 }} />
+                        </button>
+                      )}
                     </div>
 
-                    {isLoadingCosmetics ? (
-                      <div className={styles.loadingState}>
-                        <AlinoLogoLoader
-                          width={100}
-                          className={styles.loadingSpinner}
+                    {categoryOptions.length > 1 && (
+                      <div className={styles.categoryGroup}>
+                        <FilterScroller
+                          options={categoryOptions}
+                          value={selectedCategory}
+                          onChange={handleCategoryChange}
+                          ariaLabel={t("shop:gallery.categoriesLabel", {
+                            defaultValue: "Categoría",
+                          })}
+                          smooth={animations}
                         />
-                      </div>
-                    ) : cosmeticsError ? (
-                      <div className={styles.cosmeticsEmptyState}>
-                        <p className={styles.cosmeticsEmptyText}>
-                          {cosmeticsError}
-                        </p>
-                      </div>
-                    ) : cosmetics.length === 0 ? (
-                      <div className={styles.cosmeticsEmptyState}>
-                        <div className={styles.cosmeticsEmptyIconWrap}>
-                          <Shirt01Icon
-                            style={{
-                              width: 24,
-                              height: 24,
-                              stroke: "currentColor",
-                              strokeWidth: 1.5,
-                            }}
-                          />
-                        </div>
-                        <p className={styles.cosmeticsEmptyText}>
-                          {t("shop:gallery.empty", {
-                            defaultValue:
-                              "No se encontraron cosméticos con los filtros actuales.",
-                          })}
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className={styles.cardsGridDesktop}>
-                          {cosmetics.map((item) => {
-                            const trans = getCosmeticTranslation(item);
-                            const isBuying = purchasingCosmeticId === item.id;
-                            const isOwned = item.is_unlocked === true;
-                            const canAfford = coins >= item.coins_price;
-                            const isUnavailable =
-                              item.status === "coming_soon" ||
-                              item.status === "paused" ||
-                              item.status === "retired";
-
-                            return (
-                              <div key={item.id} className={styles.cardDesktop}>
-                                <div className={styles.cardDesktopHeader}>
-                                  <span className={styles.tierLabel}>
-                                    {trans.name}
-                                  </span>
-                                  <span
-                                    className={`${styles.badgeValue} ${rarityClass(
-                                      item.rarity,
-                                    )}`}
-                                  >
-                                    {t(`shop:gallery.rarity.${item.rarity}`, {
-                                      defaultValue: item.rarity,
-                                    })}
-                                  </span>
-                                </div>
-
-                                <div className={styles.cardDesktopCenter}>
-                                  <div className={styles.cosmeticAvatarPreview}>
-                                    <UserAvatar
-                                      avatarUrl={currentUser?.avatar_url}
-                                      username={currentUser?.username}
-                                      size={56}
-                                      animate="hover"
-                                      equippedFrameId={
-                                        item.type === "frame" ? item.code : null
-                                      }
-                                      equippedFrame={
-                                        item.type === "frame" ? item : null
-                                      }
-                                      equippedOverlayId={
-                                        item.type === "overlay"
-                                          ? item.code
-                                          : null
-                                      }
-                                      equippedOverlay={
-                                        item.type === "overlay" ? item : null
-                                      }
-                                    />
-                                  </div>
-                                  <p className={styles.cosmeticDescription}>
-                                    {trans.description}
-                                  </p>
-                                </div>
-
-                                <div className={styles.cardDesktopFooter}>
-                                  <div className={styles.cardPrice}>
-                                    <AlinoCoinIcon
-                                      amount={item.coins_price}
-                                      size={18}
-                                    />
-                                    <span>{item.coins_price}</span>
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    disabled={
-                                      isOwned ||
-                                      isBuying ||
-                                      !canAfford ||
-                                      isUnavailable
-                                    }
-                                    className={styles.chooseButton}
-                                    onClick={() => handleBuyCosmetic(item)}
-                                  >
-                                    <span>
-                                      {getCosmeticActionLabel(item, isBuying)}
-                                    </span>
-                                    {!isOwned && (
-                                      <ArrowLeft
-                                        className={styles.arrowRightIcon}
-                                      />
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        <div className={styles.cardsStackMobile}>
-                          {cosmetics.map((item) => {
-                            const trans = getCosmeticTranslation(item);
-                            const isBuying = purchasingCosmeticId === item.id;
-                            const isOwned = item.is_unlocked === true;
-                            const canAfford = coins >= item.coins_price;
-                            const isUnavailable =
-                              item.status === "coming_soon" ||
-                              item.status === "paused" ||
-                              item.status === "retired";
-
-                            return (
-                              <div key={item.id} className={styles.cardMobile}>
-                                <div className={styles.cardMobileLeft}>
-                                  <div
-                                    className={
-                                      styles.cosmeticAvatarPreviewSmall
-                                    }
-                                  >
-                                    <UserAvatar
-                                      avatarUrl={currentUser?.avatar_url}
-                                      username={currentUser?.username}
-                                      size={36}
-                                      animate="hover"
-                                      equippedFrameId={
-                                        item.type === "frame" ? item.code : null
-                                      }
-                                      equippedFrame={
-                                        item.type === "frame" ? item : null
-                                      }
-                                      equippedOverlayId={
-                                        item.type === "overlay"
-                                          ? item.code
-                                          : null
-                                      }
-                                      equippedOverlay={
-                                        item.type === "overlay" ? item : null
-                                      }
-                                    />
-                                  </div>
-                                </div>
-
-                                <div className={styles.cardMobileCenter}>
-                                  <div className={styles.cardMobileTierRow}>
-                                    <span className={styles.tierLabel}>
-                                      {trans.name}
-                                    </span>
-                                    <span
-                                      className={`${styles.badgeValue} ${rarityClass(
-                                        item.rarity,
-                                      )}`}
-                                    >
-                                      {t(`shop:gallery.rarity.${item.rarity}`, {
-                                        defaultValue: item.rarity,
-                                      })}
-                                    </span>
-                                  </div>
-                                  <p className={styles.cosmeticMobileDesc}>
-                                    {trans.description}
-                                  </p>
-                                </div>
-
-                                <div className={styles.cardMobileRight}>
-                                  <div className={styles.cardPrice}>
-                                    <AlinoCoinIcon
-                                      amount={item.coins_price}
-                                      size={15}
-                                    />
-                                    <span>{item.coins_price}</span>
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    disabled={
-                                      isOwned ||
-                                      isBuying ||
-                                      !canAfford ||
-                                      isUnavailable
-                                    }
-                                    className={styles.cardMobileChooseBtn}
-                                    onClick={() => handleBuyCosmetic(item)}
-                                  >
-                                    <span>
-                                      {getCosmeticMobileActionLabel(
-                                        item,
-                                        isBuying,
-                                      )}
-                                    </span>
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </>
-                    )}
-
-                    {!isLoadingCosmetics && totalPages > 1 && (
-                      <div className={styles.cosmeticsPagination}>
-                        <span className={styles.paginationInfo}>
-                          {t("shop:gallery.pagination.page", {
-                            current: currentPage,
-                            total: totalPages,
-                            defaultValue: `Página ${currentPage} de ${totalPages}`,
-                          })}
-                        </span>
-                        <div className={styles.paginationButtons}>
-                          <button
-                            type="button"
-                            className={styles.paginationBtn}
-                            disabled={currentPage <= 1}
-                            onClick={() =>
-                              setCurrentPage((p) => Math.max(1, p - 1))
-                            }
-                          >
-                            <ArrowLeft style={{ width: 14, height: 14 }} />
-                            <span>
-                              {t("shop:gallery.pagination.prev", {
-                                defaultValue: "Anterior",
-                              })}
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            className={styles.paginationBtn}
-                            disabled={currentPage >= totalPages}
-                            onClick={() =>
-                              setCurrentPage((p) => Math.min(totalPages, p + 1))
-                            }
-                          >
-                            <span>
-                              {t("shop:gallery.pagination.next", {
-                                defaultValue: "Siguiente",
-                              })}
-                            </span>
-                            <ArrowLeft
-                              style={{
-                                width: 14,
-                                height: 14,
-                                transform: "rotate(180deg)",
-                              }}
-                            />
-                          </button>
-                        </div>
                       </div>
                     )}
                   </div>
+
+                  {renderCosmeticsContent()}
+
+                  {!isLoadingCosmetics && totalPages > 1 && (
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onChange={setCurrentPage}
+                    />
+                  )}
                 </motion.div>
               ) : (
                 <motion.div
@@ -993,329 +1192,7 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.18 }}
                 >
-                  <div className={styles.cardsGridDesktop}>
-                    {isLoading ? (
-                      <div className={styles.loadingStateDesktop}>
-                        <AlinoLogoLoader
-                          width={100}
-                          className={styles.loadingSpinner}
-                        />
-                      </div>
-                    ) : shopError && currentPacks.length === 0 ? (
-                      <div className={styles.emptyState}>
-                        <p className={styles.emptyText}>{shopError}</p>
-                      </div>
-                    ) : currentPacks.length === 0 ? (
-                      <div className={styles.emptyState}>
-                        <p className={styles.emptyText}>
-                          {t("shop:ai_credits.noPacks", {
-                            defaultValue:
-                              "No hay paquetes disponibles en este momento.",
-                          })}
-                        </p>
-                      </div>
-                    ) : (
-                      currentPacks.map((pack) => {
-                        const isBuying = purchasingId === pack.id;
-
-                        return (
-                          <div
-                            key={pack.id}
-                            className={`${styles.cardDesktop} ${
-                              pack.isPopular ? styles.cardDesktopPopular : ""
-                            }`}
-                          >
-                            <div className={styles.cardDesktopHeader}>
-                              <span className={styles.tierLabel}>
-                                {pack.name}
-                              </span>
-                              {pack.tag && (
-                                <span
-                                  className={
-                                    pack.isPopular
-                                      ? styles.badgePopular
-                                      : styles.badgeValue
-                                  }
-                                >
-                                  {pack.tag}
-                                </span>
-                              )}
-                            </div>
-
-                            <div className={styles.cardDesktopCenter}>
-                              <div className={styles.iconWrapper}>
-                                {activeTab === "coins" ? (
-                                  <AlinoCoinIcon
-                                    amount={pack.amount}
-                                    size={64}
-                                    animated={false}
-                                  />
-                                ) : (
-                                  <div
-                                    className={styles.aiTokenVisual}
-                                    style={{
-                                      position: "static",
-                                      width: 62,
-                                      height: 62,
-                                    }}
-                                  >
-                                    <IAStars
-                                      style={{
-                                        width: 28,
-                                        height: 28,
-                                        stroke: "rgb(106, 195, 255)",
-                                        strokeWidth: 2,
-                                      }}
-                                    />
-                                  </div>
-                                )}
-                              </div>
-
-                              <span className={styles.amountNumber}>
-                                {pack.amount}
-                              </span>
-                              <span className={styles.unitLabel}>
-                                {activeTab === "coins"
-                                  ? t("shop:cards.coinsUnit", {
-                                      defaultValue: "monedas",
-                                    })
-                                  : t("shop:cards.tokensUnit", {
-                                      defaultValue: "tokens IA",
-                                    })}
-                              </span>
-
-                              {pack.bonusAmount && (
-                                <div className={styles.bonusTag}>
-                                  <IAStars
-                                    style={{
-                                      width: 12,
-                                      height: 12,
-                                      stroke: "currentColor",
-                                      strokeWidth: 2,
-                                    }}
-                                  />
-                                  <span>
-                                    {t("shop:cards.giftBonus", {
-                                      amount: pack.bonusAmount,
-                                      defaultValue: `+${pack.bonusAmount} de regalo`,
-                                    })}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className={styles.cardDesktopFooter}>
-                              <div className={styles.cardPrice}>
-                                {activeTab === "coins" ? (
-                                  pack.priceFormatted
-                                ) : (
-                                  <>
-                                    <AlinoCoinIcon
-                                      amount={pack.coinsPrice ?? 0}
-                                      size={18}
-                                    />
-                                    <span>{pack.coinsPrice}</span>
-                                  </>
-                                )}
-                              </div>
-
-                              <button
-                                type="button"
-                                disabled={isBuying || !pack.isAvailable}
-                                className={`${styles.chooseButton} ${
-                                  pack.isPopular
-                                    ? styles.chooseButtonPopular
-                                    : ""
-                                }`}
-                                onClick={() =>
-                                  activeTab === "coins"
-                                    ? handleSelectCoinPack(pack)
-                                    : handleSelectAIPack(pack)
-                                }
-                              >
-                                <span>
-                                  {isBuying
-                                    ? t("common:loading", {
-                                        defaultValue: "Cargando...",
-                                      })
-                                    : !pack.isAvailable
-                                      ? t("common:comingSoon", {
-                                          defaultValue: "Próximamente",
-                                        })
-                                      : t("shop:cards.selectPack", {
-                                          defaultValue: "Elegir pack",
-                                        })}
-                                </span>
-                                <ArrowLeft className={styles.arrowRightIcon} />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-
-                  <div className={styles.cardsStackMobile}>
-                    {isLoading ? (
-                      <div className={styles.loadingState}>
-                        <AlinoLogoLoader
-                          width={100}
-                          className={styles.loadingSpinner}
-                        />
-                      </div>
-                    ) : shopError && currentPacks.length === 0 ? (
-                      <div className={styles.emptyState}>
-                        <p className={styles.emptyText}>{shopError}</p>
-                      </div>
-                    ) : currentPacks.length === 0 ? (
-                      <div className={styles.emptyState}>
-                        <p className={styles.emptyText}>
-                          {t("shop:ai_credits.noPacks", {
-                            defaultValue:
-                              "No hay paquetes disponibles en este momento.",
-                          })}
-                        </p>
-                      </div>
-                    ) : (
-                      currentPacks.map((pack) => {
-                        const isBuying = purchasingId === pack.id;
-
-                        return (
-                          <div
-                            key={pack.id}
-                            className={`${styles.cardMobile} ${
-                              pack.isPopular ? styles.cardMobilePopular : ""
-                            }`}
-                          >
-                            <div className={styles.cardMobileLeft}>
-                              {activeTab === "coins" ? (
-                                <AlinoCoinIcon
-                                  amount={pack.amount}
-                                  size={50}
-                                  animated={false}
-                                />
-                              ) : (
-                                <div
-                                  className={styles.aiTokenVisual}
-                                  style={{
-                                    position: "static",
-                                    width: 48,
-                                    height: 48,
-                                  }}
-                                >
-                                  <IAStars
-                                    style={{
-                                      width: 22,
-                                      height: 22,
-                                      stroke: "rgb(106, 195, 255)",
-                                      strokeWidth: 2,
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            </div>
-
-                            <div className={styles.cardMobileCenter}>
-                              <div className={styles.cardMobileTierRow}>
-                                <span className={styles.tierLabel}>
-                                  {pack.name}
-                                </span>
-                                {pack.tag && (
-                                  <span
-                                    className={
-                                      pack.isPopular
-                                        ? styles.badgePopular
-                                        : styles.badgeValue
-                                    }
-                                  >
-                                    {pack.tag}
-                                  </span>
-                                )}
-                              </div>
-
-                              <span className={styles.amountNumber}>
-                                {pack.amount}
-                              </span>
-                              <span className={styles.unitLabel}>
-                                {activeTab === "coins"
-                                  ? t("shop:cards.coinsUnit", {
-                                      defaultValue: "monedas",
-                                    })
-                                  : t("shop:cards.tokensUnit", {
-                                      defaultValue: "tokens IA",
-                                    })}
-                              </span>
-
-                              {pack.bonusAmount && (
-                                <div className={styles.bonusTag}>
-                                  <IAStars
-                                    style={{
-                                      width: 11,
-                                      height: 11,
-                                      stroke: "currentColor",
-                                      strokeWidth: 2,
-                                    }}
-                                  />
-                                  <span>
-                                    {t("shop:cards.giftBonus", {
-                                      amount: pack.bonusAmount,
-                                      defaultValue: `+${pack.bonusAmount} de regalo`,
-                                    })}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className={styles.cardMobileRight}>
-                              <div className={styles.cardPrice}>
-                                {activeTab === "coins" ? (
-                                  pack.priceFormatted
-                                ) : (
-                                  <>
-                                    <AlinoCoinIcon
-                                      amount={pack.coinsPrice ?? 0}
-                                      size={15}
-                                    />
-                                    <span>{pack.coinsPrice}</span>
-                                  </>
-                                )}
-                              </div>
-
-                              <button
-                                type="button"
-                                disabled={isBuying || !pack.isAvailable}
-                                className={`${styles.cardMobileChooseBtn} ${
-                                  pack.isPopular
-                                    ? styles.cardMobileChooseBtnPopular
-                                    : ""
-                                }`}
-                                onClick={() =>
-                                  activeTab === "coins"
-                                    ? handleSelectCoinPack(pack)
-                                    : handleSelectAIPack(pack)
-                                }
-                              >
-                                <span>
-                                  {isBuying
-                                    ? t("common:loading", {
-                                        defaultValue: "...",
-                                      })
-                                    : !pack.isAvailable
-                                      ? t("common:comingSoon", {
-                                          defaultValue: "Próximamente",
-                                        })
-                                      : t("shop:cards.selectPack", {
-                                          defaultValue: "Elegir pack",
-                                        })}
-                                </span>
-                                <ArrowLeft className={styles.arrowRightIcon} />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
+                  {renderPacksContent()}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1329,12 +1206,12 @@ export const ShopGalleryModal: React.FC<Props> = ({ isOpen, onClose }) => {
           <span>
             {t("shop:footer.securePurchase", { defaultValue: "Compra segura" })}
           </span>
-          <span className={styles.footerDivider}>|</span>
-          <span>
-            {t("shop:footer.disclaimer", {
-              defaultValue: "",
-            })}
-          </span>
+          {footerDisclaimer && (
+            <>
+              <span className={styles.footerDivider}>|</span>
+              <span>{footerDisclaimer}</span>
+            </>
+          )}
         </div>
       </Modal.Footer>
     </Modal>

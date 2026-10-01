@@ -1,14 +1,16 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import styles from "./UpcomingTasks.module.css";
 import { TaskType } from "@/lib/schemas/database.types";
 import { DummyTaskCard } from "./DummyTaskCard";
 
 export const UpcomingTasksPreview = () => {
+  const { t } = useTranslation(["widgets"]);
   const MOCK_TASKS: TaskType[] = [
     {
       task_id: "mock-1",
-      task_content: "<p>Reunión de equipo con diseño</p>",
+      task_content: `<p>${t("widgets:items.upcoming-tasks.mockTask", "Reunión de equipo con diseño")}</p>`,
       completed: false,
       created_at: new Date().toISOString(),
       created_by: null,

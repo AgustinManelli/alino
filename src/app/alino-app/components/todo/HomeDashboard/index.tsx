@@ -16,6 +16,8 @@ import { tierSatisfies, isWidgetOnlineOnly } from "@/config/widgets.registry";
 import { getWidgetComponent } from "@/config/widgetRegistry";
 import WIDGET_UI_META from "@/config/widgetUiMeta";
 
+import { useTranslation } from "react-i18next";
+import { getWidgetTranslation } from "@/lib/i18n/helpers";
 import { UpgradePlaceholder } from "./parts/UpgradePlaceholder";
 import { OfflinePlaceholder } from "./parts/OfflinePlaceholder";
 import { ConfigMenu } from "@/components/ui/ConfigMenu";
@@ -55,21 +57,29 @@ interface ConfigOption {
 }
 
 const useDateAndGreeting = () => {
+  const { t, i18n } = useTranslation(["widgets"]);
   return useMemo(() => {
     const now = new Date();
     const hour = now.getHours();
-    const formattedDate = now.toLocaleDateString("es-ES", {
+    const locale = i18n.language?.startsWith("en") ? "en-US" : "es-ES";
+    const rawDate = now.toLocaleDateString(locale, {
       weekday: "long",
       month: "long",
       day: "numeric",
     });
+    const formattedDate = rawDate.charAt(0).toUpperCase() + rawDate.slice(1);
     const greeting =
-      hour < 12 ? "Buen día" : hour < 19 ? "Buenas tardes" : "Buenas noches";
+      hour < 12
+        ? t("widgets:dashboard.greetings.morning", "Buen día")
+        : hour < 19
+          ? t("widgets:dashboard.greetings.afternoon", "Buenas tardes")
+          : t("widgets:dashboard.greetings.evening", "Buenas noches");
     return { formattedDate, greeting };
-  }, []);
+  }, [i18n.language, t]);
 };
 
 export const HomeDashboard = () => {
+  const { t, i18n } = useTranslation(["widgets"]);
   const setBlurredFx = useUIStore((state) => state.setColor);
   const user = useUserDataStore((state) => state.user);
   const isOnline = useSyncStore((state) => state.isOnline);
@@ -149,15 +159,23 @@ export const HomeDashboard = () => {
 
           const requiresOnline = isWidgetOnlineOnly(key, inst.widgetSource);
 
+          const localized = getWidgetTranslation({
+            id: inst.widgetKey,
+            name: inst.pwName,
+            description: inst.pwDescription,
+            localizedName: inst.pwLocalizedName,
+            localizedDescription: inst.pwLocalizedDescription,
+          });
+
           if (!isOnline && requiresOnline) {
             return {
               id: inst.widgetKey,
-              title: inst.pwName ?? inst.widgetKey,
+              title: localized.name,
               icon: meta.icon,
               color: meta.color,
               content: (
                 <OfflinePlaceholder
-                  widgetName={inst.pwName ?? inst.widgetKey}
+                  widgetName={localized.name}
                 />
               ),
               withoutTopPadding: meta.withoutTopPadding ?? false,
@@ -168,13 +186,13 @@ export const HomeDashboard = () => {
 
           return {
             id: inst.widgetKey,
-            title: inst.pwName ?? inst.widgetKey,
+            title: localized.name,
             icon: meta.icon,
             color: meta.color,
             content: isAllowed ? (
               <WidgetComponent instanceId={inst.instanceId} isEdit={isEdit} />
             ) : (
-              <UpgradePlaceholder widgetName={inst.pwName ?? ""} />
+              <UpgradePlaceholder widgetName={localized.name} />
             ),
             withoutTopPadding: meta.withoutTopPadding ?? false,
             withoutHeader: meta.withoutHeader ?? false,
@@ -192,7 +210,10 @@ export const HomeDashboard = () => {
               content: (
                 <OfflinePlaceholder
                   widgetName={inst.uwTitle ?? "Widget embebido"}
-                  reason="Los widgets embebidos requieren conexión a internet para cargar su contenido."
+                  reason={t(
+                    "widgets:offlinePlaceholder.embeddedReason",
+                    "Los widgets embebidos requieren conexión a internet para cargar su contenido.",
+                  )}
                 />
               ),
               withoutTopPadding: true,
@@ -223,11 +244,13 @@ export const HomeDashboard = () => {
         return null;
       })
       .filter(isBentoItem);
-  }, [widgetInstances, userTier, isEdit, isOnline]);
+  }, [widgetInstances, userTier, isEdit, isOnline, t, i18n.language]);
 
   const displayName = useMemo(
-    () => user?.display_name?.split(" ")[0] ?? "Bienvenido",
-    [user?.display_name],
+    () =>
+      user?.display_name?.split(" ")[0] ??
+      t("widgets:dashboard.defaultUser", "Bienvenido"),
+    [user?.display_name, t],
   );
 
   const handleEditDashboard = useCallback(() => {
@@ -289,19 +312,19 @@ export const HomeDashboard = () => {
   const configOptions: ConfigOption[] = useMemo(
     () => [
       {
-        name: "Editar dashboard",
+        name: t("widgets:dashboard.actions.editDashboard", "Editar dashboard"),
         icon: <EditGrid className={styles.configOptionButton} />,
         action: handleEditDashboard,
         enabled: true,
       },
       {
-        name: "Reordenar widgets",
+        name: t("widgets:dashboard.actions.autoSort", "Reordenar widgets"),
         icon: <ReloadIcon className={styles.configOptionButton} />,
         action: handleAutoSortDashboard,
         enabled: true,
       },
     ],
-    [handleEditDashboard, handleAutoSortDashboard],
+    [handleEditDashboard, handleAutoSortDashboard, t],
   );
 
   return (
@@ -316,9 +339,14 @@ export const HomeDashboard = () => {
               </h1>
               <div className={styles.homeTimeContainer}>
                 <p>
-                  <span>Hoy es </span>
+                  <span>{t("widgets:dashboard.todayIs", "Hoy es")} </span>
                   {formattedDate} <br />
-                  <span>Aquí tienes un resumen de tu productividad</span>
+                  <span>
+                    {t(
+                      "widgets:dashboard.summarySubtitle",
+                      "Aquí tienes un resumen de tu productividad",
+                    )}
+                  </span>
                 </p>
               </div>
             </div>
@@ -332,7 +360,10 @@ export const HomeDashboard = () => {
                     exit={{ opacity: 0, scale: 0.8 }}
                     onClick={handleFinishEdit}
                     className={styles.checkButton}
-                    aria-label="Guardar cambios"
+                    aria-label={t(
+                      "widgets:dashboard.actions.saveChanges",
+                      "Guardar cambios",
+                    )}
                   >
                     <Check
                       style={{
@@ -342,7 +373,7 @@ export const HomeDashboard = () => {
                         strokeWidth: 2,
                       }}
                     />
-                    Finalizar
+                    {t("widgets:dashboard.actions.finish", "Finalizar")}
                   </motion.button>
                 ) : (
                   <motion.div
@@ -354,12 +385,23 @@ export const HomeDashboard = () => {
                   >
                     <button
                       onClick={() => setShowGallery(true)}
-                      title="Galería de widgets"
-                      aria-label="Más widgets"
+                      title={t(
+                        "widgets:dashboard.actions.galleryTitle",
+                        "Galería de widgets",
+                      )}
+                      aria-label={t(
+                        "widgets:dashboard.actions.moreWidgets",
+                        "Más widgets",
+                      )}
                       className={styles.galleryButton}
                     >
                       <GridPlusIcon className={styles.buttonConfig} />
-                      <span>Más widgets</span>
+                      <span>
+                        {t(
+                          "widgets:dashboard.actions.moreWidgets",
+                          "Más widgets",
+                        )}
+                      </span>
                     </button>
                     <ConfigMenu
                       iconWidth="25px"
@@ -387,11 +429,13 @@ export const HomeDashboard = () => {
           <section className={styles.withoutWidgetsSection}>
             <div className={styles.withoutWidgets}>
               <p>
-                Tu dashboard está vacía, puedes navegar por la galería de
-                widgets para instalar los que más te gusten.
+                {t(
+                  "widgets:dashboard.empty.message",
+                  "Tu dashboard está vacío. Puedes explorar la galería de widgets para instalar los que más te gusten.",
+                )}
               </p>
               <button onClick={() => setShowGallery(true)}>
-                Descubrir widgets
+                {t("widgets:dashboard.empty.discoverBtn", "Descubrir widgets")}
               </button>
             </div>
           </section>

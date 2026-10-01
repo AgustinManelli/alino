@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LoadingIcon } from "@/components/ui/icons/icons";
 import styles from "./EmbeddedWidget.module.css";
 
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export const EmbeddedWidget = ({ widget }: Props) => {
+  const { t } = useTranslation(["widgets"]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -19,7 +21,7 @@ export const EmbeddedWidget = ({ widget }: Props) => {
     return (
       <div className={styles.errorContainer}>
         <p className={styles.errorText}>
-          Este widget no tiene URL configurada.
+          {t("widgets:embedded.noUrl", "Este widget no tiene URL configurada.")}
         </p>
       </div>
     );
@@ -37,13 +39,13 @@ export const EmbeddedWidget = ({ widget }: Props) => {
               strokeWidth: "2.5",
             }}
           />
-          <span>Cargando widget…</span>
+          <span>{t("widgets:embedded.loading", "Cargando widget…")}</span>
         </div>
       )}
       {error ? (
         <div className={styles.errorContainer}>
           <p className={styles.errorText}>
-            No se pudo cargar el widget. Verifica la URL.
+            {t("widgets:embedded.loadError", "No se pudo cargar el widget. Verifica la URL.")}
           </p>
           <p className={styles.errorUrl}>{widget.url}</p>
         </div>

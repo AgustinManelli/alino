@@ -151,6 +151,7 @@ export async function getShopCosmeticsCatalogAction(params?: {
     total: number;
     page: number;
     total_pages: number;
+    category_counts?: Record<string, number>;
   };
   error?: string;
 }> {
@@ -173,6 +174,7 @@ export async function getShopCosmeticsCatalogAction(params?: {
       page_size: number;
       total_pages: number;
       user_coins: number;
+      category_counts?: Record<string, number>;
     };
 
     return {
@@ -182,6 +184,7 @@ export async function getShopCosmeticsCatalogAction(params?: {
         total: result?.total ?? 0,
         page: result?.page ?? 1,
         total_pages: result?.total_pages ?? 1,
+        category_counts: result?.category_counts ?? {},
       },
     };
   } catch (e) {

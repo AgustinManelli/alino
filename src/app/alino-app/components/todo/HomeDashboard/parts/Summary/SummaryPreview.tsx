@@ -1,8 +1,10 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import styles from "./Summary.module.css";
 
 export const SummaryPreview = () => {
+  const { t } = useTranslation(["widgets"]);
   const percentage = Math.round((9 / 15) * 100);
 
   return (
@@ -13,7 +15,10 @@ export const SummaryPreview = () => {
       </div>
 
       <div className={styles.statsInfo}>
-        15 Tareas totales
+        {t("widgets:items.summary.totalTasks_other", {
+          count: 15,
+          defaultValue: "15 Tareas totales",
+        })}
       </div>
 
       <div className={styles.progressBarWrapper}>
@@ -22,7 +27,10 @@ export const SummaryPreview = () => {
           style={{ width: `${percentage}%` }}
         >
           <span className={styles.completedCount}>
-            9 completadas
+            {t("widgets:items.summary.completed_other", {
+              count: 9,
+              defaultValue: "9 completadas",
+            })}
           </span>
         </div>
       </div>

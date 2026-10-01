@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector, persist } from 'zustand/middleware';
 import { customToast } from '@/lib/toasts';
 
-type PomodoroMode = 'work' | 'shortBreak' | 'longBreak';
+export type PomodoroMode = 'work' | 'shortBreak' | 'longBreak';
 
 interface ModeConfig {
   time: number;

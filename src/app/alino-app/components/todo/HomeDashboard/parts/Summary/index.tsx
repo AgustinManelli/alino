@@ -1,6 +1,7 @@
 "use client";
 
 import { useShallow } from "zustand/shallow";
+import { useTranslation } from "react-i18next";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWidgetPreview } from "@/context/WidgetPreviewContext";
@@ -9,6 +10,7 @@ import { SummaryPreview } from "./SummaryPreview";
 import styles from "./Summary.module.css";
 
 export const Summary = () => {
+  const { t } = useTranslation(["widgets"]);
   const { tasks, completedTasks, initialFetch } = useTodoDataStore(
     useShallow((state) => ({
       tasks: state.tasks,
@@ -46,7 +48,15 @@ export const Summary = () => {
 
       <div className={styles.statsInfo}>
         {initialFetch ? (
-          `${total_tasks} ${total_tasks === 1 ? "Tarea total" : "Tareas totales"}`
+          t(
+            total_tasks === 1
+              ? "widgets:items.summary.totalTasks_one"
+              : "widgets:items.summary.totalTasks_other",
+            {
+              count: total_tasks,
+              defaultValue: `${total_tasks} ${total_tasks === 1 ? "Tarea total" : "Tareas totales"}`,
+            },
+          )
         ) : (
           <Skeleton
             style={{ width: "80px", height: "12px", borderRadius: "4px" }}
@@ -61,7 +71,15 @@ export const Summary = () => {
         >
           {initialFetch && percentage > 10 && (
             <span className={styles.completedCount}>
-              {completed_tasks} completadas
+              {t(
+                completed_tasks === 1
+                  ? "widgets:items.summary.completed_one"
+                  : "widgets:items.summary.completed_other",
+                {
+                  count: completed_tasks,
+                  defaultValue: `${completed_tasks} completadas`,
+                },
+              )}
             </span>
           )}
         </div>

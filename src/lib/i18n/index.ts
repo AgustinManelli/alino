@@ -7,6 +7,7 @@ import esStreak from "./locales/es/streak.json";
 import esConfig from "./locales/es/config.json";
 import esAssistant from "./locales/es/assistant.json";
 import esAchievements from "./locales/es/achievements.json";
+import esWidgets from "./locales/es/widgets.json";
 import enCommon from "./locales/en/common.json";
 import enShop from "./locales/en/shop.json";
 import enCosmetics from "./locales/en/cosmetics.json";
@@ -14,6 +15,7 @@ import enStreak from "./locales/en/streak.json";
 import enConfig from "./locales/en/config.json";
 import enAssistant from "./locales/en/assistant.json";
 import enAchievements from "./locales/en/achievements.json";
+import enWidgets from "./locales/en/widgets.json";
 
 export const defaultResources = {
   es: {
@@ -24,6 +26,7 @@ export const defaultResources = {
     config: esConfig,
     assistant: esAssistant,
     achievements: esAchievements,
+    widgets: esWidgets,
   },
   en: {
     common: enCommon,
@@ -33,6 +36,7 @@ export const defaultResources = {
     config: enConfig,
     assistant: enAssistant,
     achievements: enAchievements,
+    widgets: enWidgets,
   },
 };
 
@@ -42,7 +46,16 @@ if (!i18n.isInitialized) {
     lng: "es",
     fallbackLng: "es",
     defaultNS: "common",
-    ns: ["common", "shop", "cosmetics", "streak", "config", "assistant", "achievements"],
+    ns: [
+      "common",
+      "shop",
+      "cosmetics",
+      "streak",
+      "config",
+      "assistant",
+      "achievements",
+      "widgets",
+    ],
     interpolation: {
       escapeValue: false,
     },

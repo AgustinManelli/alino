@@ -1,18 +1,26 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useWidgetPreview } from "@/context/WidgetPreviewContext";
 import styles from "./WeeklyActivity.module.css";
 
 import { WeeklyActivityPreview } from "./WeeklyActivityPreview";
 
-const DAYS_ES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-
 export const WeeklyActivity = () => {
+  const { t, i18n } = useTranslation(["widgets"]);
   const completedTasks = useTodoDataStore((state) => state.completedTasks);
   const initialFetch = useTodoDataStore((state) => state.initialFetch);
   const isPreview = useWidgetPreview();
+
+  const weekdayFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(i18n.language || "es", {
+        weekday: "short",
+      }),
+    [i18n.language],
+  );
 
   if (isPreview) {
     return <WeeklyActivityPreview />;
@@ -27,8 +35,8 @@ export const WeeklyActivity = () => {
       const day = String(d.getDate()).padStart(2, "0");
       const localDateStr = `${year}-${month}-${day}`;
 
-      const count = completedTasks.filter((t) => {
-        const dateVal = t.completed_at || t.updated_at;
+      const count = completedTasks.filter((task) => {
+        const dateVal = task.completed_at || task.updated_at;
         if (!dateVal) return false;
         const taskDate = new Date(dateVal);
         const tYear = taskDate.getFullYear();
@@ -39,7 +47,7 @@ export const WeeklyActivity = () => {
 
       return {
         date: localDateStr,
-        dayOfWeek: d.getDay(),
+        dateObj: d,
         completed_count: count,
       };
     });
@@ -62,12 +70,23 @@ export const WeeklyActivity = () => {
         className={styles.summaryText}
         style={{ opacity: showStats ? 1 : 0, transition: "opacity 0.3s" }}
       >
-        {`${totalCompleted} ${totalCompleted === 1 ? "tarea completada" : "tareas completadas"} esta semana`}
+        {t(
+          totalCompleted === 1
+            ? "widgets:items.weekly-activity.summary_one"
+            : "widgets:items.weekly-activity.summary_other",
+          {
+            count: totalCompleted,
+            defaultValue: `${totalCompleted} ${totalCompleted === 1 ? "tarea completada" : "tareas completadas"} esta semana`,
+          },
+        )}
       </div>
 
       <div className={styles.chartWrapper}>
         {displayData.map((day, idx) => {
-          const dayName = DAYS_ES[day.dayOfWeek];
+          const rawName = weekdayFormatter.format(day.dateObj);
+          const cleanName = rawName.replace(".", "");
+          const dayName =
+            cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
           const heightPercent = (day.completed_count / maxCount) * 100;
 
           return (

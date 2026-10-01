@@ -1,15 +1,26 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useLayoutEffect, useRef } from "react";
-import type { ReactNode } from "react";
+
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "react-i18next";
 import {
   Crown,
   Link,
   GridPlusIcon,
   Information,
   Cross,
+  SearchIcon,
+  ArrowLeft,
+  AlinoLogo,
 } from "@/components/ui/icons/icons";
+import { AlinoLogoLoader } from "@/components/ui/icons/AlinoLogoLoader";
 import { tierSatisfies, isWidgetOnlineOnly } from "@/config/widgets.registry";
 import { useInstallWidget } from "@/hooks/dashboard/useInstallWidget";
 import { useUninstallWidget } from "@/hooks/dashboard/useUninstallWidget";
@@ -19,7 +30,6 @@ import { customToast } from "@/lib/toasts";
 import { UserWidgetRow } from "@/lib/schemas/database.types";
 import { PredefinedWidget } from "@/lib/schemas/dashboard.types";
 import { Modal } from "@/components/ui/Modal";
-import { AlinoLogo } from "@/components/ui/icons/icons";
 import { getUserEmbeddedWidgets } from "@/lib/api/user-widgets/actions";
 import {
   getWidgetsCatalogPaginated,
@@ -29,7 +39,6 @@ import { EmbeddedWidgetManager } from "./EmbeddedWidgetManager";
 import { useModalStore } from "@/store/useModalStore";
 import { WidgetPreview } from "./WidgetPreview";
 import styles from "./WidgetGallery.module.css";
-import i18n from "@/lib/i18n";
 import { getWidgetTranslation } from "@/lib/i18n/helpers";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 
@@ -39,84 +48,263 @@ interface Props {
 }
 
 interface AnimatedSectionContentProps {
-  children: ReactNode;
+  children: React.ReactNode;
+  enabled: boolean;
 }
 
-const AnimatedSectionContent = ({ children }: AnimatedSectionContentProps) => {
+const AnimatedSectionContent: React.FC<AnimatedSectionContentProps> = ({
+  children,
+  enabled,
+}) => {
   const contentRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState<number | "auto">("auto");
-  const animations = useUserPreferencesStore((state) => state.animations);
+  const [contentHeight, setContentHeight] = useState<number | "auto">("auto");
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const content = contentRef.current;
     if (!content) return;
 
-    const updateHeight = () => setHeight(content.scrollHeight);
-    updateHeight();
+    const updateHeight = () => {
+      setContentHeight(content.getBoundingClientRect().height);
+    };
 
+    updateHeight();
     if (typeof ResizeObserver === "undefined") return;
+
     const observer = new ResizeObserver(updateHeight);
     observer.observe(content);
     return () => observer.disconnect();
   }, [children]);
 
   return (
-    <div
+    <motion.div
       className={styles.animatedSectionContent}
-      style={{
-        height: typeof height === "number" ? `${height}px` : height,
-        transition: animations ? undefined : "none",
-      }}
+      animate={{ height: contentHeight }}
+      transition={
+        enabled
+          ? { type: "spring", stiffness: 360, damping: 32 }
+          : { duration: 0 }
+      }
     >
       <div ref={contentRef}>{children}</div>
+    </motion.div>
+  );
+};
+
+interface FilterOption {
+  id: string;
+  label: string;
+  premium?: boolean;
+}
+
+interface FilterScrollerProps {
+  options: FilterOption[];
+  value: string;
+  onChange: (id: string) => void;
+  ariaLabel: string;
+  variant: "chips" | "segmented";
+  smooth: boolean;
+}
+
+const FilterScroller: React.FC<FilterScrollerProps> = ({
+  options,
+  value,
+  onChange,
+  ariaLabel,
+  variant,
+  smooth,
+}) => {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ start: false, end: false });
+
+  const updateEdges = useCallback(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const start = scroller.scrollLeft > 2;
+    const end =
+      scroller.scrollLeft + scroller.clientWidth < scroller.scrollWidth - 2;
+    setEdges((prev) =>
+      prev.start === start && prev.end === end ? prev : { start, end },
+    );
+  }, []);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    const track = trackRef.current;
+    if (!scroller || !track) return;
+
+    updateEdges();
+    scroller.addEventListener("scroll", updateEdges, { passive: true });
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", updateEdges);
+      return () => {
+        scroller.removeEventListener("scroll", updateEdges);
+        window.removeEventListener("resize", updateEdges);
+      };
+    }
+
+    const observer = new ResizeObserver(updateEdges);
+    observer.observe(scroller);
+    observer.observe(track);
+    return () => {
+      scroller.removeEventListener("scroll", updateEdges);
+      observer.disconnect();
+    };
+  }, [updateEdges, options]);
+
+  const handleSelect = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    id: string,
+  ) => {
+    onChange(id);
+    event.currentTarget.scrollIntoView({
+      behavior: smooth ? "smooth" : "auto",
+      inline: "center",
+      block: "nearest",
+    });
+  };
+
+  const isSegmented = variant === "segmented";
+
+  return (
+    <div
+      className={styles.scrollerWrap}
+      data-start={edges.start}
+      data-end={edges.end}
+    >
+      <div ref={scrollerRef} className={styles.scroller}>
+        <div
+          ref={trackRef}
+          role="group"
+          aria-label={ariaLabel}
+          className={isSegmented ? styles.segmentedTrack : styles.chipsTrack}
+        >
+          {options.map((option) => {
+            const isActive = value === option.id;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={isActive}
+                className={`${
+                  isSegmented ? styles.segmentedOption : styles.filterChip
+                } ${
+                  isActive
+                    ? isSegmented
+                      ? styles.segmentedOptionActive
+                      : styles.filterChipActive
+                    : ""
+                }`}
+                onClick={(event) => handleSelect(event, option.id)}
+              >
+                {option.premium && (
+                  <Crown
+                    style={{
+                      width: 12,
+                      height: 12,
+                      stroke: "currentColor",
+                      strokeWidth: 2,
+                      color: "rgb(255, 200, 100)",
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                <span>{option.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };
 
-const TIER_LABELS: Record<string, string> = {
-  free: i18n.t("widgets.tiers.free", { defaultValue: "Gratis" }),
-  student: i18n.t("widgets.tiers.student", { defaultValue: "Estudiante" }),
-  pro: i18n.t("widgets.tiers.pro", { defaultValue: "Pro" }),
-  ultra: i18n.t("widgets.tiers.ultra", { defaultValue: "Ultra" }),
+interface WidgetCardProps {
+  def: PredefinedWidget;
+  isInstalled: boolean;
+  canUse: boolean;
+  isPending: boolean;
+  buttonLabel: string;
+  tierLabel: string;
+  onAction: (def: PredefinedWidget) => void;
+}
+
+const WidgetCard: React.FC<WidgetCardProps> = ({
+  def,
+  isInstalled,
+  canUse,
+  isPending,
+  buttonLabel,
+  tierLabel,
+  onAction,
+}) => {
+  const translated = getWidgetTranslation(def);
+  const isPremiumTier =
+    def.tierRequired === "pro" || def.tierRequired === "ultra";
+
+  return (
+    <article
+      className={`${styles.card} ${isInstalled ? styles.cardInstalled : ""}`}
+    >
+      <header className={styles.cardHeader}>
+        <h3 className={styles.cardTitle}>{translated.name}</h3>
+        <span
+          className={`${styles.badgeValue} ${
+            isPremiumTier ? styles.badgePro : styles.badgeDefault
+          }`}
+        >
+          {def.tierRequired !== "free" && (
+            <Crown
+              style={{
+                width: 10,
+                height: 10,
+                stroke: "currentColor",
+                strokeWidth: 2,
+                color: "rgb(255, 200, 100)",
+              }}
+            />
+          )}
+          {tierLabel}
+        </span>
+      </header>
+
+      <div className={styles.cardBody}>
+        <div className={styles.widgetPreviewWrap}>
+          <WidgetPreview
+            componentKey={def.componentKey}
+            title={translated.name}
+          />
+        </div>
+        <p className={styles.cardDesc}>{translated.description}</p>
+      </div>
+
+      <footer className={styles.cardFooter}>
+        <button
+          type="button"
+          disabled={isPending}
+          className={`${styles.chooseButton} ${
+            isInstalled
+              ? styles.chooseButtonRemove
+              : canUse
+                ? styles.chooseButtonPrimary
+                : styles.chooseButtonLocked
+          }`}
+          onClick={() => onAction(def)}
+        >
+          <span>{buttonLabel}</span>
+        </button>
+      </footer>
+    </article>
+  );
 };
 
-const CATEGORIES = [
-  {
-    id: "all",
-    label: i18n.t("widgets.categories.all", {
-      defaultValue: "Todos los widgets",
-    }),
-  },
-  {
-    id: "productivity",
-    label: i18n.t("widgets.categories.productivity", {
-      defaultValue: "Productividad",
-    }),
-  },
-  {
-    id: "wellness",
-    label: i18n.t("widgets.categories.wellness", { defaultValue: "Bienestar" }),
-  },
-  {
-    id: "info",
-    label: i18n.t("widgets.categories.info", { defaultValue: "Información" }),
-  },
-];
-
-const TIERS = [
-  { id: "all", label: i18n.t("widgets.tiers.all", { defaultValue: "Todos" }) },
-  {
-    id: "free",
-    label: i18n.t("widgets.tiers.free", { defaultValue: "Gratis" }),
-  },
-  { id: "pro", label: i18n.t("widgets.tiers.pro", { defaultValue: "Pro" }) },
-  // { id: "student", label: "Estudiante" },
-];
-
 export const WidgetGallery = ({ onClose, userTier }: Props) => {
+  const { t } = useTranslation(["widgets", "common"]);
   const openModal = useModalStore((s) => s.open);
   const activeWidgets = useDashboardStore((s) => s.activeWidgets);
   const isOnline = useSyncStore((s) => s.isOnline);
+  const animations = useUserPreferencesStore((state) => state.animations);
   const { installWidget, isPending: isInstalling } = useInstallWidget();
   const { uninstallWidget, isPending: isUninstalling } = useUninstallWidget();
 
@@ -138,12 +326,17 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
     [],
   );
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
-    const handler = setTimeout(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
       setDebouncedSearch(searchQuery);
       setCurrentPage(1);
-    }, 250);
-    return () => clearTimeout(handler);
+    }, 280);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [searchQuery]);
 
   const fetchCatalog = useCallback(async () => {
@@ -168,7 +361,8 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
             const translated = getWidgetTranslation(w);
             return (
               translated.name.toLowerCase().includes(term) ||
-              translated.description.toLowerCase().includes(term)
+              (translated.description &&
+                translated.description.toLowerCase().includes(term))
             );
           });
         }
@@ -184,10 +378,17 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
         const categoryCounts: Record<string, number> = {
           all: predefined.length,
         };
+        const tierCounts: Record<string, number> = {
+          all: predefined.length,
+        };
         for (const item of predefined) {
           if (item.category) {
             categoryCounts[item.category] =
               (categoryCounts[item.category] ?? 0) + 1;
+          }
+          if (item.tierRequired) {
+            tierCounts[item.tierRequired] =
+              (tierCounts[item.tierRequired] ?? 0) + 1;
           }
         }
 
@@ -197,6 +398,7 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
           currentPage,
           totalPages,
           categoryCounts,
+          tierCounts,
         });
         return;
       }
@@ -220,14 +422,14 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
       setCatalogError(
         error instanceof Error
           ? error.message
-          : i18n.t("widgets.errors.catalog", {
+          : t("widgets:errors.catalog", {
               defaultValue: "No se pudo cargar el catálogo.",
             }),
       );
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, selectedCategory, selectedTier, currentPage]);
+  }, [debouncedSearch, selectedCategory, selectedTier, currentPage, t]);
 
   useEffect(() => {
     if (activeSection === "catalog") {
@@ -250,15 +452,105 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
     }
   }, [activeSection, fetchMyWidgets]);
 
-  const handleSelectCategory = (catId: string) => {
-    setActiveSection("catalog");
+  const categories = useMemo(() => {
+    const counts = catalogData?.categoryCounts ?? {};
+    const keys = Object.keys(counts);
+    if (keys.length === 0) {
+      const fromWidgets = Array.from(
+        new Set(
+          (catalogData?.widgets ?? []).map((w) => w.category).filter(Boolean),
+        ),
+      );
+      if (fromWidgets.length > 0) return ["all", ...fromWidgets.sort()];
+      return ["all"];
+    }
+    const others = keys.filter((k) => k !== "all").sort();
+    return ["all", ...others];
+  }, [catalogData?.categoryCounts, catalogData?.widgets]);
+
+  const tiers = useMemo(() => {
+    const counts = catalogData?.tierCounts ?? {};
+    const keys = Object.keys(counts);
+    if (keys.length === 0) {
+      const fromWidgets = Array.from(
+        new Set(
+          (catalogData?.widgets ?? [])
+            .map((w) => w.tierRequired)
+            .filter(Boolean),
+        ),
+      );
+      if (fromWidgets.length > 0) return ["all", ...fromWidgets.sort()];
+      return ["all", "free", "pro"];
+    }
+    const order = ["free", "student", "pro", "ultra"];
+    const others = keys
+      .filter((k) => k !== "all")
+      .sort((a, b) => {
+        const idxA = order.indexOf(a);
+        const idxB = order.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.localeCompare(b);
+      });
+    return ["all", ...others];
+  }, [catalogData?.tierCounts, catalogData?.widgets]);
+
+  const formatCategoryLabel = useCallback(
+    (cat: string) => {
+      if (cat === "all") {
+        return t("widgets:categories.all", { defaultValue: "Todos" });
+      }
+      return t(`widgets:categories.${cat}`, {
+        defaultValue: cat
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase()),
+      });
+    },
+    [t],
+  );
+
+  const formatTierLabel = useCallback(
+    (tier: string) => {
+      if (tier === "all") {
+        return t("widgets:tiers.all", { defaultValue: "Todos" });
+      }
+      return t(`widgets:tiers.${tier}`, {
+        defaultValue: tier
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase()),
+      });
+    },
+    [t],
+  );
+
+  const categoryOptions = useMemo<FilterOption[]>(
+    () => categories.map((id) => ({ id, label: formatCategoryLabel(id) })),
+    [categories, formatCategoryLabel],
+  );
+
+  const tierOptions = useMemo<FilterOption[]>(
+    () =>
+      tiers.map((id) => ({
+        id,
+        label: formatTierLabel(id),
+        premium: id === "pro" || id === "ultra",
+      })),
+    [tiers, formatTierLabel],
+  );
+
+  const handleSelectCategory = useCallback((catId: string) => {
     setSelectedCategory(catId);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleSelectTier = (tierId: string) => {
+  const handleSelectTier = useCallback((tierId: string) => {
     setSelectedTier(tierId);
     setCurrentPage(1);
+  }, []);
+
+  const isThisActionPending = (widgetId: string) => {
+    return (isInstalling || isUninstalling) && targetWidgetId === widgetId;
   };
 
   const handleWidgetAction = async (def: PredefinedWidget) => {
@@ -269,7 +561,9 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
 
     if (!isOnline && isWidgetOnlineOnly(def.id)) {
       customToast.error(
-        "Este widget requiere conexión a internet para usarse.",
+        t("widgets:errors.offlineRequired", {
+          defaultValue: "Este widget requiere conexión a internet para usarse.",
+        }),
       );
       return;
     }
@@ -288,16 +582,67 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
     }
   };
 
-  const isThisActionPending = (widgetId: string) => {
-    return (isInstalling || isUninstalling) && targetWidgetId === widgetId;
+  const getWidgetButtonLabel = (
+    def: PredefinedWidget,
+    isInstalled: boolean,
+    canUse: boolean,
+    isPending: boolean,
+  ) => {
+    if (isInstalled) {
+      return isPending
+        ? t("widgets:uninstalling", { defaultValue: "Desinstalando..." })
+        : t("widgets:uninstall", { defaultValue: "Desinstalar" });
+    }
+    if (isPending) {
+      return t("widgets:installing", { defaultValue: "Instalando..." });
+    }
+    if (!canUse) {
+      return t("widgets:requiresTier", {
+        tier: formatTierLabel(def.tierRequired),
+        defaultValue: `Requiere ${formatTierLabel(def.tierRequired)}`,
+      });
+    }
+    return t("widgets:install", { defaultValue: "Instalar" });
   };
+
+  const sections = useMemo(
+    () => [
+      {
+        id: "catalog" as const,
+        label: t("widgets:catalog", { defaultValue: "Explorar widgets" }),
+        icon: (
+          <GridPlusIcon
+            style={{
+              width: 17,
+              height: 17,
+              stroke: "currentColor",
+              strokeWidth: 1.8,
+            }}
+          />
+        ),
+      },
+      {
+        id: "my-widgets" as const,
+        label: t("widgets:myWidgets", { defaultValue: "Mis widgets" }),
+        icon: (
+          <Link
+            style={{
+              width: 17,
+              height: 17,
+              stroke: "currentColor",
+              strokeWidth: 1.8,
+            }}
+          />
+        ),
+      },
+    ],
+    [t],
+  );
 
   const widgetsList = catalogData?.widgets ?? [];
   const totalCount = catalogData?.totalCount ?? 0;
   const totalPages = catalogData?.totalPages ?? 1;
-  const activeCategoryLabel =
-    CATEGORIES.find((category) => category.id === selectedCategory)?.label ??
-    CATEGORIES[0].label;
+  const activeCategoryLabel = formatCategoryLabel(selectedCategory);
 
   return (
     <Modal
@@ -305,7 +650,7 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
       onClose={onClose}
       maxWidth="980px"
       id="alino-widget-gallery-modal"
-      ariaLabel={i18n.t("widgets.title", {
+      ariaLabel={t("widgets:title", {
         defaultValue: "Galería de widgets",
       })}
     >
@@ -316,221 +661,239 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
           </div>
           <div className={styles.brandSeparator} />
           <span className={styles.brandShopTag}>
-            {i18n.t("widgets.tag", { defaultValue: "WIDGETS" })}
+            {t("widgets:tag", { defaultValue: "WIDGETS" })}
           </span>
         </div>
         <Modal.CloseButton onClick={onClose} />
       </Modal.Header>
+
       <Modal.Body noPadding={true}>
         <section className={styles.heroBanner}>
           <div className={styles.heroContent}>
-            <span className={styles.heroEyebrow}>
-              {i18n.t("widgets.banner.eyebrow", {
-                defaultValue: "TU ESPACIO, A TU MANERA",
-              })}
-            </span>
             <h1 className={styles.heroTitle}>
-              {i18n.t("widgets.banner.title", {
+              {t("widgets:banner.title", {
                 defaultValue: "Diseña tu dashboard.",
-              })}
+              })}{" "}
               <br />
               <span className={styles.heroTitleAccent}>
-                {i18n.t("widgets.banner.accent", {
-                  defaultValue: "Hazlo tuyo.",
+                {t("widgets:banner.accent", {
+                  defaultValue: "Tu espacio, a tu manera.",
                 })}
               </span>
             </h1>
             <p className={styles.heroSubtitle}>
-              {i18n.t("widgets.banner.subtitle", {
-                defaultValue:
-                  "Instala solo lo que necesitas y mantén tu experiencia ligera.",
+              {t("widgets:banner.subtitle", {
+                defaultValue: "Widgets que se ajustan a tus necesidades.",
               })}
             </p>
           </div>
-          <div className={styles.heroOrb} aria-hidden="true" />
         </section>
+
         <section className={styles.tabsContainer}>
           <nav
             className={styles.tabsBar}
-            aria-label={i18n.t("widgets.navigation", {
+            aria-label={t("widgets:navigation", {
               defaultValue: "Secciones de widgets",
             })}
           >
-            <button
-              type="button"
-              className={`${styles.tabButton} ${
-                activeSection === "catalog" ? styles.tabButtonActive : ""
-              }`}
-              onClick={() => setActiveSection("catalog")}
-            >
-              <GridPlusIcon style={{ width: 16, height: 16 }} />
-              <span>
-                {i18n.t("widgets.catalog", {
-                  defaultValue: "Explorar widgets",
-                })}
-              </span>
-              {activeSection === "catalog" && (
-                <div className={styles.tabIndicator} />
-              )}
-            </button>
-            <button
-              type="button"
-              className={`${styles.tabButton} ${
-                activeSection === "my-widgets" ? styles.tabButtonActive : ""
-              }`}
-              onClick={() => setActiveSection("my-widgets")}
-            >
-              <Link style={{ width: 16, height: 16 }} />
-              <span>
-                {i18n.t("widgets.myWidgets", { defaultValue: "Mis widgets" })}
-              </span>
-              {activeSection === "my-widgets" && (
-                <div className={styles.tabIndicator} />
-              )}
-            </button>
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                type="button"
+                className={`${styles.tabButton} ${
+                  activeSection === section.id ? styles.tabButtonActive : ""
+                }`}
+                onClick={() => setActiveSection(section.id)}
+              >
+                {section.icon}
+                <span>{section.label}</span>
+                {activeSection === section.id && (
+                  <motion.div
+                    layoutId="widgetActiveTabIndicator"
+                    className={styles.tabIndicator}
+                  />
+                )}
+              </button>
+            ))}
           </nav>
         </section>
-        <AnimatedSectionContent>
-          <main className={styles.mainArea}>
-            {activeSection === "catalog" ? (
-              <>
-                <section className={styles.sectionHeader}>
-                  <div className={styles.sectionHeaderLeft}>
-                    <h2 className={styles.sectionTitle}>
-                      {activeCategoryLabel}
-                    </h2>
-                    <p className={styles.sectionSubtitle}>
-                      {totalCount}{" "}
-                      {totalCount === 1
-                        ? "widget disponible"
-                        : "widgets disponibles"}
-                    </p>
-                  </div>
-                  <div className={styles.sectionHeaderRight}>
-                    <div className={styles.categoryFilters}>
-                      <button
-                        type="button"
-                        className={`${styles.categoryFilterBtn} ${
-                          selectedCategory === "all"
-                            ? styles.categoryFilterBtnActive
-                            : ""
-                        }`}
-                        onClick={() => handleSelectCategory("all")}
-                      >
-                        {CATEGORIES[0].label}
-                      </button>
-                      {CATEGORIES.slice(1).map((category) => (
-                        <button
-                          key={category.id}
-                          type="button"
-                          className={`${styles.categoryFilterBtn} ${
-                            selectedCategory === category.id
-                              ? styles.categoryFilterBtnActive
-                              : ""
-                          }`}
-                          onClick={() => handleSelectCategory(category.id)}
-                        >
-                          {category.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </section>
-                <div className={styles.topBar}>
-                  <div className={styles.searchContainer}>
-                    <svg
-                      className={styles.searchIcon}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="11" cy="11" r="8" />
-                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    </svg>
-                    <input
-                      type="text"
-                      className={styles.searchInput}
-                      placeholder={i18n.t("widgets.search", {
-                        defaultValue:
-                          "Buscar widgets por nombre o descripción...",
+
+        <AnimatedSectionContent enabled={animations}>
+          <section className={styles.sectionHeader}>
+            <div className={styles.sectionHeaderLeft}>
+              <h2 className={styles.sectionTitle}>
+                {activeSection === "catalog"
+                  ? activeCategoryLabel
+                  : t("widgets:myWidgetsSection.title", {
+                      defaultValue: "Tus widgets personalizados",
+                    })}
+              </h2>
+              <p className={styles.sectionSubtitle}>
+                {activeSection === "catalog"
+                  ? totalCount === 1
+                    ? t("widgets:singleWidget", {
+                        defaultValue: "1 widget disponible",
+                      })
+                    : t("widgets:multipleWidgets", {
+                        count: totalCount,
+                        defaultValue: `${totalCount} widgets disponibles`,
+                      })
+                  : t("widgets:myWidgetsSection.subtitle", {
+                      defaultValue:
+                        "Agrega e interactúa con tus propias integraciones web embebidas.",
+                    })}
+              </p>
+            </div>
+
+            <div className={styles.sectionHeaderRight}>
+              <div className={styles.balancePill}>
+                <GridPlusIcon
+                  style={{
+                    width: 15,
+                    height: 15,
+                    stroke: "currentColor",
+                    strokeWidth: 1.8,
+                  }}
+                />
+                <span>
+                  {activeWidgets.length}{" "}
+                  {activeWidgets.length === 1
+                    ? t("widgets:activeWidget", { defaultValue: "instalado" })
+                    : t("widgets:activeWidgets", {
+                        defaultValue: "instalados",
                       })}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    {searchQuery && (
-                      <button
-                        type="button"
-                        className={styles.clearButton}
-                        onClick={() => setSearchQuery("")}
-                        aria-label={i18n.t("common.clear", {
-                          defaultValue: "Limpiar búsqueda",
-                        })}
-                      >
-                        <Cross style={{ width: "12px", height: "12px" }} />
-                      </button>
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.cardsContainer}>
+            <AnimatePresence mode="wait">
+              {activeSection === "catalog" ? (
+                <motion.div
+                  key="catalog"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <div className={styles.toolbar}>
+                    <div className={styles.toolbarTop}>
+                      <div className={styles.searchBox}>
+                        <SearchIcon className={styles.searchIcon} />
+                        <input
+                          type="text"
+                          className={styles.searchInput}
+                          placeholder={t("widgets:search", {
+                            defaultValue: "Buscar widgets...",
+                          })}
+                          aria-label={t("widgets:search", {
+                            defaultValue: "Buscar widgets...",
+                          })}
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            className={styles.searchClearBtn}
+                            onClick={() => setSearchQuery("")}
+                            aria-label={t("common:clear", {
+                              defaultValue: "Limpiar búsqueda",
+                            })}
+                          >
+                            <Cross style={{ width: 11, height: 11 }} />
+                          </button>
+                        )}
+                      </div>
+
+                      {tierOptions.length > 1 && (
+                        <div className={styles.filterGroupInline}>
+                          <span className={styles.filterSectionLabel}>
+                            {t("widgets:tiersLabel", {
+                              defaultValue: "Plan",
+                            })}
+                          </span>
+                          <FilterScroller
+                            options={tierOptions}
+                            value={selectedTier}
+                            onChange={handleSelectTier}
+                            ariaLabel={t("widgets:tiersLabel", {
+                              defaultValue: "Plan",
+                            })}
+                            variant="segmented"
+                            smooth={animations}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {categoryOptions.length > 1 && (
+                      <div className={styles.filterGroupFill}>
+                        <span className={styles.filterSectionLabel}>
+                          {t("widgets:categoriesLabel", {
+                            defaultValue: "Categoría",
+                          })}
+                        </span>
+                        <FilterScroller
+                          options={categoryOptions}
+                          value={selectedCategory}
+                          onChange={handleSelectCategory}
+                          ariaLabel={t("widgets:categoriesLabel", {
+                            defaultValue: "Categoría",
+                          })}
+                          variant="chips"
+                          smooth={animations}
+                        />
+                      </div>
                     )}
                   </div>
 
-                  <div className={styles.tierChipsRow}>
-                    {TIERS.map((tier) => {
-                      const isActive = selectedTier === tier.id;
-                      return (
-                        <button
-                          key={tier.id}
-                          type="button"
-                          className={`${styles.tierChip} ${
-                            isActive ? styles.tierChipActive : ""
-                          }`}
-                          onClick={() => handleSelectTier(tier.id)}
-                        >
-                          {tier.id === "pro" && (
-                            <Crown
-                              style={{
-                                width: "12px",
-                                height: "12px",
-                                color: "rgb(255, 200, 100)",
-                              }}
-                            />
-                          )}
-                          <span>{tier.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <span className={styles.resultsCount}>
-                    {totalCount} {totalCount === 1 ? "widget" : "widgets"}
-                  </span>
-                </div>
-
-                <div className={styles.scrollArea}>
                   {isLoading ? (
-                    <div className={styles.grid} aria-busy="true">
-                      {Array.from({ length: 6 }, (_, index) => (
-                        <div className={styles.cardSkeleton} key={index}>
-                          <div className={styles.skeletonLine} />
-                          <div className={styles.skeletonTitle} />
-                          <div className={styles.skeletonPreview} />
-                          <div className={styles.skeletonButton} />
-                        </div>
-                      ))}
+                    <div className={styles.loadingState}>
+                      <AlinoLogoLoader
+                        width={100}
+                        className={styles.loadingSpinner}
+                      />
                     </div>
                   ) : catalogError ? (
                     <div className={styles.emptyState}>
-                      <p>{catalogError}</p>
+                      <p className={styles.emptyText}>{catalogError}</p>
                       <button
                         type="button"
-                        className={styles.cardAction}
+                        className={styles.retryButton}
                         onClick={fetchCatalog}
                       >
-                        {i18n.t("common.retry", { defaultValue: "Reintentar" })}
+                        {t("common:retry", { defaultValue: "Reintentar" })}
                       </button>
                     </div>
-                  ) : widgetsList.length > 0 ? (
-                    <div className={styles.grid}>
+                  ) : widgetsList.length === 0 ? (
+                    <div className={styles.emptyState}>
+                      <div className={styles.emptyIconWrap}>
+                        <GridPlusIcon
+                          style={{
+                            width: 24,
+                            height: 24,
+                            stroke: "currentColor",
+                            strokeWidth: 1.5,
+                          }}
+                        />
+                      </div>
+                      <p className={styles.emptyText}>
+                        {t("widgets:empty", {
+                          defaultValue:
+                            "No se encontraron widgets con los filtros aplicados.",
+                        })}
+                      </p>
+                      <span className={styles.emptySubtext}>
+                        {t("widgets:emptySubtext", {
+                          defaultValue:
+                            "Prueba buscando con otros términos o seleccionando otra categoría.",
+                        })}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className={styles.cardsGrid}>
                       {widgetsList.map((def: PredefinedWidget) => {
                         const isInstalled = activeWidgets.includes(def.id);
                         const canUse = tierSatisfies(
@@ -539,146 +902,107 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
                         );
                         const isPending = isThisActionPending(def.id);
 
-                        const translated = getWidgetTranslation(def);
-                        let buttonLabel = i18n.t("widgets.install", {
-                          defaultValue: "Instalar",
-                        });
-                        if (isInstalled) {
-                          buttonLabel = isPending
-                            ? i18n.t("widgets.uninstalling", {
-                                defaultValue: "Desinstalando...",
-                              })
-                            : i18n.t("widgets.uninstall", {
-                                defaultValue: "Desinstalar",
-                              });
-                        } else if (isPending) {
-                          buttonLabel = i18n.t("widgets.installing", {
-                            defaultValue: "Instalando...",
-                          });
-                        } else if (!canUse) {
-                          buttonLabel = i18n.t("widgets.requiresTier", {
-                            defaultValue: `Requiere ${TIER_LABELS[def.tierRequired]}`,
-                            tier: TIER_LABELS[def.tierRequired],
-                          });
-                        }
-
                         return (
-                          <div
+                          <WidgetCard
                             key={def.id}
-                            className={`${styles.card} ${
-                              isInstalled ? styles.cardInstalled : ""
-                            }`}
-                          >
-                            <div className={styles.cardHeader}>
-                              <div
-                                className={styles.cardTierBadge}
-                                data-tier={def.tierRequired}
-                              >
-                                {def.tierRequired !== "free" && (
-                                  <Crown
-                                    style={{
-                                      width: "12px",
-                                      height: "12px",
-                                      strokeWidth: 2,
-                                      stroke: "rgb(255, 200, 100)",
-                                    }}
-                                  />
-                                )}
-                                <span>{TIER_LABELS[def.tierRequired]}</span>
-                              </div>
-                              <span className={styles.cardCategory}>
-                                {def.category}
-                              </span>
-                            </div>
-
-                            <h3 className={styles.cardTitle}>
-                              {translated.name}
-                            </h3>
-                            <p className={styles.cardDesc}>
-                              {translated.description}
-                            </p>
-
-                            <WidgetPreview
-                              componentKey={def.componentKey}
-                              title={translated.name}
-                            />
-
-                            <button
-                              className={`${styles.cardAction} ${
-                                isInstalled ? styles.cardActionRemove : ""
-                              }`}
-                              onClick={() => handleWidgetAction(def)}
-                              disabled={isPending}
-                            >
-                              {buttonLabel}
-                            </button>
-                          </div>
+                            def={def}
+                            isInstalled={isInstalled}
+                            canUse={canUse}
+                            isPending={isPending}
+                            buttonLabel={getWidgetButtonLabel(
+                              def,
+                              isInstalled,
+                              canUse,
+                              isPending,
+                            )}
+                            tierLabel={formatTierLabel(def.tierRequired)}
+                            onAction={handleWidgetAction}
+                          />
                         );
                       })}
                     </div>
-                  ) : (
-                    <div className={styles.emptyState}>
-                      <p>
-                        No se encontraron widgets con los filtros aplicados.
-                      </p>
-                      <span className={styles.emptySubtext}>
-                        Prueba buscando con otros términos o seleccionando otra
-                        categoría.
-                      </span>
-                    </div>
                   )}
-                </div>
 
-                {totalPages > 1 && (
-                  <footer className={styles.paginationBar}>
-                    <span className={styles.pageInfo}>
-                      Página {currentPage} de {totalPages}
-                    </span>
-                    <div className={styles.pageButtons}>
-                      <button
-                        className={styles.pageBtn}
-                        onClick={() =>
-                          setCurrentPage((p: number) => Math.max(p - 1, 1))
-                        }
-                        disabled={currentPage <= 1 || isLoading}
-                      >
-                        Anterior
-                      </button>
-                      <button
-                        className={styles.pageBtn}
-                        onClick={() =>
-                          setCurrentPage((p: number) =>
-                            Math.min(p + 1, totalPages),
-                          )
-                        }
-                        disabled={currentPage >= totalPages || isLoading}
-                      >
-                        Siguiente
-                      </button>
-                    </div>
-                  </footer>
-                )}
-              </>
-            ) : (
-              <div className={styles.scrollArea}>
-                <EmbeddedWidgetManager
-                  widgets={myEmbeddedWidgets}
-                  activeWidgets={activeWidgets}
-                  userTier={userTier}
-                  onInstall={(id: string) => installWidget(id, id)}
-                  onUninstall={(id: string) => uninstallWidget(id)}
-                  onChange={fetchMyWidgets}
-                />
-              </div>
-            )}
-          </main>
+                  {!isLoading && totalPages > 1 && (
+                    <footer className={styles.paginationBar}>
+                      <span className={styles.paginationInfo}>
+                        {t("widgets:pagination.page", {
+                          current: currentPage,
+                          total: totalPages,
+                          defaultValue: `Página ${currentPage} de ${totalPages}`,
+                        })}
+                      </span>
+                      <div className={styles.paginationButtons}>
+                        <button
+                          type="button"
+                          className={styles.paginationBtn}
+                          disabled={currentPage <= 1 || isLoading}
+                          onClick={() =>
+                            setCurrentPage((p: number) => Math.max(p - 1, 1))
+                          }
+                        >
+                          <ArrowLeft style={{ width: 14, height: 14 }} />
+                          <span>
+                            {t("widgets:pagination.prev", {
+                              defaultValue: "Anterior",
+                            })}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.paginationBtn}
+                          disabled={currentPage >= totalPages || isLoading}
+                          onClick={() =>
+                            setCurrentPage((p: number) =>
+                              Math.min(p + 1, totalPages),
+                            )
+                          }
+                        >
+                          <span>
+                            {t("widgets:pagination.next", {
+                              defaultValue: "Siguiente",
+                            })}
+                          </span>
+                          <ArrowLeft
+                            style={{
+                              width: 14,
+                              height: 14,
+                              transform: "rotate(180deg)",
+                            }}
+                          />
+                        </button>
+                      </div>
+                    </footer>
+                  )}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="my-widgets"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <EmbeddedWidgetManager
+                    widgets={myEmbeddedWidgets}
+                    activeWidgets={activeWidgets}
+                    userTier={userTier}
+                    onInstall={(id: string) => installWidget(id, id)}
+                    onUninstall={(id: string) => uninstallWidget(id)}
+                    onChange={fetchMyWidgets}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </section>
         </AnimatedSectionContent>
       </Modal.Body>
+
       <Modal.Footer bordered={true}>
         <div className={styles.footerContent}>
-          <Information style={{ width: 15, height: 15 }} />
+          <Information style={{ width: 15, height: 15, flexShrink: 0 }} />
           <span>
-            {i18n.t("widgets.footer", {
+            {t("widgets:footer", {
               defaultValue:
                 "Los widgets instalados se cargan bajo demanda para mantener tu aplicación rápida.",
             })}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 
@@ -14,13 +15,6 @@ import { NewFeaturesPreview } from "./NewFeaturesPreview";
 import styles from "./NewFeatures.module.css";
 
 const AUTO_PLAY_INTERVAL = 10000;
-
-const CATEGORY_MAP: Record<string, string> = {
-  new_feature: "Novedad",
-  improvement: "Mejora",
-  bug_fix: "Corrección",
-  announcement: "Anuncio",
-};
 
 const variants = {
   enter: (direction: number) => ({
@@ -40,6 +34,7 @@ const variants = {
 };
 
 export const NewFeature = () => {
+  const { t } = useTranslation(["widgets"]);
   const app_updates = useDashboardStore((state) => state.app_updates);
   const hasFetchedAppUpdates = useDashboardStore(
     (state) => state.hasFetchedAppUpdates,
@@ -124,8 +119,10 @@ export const NewFeature = () => {
                 <div className={styles.metaInfo}>
                   <span className={styles.category}>
                     {currentUpdate.category
-                      ? CATEGORY_MAP[currentUpdate.category] ||
-                        currentUpdate.category
+                      ? t(
+                          `widgets:items.new-features.categories.${currentUpdate.category}`,
+                          { defaultValue: currentUpdate.category },
+                        )
                       : ""}
                   </span>
                   {currentUpdate.version && (
@@ -138,7 +135,9 @@ export const NewFeature = () => {
               </div>
               <p className={styles.modalText}>{currentUpdate.content}</p>
               <footer className={styles.modalFooter}>
-                <button onClick={() => setModal(false)}>cerrar</button>
+                <button onClick={() => setModal(false)}>
+                  {t("widgets:items.new-features.close", "Cerrar")}
+                </button>
               </footer>
             </div>
           </div>

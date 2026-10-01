@@ -56,6 +56,8 @@ export async function loadDashboardFull(): Promise<{
       componentKey:        (r.pw_component_key ?? r.widget_key) as string | null,
       pwName:              r.pw_name as string | null,
       pwDescription:       r.pw_description as string | null,
+      pwLocalizedName:     r.pw_localized_name as Record<string, string> | null,
+      pwLocalizedDescription: r.pw_localized_description as Record<string, string> | null,
       pwCategory:          r.pw_category as string | null,
       pwTierRequired:      r.pw_tier_required as WidgetInstance["pwTierRequired"],
       pwIsResizable:       r.pw_is_resizable as boolean | null,
@@ -284,6 +286,7 @@ export interface PaginatedWidgetsCatalog {
   currentPage: number;
   totalPages: number;
   categoryCounts: Record<string, number>;
+  tierCounts?: Record<string, number>;
 }
 
 export async function getWidgetsCatalogPaginated(
@@ -312,6 +315,7 @@ export async function getWidgetsCatalogPaginated(
       total_pages?: number;
       current_page?: number;
       category_counts?: Record<string, number>;
+      tier_counts?: Record<string, number>;
     };
     const widgets: PredefinedWidget[] = (raw.widgets ?? []).map(
       (w: Record<string, unknown>) => ({
@@ -343,6 +347,7 @@ export async function getWidgetsCatalogPaginated(
         currentPage: page,
         totalPages: raw.total_pages ?? 1,
         categoryCounts: raw.category_counts ?? {},
+        tierCounts: raw.tier_counts ?? {},
       },
     };
   } catch (e) {

@@ -1,0 +1,186 @@
+{
+  "title": "Galería de widgets",
+  "tag": "WIDGETS",
+  "navigation": "Secciones de widgets",
+  "catalog": "Explorar widgets",
+  "myWidgets": "Mis widgets",
+  "singleWidget": "widget disponible",
+  "multipleWidgets": "{{count}} widgets disponibles",
+  "activeWidget": "instalado",
+  "activeWidgets": "instalados",
+  "search": "Buscar widgets por nombre o descripción...",
+  "empty": "No se encontraron widgets con los filtros aplicados.",
+  "emptySubtext": "Prueba buscando con otros términos o seleccionando otra categoría.",
+  "banner": {
+    "eyebrow": "TU ESPACIO, A TU MANERA",
+    "title": "Diseña tu dashboard.",
+    "accent": "Tu espacio, a tu manera.",
+    "subtitle": "Widgets que se ajustan a tus necesidades."
+  },
+  "categories": {
+    "all": "Todos",
+    "productivity": "Productividad",
+    "wellness": "Bienestar",
+    "info": "Información",
+    "tools": "Herramientas"
+  },
+  "tiers": {
+    "all": "Todos",
+    "free": "Gratis",
+    "student": "Estudiante",
+    "pro": "Pro",
+    "ultra": "Ultra"
+  },
+  "install": "Instalar",
+  "installing": "Instalando...",
+  "uninstall": "Desinstalar",
+  "uninstalling": "Desinstalando...",
+  "requiresTier": "Requiere {{tier}}",
+  "footer": "Los widgets instalados se cargan bajo demanda para mantener tu aplicación rápida.",
+  "errors": {
+    "catalog": "No se pudo cargar el catálogo de widgets.",
+    "offlineRequired": "Este widget requiere conexión a internet para usarse."
+  },
+  "pagination": {
+    "page": "Página {{current}} de {{total}}",
+    "prev": "Anterior",
+    "next": "Siguiente"
+  },
+  "myWidgetsSection": {
+    "title": "Tus widgets personalizados",
+    "subtitle": "Agrega e interactúa con tus propias integraciones web embebidas."
+  },
+  "items": {
+    "summary": {
+      "name": "Resumen",
+      "description": "Visualiza el progreso general y balance de tus tareas completadas hoy.",
+      "totalTasks_one": "{{count}} Tarea total",
+      "totalTasks_other": "{{count}} Tareas totales",
+      "completed_one": "{{count}} completada",
+      "completed_other": "{{count}} completadas"
+    },
+    "upcoming-tasks": {
+      "name": "Próximas Tareas",
+      "description": "Tus tareas pendientes más cercanas ordenadas cronológicamente para no olvidar nada.",
+      "empty": "No tienes tareas pendientes",
+      "mockTask": "Reunión de equipo con diseño"
+    },
+    "new-features": {
+      "name": "Novedades",
+      "description": "Descubre las últimas mejoras, lanzamientos y funciones añadidas a Alino.",
+      "close": "Cerrar",
+      "categories": {
+        "new_feature": "Novedad",
+        "improvement": "Mejora",
+        "bug_fix": "Corrección",
+        "announcement": "Anuncio"
+      }
+    },
+    "pomodoro": {
+      "name": "Pomodoro",
+      "description": "Temporizador de enfoque con técnica Pomodoro y descansos configurables.",
+      "modes": {
+        "work": "Pomodoro",
+        "shortBreak": "Corto",
+        "longBreak": "Largo"
+      },
+      "cycles": "Ciclos: {{count}}",
+      "reset": "Reiniciar",
+      "settings": "Configurar",
+      "pause": "Pausar",
+      "start": "Iniciar",
+      "configTitle": "Configuración de pomodoro",
+      "config": {
+        "data": "Datos",
+        "cyclesDone": "Ciclos realizados",
+        "timesMinutes": "Tiempos (minutos)",
+        "pomodoro": "Pomodoro",
+        "shortBreak": "Descanso corto",
+        "longBreak": "Descanso largo",
+        "autoStartBreaks": "Auto inicio de breaks",
+        "autoStartPomodoros": "Auto inicio de pomodoro",
+        "longBreakInterval": "Intervalo de ciclos para long breaks",
+        "every": "Cada",
+        "cyclesUnit": "ciclos",
+        "soundConfig": "Configuración de sonido",
+        "alarmSound": "Sonido de alarma",
+        "volume": "Volumen ({{volume}}%)",
+        "repetitions": "Repeticiones",
+        "browserNotifications": "Notificaciones del navegador",
+        "restoreDefaults": "Restaurar valores por defecto"
+      }
+    },
+    "ai-planner": {
+      "name": "Planificador IA",
+      "description": "Crea proyectos, listas y subtareas automáticamente a partir de tus ideas con IA.",
+      "readyTitle": "¡Todo listo!",
+      "planMore": "Planificar más",
+      "loadingDots": "Diseñando y organizando estructura...",
+      "upgradeNotice": "Función exclusiva para usuarios Pro y Ultra.",
+      "upgradeBtn": "Mejorar plan",
+      "placeholder": "Ej. Organiza mi mes: tengo 2 exámenes de la facultad y una mudanza...",
+      "generate": "Generar",
+      "defaultSuccess": "Tu plan y tareas ya están guardados en tu cuenta."
+    },
+    "weekly-activity": {
+      "name": "Actividad Semanal",
+      "description": "Gráfico interactivo con el ritmo de tareas completadas durante los últimos 7 días.",
+      "summary_one": "{{count}} tarea completada esta semana",
+      "summary_other": "{{count}} tareas completadas esta semana"
+    },
+    "streak": {
+      "name": "Racha",
+      "description": "Mantén encendida tu llama diaria, días consecutivos y gestiona tus protectores.",
+      "day": "DÍA",
+      "days": "DÍAS"
+    },
+    "achievements": {
+      "name": "Logros",
+      "description": "Alcanza hitos de productividad y reclama recompensas de monedas de Alino.",
+      "title": "Logros",
+      "readyBadge_one": "{{count}} listo",
+      "readyBadge_other": "{{count}} listos",
+      "ready": "¡Listo!",
+      "claim": "Reclamar",
+      "inProgress": "Completando tareas..."
+    }
+  },
+  "offlinePlaceholder": {
+    "title": "Sin conexión a internet",
+    "genericReason": "Este widget requiere conexión a internet para funcionar.",
+    "syncReason": "Este widget requiere conexión para sincronizar {{name}}.",
+    "embeddedReason": "Los widgets embebidos requieren conexión a internet para cargar su contenido."
+  },
+  "upgradePlaceholder": {
+    "title": "{{name}} Bloqueado",
+    "description": "Este widget requiere una suscripción Pro.",
+    "upgradeBtn": "Actualizar a Pro"
+  },
+  "embedded": {
+    "loading": "Cargando widget…",
+    "noUrl": "Este widget no tiene URL configurada.",
+    "loadError": "No se pudo cargar el widget. Verifica la URL."
+  },
+  "dashboard": {
+    "greetings": {
+      "morning": "Buen día",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    },
+    "defaultUser": "Bienvenido",
+    "todayIs": "Hoy es",
+    "summarySubtitle": "Aquí tienes un resumen de tu productividad",
+    "actions": {
+      "editDashboard": "Editar dashboard",
+      "autoSort": "Reordenar widgets",
+      "saveChanges": "Guardar cambios",
+      "finish": "Finalizar",
+      "galleryTitle": "Galería de widgets",
+      "moreWidgets": "Más widgets"
+    },
+    "empty": {
+      "message": "Tu dashboard está vacío. Puedes explorar la galería de widgets para instalar los que más te gusten.",
+      "discoverBtn": "Descubrir widgets"
+    }
+  }
+}

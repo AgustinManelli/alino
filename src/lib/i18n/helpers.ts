@@ -102,15 +102,26 @@ export function getWidgetTranslation(widget: {
   localizedName?: unknown;
   localizedDescription?: unknown;
 }): { name: string; description: string } {
+  const resolvedName = resolveLocalizedField(
+    widget.localizedName ?? widget.name,
+    typeof widget.name === "string" ? widget.name : widget.id,
+  );
+  const resolvedDesc = resolveLocalizedField(
+    widget.localizedDescription ?? widget.description,
+    typeof widget.description === "string" ? widget.description : "",
+  );
+
+  const name = i18n.t(`widgets:items.${widget.id}.name`, {
+    defaultValue: resolvedName,
+  });
+
+  const description = i18n.t(`widgets:items.${widget.id}.description`, {
+    defaultValue: resolvedDesc,
+  });
+
   return {
-    name: resolveLocalizedField(
-      widget.localizedName ?? widget.name,
-      typeof widget.name === "string" ? widget.name : widget.id,
-    ),
-    description: resolveLocalizedField(
-      widget.localizedDescription ?? widget.description,
-      typeof widget.description === "string" ? widget.description : "",
-    ),
+    name,
+    description,
   };
 }
 

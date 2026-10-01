@@ -12,10 +12,18 @@ import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
-
-import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { Cross } from "@/components/ui/icons/icons";
 import styles from "./Modal.module.css";
+
+interface ModalStackEntry {
+  id: string;
+  close: () => void;
+  closeOnEsc: boolean;
+}
+
+const modalStack: ModalStackEntry[] = [];
+let initialBodyOverflow: string | null = null;
+let initialBodyPaddingRight: string | null = null;
 
 interface ModalContextType {
   onClose: () => void;
@@ -247,25 +255,53 @@ export function Modal({
   const modalRef = useRef<HTMLElement | null>(null);
   const fallbackElRef = useRef<HTMLElement | null>(null);
 
+  const overlayPointerDownTarget = useRef<EventTarget | null>(null);
+
   useEffect(() => {
     if (!isOpen) return;
 
-    const originalOverflow = document.body.style.overflow;
-    const originalPaddingRight = document.body.style.paddingRight;
+    if (modalStack.length === 0) {
+      initialBodyOverflow = document.body.style.overflow;
+      initialBodyPaddingRight = document.body.style.paddingRight;
 
-    const scrollbarWidth =
-      window.innerWidth - document.documentElement.clientWidth;
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
 
-    document.body.style.overflow = "hidden";
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      document.body.style.overflow = "hidden";
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
     }
 
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.paddingRight = originalPaddingRight;
+    const entry: ModalStackEntry = { id, close: onClose, closeOnEsc };
+    modalStack.push(entry);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        const top = modalStack[modalStack.length - 1];
+        if (top && top.id === id && top.closeOnEsc) {
+          e.stopPropagation();
+          onClose();
+        }
+      }
     };
-  }, [isOpen]);
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      const index = modalStack.indexOf(entry);
+      if (index !== -1) {
+        modalStack.splice(index, 1);
+      }
+      if (modalStack.length === 0) {
+        document.body.style.overflow = initialBodyOverflow ?? "";
+        document.body.style.paddingRight = initialBodyPaddingRight ?? "";
+        initialBodyOverflow = null;
+        initialBodyPaddingRight = null;
+      }
+    };
+  }, [isOpen, id, onClose, closeOnEsc]);
 
   useEffect(() => {
     const existing = document.getElementById("portal-root");
@@ -287,29 +323,19 @@ export function Modal({
     };
   }, [id]);
 
-  useEffect(() => {
-    if (!isOpen || !closeOnEsc) return;
+  const handleOverlayPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    overlayPointerDownTarget.current = e.target;
+  };
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, closeOnEsc, onClose]);
-
-  useOnClickOutside(
-    modalRef as React.RefObject<HTMLElement>,
-    () => {
-      if (closeOnOverlayClick) {
-        onClose();
-      }
-    },
-    [],
-    "ignore-modal-close",
-  );
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (
+      closeOnOverlayClick &&
+      e.target === e.currentTarget &&
+      overlayPointerDownTarget.current === e.currentTarget
+    ) {
+      onClose();
+    }
+  };
 
   if (!container) return null;
 
@@ -332,6 +358,8 @@ export function Modal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
+            onPointerDown={handleOverlayPointerDown}
+            onClick={handleOverlayClick}
             className={`${styles.overlay} ${overlayClassName || ""}`}
             style={{
               backgroundColor: "rgba(0, 0, 0, 0.45)",
@@ -385,6 +413,8 @@ export function Modal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 8 }}
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               className={`${styles.modal} ${contentClassName || ""} ${className || ""}`}
               style={modalStyle}
             >

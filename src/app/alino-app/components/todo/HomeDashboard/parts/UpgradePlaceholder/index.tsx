@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { Crown } from "@/components/ui/icons/icons";
 import styles from "./UpgradePlaceholder.module.css";
 import { useModalStore } from "@/store/useModalStore";
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export const UpgradePlaceholder = ({ widgetName }: Props) => {
+  const { t } = useTranslation(["widgets"]);
   const openModal = useModalStore((s) => s.open);
 
   const handleOpenPremiumModal = () => {
@@ -19,12 +21,19 @@ export const UpgradePlaceholder = ({ widgetName }: Props) => {
       <div className={styles.iconWrapper}>
         <Crown className={styles.icon} />
       </div>
-      <h3 className={styles.title}>{widgetName} Bloqueado</h3>
+      <h3 className={styles.title}>
+        {t("widgets:upgradePlaceholder.title", "{{name}} Bloqueado", {
+          name: widgetName,
+        })}
+      </h3>
       <p className={styles.text}>
-        Este widget requiere una suscripción <strong>Pro</strong>.
+        {t(
+          "widgets:upgradePlaceholder.description",
+          "Este widget requiere una suscripción Pro.",
+        )}
       </p>
       <button className={styles.upgradeBtn} onClick={handleOpenPremiumModal}>
-        Actualizar a Pro
+        {t("widgets:upgradePlaceholder.upgradeBtn", "Actualizar a Pro")}
       </button>
     </div>
   );

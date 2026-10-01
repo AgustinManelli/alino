@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { TaskCardStatic as TaskCard } from "../../../TaskCard/TaskCard";
 import { AnimatePresence } from "motion/react";
 import styles from "./UpcomingTasks.module.css";
@@ -11,6 +12,7 @@ import { useWidgetPreview } from "@/context/WidgetPreviewContext";
 import { UpcomingTasksPreview } from "./UpcomingTasksPreview";
 
 export const UpcomingTask = () => {
+  const { t } = useTranslation(["widgets"]);
   const tasks = useTodoDataStore((state) => state.tasks);
   const initialFetch = useTodoDataStore((state) => state.initialFetch);
   const isPreview = useWidgetPreview();
@@ -65,7 +67,10 @@ export const UpcomingTask = () => {
                 padding: "20px 0",
               }}
             >
-              No tienes tareas pendientes
+              {t(
+                "widgets:items.upcoming-tasks.empty",
+                "No tienes tareas pendientes",
+              )}
             </p>
           )}
         </AnimatePresence>

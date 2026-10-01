@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   usePomodoroStore,
   playAlarmSound,
@@ -16,6 +17,7 @@ const soundOptions = getSoundsByUsage("pomodoro").map((sound) => ({
 }));
 
 export const PomodoroConfig = () => {
+  const { t } = useTranslation(["widgets"]);
   const { settings, cycles, updateSettings, updateCycles, resetSettings } =
     usePomodoroStore();
   const [showSoundDropdown, setShowSoundDropdown] = useState(false);
@@ -105,10 +107,12 @@ export const PomodoroConfig = () => {
     <section className={styles.pomoBody}>
       <section className={styles.timerConfig}>
         <div className={styles.timeConfig}>
-          <p className={styles.titleSectionConfig}>Datos</p>
+          <p className={styles.titleSectionConfig}>
+            {t("widgets:items.pomodoro.config.data", "Datos")}
+          </p>
           <div className={styles.configPomodoroTime}>
             <div className={styles.timeLabel}>
-              <span>Ciclos realizados</span>
+              <span>{t("widgets:items.pomodoro.config.cyclesDone", "Ciclos realizados")}</span>
               <NumberInput
                 value={cycles}
                 onChange={(newValue) => handleCyclesChange(newValue)}
@@ -121,11 +125,13 @@ export const PomodoroConfig = () => {
       </section>
       <section className={styles.timerConfig}>
         <div className={styles.timeConfig}>
-          <p className={styles.titleSectionConfig}>Tiempos (minutos)</p>
+          <p className={styles.titleSectionConfig}>
+            {t("widgets:items.pomodoro.config.timesMinutes", "Tiempos (minutos)")}
+          </p>
 
           <div className={styles.configPomodoroTime}>
             <div className={styles.timeLabel}>
-              <span>Pomodoro</span>
+              <span>{t("widgets:items.pomodoro.config.pomodoro", "Pomodoro")}</span>
               <NumberInput
                 value={tempSettings.workTime}
                 onChange={(newValue) =>
@@ -139,7 +145,7 @@ export const PomodoroConfig = () => {
 
           <div className={styles.configShortBreakTime}>
             <div className={styles.timeLabel}>
-              <span>Descanso corto</span>
+              <span>{t("widgets:items.pomodoro.config.shortBreak", "Descanso corto")}</span>
               <NumberInput
                 value={tempSettings.shortBreakTime}
                 onChange={(newValue) =>
@@ -153,7 +159,7 @@ export const PomodoroConfig = () => {
 
           <div className={styles.configLongBreakTime}>
             <div className={styles.timeLabel}>
-              <span>Descanso largo</span>
+              <span>{t("widgets:items.pomodoro.config.longBreak", "Descanso largo")}</span>
               <NumberInput
                 value={tempSettings.longBreakTime}
                 onChange={(newValue) =>
@@ -170,7 +176,9 @@ export const PomodoroConfig = () => {
 
         <div className={styles.autoStartBreaks}>
           <div className={styles.switchContainer}>
-            <p className={styles.titleSectionConfig}>Auto inicio de breaks</p>
+            <p className={styles.titleSectionConfig}>
+              {t("widgets:items.pomodoro.config.autoStartBreaks", "Auto inicio de breaks")}
+            </p>
             <Switch
               value={tempSettings.autoStartBreaks}
               action={handleToggleAutoStartBreaks}
@@ -181,7 +189,9 @@ export const PomodoroConfig = () => {
 
         <div className={styles.autoStartPomodoros}>
           <div className={styles.switchContainer}>
-            <p className={styles.titleSectionConfig}>Auto inicio de pomodoro</p>
+            <p className={styles.titleSectionConfig}>
+              {t("widgets:items.pomodoro.config.autoStartPomodoros", "Auto inicio de pomodoro")}
+            </p>
             <Switch
               value={tempSettings.autoStartPomodoros}
               action={handleToggleAutoStartPomodoros}
@@ -192,11 +202,14 @@ export const PomodoroConfig = () => {
 
         <div className={styles.LongBreakInterval}>
           <p className={styles.titleSectionConfig}>
-            Intervalo de ciclos para long breaks
+            {t(
+              "widgets:items.pomodoro.config.longBreakInterval",
+              "Intervalo de ciclos para long breaks",
+            )}
           </p>
           <div className={styles.longBreaksIntervalConfig}>
             <div className={styles.intervalLabel}>
-              <span>Cada</span>
+              <span>{t("widgets:items.pomodoro.config.every", "Cada")}</span>
               <NumberInput
                 value={tempSettings.longBreakInterval}
                 onChange={(newValue) =>
@@ -205,7 +218,7 @@ export const PomodoroConfig = () => {
                 min={2}
                 max={10}
               />
-              <span>ciclos</span>
+              <span>{t("widgets:items.pomodoro.config.cyclesUnit", "ciclos")}</span>
             </div>
           </div>
         </div>
@@ -214,11 +227,15 @@ export const PomodoroConfig = () => {
       <div className={styles.separator}></div>
 
       <section className={styles.soundsConfig}>
-        <p className={styles.titleSectionConfig}>Configuración de sonido</p>
+        <p className={styles.titleSectionConfig}>
+          {t("widgets:items.pomodoro.config.soundConfig", "Configuración de sonido")}
+        </p>
 
         <div className={styles.alarmSoundConfig}>
           <div className={styles.soundLabel}>
-            <span className={styles.soundLabelTitle}>Sonido de alarma</span>
+            <span className={styles.soundLabelTitle}>
+              {t("widgets:items.pomodoro.config.alarmSound", "Sonido de alarma")}
+            </span>
             <div className={styles.soundSelectorContainer}>
               <div className={styles.soundDropdownContainer}>
                 <button
@@ -264,7 +281,11 @@ export const PomodoroConfig = () => {
 
         <div className={styles.volumeConfig}>
           <label className={styles.volumeLabel}>
-            <span>Volumen ({tempSettings.volume}%)</span>
+            <span>
+              {t("widgets:items.pomodoro.config.volume", "Volumen ({{volume}}%)", {
+                volume: tempSettings.volume,
+              })}
+            </span>
             <div className={styles.volumeSliderContainer}>
               <input
                 type="range"
@@ -280,7 +301,7 @@ export const PomodoroConfig = () => {
 
         <div>
           <div className={styles.volumeLabel}>
-            <span>Repeticiones</span>
+            <span>{t("widgets:items.pomodoro.config.repetitions", "Repeticiones")}</span>
             <NumberInput
               value={tempSettings.alarmRep}
               onChange={(newValue) =>
@@ -298,7 +319,10 @@ export const PomodoroConfig = () => {
       <section className={styles.notificationsConfig}>
         <div className={styles.switchContainer}>
           <p className={styles.titleSectionConfig}>
-            Notificaciones del navegador
+            {t(
+              "widgets:items.pomodoro.config.browserNotifications",
+              "Notificaciones del navegador",
+            )}
           </p>
           <Switch
             value={tempSettings.notifications}
@@ -316,7 +340,10 @@ export const PomodoroConfig = () => {
           onClick={handleResetToDefaults}
           className={styles.resetButton}
         >
-          Restaurar valores por defecto
+          {t(
+            "widgets:items.pomodoro.config.restoreDefaults",
+            "Restaurar valores por defecto",
+          )}
         </button>
       </section>
     </section>

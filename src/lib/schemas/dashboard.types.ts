@@ -24,6 +24,8 @@ export interface WidgetInstance {
   componentKey: string | null;
   pwName: string | null;
   pwDescription: string | null;
+  pwLocalizedName?: Record<string, string> | null;
+  pwLocalizedDescription?: Record<string, string> | null;
   pwCategory: string | null;
   pwTierRequired: SubscriptionTier | null;
   pwIsResizable: boolean | null;

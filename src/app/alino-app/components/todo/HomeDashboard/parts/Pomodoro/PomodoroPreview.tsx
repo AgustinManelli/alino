@@ -1,17 +1,19 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { ConfigIcon, PlayIcon } from "@/components/ui/icons/icons";
 import { Tabs, type TabOption } from "@/components/ui/Tabs/Tabs";
 import styles from "./Pomodoro.module.css";
 
 export const PomodoroPreview = () => {
+  const { t } = useTranslation(["widgets"]);
   const modeColor = "#ff6b6b";
   const progress = 65;
 
   const tabOptions: TabOption[] = [
-    { id: "work", label: "Pomodoro" },
-    { id: "shortBreak", label: "Corto" },
-    { id: "longBreak", label: "Largo" },
+    { id: "work", label: t("widgets:items.pomodoro.modes.work", "Pomodoro") },
+    { id: "shortBreak", label: t("widgets:items.pomodoro.modes.shortBreak", "Corto") },
+    { id: "longBreak", label: t("widgets:items.pomodoro.modes.longBreak", "Largo") },
   ];
 
   return (
@@ -35,10 +37,17 @@ export const PomodoroPreview = () => {
         </div>
 
         <div className={styles.statsInfo}>
-          <span>Ciclos: 2</span>
+          <span>
+            {t("widgets:items.pomodoro.cycles", "Ciclos: {{count}}", { count: 2 })}
+          </span>
           <div className={styles.actions}>
-            <span className={styles.resetButton}>Reiniciar</span>
-            <button className={styles.configButton}>
+            <span className={styles.resetButton}>
+              {t("widgets:items.pomodoro.reset", "Reiniciar")}
+            </span>
+            <button
+              className={styles.configButton}
+              title={t("widgets:items.pomodoro.settings", "Configurar")}
+            >
               <ConfigIcon style={{ width: "16px" }} />
             </button>
           </div>

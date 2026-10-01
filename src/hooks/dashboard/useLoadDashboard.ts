@@ -9,6 +9,10 @@ import { useDashboardStore } from "@/store/useDashboardStore";
 import { buildLayoutsFromInstances } from "@/store/dashboardUtils";
 import { useSyncStore } from "@/store/useSyncStore";
 import { offlineDb } from "@/lib/offline/db";
+import {
+  WidgetInstance,
+  PredefinedWidget,
+} from "@/lib/schemas/dashboard.types";
 
 export function useLoadDashboard() {
   const [isPending, setIsPending] = useState(false);
@@ -23,18 +27,33 @@ export function useLoadDashboard() {
       if (offlineDb?.dashboard) {
         const cached = await offlineDb.dashboard.get("user_dashboard_config");
         if (cached) {
-          const instances = (cached.widgetInstances ?? []).filter(
-            (i: any) => i.widgetKey !== "weather"
-          );
+          const cachedCatalog = (
+            cached.predefinedWidgets as PredefinedWidget[] ?? []
+          ).filter((w) => w.id !== "weather");
+
+          const rawCachedInstances = (
+            cached.widgetInstances as WidgetInstance[] ?? []
+          ).filter((i) => i.widgetKey !== "weather");
+
+          const instances = rawCachedInstances.map((inst) => {
+            if (inst.pwLocalizedName && inst.pwLocalizedDescription) return inst;
+            const pw = cachedCatalog.find((p) => p.id === inst.widgetKey);
+            if (!pw) return inst;
+            return {
+              ...inst,
+              pwLocalizedName: inst.pwLocalizedName ?? pw.localizedName,
+              pwLocalizedDescription:
+                inst.pwLocalizedDescription ?? pw.localizedDescription,
+            };
+          });
+
           const layout = cached.layout ?? buildLayoutsFromInstances(instances);
           const activeWidgets = instances
-            .filter((i: any) => i.isInstalled)
-            .map((i: any) => i.widgetKey);
+            .filter((i) => i.isInstalled)
+            .map((i) => i.widgetKey);
 
           useDashboardStore.setState({
-            predefinedWidgets: (cached.predefinedWidgets ?? []).filter(
-              (w: any) => w.id !== "weather"
-            ),
+            predefinedWidgets: cachedCatalog,
             widgetInstances: instances,
             widgetLimits: cached.widgetLimits ?? {
               free: 1,
@@ -48,8 +67,8 @@ export function useLoadDashboard() {
           });
         }
       }
-    } catch (cacheErr) {
-      console.warn("[DashboardStore] Error leyendo cache de Dexie:", cacheErr);
+    } catch {
+      useDashboardStore.setState({ isConfigLoaded: true });
     }
 
     if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -70,7 +89,21 @@ export function useLoadDashboard() {
       const rawInstances = dashResult.data?.instances ?? [];
 
       const catalog = rawCatalog.filter((w) => w.id !== "weather");
-      const instances = rawInstances.filter((i) => i.widgetKey !== "weather");
+      const filteredInstances = rawInstances.filter(
+        (i) => i.widgetKey !== "weather",
+      );
+
+      const instances = filteredInstances.map((inst) => {
+        if (inst.pwLocalizedName && inst.pwLocalizedDescription) return inst;
+        const pw = catalog.find((p) => p.id === inst.widgetKey);
+        if (!pw) return inst;
+        return {
+          ...inst,
+          pwLocalizedName: inst.pwLocalizedName ?? pw.localizedName,
+          pwLocalizedDescription:
+            inst.pwLocalizedDescription ?? pw.localizedDescription,
+        };
+      });
 
       const layout = buildLayoutsFromInstances(instances);
       const activeWidgets = instances
@@ -102,8 +135,7 @@ export function useLoadDashboard() {
           updatedAt: Date.now(),
         });
       }
-    } catch (err) {
-      console.warn("[DashboardStore] loadDashboard network failed:", err);
+    } catch {
       useDashboardStore.setState({ isConfigLoaded: true });
     } finally {
       setIsPending(false);
