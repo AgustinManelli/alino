@@ -2333,6 +2333,8 @@ export interface CosmeticAssetSource {
   width?: number;
   height?: number;
   alt?: string;
+  version?: string;
+  integrity?: string;
 }
 
 export interface CosmeticAsset {
@@ -2341,6 +2343,8 @@ export interface CosmeticAsset {
   width?: number;
   height?: number;
   alt?: string;
+  version?: string;
+  integrity?: string;
   variants?: {
     animated?: CosmeticAssetSource[];
     static?: CosmeticAssetSource;

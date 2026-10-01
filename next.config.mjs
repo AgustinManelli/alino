@@ -25,12 +25,6 @@ const nextConfig = {
         port: "",
         pathname: "/storage/v1/object/public/app-updates/**",
       },
-      {
-        protocol: "https",
-        hostname: "dftjzbbvaucwuvgjjhbf.supabase.co",
-        port: "",
-        pathname: "/storage/v1/object/public/cosmetics/**",
-      },
     ],
   },
 };

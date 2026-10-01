@@ -1,11 +1,17 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useState, useEffect, useRef, type CSSProperties } from "react";
 import type {
   CosmeticAsset,
   CosmeticAssetManifest,
   CosmeticItem,
 } from "@/lib/schemas/database.types";
+import {
+  getCosmeticAssetSource,
+  getCosmeticAssetSources,
+  isAllowedCosmeticAssetSource,
+} from "@/lib/cosmetics/assets";
+import { cosmeticMediaManifestSchema } from "@/lib/schemas/cosmetics/validation";
 import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import styles from "./CosmeticRenderer.module.css";
 
@@ -21,8 +27,18 @@ export const CosmeticRenderer = ({ cosmetic, size }: Props) => {
   );
 
   if (!cosmetic) return null;
-  const assets = cosmetic.asset_manifest as CosmeticAssetManifest | undefined;
-  const layers = cosmetic.visual_manifest?.layers;
+  const manifestResult = cosmeticMediaManifestSchema.safeParse({
+    assets: cosmetic.asset_manifest,
+    visual: cosmetic.visual_manifest,
+  });
+  if (!manifestResult.success) {
+    reportInvalidManifest(cosmetic.id, {
+      issues: manifestResult.error.issues,
+    });
+    return null;
+  }
+  const assets = manifestResult.data.assets as CosmeticAssetManifest;
+  const layers = manifestResult.data.visual.layers;
 
   if (!assets || !layers?.length) return null;
 
@@ -31,7 +47,7 @@ export const CosmeticRenderer = ({ cosmetic, size }: Props) => {
       {layers.map((layer) => {
         const asset = assets[layer.asset_key];
         if (!asset) return null;
-        if (!isAllowedAssetSource(asset.src)) return null;
+        if (!isAllowedCosmeticAssetSource(asset.src)) return null;
         const transform = layer.transform;
         const isOverlay = cosmetic.slot === "avatar_overlay";
         const overlayScale = size / 96;
@@ -68,6 +84,41 @@ interface CosmeticAssetImageProps {
   style: CSSProperties;
 }
 
+const svgCache = new Map<string, Promise<string | null>>();
+
+const fetchSvgText = (src: string): Promise<string | null> => {
+  if (!svgCache.has(src)) {
+    svgCache.set(
+      src,
+      fetch(src)
+        .then((r) => (r.ok ? r.text() : null))
+        .catch(() => null),
+    );
+  }
+  return svgCache.get(src)!;
+};
+
+const normalizeSvgRoot = (svgText: string): string =>
+  svgText.replace(
+    /(<svg\b)([^>]*)(>)/i,
+    (_, open, attrs, close) => {
+      const cleaned = attrs
+        .replace(/\s*width="[^"]*"/gi, "")
+        .replace(/\s*height="[^"]*"/gi, "")
+        .replace(/\s*style="[^"]*"/gi, "");
+      return `${open}${cleaned} width="100%" height="100%"${close}`;
+    },
+  );
+
+const sanitizeSvgText = (raw: string): string =>
+  normalizeSvgRoot(
+    raw
+      .replace(/<\?xml[^?]*\?>/gi, "")
+      .replace(/<!DOCTYPE[^>]*>/gi, "")
+      .trim(),
+  );
+
+
 const CosmeticAssetImage = ({
   asset,
   animated,
@@ -77,15 +128,29 @@ const CosmeticAssetImage = ({
   className,
   style,
 }: CosmeticAssetImageProps) => {
-  const selectedAsset = animated
-    ? (asset.variants?.animated?.[0] ?? asset)
-    : (asset.variants?.reduced_motion ?? asset.variants?.static ?? asset);
-  const animatedSources = animated ? (asset.variants?.animated ?? []) : [];
+  const selectedAsset = getCosmeticAssetSource(asset, animated);
+  const animatedSources = getCosmeticAssetSources(asset, animated);
   const reducedMotionSource = asset.variants?.reduced_motion;
-  const safeAnimatedSources = animatedSources.filter((source) =>
-    isAllowedAssetSource(source.src),
-  );
-  if (!isAllowedAssetSource(selectedAsset.src)) return null;
+  const [svgContent, setSvgContent] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (asset.type !== "svg") return;
+    if (!isAllowedCosmeticAssetSource(selectedAsset.src)) return;
+    fetchSvgText(selectedAsset.src).then((text) => {
+      if (mountedRef.current && text) setSvgContent(sanitizeSvgText(text));
+    });
+  }, [selectedAsset.src, asset.type]);
+
+  if (!isAllowedCosmeticAssetSource(selectedAsset.src)) return null;
+
   const imageStyle: CSSProperties = {
     ...style,
     position: "absolute",
@@ -98,11 +163,22 @@ const CosmeticAssetImage = ({
     height: isOverlay
       ? `${(selectedAsset.height ?? 42) * overlayScale}px`
       : "100%",
-    objectFit: "contain",
     pointerEvents: "none",
   };
 
-  if (!safeAnimatedSources.length) {
+  if (asset.type === "svg") {
+    if (!svgContent) return null;
+    return (
+      <div
+        className={className}
+        style={{ ...imageStyle, display: "flex", overflow: "visible" }}
+        dangerouslySetInnerHTML={{ __html: svgContent }}
+        aria-hidden
+      />
+    );
+  }
+
+  if (!animatedSources.length) {
     return (
       <img
         src={selectedAsset.src}
@@ -111,7 +187,7 @@ const CosmeticAssetImage = ({
         height={selectedAsset.height ?? size}
         aria-hidden={!selectedAsset.alt}
         className={className}
-        style={imageStyle}
+        style={{ ...imageStyle, objectFit: "contain" }}
         loading={asset.loading ?? "lazy"}
       />
     );
@@ -119,14 +195,15 @@ const CosmeticAssetImage = ({
 
   return (
     <picture>
-      {reducedMotionSource && isAllowedAssetSource(reducedMotionSource.src) && (
-        <source
-          srcSet={reducedMotionSource.src}
-          type={toMimeType(reducedMotionSource.type)}
-          media="(prefers-reduced-motion: reduce)"
-        />
-      )}
-      {safeAnimatedSources.map((source) => (
+      {reducedMotionSource &&
+        isAllowedCosmeticAssetSource(reducedMotionSource.src) && (
+          <source
+            srcSet={reducedMotionSource.src}
+            type={toMimeType(reducedMotionSource.type)}
+            media="(prefers-reduced-motion: reduce)"
+          />
+        )}
+      {animatedSources.map((source) => (
         <source
           key={source.src}
           srcSet={source.src}
@@ -140,7 +217,7 @@ const CosmeticAssetImage = ({
         height={selectedAsset.height ?? size}
         aria-hidden={!selectedAsset.alt}
         className={className}
-        style={imageStyle}
+        style={{ ...imageStyle, objectFit: "contain" }}
         loading={asset.loading ?? "lazy"}
       />
     </picture>
@@ -157,20 +234,12 @@ const toMimeType = (type?: string): string | undefined => {
   return "image/*";
 };
 
-const isAllowedAssetSource = (source: string): boolean => {
-  if (source.startsWith("/")) return true;
-  try {
-    const url = new URL(source);
-    const configuredHosts = [
-      new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://invalid")
-        .hostname,
-      ...(process.env.NEXT_PUBLIC_COSMETIC_ASSET_HOSTS ?? "")
-        .split(",")
-        .map((host) => host.trim().toLowerCase())
-        .filter(Boolean),
-    ];
-    return configuredHosts.includes(url.hostname.toLowerCase());
-  } catch {
-    return false;
-  }
+const invalidManifestIds = new Set<string>();
+
+const reportInvalidManifest = (id: string, details: unknown): void => {
+  if (invalidManifestIds.has(id)) return;
+  invalidManifestIds.add(id);
+  console.error(`[CosmeticRenderer] Invalid manifest for cosmetic "${id}".`, {
+    details,
+  });
 };
