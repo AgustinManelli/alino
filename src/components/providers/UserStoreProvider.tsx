@@ -26,6 +26,7 @@ import {
   createUserPreferencesStore,
   UserPreferencesContext,
 } from "@/store/useUserPreferencesStore";
+import { SupportedLanguage } from "@/lib/i18n/types";
 
 import { useShopStore } from "@/store/useShopStore";
 
@@ -34,6 +35,7 @@ interface Props {
   user: UserType | null;
   initialSidebarCollapsed: boolean;
   initialSidebarPosition: "left" | "right";
+  initialLanguage?: SupportedLanguage;
   initialListsData?: {
     lists: ListsType[];
     folders: FolderType[];
@@ -47,6 +49,7 @@ export const UserStoreProvider = ({
   user,
   initialSidebarCollapsed,
   initialSidebarPosition,
+  initialLanguage,
   initialListsData,
 }: Props) => {
   const storeRef = useRef<StoreApi<UserState> | null>(null);
@@ -67,6 +70,7 @@ export const UserStoreProvider = ({
     const dbPrefs = (user?.user_private?.preferences || {}) as any;
     prefsStoreRef.current = createUserPreferencesStore({
       ...dbPrefs,
+      language: initialLanguage ?? dbPrefs?.language ?? "es",
       sidebarCollapsed: initialSidebarCollapsed,
       sidebarPosition: initialSidebarPosition,
     });

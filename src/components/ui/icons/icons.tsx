@@ -1897,7 +1897,7 @@ export const PlayIcon = ({
       color="currentColor"
       fill="currentColor"
       stroke="currentColor"
-      stroke-linejoin="round"
+      strokeLinejoin="round"
       {...props}
       className={className}
       style={style}

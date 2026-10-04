@@ -75,7 +75,7 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
   };
 
   const initialLang: SupportedLanguage = (merged.language as SupportedLanguage) || DEFAULT_LANGUAGE;
-  if (typeof window !== "undefined" && i18n.language !== initialLang) {
+  if (i18n.language !== initialLang) {
     i18n.changeLanguage(initialLang);
   }
 

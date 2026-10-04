@@ -1,4 +1,6 @@
-import React, { memo } from "react";
+"use client";
+
+import React, { memo, useCallback, useEffect, useRef } from "react";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import styles from "./BentoGridItem.module.css";
@@ -9,13 +11,107 @@ interface BentoGridItemProps {
   isEdit: boolean;
   isDragging: boolean;
   onDelete?: (id: string) => void;
+  onStartEdit?: () => void;
 }
 
 export const BentoGridItem = memo(
-  ({ item, isEdit, isDragging, onDelete }: BentoGridItemProps) => {
+  ({ item, isEdit, isDragging, onDelete, onStartEdit }: BentoGridItemProps) => {
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const startCoordRef = useRef<{ x: number; y: number } | null>(null);
+    const isLongPressTriggeredRef = useRef(false);
+
+    const clearTimer = useCallback(() => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      startCoordRef.current = null;
+    }, []);
+
+    useEffect(() => clearTimer, [clearTimer]);
+
+    const handlePointerDown = useCallback(
+      (e: React.PointerEvent<HTMLDivElement>) => {
+        if (isEdit || e.button !== 0) return;
+        const target = e.target as HTMLElement | null;
+        if (
+          target?.closest(
+            "button, a, input, textarea, select, [data-no-edit], .react-resizable-handle",
+          )
+        ) {
+          return;
+        }
+
+        startCoordRef.current = { x: e.clientX, y: e.clientY };
+        isLongPressTriggeredRef.current = false;
+
+        const currentTarget = e.currentTarget;
+        const clientX = e.clientX;
+        const clientY = e.clientY;
+
+        timerRef.current = setTimeout(() => {
+          isLongPressTriggeredRef.current = true;
+          if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+            try {
+              navigator.vibrate(45);
+            } catch {
+              return;
+            }
+          }
+          onStartEdit?.();
+
+          const gridItemEl = currentTarget.closest(".react-grid-item");
+          if (gridItemEl) {
+            setTimeout(() => {
+              const syntheticDown = new MouseEvent("mousedown", {
+                bubbles: true,
+                cancelable: true,
+                clientX,
+                clientY,
+                button: 0,
+              });
+              gridItemEl.dispatchEvent(syntheticDown);
+            }, 30);
+          }
+        }, 450);
+      },
+      [isEdit, onStartEdit],
+    );
+
+    const handlePointerMove = useCallback(
+      (e: React.PointerEvent<HTMLDivElement>) => {
+        if (!startCoordRef.current || !timerRef.current) return;
+        const dx = Math.abs(e.clientX - startCoordRef.current.x);
+        const dy = Math.abs(e.clientY - startCoordRef.current.y);
+        if (dx > 8 || dy > 8) {
+          clearTimer();
+        }
+      },
+      [clearTimer],
+    );
+
+    const handlePointerUp = useCallback(() => {
+      clearTimer();
+    }, [clearTimer]);
+
+    const handleContextMenu = useCallback(
+      (e: React.MouseEvent) => {
+        if (isEdit || isLongPressTriggeredRef.current) {
+          e.preventDefault();
+          isLongPressTriggeredRef.current = false;
+        }
+      },
+      [isEdit],
+    );
+
     return (
       <div
-        className={`${styles.bentoItem} ${isDragging ? styles.dragging : ""}`}
+        className={`${styles.bentoItem} ${isEdit ? styles.editable : ""} ${isDragging ? styles.dragging : ""}`}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onContextMenu={handleContextMenu}
       >
         <div className={styles.bentoContent}>
           {isEdit && onDelete && (
@@ -31,17 +127,15 @@ export const BentoGridItem = memo(
               title="Desinstalar widget"
             >
               <svg
-                width="12"
-                height="12"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="3"
+                strokeWidth="3.2"
                 strokeLinecap="round"
-                strokeLinejoin="round"
               >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
             </button>
           )}
@@ -55,13 +149,8 @@ export const BentoGridItem = memo(
                     ? {
                         backgroundColor: `color-mix(in srgb, ${item.color} 8%, transparent)`,
                         color: item.color,
-                        marginLeft: isEdit ? "26px" : "0px",
-                        transition: "margin-left 0.2s ease",
                       }
-                    : {
-                        marginLeft: isEdit ? "26px" : "0px",
-                        transition: "margin-left 0.2s ease",
-                      }
+                    : undefined
                 }
               >
                 {item.icon && (
@@ -71,32 +160,6 @@ export const BentoGridItem = memo(
               </div>
             </header>
           )}
-
-          <div
-            className={`${styles.dragHandle} dragHandle`}
-            style={{
-              opacity: isEdit ? 1 : 0,
-              pointerEvents: isEdit ? "auto" : "none",
-              transform: isEdit ? "scale(1)" : "scale(0.8)",
-            }}
-            aria-label={`Mover elemento ${item.title}`}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="9" cy="12" r="1" />
-              <circle cx="9" cy="5" r="1" />
-              <circle cx="9" cy="19" r="1" />
-              <circle cx="15" cy="12" r="1" />
-              <circle cx="15" cy="5" r="1" />
-              <circle cx="15" cy="19" r="1" />
-            </svg>
-          </div>
 
           {(item.scrollable ?? false) ? (
             <SimpleBar autoHide={false} className={styles.bentoBody}>

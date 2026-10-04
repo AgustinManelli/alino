@@ -1,5 +1,12 @@
 "use client";
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Responsive,
   useContainerWidth,
@@ -12,12 +19,10 @@ import type {
   ResizeHandleAxis,
   ResponsiveLayouts,
 } from "react-grid-layout";
-import SimpleBar from "simplebar-react";
-import { ResizeIcon } from "./ResizeIcon";
+import { ResizeHandle } from "./ResizeHandle";
 import styles from "./DraggableBentoGrid.module.css";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import "simplebar-react/dist/simplebar.min.css";
 
 import { BentoGridItem } from "./BentoGridItem";
 
@@ -30,6 +35,7 @@ export interface BentoItem {
   withoutTopPadding?: boolean;
   withoutHeader?: boolean;
   scrollable?: boolean;
+  isResizable?: boolean;
 }
 
 interface Props {
@@ -39,7 +45,94 @@ interface Props {
   tempLayout: ResponsiveLayouts;
   setTempLayout: (value: ResponsiveLayouts) => void;
   onDelete?: (id: string) => void;
+  onFinishEdit?: () => void;
 }
+
+const BREAKPOINTS = { lg: 700, md: 600, xs: 200 };
+
+const WIGGLE_DURATIONS = [0.12, 0.14, 0.16, 0.18];
+const WIGGLE_DELAYS = [0, -0.03, -0.06, -0.09];
+
+const KEEP_EDIT_SELECTOR =
+  "[data-grid-id], [data-no-exit-edit], [role='dialog'], [role='alertdialog'], button, a, input, textarea, select";
+
+const getBreakpoint = (width: number): keyof typeof BREAKPOINTS => {
+  if (width >= BREAKPOINTS.lg) return "lg";
+  if (width >= BREAKPOINTS.md) return "md";
+  return "xs";
+};
+
+const isLayoutItemResizable = (layoutItem: LayoutItem | undefined) => {
+  if (!layoutItem) return true;
+  if (layoutItem.isResizable === false) return false;
+  const { minW, maxW, minH, maxH } = layoutItem;
+  if (
+    minW !== undefined &&
+    maxW !== undefined &&
+    minH !== undefined &&
+    maxH !== undefined &&
+    minW === maxW &&
+    minH === maxH
+  ) {
+    return false;
+  }
+  return true;
+};
+
+interface GridCellProps extends React.HTMLAttributes<HTMLDivElement> {
+  isEdit: boolean;
+  isDragging: boolean;
+  isResizable: boolean;
+  wiggleIndex: number;
+  "data-grid"?: unknown;
+}
+
+const GridCell = forwardRef<HTMLDivElement, GridCellProps>(
+  (
+    {
+      isEdit,
+      isDragging,
+      isResizable,
+      wiggleIndex,
+      className,
+      style,
+      children,
+      "data-grid": dataGrid,
+      ...rest
+    },
+    ref,
+  ) => {
+    void dataGrid;
+
+    const variant = Math.abs(wiggleIndex) % WIGGLE_DURATIONS.length;
+    const wiggleStyle = {
+      "--wiggle-duration": `${WIGGLE_DURATIONS[variant]}s`,
+      "--wiggle-delay": `${WIGGLE_DELAYS[variant]}s`,
+      "--wiggle-direction":
+        wiggleIndex % 2 === 0 ? "alternate" : "alternate-reverse",
+    } as React.CSSProperties;
+
+    return (
+      <div
+        ref={ref}
+        {...rest}
+        className={`${className ?? ""} ${isEdit ? styles.cellEditing : ""}`.trim()}
+        style={style}
+      >
+        <div
+          className={`${styles.wiggle} ${isEdit ? styles.wiggleActive : ""} ${isDragging ? styles.wiggleDragging : ""}`.trim()}
+          style={wiggleStyle}
+          data-dragging={isDragging ? "true" : "false"}
+          data-resizable={isResizable ? "true" : "false"}
+        >
+          {children}
+        </div>
+      </div>
+    );
+  },
+);
+
+GridCell.displayName = "GridCell";
 
 export const DraggableBentoGrid = memo(
   ({
@@ -49,17 +142,65 @@ export const DraggableBentoGrid = memo(
     tempLayout,
     setTempLayout,
     onDelete,
+    onFinishEdit,
   }: Props) => {
     const { width, containerRef, mounted } = useContainerWidth();
     const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
     const [isInitializing, setIsInitializing] = useState(true);
 
-    useEffect(() => {
-      if (mounted && width > 0) {
-        const timer = setTimeout(() => setIsInitializing(false), 200);
-        return () => clearTimeout(timer);
+    const breakpoint = getBreakpoint(width);
+
+    const resizableMap = useMemo(() => {
+      const currentLayout: readonly LayoutItem[] =
+        (tempLayout as Record<string, readonly LayoutItem[] | undefined>)[
+          breakpoint
+        ] ?? [];
+      const map: Record<string, boolean> = {};
+      for (const item of items) {
+        const layoutItem = currentLayout.find((l) => l.i === item.id);
+        map[item.id] =
+          item.isResizable !== false && isLayoutItemResizable(layoutItem);
       }
+      return map;
+    }, [items, tempLayout, breakpoint]);
+
+    useEffect(() => {
+      if (!mounted || width <= 0) return;
+      const timer = setTimeout(() => setIsInitializing(false), 200);
+      return () => clearTimeout(timer);
     }, [mounted, width]);
+
+    useEffect(() => {
+      return () => {
+        document.body.classList.remove("dragging-grid");
+      };
+    }, []);
+
+    useEffect(() => {
+      if (!isEdit) return;
+
+      const handlePointerDown = (event: PointerEvent) => {
+        const target = event.target as HTMLElement | null;
+        if (target?.closest(KEEP_EDIT_SELECTOR)) return;
+        if (onFinishEdit) {
+          onFinishEdit();
+        } else {
+          setIsEdit(false);
+        }
+      };
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") setIsEdit(false);
+      };
+
+      document.addEventListener("pointerdown", handlePointerDown, true);
+      document.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        document.removeEventListener("pointerdown", handlePointerDown, true);
+        document.removeEventListener("keydown", handleKeyDown);
+      };
+    }, [isEdit, setIsEdit]);
 
     const handleDragStart: EventCallback = useCallback(
       (_layout: Layout, _oldItem, newItem: LayoutItem | null) => {
@@ -79,57 +220,41 @@ export const DraggableBentoGrid = memo(
         axis: ResizeHandleAxis,
         ref: React.Ref<HTMLElement>,
       ): React.ReactElement => (
-        <div
+        <ResizeHandle
           ref={ref as React.Ref<HTMLDivElement>}
-          className={`react-resizable-handle react-resizable-handle-${axis}`}
-          style={{
-            opacity: isEdit ? 1 : 0,
-            pointerEvents: isEdit ? "auto" : "none",
-            transform: isEdit ? "scale(1)" : "scale(0.8)",
-            transition: "opacity 0.2s ease, transform 0.2s ease",
-            position: "absolute",
-            bottom: "10px",
-            right: "10px",
-            zIndex: 10,
-          }}
-        >
-          <ResizeIcon
-            style={{
-              width: "40px",
-              height: "40px",
-              stroke: "rgba(255,255,255,0.5)",
-              strokeWidth: 1,
-              fill: "rgba(255,255,255,0.3)",
-              pointerEvents: "none",
-            }}
-          />
-        </div>
+          axis={axis}
+          isEdit={isEdit}
+        />
       ),
       [isEdit],
     );
+
+    const handleStartEdit = useCallback(() => {
+      setIsEdit(true);
+    }, [setIsEdit]);
 
     return (
       <div
         ref={containerRef as React.RefObject<HTMLDivElement>}
         className={isInitializing ? styles.noTransitions : ""}
-        style={{ maxWidth: "1024px", height: "100%", margin: "auto" }}
+        style={{ maxWidth: "800px", height: "100%", margin: "auto" }}
       >
         {mounted && width > 0 && (
           <Responsive
             width={width}
             style={{ width: "100%", height: "auto" }}
-            breakpoints={{ lg: 700, md: 600, xs: 200 }}
+            breakpoints={BREAKPOINTS}
             cols={{ lg: 3, md: 1, xs: 1 }}
             rowHeight={200}
-            // containerPadding={[10, 10]}
             layouts={tempLayout}
             compactor={verticalCompactor}
             dragConfig={{
               enabled: isEdit,
-              handle: ".dragHandle",
+              cancel:
+                ".react-resizable-handle, button, a, input, textarea, select, [data-no-drag]",
             }}
             resizeConfig={{
-              enabled: isEdit,
+              enabled: true,
               handles: ["se"],
               handleComponent: resizeHandleComponent,
             }}
@@ -143,15 +268,28 @@ export const DraggableBentoGrid = memo(
             onDragStart={handleDragStart}
             onDragStop={handleDragStop}
           >
-            {items.map((item) => (
-              <div key={item.id} data-grid-id={item.id}>
+            {items.map((item, index) => (
+              <GridCell
+                key={item.id}
+                data-grid-id={item.id}
+                data-grid={
+                  item.isResizable !== undefined
+                    ? { isResizable: item.isResizable }
+                    : undefined
+                }
+                isEdit={isEdit}
+                isDragging={draggingItemId === item.id}
+                isResizable={resizableMap[item.id] ?? true}
+                wiggleIndex={index}
+              >
                 <BentoGridItem
                   item={item}
                   isEdit={isEdit}
                   isDragging={draggingItemId === item.id}
                   onDelete={onDelete}
+                  onStartEdit={handleStartEdit}
                 />
-              </div>
+              </GridCell>
             ))}
           </Responsive>
         )}

@@ -5,6 +5,7 @@ import { getUser } from "@/lib/api/user/actions";
 import { getLists } from "@/lib/api/list/actions";
 import { UserStoreProvider } from "@/components/providers/UserStoreProvider";
 import { type UserPreferences } from "@/store/useUserPreferencesStore";
+import { SupportedLanguage } from "@/lib/i18n/types";
 
 import { AppContent } from "./AppContent";
 import { TopBlurEffect } from "@/components/ui/top-blur-effect";
@@ -40,6 +41,12 @@ export default async function AlinoAppLayout({
   const initialSidebarPosition: "left" | "right" =
     cookiePosition ?? dbPrefs?.sidebarPosition ?? "left";
 
+  const cookieLang = cookieStore.get("user-language")?.value as
+    | SupportedLanguage
+    | undefined;
+  const initialLanguage: SupportedLanguage =
+    cookieLang ?? (dbPrefs?.language as SupportedLanguage) ?? "es";
+
   return (
     <section className={styles.alinoAppLayoutContainer}>
       <TopBlurEffect />
@@ -47,6 +54,7 @@ export default async function AlinoAppLayout({
         user={user}
         initialSidebarCollapsed={initialSidebarCollapsed}
         initialSidebarPosition={initialSidebarPosition}
+        initialLanguage={initialLanguage}
         initialListsData={listsResult?.data ?? null}
       >
         <AppContent>{children}</AppContent>

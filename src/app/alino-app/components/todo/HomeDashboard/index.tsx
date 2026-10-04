@@ -56,8 +56,14 @@ interface ConfigOption {
   enabled: boolean;
 }
 
-const useDateAndGreeting = () => {
+interface DateAndGreeting {
+  formattedDate: string;
+  greeting: string;
+}
+
+const useDateAndGreeting = (): DateAndGreeting => {
   const { t, i18n } = useTranslation(["widgets"]);
+
   return useMemo(() => {
     const now = new Date();
     const hour = now.getHours();
@@ -74,6 +80,7 @@ const useDateAndGreeting = () => {
         : hour < 19
           ? t("widgets:dashboard.greetings.afternoon", "Buenas tardes")
           : t("widgets:dashboard.greetings.evening", "Buenas noches");
+
     return { formattedDate, greeting };
   }, [i18n.language, t]);
 };
@@ -173,14 +180,11 @@ export const HomeDashboard = () => {
               title: localized.name,
               icon: meta.icon,
               color: meta.color,
-              content: (
-                <OfflinePlaceholder
-                  widgetName={localized.name}
-                />
-              ),
+              content: <OfflinePlaceholder widgetName={localized.name} />,
               withoutTopPadding: meta.withoutTopPadding ?? false,
               withoutHeader: meta.withoutHeader ?? false,
               scrollable: false,
+              isResizable: inst.pwIsResizable ?? true,
             };
           }
 
@@ -197,6 +201,7 @@ export const HomeDashboard = () => {
             withoutTopPadding: meta.withoutTopPadding ?? false,
             withoutHeader: meta.withoutHeader ?? false,
             scrollable: meta.scrollable ?? false,
+            isResizable: inst.pwIsResizable ?? true,
           };
         }
 
@@ -219,6 +224,7 @@ export const HomeDashboard = () => {
               withoutTopPadding: true,
               withoutHeader: false,
               scrollable: false,
+              isResizable: true,
             };
           }
 
@@ -238,6 +244,7 @@ export const HomeDashboard = () => {
             withoutTopPadding: true,
             withoutHeader: false,
             scrollable: false,
+            isResizable: true,
           };
         }
 
@@ -298,7 +305,8 @@ export const HomeDashboard = () => {
     setIsEdit(false);
   }, [layout, tempLayout, setLayout, saveLayouts]);
 
-  const effectiveLayout = isEdit ? tempLayout : layout;
+  const effectiveLayout =
+    tempLayout && Object.keys(tempLayout).length > 0 ? tempLayout : layout;
 
   const handleSetTempLayout = useCallback(
     (newLayouts: ResponsiveLayouts) => {
@@ -334,13 +342,15 @@ export const HomeDashboard = () => {
           <section className={styles.homeContainer}>
             <div className={styles.homeSubContainer}>
               <h1 className={styles.homeTitle}>
-                <span>{greeting}, </span>
-                <span>{displayName}</span>
+                {greeting ? `${greeting}, ${displayName}` : displayName}
               </h1>
               <div className={styles.homeTimeContainer}>
                 <p>
-                  <span>{t("widgets:dashboard.todayIs", "Hoy es")} </span>
-                  {formattedDate} <br />
+                  <span>
+                    {t("widgets:dashboard.todayIs", "Hoy es")}{" "}
+                    {formattedDate}
+                  </span>
+                  <br />
                   <span>
                     {t(
                       "widgets:dashboard.summarySubtitle",
@@ -350,11 +360,12 @@ export const HomeDashboard = () => {
                 </p>
               </div>
             </div>
-            <div className={styles.configSection}>
+            <div className={styles.configSection} data-no-exit-edit>
               <AnimatePresence mode="wait">
                 {isEdit ? (
                   <motion.button
                     key="finish-btn"
+                    data-no-exit-edit
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
@@ -424,6 +435,7 @@ export const HomeDashboard = () => {
             tempLayout={effectiveLayout}
             setTempLayout={handleSetTempLayout}
             onDelete={uninstallWidget}
+            onFinishEdit={handleFinishEdit}
           />
         ) : (
           <section className={styles.withoutWidgetsSection}>
