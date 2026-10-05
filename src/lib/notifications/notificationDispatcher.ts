@@ -7,7 +7,7 @@ import {
   sendNotificationJobs,
   sendPushToSubscriptionsDirect,
 } from "./notificationSender";
-import { stripHtml } from "./messageBuilders";
+import { stripHtml, buildTestNotificationMessage } from "./messageBuilders";
 import { getUserLocalTime } from "./timeUtils";
 import type {
   CollectorContext,
@@ -79,9 +79,15 @@ export async function sendTestNotificationToUser(
   userId: string,
   supabaseAdmin: SupabaseClient
 ) {
-  const title = "✨ Notificaciones de Alino activadas";
-  const body =
-    "¡Tu configuración de notificaciones funciona a la perfección! Recibirás tus resúmenes y alertas a tiempo.";
+  const { data: userPrivate } = await supabaseAdmin
+    .from("user_private")
+    .select("preferences")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const prefs = (userPrivate?.preferences || {}) as Record<string, unknown>;
+  const userLang = (prefs.language as import("@/lib/i18n/types").SupportedLanguage) || "es";
+  const { title, body } = buildTestNotificationMessage(userLang);
 
   return await sendPushToUser({
     userId,

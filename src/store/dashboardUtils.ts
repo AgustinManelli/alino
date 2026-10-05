@@ -28,15 +28,18 @@ export const buildLayoutsFromInstances = (
     isMobile: boolean,
   ): LayoutItem | null => {
     if (!item) return null;
-    const isResizable = isMobile
-      ? false
-      : pwIsResizable === false
+    const isResizable =
+      pwIsResizable === false
         ? false
         : (item.isResizable ?? true);
     return {
       ...item,
       x: isMobile ? 0 : item.x,
       w: isMobile ? 1 : item.w,
+      minW: isMobile ? 1 : item.minW,
+      maxW: isMobile ? 1 : item.maxW,
+      minH: item.minH ?? 1,
+      maxH: item.maxH,
       isResizable,
     };
   };
@@ -179,6 +182,6 @@ export const getLayoutItemForNewWidget = (
     maxW: isMobile ? 1 : (defLayout?.maxW ?? cols),
     minH: defLayout?.minH ?? 1,
     maxH: defLayout?.maxH,
-    isResizable: isMobile ? false : (def?.isResizable ?? true),
+    isResizable: def?.isResizable ?? true,
   };
 };

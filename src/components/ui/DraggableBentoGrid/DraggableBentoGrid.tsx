@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -79,6 +80,71 @@ const isLayoutItemResizable = (layoutItem: LayoutItem | undefined) => {
   return true;
 };
 
+const findScrollContainer = (el: HTMLElement | null): HTMLElement | null => {
+  let parent = el?.parentElement;
+  while (parent) {
+    const style = window.getComputedStyle(parent);
+    const overflowY = style.overflowY;
+    if (
+      (overflowY === "auto" || overflowY === "scroll") &&
+      parent.scrollHeight > parent.clientHeight
+    ) {
+      return parent;
+    }
+    parent = parent.parentElement;
+  }
+  return (
+    (document.scrollingElement as HTMLElement | null) ??
+    document.documentElement
+  );
+};
+
+const dispatchSyntheticMove = (
+  clientX: number,
+  clientY: number,
+  touchId?: number,
+) => {
+  if (
+    typeof touchId === "number" &&
+    typeof Touch !== "undefined" &&
+    typeof TouchEvent !== "undefined"
+  ) {
+    try {
+      const scrollX = window.scrollX || window.pageXOffset || 0;
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      const touch = new Touch({
+        identifier: touchId,
+        target: document.body,
+        clientX,
+        clientY,
+        pageX: clientX + scrollX,
+        pageY: clientY + scrollY,
+        screenX: clientX,
+        screenY: clientY,
+      });
+
+      const touchEvent = new TouchEvent("touchmove", {
+        bubbles: true,
+        cancelable: true,
+        touches: [touch],
+        targetTouches: [touch],
+        changedTouches: [touch],
+      });
+
+      document.dispatchEvent(touchEvent);
+      return;
+    } catch {}
+  }
+
+  const mouseEvent = new MouseEvent("mousemove", {
+    bubbles: true,
+    cancelable: true,
+    clientX,
+    clientY,
+  });
+  document.dispatchEvent(mouseEvent);
+};
+
 interface GridCellProps extends React.HTMLAttributes<HTMLDivElement> {
   isEdit: boolean;
   isDragging: boolean;
@@ -116,7 +182,7 @@ const GridCell = forwardRef<HTMLDivElement, GridCellProps>(
       <div
         ref={ref}
         {...rest}
-        className={`${className ?? ""} ${isEdit ? styles.cellEditing : ""}`.trim()}
+        className={`${className ?? ""} ${isEdit ? styles.cellEditing : ""} ${isDragging ? styles.cellDragging : ""}`.trim()}
         style={style}
       >
         <div
@@ -148,6 +214,13 @@ export const DraggableBentoGrid = memo(
     const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
     const [isInitializing, setIsInitializing] = useState(true);
 
+    const isDraggingRef = useRef(false);
+    const pointerYRef = useRef<number | null>(null);
+    const pointerXRef = useRef<number | null>(null);
+    const activeTouchIdRef = useRef<number | undefined>(undefined);
+    const animFrameIdRef = useRef<number | null>(null);
+    const scrollContainerRef = useRef<HTMLElement | null>(null);
+
     const breakpoint = getBreakpoint(width);
 
     const resizableMap = useMemo(() => {
@@ -177,43 +250,212 @@ export const DraggableBentoGrid = memo(
     }, []);
 
     useEffect(() => {
-      if (!isEdit) return;
-
-      const handlePointerDown = (event: PointerEvent) => {
-        const target = event.target as HTMLElement | null;
-        if (target?.closest(KEEP_EDIT_SELECTOR)) return;
-        if (onFinishEdit) {
-          onFinishEdit();
-        } else {
-          setIsEdit(false);
+      const handleTouchStart = (e: TouchEvent) => {
+        if (e.touches.length > 0) {
+          activeTouchIdRef.current = e.touches[0].identifier;
+          pointerYRef.current = e.touches[0].clientY;
+          pointerXRef.current = e.touches[0].clientX;
         }
       };
 
+      const handleTouchMove = (e: TouchEvent) => {
+        if (isDraggingRef.current) {
+          if (e.cancelable) {
+            e.preventDefault();
+          }
+          if (e.touches.length > 0) {
+            pointerYRef.current = e.touches[0].clientY;
+            pointerXRef.current = e.touches[0].clientX;
+            activeTouchIdRef.current = e.touches[0].identifier;
+          }
+        }
+      };
+
+      const handleMouseMove = (e: MouseEvent) => {
+        if (isDraggingRef.current) {
+          pointerYRef.current = e.clientY;
+          pointerXRef.current = e.clientX;
+        }
+      };
+
+      window.addEventListener("touchstart", handleTouchStart, {
+        passive: true,
+      });
+      window.addEventListener("touchmove", handleTouchMove, { passive: false });
+      window.addEventListener("mousemove", handleMouseMove);
+
+      return () => {
+        window.removeEventListener("touchstart", handleTouchStart);
+        window.removeEventListener("touchmove", handleTouchMove);
+        window.removeEventListener("mousemove", handleMouseMove);
+      };
+    }, []);
+
+    const stopAutoScroll = useCallback(() => {
+      if (animFrameIdRef.current) {
+        cancelAnimationFrame(animFrameIdRef.current);
+        animFrameIdRef.current = null;
+      }
+      scrollContainerRef.current = null;
+      pointerYRef.current = null;
+      pointerXRef.current = null;
+    }, []);
+
+    const startAutoScroll = useCallback(() => {
+      const container = findScrollContainer(
+        (containerRef as React.RefObject<HTMLDivElement>).current,
+      );
+      scrollContainerRef.current = container;
+      if (!container) return;
+
+      const step = () => {
+        if (!isDraggingRef.current) return;
+
+        const currentY = pointerYRef.current;
+        const currentX = pointerXRef.current;
+        const targetContainer = scrollContainerRef.current;
+
+        if (currentY !== null && targetContainer) {
+          const rect = targetContainer.getBoundingClientRect();
+          const topThreshold = Math.max(rect.top + 70, 160);
+          const bottomThreshold = Math.min(
+            rect.bottom - 70,
+            window.innerHeight - 80,
+          );
+
+          let scrollDelta = 0;
+          if (currentY < topThreshold) {
+            const distance = topThreshold - currentY;
+            const factor = Math.min(Math.max(distance / 70, 0.2), 1);
+            scrollDelta = -Math.round(factor * 14);
+          } else if (currentY > bottomThreshold) {
+            const distance = currentY - bottomThreshold;
+            const factor = Math.min(Math.max(distance / 70, 0.2), 1);
+            scrollDelta = Math.round(factor * 14);
+          }
+
+          if (scrollDelta !== 0) {
+            targetContainer.scrollTop += scrollDelta;
+            if (currentX !== null) {
+              dispatchSyntheticMove(
+                currentX,
+                currentY,
+                activeTouchIdRef.current,
+              );
+            }
+          }
+        }
+
+        animFrameIdRef.current = requestAnimationFrame(step);
+      };
+
+      if (animFrameIdRef.current) {
+        cancelAnimationFrame(animFrameIdRef.current);
+      }
+      animFrameIdRef.current = requestAnimationFrame(step);
+    }, [containerRef]);
+
+    useEffect(() => {
+      return () => {
+        stopAutoScroll();
+      };
+    }, [stopAutoScroll]);
+
+    useEffect(() => {
+      if (!isEdit) return;
+
+      let startPos: { x: number; y: number; time: number } | null = null;
+      let hasMoved = false;
+
+      const handlePointerDown = (event: PointerEvent) => {
+        if (event.button !== 0) return;
+        const target = event.target as HTMLElement | null;
+        if (target?.closest(KEEP_EDIT_SELECTOR)) {
+          startPos = null;
+          return;
+        }
+        startPos = { x: event.clientX, y: event.clientY, time: Date.now() };
+        hasMoved = false;
+      };
+
+      const handlePointerMove = (event: PointerEvent) => {
+        if (!startPos) return;
+        const dist = Math.hypot(
+          event.clientX - startPos.x,
+          event.clientY - startPos.y,
+        );
+        if (dist > 8) {
+          hasMoved = true;
+        }
+      };
+
+      const handlePointerUp = () => {
+        if (!startPos) return;
+        const elapsed = Date.now() - startPos.time;
+        if (!hasMoved && elapsed < 350) {
+          if (onFinishEdit) {
+            onFinishEdit();
+          } else {
+            setIsEdit(false);
+          }
+        }
+        startPos = null;
+        hasMoved = false;
+      };
+
+      const handlePointerCancel = () => {
+        startPos = null;
+        hasMoved = false;
+      };
+
       const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === "Escape") setIsEdit(false);
+        if (event.key === "Escape") {
+          if (onFinishEdit) {
+            onFinishEdit();
+          } else {
+            setIsEdit(false);
+          }
+        }
       };
 
       document.addEventListener("pointerdown", handlePointerDown, true);
+      document.addEventListener("pointermove", handlePointerMove, true);
+      document.addEventListener("pointerup", handlePointerUp, true);
+      document.addEventListener("pointercancel", handlePointerCancel, true);
       document.addEventListener("keydown", handleKeyDown);
 
       return () => {
         document.removeEventListener("pointerdown", handlePointerDown, true);
+        document.removeEventListener("pointermove", handlePointerMove, true);
+        document.removeEventListener("pointerup", handlePointerUp, true);
+        document.removeEventListener(
+          "pointercancel",
+          handlePointerCancel,
+          true,
+        );
         document.removeEventListener("keydown", handleKeyDown);
       };
-    }, [isEdit, setIsEdit]);
+    }, [isEdit, setIsEdit, onFinishEdit]);
 
     const handleDragStart: EventCallback = useCallback(
       (_layout: Layout, _oldItem, newItem: LayoutItem | null) => {
         document.body.classList.add("dragging-grid");
+        isDraggingRef.current = true;
         if (newItem) setDraggingItemId(newItem.i);
+        startAutoScroll();
       },
-      [],
+      [startAutoScroll],
     );
 
     const handleDragStop: EventCallback = useCallback(() => {
       document.body.classList.remove("dragging-grid");
+      isDraggingRef.current = false;
+      stopAutoScroll();
       setDraggingItemId(null);
-    }, []);
+      document.querySelectorAll(".alino-drag-handle-active").forEach((el) => {
+        el.classList.remove("alino-drag-handle-active");
+      });
+    }, [stopAutoScroll]);
 
     const resizeHandleComponent = useCallback(
       (
@@ -250,6 +492,7 @@ export const DraggableBentoGrid = memo(
             compactor={verticalCompactor}
             dragConfig={{
               enabled: isEdit,
+              handle: ".alino-drag-handle-active",
               cancel:
                 ".react-resizable-handle, button, a, input, textarea, select, [data-no-drag]",
             }}

@@ -45,7 +45,7 @@ export default async function AlinoAppLayout({
     | SupportedLanguage
     | undefined;
   const initialLanguage: SupportedLanguage =
-    cookieLang ?? (dbPrefs?.language as SupportedLanguage) ?? "es";
+    (dbPrefs?.language as SupportedLanguage) ?? cookieLang ?? "es";
 
   return (
     <section className={styles.alinoAppLayoutContainer}>

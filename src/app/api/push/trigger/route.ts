@@ -83,6 +83,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import webpush, { type PushSubscription } from "web-push";
 import { createClient } from "@supabase/supabase-js";
+import { buildListInvitationMessage, stripEmojis } from "@/lib/notifications/messageBuilders";
+import type { SupportedLanguage } from "@/lib/i18n/types";
 
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY!;
@@ -99,73 +101,101 @@ export async function POST(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // 1. Verificar secreto
   const secret = request.headers.get("x-webhook-secret");
   if (secret !== process.env.SUPABASE_WEBHOOK_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 2. Obtener datos de la nueva notificación
   const payload = await request.json();
   const { record: notification } = payload;
 
-  let subscriptions: any[] = [];
+  let subscriptions: Array<{ endpoint: string; p256dh: string; auth: string }> = [];
   let pushPayload: { title: string; body: string };
 
-  // 3. Determinar el tipo de notificación y a quién enviar
   if (notification.is_global) {
     const category = notification.metadata?.category;
     if (category !== "announcement") {
-      // Solo enviamos push para anuncios globales
       return NextResponse.json({ message: "Global notification (non-announcement), no push sent." });
     }
-    // Notificación global: obtener todas las suscripciones push
     const { data, error } = await supabase
       .from("push_subscriptions")
       .select("endpoint, p256dh, auth");
 
     if (error || !data || data.length === 0) {
-      console.log("No hay suscripciones push para anuncio global.");
       return NextResponse.json({ message: "No subscriptions found." });
     }
     subscriptions = data;
     pushPayload = {
-      title: notification.title,
-      body: notification.content,
+      title: stripEmojis(notification.title || "Alino"),
+      body: stripEmojis(notification.content || ""),
     };
   } else {
-    // Notificación personal: filtrar por target_user_id
     const userId = notification.target_user_id;
     if (!userId) {
       return NextResponse.json({ error: "User ID is missing" }, { status: 400 });
     }
-    const { data, error } = await supabase
-      .from("push_subscriptions")
-      .select("endpoint, p256dh, auth")
-      .eq("user_id", userId);
 
-    if (error || !data || data.length === 0) {
-      console.log(`No hay suscripciones para el usuario ${userId}`);
+    const [subsResult, privResult] = await Promise.all([
+      supabase
+        .from("push_subscriptions")
+        .select("endpoint, p256dh, auth")
+        .eq("user_id", userId),
+      supabase
+        .from("user_private")
+        .select("preferences")
+        .eq("user_id", userId)
+        .maybeSingle(),
+    ]);
+
+    if (subsResult.error || !subsResult.data || subsResult.data.length === 0) {
       return NextResponse.json({ message: "No subscriptions found for user." });
     }
-    subscriptions = data;
-    pushPayload = {
-      title: notification.title,
-      body: notification.content,
-    };
+    subscriptions = subsResult.data;
+
+    const prefs = (privResult.data?.preferences || {}) as Record<string, unknown>;
+    const userLang = (prefs.language as SupportedLanguage) || "es";
+
+    if (notification.type === "list_invitation") {
+      const inviterName =
+        notification.metadata?.inviter_display_name ||
+        notification.metadata?.inviter_username ||
+        null;
+      const listName = notification.metadata?.list_name || null;
+
+      pushPayload = buildListInvitationMessage({
+        inviterName,
+        listName,
+        lang: userLang,
+      });
+    } else {
+      pushPayload = {
+        title: stripEmojis(notification.title || "Alino"),
+        body: stripEmojis(notification.content || ""),
+      };
+    }
   }
 
-  // 4. Enviar a todas las suscripciones recolectadas
   const promises = subscriptions.map(async (sub) => {
     try {
       const subObject: PushSubscription = {
         endpoint: sub.endpoint,
         keys: { p256dh: sub.p256dh, auth: sub.auth },
       };
-      await webpush.sendNotification(subObject, JSON.stringify(pushPayload));
-    } catch (error: any) {
-      if (error.statusCode === 410 || error.statusCode === 404) {
-        console.log(`Suscripción obsoleta detectada (${sub.endpoint}). Eliminando...`);
+      await webpush.sendNotification(
+        subObject,
+        JSON.stringify({
+          ...pushPayload,
+          icon: "/manifest-icon-192.maskable.png",
+          data: { url: "/alino-app" },
+        })
+      );
+    } catch (error: unknown) {
+      const statusCode =
+        typeof error === "object" && error !== null && "statusCode" in error
+          ? (error as { statusCode: number }).statusCode
+          : null;
+
+      if (statusCode === 410 || statusCode === 404) {
         await supabase
           .from("push_subscriptions")
           .delete()

@@ -56,6 +56,8 @@ export async function collectEngagementNudges(
     const timezone =
       ctx.userTimezonesMap.get(userId) || "America/Argentina/Buenos_Aires";
     const userTime = getUserLocalTime(timezone);
+    const prefs = ctx.userPreferencesMap.get(userId) || {};
+    const userLang = (prefs.language as import("@/lib/i18n/types").SupportedLanguage) || "es";
 
     try {
       const { data: achievementsOverview, error: achError } =
@@ -79,7 +81,7 @@ export async function collectEngagementNudges(
       if (unclaimed.length > 0) {
         const message = buildNudgeRewardMessage(
           unclaimed.length,
-          unclaimed[0].title
+          userLang
         );
 
         jobs.push({
@@ -109,8 +111,8 @@ export async function collectEngagementNudges(
           (nearCompletion.current_progress / nearCompletion.target_value) * 100
         );
         const message = buildNudgeNearAchievementMessage(
-          nearCompletion.title,
-          percentage
+          percentage,
+          userLang
         );
 
         jobs.push({
@@ -165,7 +167,7 @@ export async function collectEngagementNudges(
           }
 
           if (count && count > 0) {
-            const message = buildNudgeOrganizeMessage();
+            const message = buildNudgeOrganizeMessage(userLang);
 
             jobs.push({
               userId,

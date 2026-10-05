@@ -74,9 +74,21 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
     ...initialState,
   };
 
-  const initialLang: SupportedLanguage = (merged.language as SupportedLanguage) || DEFAULT_LANGUAGE;
+  const initialLang: SupportedLanguage =
+    (initialState.language as SupportedLanguage) ||
+    (localStored.language as SupportedLanguage) ||
+    DEFAULT_LANGUAGE;
   if (i18n.language !== initialLang) {
     i18n.changeLanguage(initialLang);
+  }
+  if (typeof window !== "undefined") {
+    setCookie("user-language", initialLang);
+    if (localStored.language !== initialLang) {
+      try {
+        const currentStored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...currentStored, language: initialLang }));
+      } catch (_) {}
+    }
   }
 
   const persistToLocalStorage = (prefs: Partial<UserPreferences>) => {
@@ -127,6 +139,8 @@ export const createUserPreferencesStore = (initialState: Partial<UserPreferences
       const { animations, ...rest } = prefs;
       set((state) => ({ ...state, ...rest }));
       if (prefs.language) {
+        setCookie("user-language", prefs.language);
+        persistToLocalStorage({ language: prefs.language });
         i18n.changeLanguage(prefs.language);
       }
     },

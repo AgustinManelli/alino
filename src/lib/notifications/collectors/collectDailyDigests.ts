@@ -113,7 +113,9 @@ export async function collectDailyDigests(
     const overdue = counts ? Number(counts.overdue_count || 0) : 0;
     const totalPending = counts ? Number(counts.total_pending || 0) : 0;
 
-    const message = buildDailyDigestMessage(dueToday, overdue, totalPending);
+    const prefs = ctx.userPreferencesMap.get(candidate.userId) || {};
+    const userLang = (prefs.language as import("@/lib/i18n/types").SupportedLanguage) || "es";
+    const message = buildDailyDigestMessage(dueToday, overdue, totalPending, userLang);
 
     jobs.push({
       userId: candidate.userId,

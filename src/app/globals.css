@@ -33,6 +33,12 @@
   display: none;
 }
 
+body.dragging-grid {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
 :root {
   --background-alino-app: rgb(240, 240, 240);
   --background-alino-app-translucent: rgba(240, 240, 240, 0.5);

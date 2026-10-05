@@ -30,7 +30,7 @@ export async function collectStreakAlerts(
     const userTime = getUserLocalTime(timezone);
 
     const hoursUntilMidnight = 24 - (userTime.hour + userTime.minute / 60);
-    if (hoursUntilMidnight <= 3.5 && hoursUntilMidnight > 0) {
+    if (hoursUntilMidnight <= 2 && hoursUntilMidnight > 0) {
       eveningCandidates.push({
         userId,
         timezone,
@@ -78,12 +78,14 @@ export async function collectStreakAlerts(
     if (ctx.isTimeBudgetExhausted()) break;
     const s = streakMap.get(candidate.userId);
     if (!s) continue;
-
     if (s.current_streak > 0 && !s.is_active_today) {
+      const prefs = ctx.userPreferencesMap.get(candidate.userId) || {};
+      const userLang = (prefs.language as import("@/lib/i18n/types").SupportedLanguage) || "es";
       const message = buildStreakDangerMessage(
         s.current_streak,
         candidate.hoursUntilMidnight,
-        s.total_protectors || 0
+        s.total_protectors || 0,
+        userLang
       );
 
       jobs.push({

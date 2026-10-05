@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
+import { useUserPreferencesStore } from "@/store/useUserPreferencesStore";
 import { useNotifications } from "@/hooks/notifications/useNotifications";
 import { ModalBox } from "@/components/ui/modal-options-box";
 import { WindowModal } from "@/components/ui/WindowModal";
@@ -41,6 +42,7 @@ export const NotificationsSection = () => {
     useState<Notification | null>(null);
   const iconRef = useRef<HTMLDivElement>(null);
   const user = useUserDataStore((s) => s.user);
+  const lang = useUserPreferencesStore((s) => s.language);
 
   const {
     notifications,
@@ -195,7 +197,7 @@ export const NotificationsSection = () => {
     return (
       <ul className={styles.list}>
         {notifications.map((notification) => {
-          const display = getNotificationDisplay(notification);
+          const display = getNotificationDisplay(notification, lang);
           const isInvitation = notification.type === "list_invitation";
           const isInvitationPending =
             isInvitation &&

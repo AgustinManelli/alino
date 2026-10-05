@@ -1,3 +1,6 @@
+import { buildListInvitationMessage, stripEmojis } from "@/lib/notifications/messageBuilders";
+import type { SupportedLanguage } from "@/lib/i18n/types";
+
 export type NotificationType =
   | "list_invitation"
   | "app_update"
@@ -8,7 +11,7 @@ export type Notification = {
   type: NotificationType | string;
   title: string | null;
   content: string | null;
-  metadata: Record<string, any> & {
+  metadata: {
     invitation_id?: string;
     list_id?: string;
     list_name?: string;
@@ -21,6 +24,10 @@ export type Notification = {
     target_date?: string;
     streak?: number;
     date?: string;
+    image_url?: string;
+    category?: string;
+    version?: string;
+    [key: string]: string | number | boolean | null | undefined;
   };
   is_global: boolean;
   created_at: string;
@@ -36,62 +43,63 @@ export type NotificationDisplay = {
 };
 
 export function getNotificationDisplay(
-  notification: Notification
+  notification: Notification,
+  lang: SupportedLanguage = "es"
 ): NotificationDisplay {
   switch (notification.type) {
     case "list_invitation": {
       const inviterName =
-        notification.metadata?.inviter_display_name ||
-        notification.metadata?.inviter_username ||
-        "Alguien";
-      const listName =
-        notification.metadata?.list_name || "una lista eliminada";
+        (notification.metadata?.inviter_display_name as string | undefined) ||
+        (notification.metadata?.inviter_username as string | undefined) ||
+        null;
+      const listName = (notification.metadata?.list_name as string | undefined) || null;
+      const built = buildListInvitationMessage({ inviterName, listName, lang });
       return {
-        title: "Invitación a lista",
-        content: `${inviterName} te invitó a unirte a "${listName}"`,
+        title: built.title,
+        content: built.body,
       };
     }
 
     case "app_update":
       return {
-        title: notification.title || "Nueva actualización",
-        content: notification.content || "",
+        title: stripEmojis(notification.title || (lang === "en" ? "New update" : "Nueva actualización")),
+        content: stripEmojis(notification.content || ""),
       };
 
     case "daily_digest":
       return {
-        title: notification.title || "☀️ Resumen de productividad",
-        content: notification.content || "Revisa tus tareas del día.",
+        title: stripEmojis(notification.title || (lang === "en" ? "Daily digest" : "Resumen diario")),
+        content: stripEmojis(notification.content || (lang === "en" ? "Check your daily tasks." : "Revisa tus tareas del día.")),
       };
 
     case "task_due":
       return {
-        title: notification.title || "⏰ Tarea por vencer",
-        content: notification.content || "Tienes una tarea próxima a su hora límite.",
+        title: stripEmojis(notification.title || (lang === "en" ? "Upcoming task due" : "Tarea por vencer")),
+        content: stripEmojis(notification.content || (lang === "en" ? "You have a task due soon." : "Tienes una tarea próxima a vencer.")),
       };
 
     case "streak_danger":
       return {
-        title: notification.title || "🔥 ¡Racha en peligro!",
-        content: notification.content || "Completa una tarea para mantener tu racha viva.",
+        title: stripEmojis(notification.title || (lang === "en" ? "Streak at risk" : "Racha en riesgo")),
+        content: stripEmojis(notification.content || (lang === "en" ? "Complete a task to keep your streak alive." : "Completa una tarea para mantener tu racha activa.")),
       };
 
     case "engagement_nudge":
       return {
-        title: notification.title || "✨ Notificación de Alino",
-        content: notification.content || "Novedades y objetivos en tu cuenta.",
+        title: stripEmojis(notification.title || "Alino"),
+        content: stripEmojis(notification.content || (lang === "en" ? "Updates and goals in your account." : "Novedades y objetivos en tu cuenta.")),
       };
 
     case "system":
       return {
-        title: notification.title || "Notificación del sistema",
-        content: notification.content || "",
+        title: stripEmojis(notification.title || (lang === "en" ? "System notification" : "Notificación del sistema")),
+        content: stripEmojis(notification.content || ""),
       };
 
     default:
       return {
-        title: notification.title || "Notificación",
-        content: notification.content || "",
+        title: stripEmojis(notification.title || (lang === "en" ? "Notification" : "Notificación")),
+        content: stripEmojis(notification.content || ""),
       };
   }
 }

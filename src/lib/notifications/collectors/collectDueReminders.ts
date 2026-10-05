@@ -147,10 +147,11 @@ export async function collectDueReminders(
       Math.round((firstTargetMs - ctx.nowMs) / 60000)
     );
 
+    const userLang = (prefs.language as import("@/lib/i18n/types").SupportedLanguage) || "es";
     const message = buildTaskDueMessage(
       count,
-      firstTask.task_content,
-      minRemaining
+      minRemaining,
+      userLang
     );
 
     const dedupKey = `${firstTask.task_id}:${firstTask.target_date}`;
