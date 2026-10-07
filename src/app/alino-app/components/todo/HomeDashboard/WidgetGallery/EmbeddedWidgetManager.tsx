@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { UserWidgetRow } from "@/lib/schemas/database.types";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/icons/icons";
 import { Modal } from "@/components/ui/Modal";
 import { customToast } from "@/lib/toasts";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import styles from "./EmbeddedWidgetManager.module.css";
 
 interface Props {
@@ -43,6 +44,7 @@ export const EmbeddedWidgetManager: React.FC<Props> = ({
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWidget, setEditingWidget] = useState<UserWidgetRow | null>(null);
+  const [widgetToDelete, setWidgetToDelete] = useState<UserWidgetRow | null>(null);
   const [formTitle, setFormTitle] = useState("");
   const [formUrl, setFormUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -145,8 +147,9 @@ export const EmbeddedWidgetManager: React.FC<Props> = ({
     }
   };
 
-  const handleDelete = async (widget: UserWidgetRow) => {
-    const { error } = await deleteWidget(widget.id);
+  const handleDeleteConfirmed = async () => {
+    if (!widgetToDelete) return;
+    const { error } = await deleteWidget(widgetToDelete.id);
     if (error) return;
     customToast.success(
       t("widgets:myWidgetsSection.deletedSuccess", {
@@ -154,6 +157,7 @@ export const EmbeddedWidgetManager: React.FC<Props> = ({
       }),
     );
     onChange?.();
+    setWidgetToDelete(null);
   };
 
   const getDomainFromUrl = (url: string | null) => {
@@ -311,7 +315,7 @@ export const EmbeddedWidgetManager: React.FC<Props> = ({
                     <button
                       type="button"
                       className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
-                      onClick={() => handleDelete(w)}
+                      onClick={() => setWidgetToDelete(w)}
                       aria-label={t("common:delete", {
                         defaultValue: "Eliminar",
                       })}
@@ -339,6 +343,23 @@ export const EmbeddedWidgetManager: React.FC<Props> = ({
           })}
         </div>
       )}
+
+      <AnimatePresence>
+        {widgetToDelete && (
+          <ConfirmationModal
+            text={t("widgets:myWidgetsSection.deleteConfirmTitle", {
+              defaultValue: "¿Eliminar widget?",
+            })}
+            additionalText={t("widgets:myWidgetsSection.deleteConfirmText", {
+              title: widgetToDelete.title,
+              defaultValue: `"${widgetToDelete.title}" se eliminará permanentemente.`,
+            })}
+            actionButton={t("common:delete", { defaultValue: "Eliminar" })}
+            onConfirm={handleDeleteConfirmed}
+            onClose={() => setWidgetToDelete(null)}
+          />
+        )}
+      </AnimatePresence>
 
       <Modal
         isOpen={isModalOpen}

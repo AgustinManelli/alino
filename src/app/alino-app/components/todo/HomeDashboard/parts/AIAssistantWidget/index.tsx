@@ -32,10 +32,6 @@ export default function AIAssistantWidget() {
     [user?.tier],
   );
 
-  if (isPreview) {
-    return <AIAssistantWidgetPreview />;
-  }
-
   const handleGenerateList = useCallback(async () => {
     if (!prompt.trim() || !canGenerateTasks || isProcessing) return;
 
@@ -65,13 +61,18 @@ export default function AIAssistantWidget() {
       setSuccess(true);
       setPrompt("");
       customToast.success(msg);
-    } catch (err) {
-      customToast.error((err as Error).message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      customToast.error(message);
     }
   }, [prompt, canGenerateTasks, isProcessing, generateAndCreateList]);
 
   const maxLength = 2000;
   const currentLength = prompt.length;
+
+  if (isPreview) {
+    return <AIAssistantWidgetPreview />;
+  }
 
   return (
     <div className={styles.container}>

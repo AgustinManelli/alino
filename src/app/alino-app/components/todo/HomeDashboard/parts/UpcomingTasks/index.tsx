@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useShallow } from "zustand/shallow";
 import { useTranslation } from "react-i18next";
 import { TaskCardStatic as TaskCard } from "../../../TaskCard/TaskCard";
 import { AnimatePresence } from "motion/react";
@@ -13,8 +14,12 @@ import { UpcomingTasksPreview } from "./UpcomingTasksPreview";
 
 export const UpcomingTask = () => {
   const { t } = useTranslation(["widgets"]);
-  const tasks = useTodoDataStore((state) => state.tasks);
-  const initialFetch = useTodoDataStore((state) => state.initialFetch);
+  const { tasks, initialFetch } = useTodoDataStore(
+    useShallow((state) => ({
+      tasks: state.tasks,
+      initialFetch: state.initialFetch,
+    })),
+  );
   const isPreview = useWidgetPreview();
 
   const upcomingTasks = useMemo(() => {
@@ -79,4 +84,3 @@ export const UpcomingTask = () => {
     </div>
   );
 };
-

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useShallow } from "zustand/shallow";
 import { useTranslation } from "react-i18next";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { useWidgetPreview } from "@/context/WidgetPreviewContext";
@@ -10,8 +11,12 @@ import { WeeklyActivityPreview } from "./WeeklyActivityPreview";
 
 export const WeeklyActivity = () => {
   const { t, i18n } = useTranslation(["widgets"]);
-  const completedTasks = useTodoDataStore((state) => state.completedTasks);
-  const initialFetch = useTodoDataStore((state) => state.initialFetch);
+  const { completedTasks, initialFetch } = useTodoDataStore(
+    useShallow((state) => ({
+      completedTasks: state.completedTasks,
+      initialFetch: state.initialFetch,
+    })),
+  );
   const isPreview = useWidgetPreview();
 
   const weekdayFormatter = useMemo(
@@ -22,33 +27,24 @@ export const WeeklyActivity = () => {
     [i18n.language],
   );
 
-  if (isPreview) {
-    return <WeeklyActivityPreview />;
-  }
-
   const displayData = useMemo(() => {
+    const countByDate = new Map<string, number>();
+    for (const task of completedTasks) {
+      const dateVal = task.completed_at || task.updated_at;
+      if (!dateVal) continue;
+      const taskDate = new Date(dateVal);
+      const key = `${taskDate.getFullYear()}-${String(taskDate.getMonth() + 1).padStart(2, "0")}-${String(taskDate.getDate()).padStart(2, "0")}`;
+      countByDate.set(key, (countByDate.get(key) ?? 0) + 1);
+    }
+
     return Array.from({ length: 7 }).map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      const localDateStr = `${year}-${month}-${day}`;
-
-      const count = completedTasks.filter((task) => {
-        const dateVal = task.completed_at || task.updated_at;
-        if (!dateVal) return false;
-        const taskDate = new Date(dateVal);
-        const tYear = taskDate.getFullYear();
-        const tMonth = String(taskDate.getMonth() + 1).padStart(2, "0");
-        const tDay = String(taskDate.getDate()).padStart(2, "0");
-        return `${tYear}-${tMonth}-${tDay}` === localDateStr;
-      }).length;
-
+      const localDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       return {
         date: localDateStr,
         dateObj: d,
-        completed_count: count,
+        completed_count: countByDate.get(localDateStr) ?? 0,
       };
     });
   }, [completedTasks]);
@@ -62,13 +58,15 @@ export const WeeklyActivity = () => {
     return displayData.reduce((acc, curr) => acc + curr.completed_count, 0);
   }, [displayData]);
 
-  const showStats = initialFetch;
+  if (isPreview) {
+    return <WeeklyActivityPreview />;
+  }
 
   return (
     <div className={styles.activityContainer}>
       <div
         className={styles.summaryText}
-        style={{ opacity: showStats ? 1 : 0, transition: "opacity 0.3s" }}
+        style={{ opacity: initialFetch ? 1 : 0, transition: "opacity 0.3s" }}
       >
         {t(
           totalCompleted === 1
@@ -107,4 +105,3 @@ export const WeeklyActivity = () => {
     </div>
   );
 };
-

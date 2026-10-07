@@ -96,9 +96,14 @@ export const Pomodoro = memo(() => {
               })}
             </span>
             <div className={styles.actions}>
-              <span className={styles.resetButton} onClick={resetTimer}>
+              <button
+                type="button"
+                className={styles.resetButton}
+                onClick={resetTimer}
+                aria-label={t("widgets:items.pomodoro.reset", "Reiniciar")}
+              >
                 {t("widgets:items.pomodoro.reset", "Reiniciar")}
-              </span>
+              </button>
               <button
                 className={styles.configButton}
                 onClick={handleOpenOptions}

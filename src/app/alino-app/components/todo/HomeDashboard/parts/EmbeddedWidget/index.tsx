@@ -59,7 +59,7 @@ export const EmbeddedWidget = ({ widget }: Props) => {
             setLoading(false);
             setError(true);
           }}
-          sandbox="allow-scripts allow-same-origin allow-popups"
+          sandbox="allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox"
           referrerPolicy="no-referrer"
           loading="lazy"
         />

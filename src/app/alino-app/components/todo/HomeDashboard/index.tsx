@@ -38,7 +38,6 @@ import {
 } from "@/components/ui/icons/icons";
 import styles from "./HomeDashboard.module.css";
 
-const BLUR_COLOR = "rgb(106, 195, 255)";
 
 const EmbeddedWidget = dynamic(
   () => import("./parts/EmbeddedWidget").then((mod) => mod.EmbeddedWidget),
@@ -63,6 +62,12 @@ interface DateAndGreeting {
 
 const useDateAndGreeting = (): DateAndGreeting => {
   const { t, i18n } = useTranslation(["widgets"]);
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => forceUpdate((n) => n + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   return useMemo(() => {
     const now = new Date();
@@ -82,7 +87,7 @@ const useDateAndGreeting = (): DateAndGreeting => {
           : t("widgets:dashboard.greetings.evening", "Buenas noches");
 
     return { formattedDate, greeting };
-  }, [i18n.language, t]);
+  }, [i18n.language, t, forceUpdate]);
 };
 
 export const HomeDashboard = () => {
@@ -108,7 +113,7 @@ export const HomeDashboard = () => {
   const userTier = user?.tier ?? "free";
 
   useEffect(() => {
-    setBlurredFx(BLUR_COLOR);
+    setBlurredFx("var(--alino-secondary-color)");
   }, [setBlurredFx]);
 
   useEffect(() => {
@@ -156,7 +161,7 @@ export const HomeDashboard = () => {
 
           const meta = WIDGET_UI_META[key] ?? {
             icon: null,
-            color: "#6366f1",
+            color: "var(--alino-primary-color)",
           };
 
           const isAllowed = tierSatisfies(
@@ -206,12 +211,15 @@ export const HomeDashboard = () => {
         }
 
         if (inst.widgetSource === "embedded" && inst.uwUrl) {
+          const safeUrl =
+            inst.uwUrl.startsWith("https://") ? inst.uwUrl : null;
+
           if (!isOnline) {
             return {
               id: inst.widgetKey,
               title: inst.uwTitle ?? "Widget",
               icon: <Link style={{ width: "16px" }} />,
-              color: "#6366f1",
+              color: "var(--alino-primary-color)",
               content: (
                 <OfflinePlaceholder
                   widgetName={inst.uwTitle ?? "Widget embebido"}
@@ -232,13 +240,21 @@ export const HomeDashboard = () => {
             id: inst.widgetKey,
             title: inst.uwTitle ?? "Widget",
             icon: <Link style={{ width: "16px" }} />,
-            color: "#6366f1",
-            content: (
+            color: "var(--alino-primary-color)",
+            content: safeUrl ? (
               <EmbeddedWidget
                 widget={{
                   title: inst.uwTitle ?? "Widget",
-                  url: inst.uwUrl,
+                  url: safeUrl,
                 }}
+              />
+            ) : (
+              <OfflinePlaceholder
+                widgetName={inst.uwTitle ?? "Widget"}
+                reason={t(
+                  "widgets:offlinePlaceholder.invalidUrl",
+                  "La URL del widget no es válida o no usa HTTPS.",
+                )}
               />
             ),
             withoutTopPadding: true,
@@ -251,7 +267,7 @@ export const HomeDashboard = () => {
         return null;
       })
       .filter(isBentoItem);
-  }, [widgetInstances, userTier, isEdit, isOnline, t, i18n.language]);
+  }, [widgetInstances, userTier, isEdit, isOnline, t]);
 
   const displayName = useMemo(
     () =>
@@ -427,7 +443,15 @@ export const HomeDashboard = () => {
       </section>
 
       <main className={styles.dashboardContent}>
-        {!isConfigLoaded ? null : bentoItems.length > 0 ? (
+        {!isConfigLoaded ? (
+          <div className={styles.skeletonGrid}>
+            {Array(4)
+              .fill(null)
+              .map((_, i) => (
+                <div key={i} className={styles.skeletonCard} />
+              ))}
+          </div>
+        ) : bentoItems.length > 0 ? (
           <DraggableBentoGrid
             items={bentoItems}
             isEdit={isEdit}

@@ -73,7 +73,7 @@ const AnimatedSectionContent: React.FC<AnimatedSectionContentProps> = ({
     const observer = new ResizeObserver(updateHeight);
     observer.observe(content);
     return () => observer.disconnect();
-  }, [children]);
+  }, []);
 
   return (
     <motion.div
@@ -549,9 +549,12 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
     setCurrentPage(1);
   }, []);
 
-  const isThisActionPending = (widgetId: string) => {
-    return (isInstalling || isUninstalling) && targetWidgetId === widgetId;
-  };
+  const isThisActionPending = useCallback(
+    (widgetId: string) => {
+      return (isInstalling || isUninstalling) && targetWidgetId === widgetId;
+    },
+    [isInstalling, isUninstalling, targetWidgetId],
+  );
 
   const handleWidgetAction = async (def: PredefinedWidget) => {
     const isInstalled = activeWidgets.includes(def.id);
@@ -582,28 +585,31 @@ export const WidgetGallery = ({ onClose, userTier }: Props) => {
     }
   };
 
-  const getWidgetButtonLabel = (
-    def: PredefinedWidget,
-    isInstalled: boolean,
-    canUse: boolean,
-    isPending: boolean,
-  ) => {
-    if (isInstalled) {
-      return isPending
-        ? t("widgets:uninstalling", { defaultValue: "Desinstalando..." })
-        : t("widgets:uninstall", { defaultValue: "Desinstalar" });
-    }
-    if (isPending) {
-      return t("widgets:installing", { defaultValue: "Instalando..." });
-    }
-    if (!canUse) {
-      return t("widgets:requiresTier", {
-        tier: formatTierLabel(def.tierRequired),
-        defaultValue: `Requiere ${formatTierLabel(def.tierRequired)}`,
-      });
-    }
-    return t("widgets:install", { defaultValue: "Instalar" });
-  };
+  const getWidgetButtonLabel = useCallback(
+    (
+      def: PredefinedWidget,
+      isInstalled: boolean,
+      canUse: boolean,
+      isPending: boolean,
+    ) => {
+      if (isInstalled) {
+        return isPending
+          ? t("widgets:uninstalling", { defaultValue: "Desinstalando..." })
+          : t("widgets:uninstall", { defaultValue: "Desinstalar" });
+      }
+      if (isPending) {
+        return t("widgets:installing", { defaultValue: "Instalando..." });
+      }
+      if (!canUse) {
+        return t("widgets:requiresTier", {
+          tier: formatTierLabel(def.tierRequired),
+          defaultValue: `Requiere ${formatTierLabel(def.tierRequired)}`,
+        });
+      }
+      return t("widgets:install", { defaultValue: "Instalar" });
+    },
+    [t, formatTierLabel],
+  );
 
   const sections = useMemo(
     () => [

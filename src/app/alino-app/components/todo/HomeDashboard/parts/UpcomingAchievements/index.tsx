@@ -86,7 +86,19 @@ export const UpcomingAchievementsWidget: React.FC<WidgetProps> = () => {
   const isFeaturedReady = featured ? featured.is_completed && !featured.is_claimed : false;
 
   return (
-    <div className={styles.container} onClick={handleOpenGallery}>
+    <div
+      className={styles.container}
+      onClick={handleOpenGallery}
+      role="button"
+      tabIndex={0}
+      aria-label={t("widgets:items.achievements.openGallery", "Abrir galería de logros")}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleOpenGallery();
+        }
+      }}
+    >
       <div className={styles.headerRow}>
         <div className={styles.headerTitleGroup}>
           <span className={styles.title}>
