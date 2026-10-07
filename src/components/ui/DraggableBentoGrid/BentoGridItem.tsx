@@ -1,6 +1,7 @@
 "use client";
 
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import styles from "./BentoGridItem.module.css";
@@ -12,69 +13,56 @@ interface BentoGridItemProps {
   isDragging: boolean;
   onDelete?: (id: string) => void;
   onStartEdit?: () => void;
+  onHoldChange?: (isHolding: boolean) => void;
 }
 
 const triggerDragStart = (
-  targetElement: HTMLElement,
   gridItemElement: HTMLElement,
   clientX: number,
   clientY: number,
-  touchId?: number,
 ) => {
-  targetElement.classList.add("alino-drag-handle-active");
-  gridItemElement.classList.add("alino-drag-handle-active");
-
-  if (
-    typeof touchId === "number" &&
-    typeof Touch !== "undefined" &&
-    typeof TouchEvent !== "undefined"
-  ) {
-    try {
-      const scrollX = window.scrollX || window.pageXOffset || 0;
-      const scrollY = window.scrollY || window.pageYOffset || 0;
-      const touch = new Touch({
-        identifier: touchId,
-        target: targetElement,
-        clientX,
-        clientY,
-        pageX: clientX + scrollX,
-        pageY: clientY + scrollY,
-        screenX: clientX,
-        screenY: clientY,
-      });
-
-      const touchEvent = new TouchEvent("touchstart", {
-        bubbles: true,
-        cancelable: true,
-        touches: [touch],
-        targetTouches: [touch],
-        changedTouches: [touch],
-      });
-
-      targetElement.dispatchEvent(touchEvent);
-      return;
-    } catch {
-      // Fallback to MouseEvent
-    }
-  }
-
   const mouseEvent = new MouseEvent("mousedown", {
     bubbles: true,
     cancelable: true,
+    view: window,
     clientX,
     clientY,
     button: 0,
+    buttons: 1,
   });
-  targetElement.dispatchEvent(mouseEvent);
+  gridItemElement.dispatchEvent(mouseEvent);
 };
 
 export const BentoGridItem = memo(
-  ({ item, isEdit, isDragging, onDelete, onStartEdit }: BentoGridItemProps) => {
+  ({
+    item,
+    isEdit,
+    isDragging,
+    onDelete,
+    onStartEdit,
+    onHoldChange,
+  }: BentoGridItemProps) => {
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const startCoordRef = useRef<{ x: number; y: number } | null>(null);
+    const latestCoordRef = useRef<{ x: number; y: number } | null>(null);
     const isLongPressTriggeredRef = useRef(false);
     const touchIdRef = useRef<number | undefined>(undefined);
     const [isHolding, setIsHolding] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const shouldReduceMotion = useReducedMotion();
+
+    const handleDelete = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (isDeleting) return;
+        setIsDeleting(true);
+        setTimeout(() => {
+          onDelete?.(item.id);
+        }, 200);
+      },
+      [isDeleting, onDelete, item.id],
+    );
 
     const clearTimer = useCallback(() => {
       if (timerRef.current) {
@@ -82,15 +70,24 @@ export const BentoGridItem = memo(
         timerRef.current = null;
       }
       startCoordRef.current = null;
+      latestCoordRef.current = null;
     }, []);
 
     useEffect(() => clearTimer, [clearTimer]);
 
     useEffect(() => {
-      if (!isDragging) {
+      if (!isHolding) return;
+      const handleWindowRelease = () => {
         setIsHolding(false);
-      }
-    }, [isDragging]);
+        onHoldChange?.(false);
+      };
+      window.addEventListener("pointerup", handleWindowRelease);
+      window.addEventListener("pointercancel", handleWindowRelease);
+      return () => {
+        window.removeEventListener("pointerup", handleWindowRelease);
+        window.removeEventListener("pointercancel", handleWindowRelease);
+      };
+    }, [isHolding, onHoldChange]);
 
     const handleTouchStart = useCallback(
       (e: React.TouchEvent<HTMLDivElement>) => {
@@ -115,61 +112,44 @@ export const BentoGridItem = memo(
         const clientX = e.clientX;
         const clientY = e.clientY;
 
-        if (isEdit) {
-          if (e.pointerType === "mouse") {
-            currentTarget.classList.add("alino-drag-handle-active");
-            const gridItemEl = currentTarget.closest(".react-grid-item");
-            if (gridItemEl) {
-              gridItemEl.classList.add("alino-drag-handle-active");
-            }
-            return;
-          }
-
-          startCoordRef.current = { x: clientX, y: clientY };
-          isLongPressTriggeredRef.current = false;
-
-          timerRef.current = setTimeout(() => {
-            timerRef.current = null;
-            isLongPressTriggeredRef.current = true;
-            setIsHolding(true);
-            if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-              try {
-                navigator.vibrate(45);
-              } catch {
-                return;
-              }
-            }
-            const gridItemEl =
-              (currentTarget.closest(".react-grid-item") as HTMLElement | null) ??
-              currentTarget;
-            triggerDragStart(
-              currentTarget,
-              gridItemEl,
-              clientX,
-              clientY,
-              touchIdRef.current,
-            );
-          }, 220);
-          return;
-        }
+        const holdDuration = isEdit
+          ? e.pointerType === "touch"
+            ? 200
+            : 150
+          : 320;
 
         startCoordRef.current = { x: clientX, y: clientY };
+        latestCoordRef.current = { x: clientX, y: clientY };
         isLongPressTriggeredRef.current = false;
 
         timerRef.current = setTimeout(() => {
           timerRef.current = null;
           isLongPressTriggeredRef.current = true;
+          setIsHolding(true);
+          onHoldChange?.(true);
           if (typeof navigator !== "undefined" && "vibrate" in navigator) {
             try {
               navigator.vibrate(45);
-            } catch {
-              return;
-            }
+            } catch {}
           }
-          onStartEdit?.();
-        }, 400);
+          if (!isEdit) {
+            onStartEdit?.();
+          }
+
+          const currentX = latestCoordRef.current?.x ?? clientX;
+          const currentY = latestCoordRef.current?.y ?? clientY;
+
+          currentTarget.classList.add("alino-drag-ready");
+
+          setTimeout(
+            () => {
+              triggerDragStart(currentTarget, currentX, currentY);
+            },
+            isEdit ? 0 : 30,
+          );
+        }, holdDuration);
       },
-      [isEdit, onStartEdit],
+      [isEdit, onStartEdit, onHoldChange],
     );
 
     const handlePointerMove = useCallback(
@@ -179,7 +159,9 @@ export const BentoGridItem = memo(
         const dy = Math.abs(e.clientY - startCoordRef.current.y);
         if (dx > 8 || dy > 8) {
           clearTimer();
+          return;
         }
+        latestCoordRef.current = { x: e.clientX, y: e.clientY };
       },
       [clearTimer],
     );
@@ -188,6 +170,7 @@ export const BentoGridItem = memo(
       (e: React.PointerEvent<HTMLDivElement>) => {
         clearTimer();
         setIsHolding(false);
+        onHoldChange?.(false);
         if (!isDragging) {
           e.currentTarget.classList.remove("alino-drag-handle-active");
           const gridItemEl = e.currentTarget.closest(".react-grid-item");
@@ -196,21 +179,30 @@ export const BentoGridItem = memo(
           }
         }
       },
-      [clearTimer, isDragging],
+      [clearTimer, isDragging, onHoldChange],
     );
 
     const handlePointerCancel = useCallback(
       (e: React.PointerEvent<HTMLDivElement>) => {
         clearTimer();
         setIsHolding(false);
+        onHoldChange?.(false);
         e.currentTarget.classList.remove("alino-drag-handle-active");
         const gridItemEl = e.currentTarget.closest(".react-grid-item");
         if (gridItemEl) {
           gridItemEl.classList.remove("alino-drag-handle-active");
         }
       },
-      [clearTimer],
+      [clearTimer, onHoldChange],
     );
+
+    const handleClickCapture = useCallback((e: React.MouseEvent) => {
+      if (isLongPressTriggeredRef.current) {
+        e.stopPropagation();
+        e.preventDefault();
+        isLongPressTriggeredRef.current = false;
+      }
+    }, []);
 
     const handleContextMenu = useCallback(
       (e: React.MouseEvent) => {
@@ -222,42 +214,69 @@ export const BentoGridItem = memo(
       [isEdit],
     );
 
+    const isReady = isDragging || isHolding;
+
     return (
-      <div
-        className={`${styles.bentoItem} ${isEdit ? styles.editable : ""} ${isDragging || isHolding ? styles.dragging : ""}`}
+      <motion.div
+        className={`${styles.bentoItem} ${isEdit ? styles.editable : ""} ${isReady ? "alino-drag-ready" : ""} ${isReady ? styles.dragging : ""}`}
+        initial={
+          shouldReduceMotion
+            ? { opacity: 0 }
+            : { opacity: 0, scale: 0.82, y: 14 }
+        }
+        animate={
+          isDeleting
+            ? shouldReduceMotion
+              ? { opacity: 0 }
+              : { opacity: 0, scale: 0.72, filter: "blur(4px)" }
+            : shouldReduceMotion
+              ? { opacity: 1 }
+              : { opacity: 1, scale: 1, y: 0, filter: "none" }
+        }
+        transition={
+          isDeleting
+            ? { duration: 0.2, ease: [0.32, 0, 0.67, 0] }
+            : { duration: 0.28, ease: [0.16, 1, 0.3, 1] }
+        }
+        style={isDeleting ? { pointerEvents: "none" } : undefined}
         onTouchStart={handleTouchStart}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
+        onClickCapture={handleClickCapture}
         onContextMenu={handleContextMenu}
       >
         <div className={styles.bentoContent}>
-          {isEdit && onDelete && (
-            <button
-              type="button"
-              className={styles.deleteBadge}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                onDelete(item.id);
-              }}
-              aria-label={`Desinstalar ${item.title}`}
-              title="Desinstalar widget"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3.2"
-                strokeLinecap="round"
+          <AnimatePresence>
+            {isEdit && onDelete && (
+              <motion.button
+                key="delete-badge"
+                type="button"
+                className={styles.deleteBadge}
+                initial={{ opacity: 0, scale: 0.4 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.4 }}
+                transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                onClick={handleDelete}
+                disabled={isDeleting}
+                aria-label={`Desinstalar ${item.title}`}
+                title="Desinstalar widget"
               >
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </button>
-          )}
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3.2"
+                  strokeLinecap="round"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </motion.button>
+            )}
+          </AnimatePresence>
 
           {!(item.withoutHeader ?? false) && (
             <header className={styles.bentoHeader}>
@@ -288,7 +307,7 @@ export const BentoGridItem = memo(
             <div className={styles.bentoBody}>{item.content}</div>
           )}
         </div>
-      </div>
+      </motion.div>
     );
   },
 );

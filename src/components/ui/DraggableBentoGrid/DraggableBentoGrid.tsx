@@ -182,7 +182,7 @@ const GridCell = forwardRef<HTMLDivElement, GridCellProps>(
       <div
         ref={ref}
         {...rest}
-        className={`${className ?? ""} ${isEdit ? styles.cellEditing : ""} ${isDragging ? styles.cellDragging : ""}`.trim()}
+        className={`${className ?? ""} ${isEdit ? styles.cellEditing : ""} ${isDragging ? "alino-drag-ready" : ""} ${isDragging ? styles.cellDragging : ""}`.trim()}
         style={style}
       >
         <div
@@ -212,6 +212,8 @@ export const DraggableBentoGrid = memo(
   }: Props) => {
     const { width, containerRef, mounted } = useContainerWidth();
     const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
+    const [holdingItemId, setHoldingItemId] = useState<string | null>(null);
+    const holdingItemIdRef = useRef<string | null>(null);
     const [isInitializing, setIsInitializing] = useState(true);
 
     const isDraggingRef = useRef(false);
@@ -259,15 +261,39 @@ export const DraggableBentoGrid = memo(
       };
 
       const handleTouchMove = (e: TouchEvent) => {
-        if (isDraggingRef.current) {
+        if (isDraggingRef.current || holdingItemIdRef.current) {
           if (e.cancelable) {
             e.preventDefault();
           }
           if (e.touches.length > 0) {
-            pointerYRef.current = e.touches[0].clientY;
-            pointerXRef.current = e.touches[0].clientX;
-            activeTouchIdRef.current = e.touches[0].identifier;
+            const touch = e.touches[0];
+            pointerYRef.current = touch.clientY;
+            pointerXRef.current = touch.clientX;
+            activeTouchIdRef.current = touch.identifier;
+
+            const mouseEvent = new MouseEvent("mousemove", {
+              bubbles: true,
+              cancelable: true,
+              view: window,
+              clientX: touch.clientX,
+              clientY: touch.clientY,
+              button: 0,
+              buttons: 1,
+            });
+            document.dispatchEvent(mouseEvent);
           }
+        }
+      };
+
+      const handleTouchEnd = () => {
+        if (isDraggingRef.current || holdingItemIdRef.current) {
+          const mouseEvent = new MouseEvent("mouseup", {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            button: 0,
+          });
+          document.dispatchEvent(mouseEvent);
         }
       };
 
@@ -278,16 +304,27 @@ export const DraggableBentoGrid = memo(
         }
       };
 
+      const handleMouseDown = (e: MouseEvent) => {
+        pointerYRef.current = e.clientY;
+        pointerXRef.current = e.clientX;
+      };
+
       window.addEventListener("touchstart", handleTouchStart, {
         passive: true,
       });
       window.addEventListener("touchmove", handleTouchMove, { passive: false });
+      window.addEventListener("touchend", handleTouchEnd, { passive: true });
+      window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
       window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mousedown", handleMouseDown);
 
       return () => {
         window.removeEventListener("touchstart", handleTouchStart);
         window.removeEventListener("touchmove", handleTouchMove);
+        window.removeEventListener("touchend", handleTouchEnd);
+        window.removeEventListener("touchcancel", handleTouchEnd);
         window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mousedown", handleMouseDown);
       };
     }, []);
 
@@ -441,7 +478,10 @@ export const DraggableBentoGrid = memo(
       (_layout: Layout, _oldItem, newItem: LayoutItem | null) => {
         document.body.classList.add("dragging-grid");
         isDraggingRef.current = true;
-        if (newItem) setDraggingItemId(newItem.i);
+        if (newItem) {
+          setDraggingItemId(newItem.i);
+          setHoldingItemId(newItem.i);
+        }
         startAutoScroll();
       },
       [startAutoScroll],
@@ -452,6 +492,8 @@ export const DraggableBentoGrid = memo(
       isDraggingRef.current = false;
       stopAutoScroll();
       setDraggingItemId(null);
+      setHoldingItemId(null);
+      holdingItemIdRef.current = null;
       document.querySelectorAll(".alino-drag-handle-active").forEach((el) => {
         el.classList.remove("alino-drag-handle-active");
       });
@@ -475,6 +517,11 @@ export const DraggableBentoGrid = memo(
       setIsEdit(true);
     }, [setIsEdit]);
 
+    const handleHoldChange = useCallback((id: string, isHolding: boolean) => {
+      setHoldingItemId(isHolding ? id : null);
+      holdingItemIdRef.current = isHolding ? id : null;
+    }, []);
+
     return (
       <div
         ref={containerRef as React.RefObject<HTMLDivElement>}
@@ -492,7 +539,7 @@ export const DraggableBentoGrid = memo(
             compactor={verticalCompactor}
             dragConfig={{
               enabled: isEdit,
-              handle: ".alino-drag-handle-active",
+              handle: ".alino-drag-ready",
               cancel:
                 ".react-resizable-handle, button, a, input, textarea, select, [data-no-drag]",
             }}
@@ -511,29 +558,38 @@ export const DraggableBentoGrid = memo(
             onDragStart={handleDragStart}
             onDragStop={handleDragStop}
           >
-            {items.map((item, index) => (
-              <GridCell
-                key={item.id}
-                data-grid-id={item.id}
-                data-grid={
-                  item.isResizable !== undefined
-                    ? { isResizable: item.isResizable }
-                    : undefined
-                }
-                isEdit={isEdit}
-                isDragging={draggingItemId === item.id}
-                isResizable={resizableMap[item.id] ?? true}
-                wiggleIndex={index}
-              >
-                <BentoGridItem
-                  item={item}
+            {items.map((item, index) => {
+              const isItemDragging = draggingItemId === item.id;
+              const isItemHeld = holdingItemId === item.id;
+              const isItemActive = isItemDragging || isItemHeld;
+
+              return (
+                <GridCell
+                  key={item.id}
+                  data-grid-id={item.id}
+                  data-grid={
+                    item.isResizable !== undefined
+                      ? { isResizable: item.isResizable }
+                      : undefined
+                  }
                   isEdit={isEdit}
-                  isDragging={draggingItemId === item.id}
-                  onDelete={onDelete}
-                  onStartEdit={handleStartEdit}
-                />
-              </GridCell>
-            ))}
+                  isDragging={isItemActive}
+                  isResizable={resizableMap[item.id] ?? true}
+                  wiggleIndex={index}
+                >
+                  <BentoGridItem
+                    item={item}
+                    isEdit={isEdit}
+                    isDragging={isItemActive}
+                    onDelete={onDelete}
+                    onStartEdit={handleStartEdit}
+                    onHoldChange={(holding) =>
+                      handleHoldChange(item.id, holding)
+                    }
+                  />
+                </GridCell>
+              );
+            })}
           </Responsive>
         )}
       </div>
