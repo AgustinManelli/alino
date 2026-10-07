@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 
 import { getUser } from "@/lib/api/user/actions";
 import { getLists } from "@/lib/api/list/actions";
+import { getStreakData } from "@/lib/api/dashboard/actions";
+import { StreakData } from "@/hooks/dashboard/useStreak";
 import { UserStoreProvider } from "@/components/providers/UserStoreProvider";
 import { type UserPreferences } from "@/store/useUserPreferencesStore";
 import { SupportedLanguage } from "@/lib/i18n/types";
@@ -17,9 +19,10 @@ export default async function AlinoAppLayout({
 }: {
   children?: React.ReactNode;
 }) {
-  const [userResult, listsResult] = await Promise.all([
+  const [userResult, listsResult, streakResult] = await Promise.all([
     getUser(),
     getLists(),
+    getStreakData(),
   ]);
 
   if (userResult.error || !userResult.data?.user) {
@@ -47,6 +50,10 @@ export default async function AlinoAppLayout({
   const initialLanguage: SupportedLanguage =
     (dbPrefs?.language as SupportedLanguage) ?? cookieLang ?? "es";
 
+  const initialStreakData = streakResult?.data
+    ? (streakResult.data as StreakData)
+    : null;
+
   return (
     <section className={styles.alinoAppLayoutContainer}>
       <TopBlurEffect />
@@ -56,6 +63,7 @@ export default async function AlinoAppLayout({
         initialSidebarPosition={initialSidebarPosition}
         initialLanguage={initialLanguage}
         initialListsData={listsResult?.data ?? null}
+        initialStreakData={initialStreakData}
       >
         <AppContent>{children}</AppContent>
       </UserStoreProvider>

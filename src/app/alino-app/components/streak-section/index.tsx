@@ -30,10 +30,8 @@ export const StreakSection = () => {
   } = useShopStore();
 
   useEffect(() => {
-    if (isOpen) {
-      fetchStreak();
-    }
-  }, [isOpen, fetchStreak]);
+    fetchStreak();
+  }, [fetchStreak]);
 
   const streakCount = streak?.current_streak ?? 0;
   const maxStreak = streak?.max_streak ?? 0;
@@ -102,13 +100,7 @@ export const StreakSection = () => {
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsOpen((prev) => {
-      const next = !prev;
-      if (next) {
-        fetchStreak();
-      }
-      return next;
-    });
+    setIsOpen((prev) => !prev);
   };
 
   const handleClose = () => setIsOpen(false);

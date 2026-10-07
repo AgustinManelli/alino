@@ -29,6 +29,8 @@ import {
 import { SupportedLanguage } from "@/lib/i18n/types";
 
 import { useShopStore } from "@/store/useShopStore";
+import { useStreakStore } from "@/store/useStreakStore";
+import { StreakData } from "@/hooks/dashboard/useStreak";
 
 interface Props {
   children: ReactNode;
@@ -42,6 +44,7 @@ interface Props {
     tasks?: TaskType[];
     hasMoreRoot: boolean;
   } | null;
+  initialStreakData?: StreakData | null;
 }
 
 export const UserStoreProvider = ({
@@ -51,6 +54,7 @@ export const UserStoreProvider = ({
   initialSidebarPosition,
   initialLanguage,
   initialListsData,
+  initialStreakData,
 }: Props) => {
   const storeRef = useRef<StoreApi<UserState> | null>(null);
   const prefsStoreRef = useRef<any>(null);
@@ -90,6 +94,10 @@ export const UserStoreProvider = ({
       },
       initialFetch: true,
     });
+  }
+
+  if (initialStreakData && !useStreakStore.getState().streak) {
+    useStreakStore.setState({ streak: initialStreakData });
   }
 
   useEffect(() => {
