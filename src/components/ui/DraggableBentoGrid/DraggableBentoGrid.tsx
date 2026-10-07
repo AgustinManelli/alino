@@ -526,71 +526,74 @@ export const DraggableBentoGrid = memo(
       <div
         ref={containerRef as React.RefObject<HTMLDivElement>}
         className={isInitializing ? styles.noTransitions : ""}
-        style={{ maxWidth: "800px", height: "100%", margin: "auto" }}
+        style={{ maxWidth: "800px", minHeight: "100%", margin: "auto" }}
       >
         {mounted && width > 0 && (
-          <Responsive
-            width={width}
-            style={{ width: "100%", height: "auto" }}
-            breakpoints={BREAKPOINTS}
-            cols={{ lg: 3, md: 1, xs: 1 }}
-            rowHeight={200}
-            layouts={tempLayout}
-            compactor={verticalCompactor}
-            dragConfig={{
-              enabled: isEdit,
-              handle: ".alino-drag-ready",
-              cancel:
-                ".react-resizable-handle, button, a, input, textarea, select, [data-no-drag]",
-            }}
-            resizeConfig={{
-              enabled: true,
-              handles: ["se"],
-              handleComponent: resizeHandleComponent,
-            }}
-            dropConfig={{ enabled: isEdit }}
-            onLayoutChange={(
-              _currentLayout: Layout,
-              allLayouts: ResponsiveLayouts,
-            ) => {
-              setTempLayout(allLayouts);
-            }}
-            onDragStart={handleDragStart}
-            onDragStop={handleDragStop}
-          >
-            {items.map((item, index) => {
-              const isItemDragging = draggingItemId === item.id;
-              const isItemHeld = holdingItemId === item.id;
-              const isItemActive = isItemDragging || isItemHeld;
+          <>
+            <Responsive
+              width={width}
+              style={{ width: "100%" }}
+              breakpoints={BREAKPOINTS}
+              cols={{ lg: 3, md: 1, xs: 1 }}
+              rowHeight={200}
+              layouts={tempLayout}
+              compactor={verticalCompactor}
+              dragConfig={{
+                enabled: isEdit,
+                handle: ".alino-drag-ready",
+                cancel:
+                  ".react-resizable-handle, button, a, input, textarea, select, [data-no-drag]",
+              }}
+              resizeConfig={{
+                enabled: true,
+                handles: ["se"],
+                handleComponent: resizeHandleComponent,
+              }}
+              dropConfig={{ enabled: isEdit }}
+              onLayoutChange={(
+                _currentLayout: Layout,
+                allLayouts: ResponsiveLayouts,
+              ) => {
+                setTempLayout(allLayouts);
+              }}
+              onDragStart={handleDragStart}
+              onDragStop={handleDragStop}
+            >
+              {items.map((item, index) => {
+                const isItemDragging = draggingItemId === item.id;
+                const isItemHeld = holdingItemId === item.id;
+                const isItemActive = isItemDragging || isItemHeld;
 
-              return (
-                <GridCell
-                  key={item.id}
-                  data-grid-id={item.id}
-                  data-grid={
-                    item.isResizable !== undefined
-                      ? { isResizable: item.isResizable }
-                      : undefined
-                  }
-                  isEdit={isEdit}
-                  isDragging={isItemActive}
-                  isResizable={resizableMap[item.id] ?? true}
-                  wiggleIndex={index}
-                >
-                  <BentoGridItem
-                    item={item}
+                return (
+                  <GridCell
+                    key={item.id}
+                    data-grid-id={item.id}
+                    data-grid={
+                      item.isResizable !== undefined
+                        ? { isResizable: item.isResizable }
+                        : undefined
+                    }
                     isEdit={isEdit}
                     isDragging={isItemActive}
-                    onDelete={onDelete}
-                    onStartEdit={handleStartEdit}
-                    onHoldChange={(holding) =>
-                      handleHoldChange(item.id, holding)
-                    }
-                  />
-                </GridCell>
-              );
-            })}
-          </Responsive>
+                    isResizable={resizableMap[item.id] ?? true}
+                    wiggleIndex={index}
+                  >
+                    <BentoGridItem
+                      item={item}
+                      isEdit={isEdit}
+                      isDragging={isItemActive}
+                      onDelete={onDelete}
+                      onStartEdit={handleStartEdit}
+                      onHoldChange={(holding) =>
+                        handleHoldChange(item.id, holding)
+                      }
+                    />
+                  </GridCell>
+                );
+              })}
+            </Responsive>
+            <div className={styles.gridBottomSpacer} aria-hidden="true" />
+          </>
         )}
       </div>
     );
