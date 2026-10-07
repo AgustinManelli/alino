@@ -127,22 +127,29 @@ export async function saveWidgetLayouts(
     layoutMd: WidgetInstance["layoutMd"];
     layoutXs: WidgetInstance["layoutXs"];
   }>
-): Promise<{ error?: string }> {
+): Promise<{ error?: string; errorCode?: string }> {
   try {
     const { supabase } = await getAuth();
     const payload = layouts.map((l) => ({
       instance_id: l.instanceId,
-      layout_lg:   l.layoutLg,
-      layout_md:   l.layoutMd,
-      layout_xs:   l.layoutXs,
+      layout_lg: l.layoutLg
+        ? { x: l.layoutLg.x, y: l.layoutLg.y, w: l.layoutLg.w, h: l.layoutLg.h }
+        : null,
+      layout_md: l.layoutMd
+        ? { x: l.layoutMd.x, y: l.layoutMd.y, w: l.layoutMd.w, h: l.layoutMd.h }
+        : null,
+      layout_xs: l.layoutXs
+        ? { x: l.layoutXs.x, y: l.layoutXs.y, w: l.layoutXs.w, h: l.layoutXs.h }
+        : null,
     }));
     const { error } = await supabase.rpc("save_widget_layouts", {
       p_layouts: payload,
     });
-    if (error) throw new Error(error.message);
+    if (error) return { error: error.message, errorCode: error.message };
     return {};
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : UNKNOWN_ERROR };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "UNKNOWN_ERROR";
+    return { error: msg, errorCode: msg };
   }
 }
 

@@ -3,12 +3,15 @@ import { Database } from "./database.types";
 export type SubscriptionTier = Database["public"]["Enums"]["subscription_tier"];
 export type WidgetModerationStatus = Database["public"]["Enums"]["widget_moderation_status"];
 
-export interface WidgetLayoutItem {
-  i: string;
+export interface WidgetLayoutCoordinates {
   x: number;
   y: number;
   w: number;
   h: number;
+}
+
+export interface WidgetLayoutItem extends WidgetLayoutCoordinates {
+  i: string;
   minW?: number;
   maxW?: number;
   minH?: number;

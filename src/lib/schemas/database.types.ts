@@ -1342,6 +1342,53 @@ export type Database = {
           },
         ];
       };
+      user_widget_positions: {
+        Row: {
+          breakpoint: string;
+          created_at: string;
+          h: number;
+          id: string;
+          instance_id: string;
+          updated_at: string;
+          user_id: string;
+          w: number;
+          x: number;
+          y: number;
+        };
+        Insert: {
+          breakpoint: string;
+          created_at?: string;
+          h: number;
+          id?: string;
+          instance_id: string;
+          updated_at?: string;
+          user_id: string;
+          w: number;
+          x: number;
+          y: number;
+        };
+        Update: {
+          breakpoint?: string;
+          created_at?: string;
+          h?: number;
+          id?: string;
+          instance_id?: string;
+          updated_at?: string;
+          user_id?: string;
+          w?: number;
+          x?: number;
+          y?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_widget_positions_instance_id_fkey";
+            columns: ["instance_id"];
+            isOneToOne: false;
+            referencedRelation: "user_widget_instances";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_widgets: {
         Row: {
           config: Json | null;
