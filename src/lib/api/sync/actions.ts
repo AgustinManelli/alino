@@ -46,6 +46,19 @@ function sortOperationsByDependency(operations: SyncQueueItem[]): SyncQueueItem[
   });
 }
 
+interface SidebarPayload {
+  list_id?: string;
+  folder_id?: string;
+  name?: string;
+  folder_name?: string;
+  color?: string;
+  folder_color?: string;
+  icon?: string;
+  rank?: string;
+  index?: number;
+  pinned?: boolean;
+}
+
 async function executeServerFallback(
   operations: SyncQueueItem[]
 ): Promise<BatchSyncResult> {
@@ -55,10 +68,14 @@ async function executeServerFallback(
   for (const item of operations) {
     try {
       let res: { error?: string | null } = {};
+      const p = item.payload as SidebarPayload;
 
       switch (item.action) {
         case "insert_folder": {
-          const p = item.payload;
+          if (!p.folder_id || !p.folder_name || !p.folder_color || p.index === undefined || !p.rank) {
+            failedIds.push(item.id);
+            continue;
+          }
           res =
             (await insertFolder(
               p.folder_id,
@@ -70,7 +87,10 @@ async function executeServerFallback(
           break;
         }
         case "update_folder_data": {
-          const p = item.payload;
+          if (!p.folder_id || !p.folder_name || !p.folder_color) {
+            failedIds.push(item.id);
+            continue;
+          }
           res =
             (await updateDataFolder(
               p.folder_id,
@@ -80,22 +100,35 @@ async function executeServerFallback(
           break;
         }
         case "update_folder_index": {
-          const p = item.payload;
+          if (!p.folder_id || !p.rank) {
+            failedIds.push(item.id);
+            continue;
+          }
           res = (await updateIndexFolder(p.folder_id, p.rank)) ?? {};
           break;
         }
         case "update_folder_pinned": {
-          const p = item.payload;
+          if (!p.folder_id || p.pinned === undefined || !p.rank) {
+            failedIds.push(item.id);
+            continue;
+          }
           res =
             (await updatePinnedFolder(p.folder_id, p.pinned, p.rank)) ?? {};
           break;
         }
         case "delete_folder": {
-          res = (await deleteFolder(item.payload.folder_id)) ?? {};
+          if (!p.folder_id) {
+            failedIds.push(item.id);
+            continue;
+          }
+          res = (await deleteFolder(p.folder_id)) ?? {};
           break;
         }
         case "insert_list": {
-          const p = item.payload;
+          if (!p.list_id || !p.name || !p.color || !p.icon || !p.rank || p.index === undefined || !p.folder_id) {
+            failedIds.push(item.id);
+            continue;
+          }
           res =
             (await insertList(
               p.list_id,
@@ -109,7 +142,10 @@ async function executeServerFallback(
           break;
         }
         case "update_list_data": {
-          const p = item.payload;
+          if (!p.list_id || !p.name || !p.color || !p.icon) {
+            failedIds.push(item.id);
+            continue;
+          }
           res =
             (await updateDataList(
               p.list_id,
@@ -120,17 +156,27 @@ async function executeServerFallback(
           break;
         }
         case "update_list_index": {
-          const p = item.payload;
+          if (!p.list_id || !p.folder_id || !p.rank) {
+            failedIds.push(item.id);
+            continue;
+          }
           res = (await updateIndexList(p.list_id, p.folder_id, p.rank)) ?? {};
           break;
         }
         case "update_list_pinned": {
-          const p = item.payload;
-          res = (await updatePinnedList(p.list_id, p.pinned, p.rank)) ?? {};
+          if (!p.list_id || p.pinned === undefined || !p.rank) {
+            failedIds.push(item.id);
+            continue;
+          }
+          res = (await updatePinnedList(p.list_id, p.pinned, p.index ?? null, p.rank)) ?? {};
           break;
         }
         case "delete_list": {
-          res = (await deleteList(item.payload.list_id)) ?? {};
+          if (!p.list_id) {
+            failedIds.push(item.id);
+            continue;
+          }
+          res = (await deleteList(p.list_id)) ?? {};
           break;
         }
         default:

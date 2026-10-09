@@ -1,10 +1,24 @@
 import { v4 as uuidv4 } from "uuid";
+import { type Table } from "dexie";
 import { offlineDb, type SyncQueueItem, type SidebarActionType } from "./db";
 import type { ListsType, FolderType, TaskType } from "@/lib/schemas/database.types";
 import { syncBatchSidebar } from "@/lib/api/sync/actions";
 import { useSyncStore } from "@/store/useSyncStore";
 import { useTodoDataStore } from "@/store/useTodoDataStore";
 import { customToast } from "@/lib/toasts";
+
+export interface SidebarPayload {
+  list_id?: string;
+  folder_id?: string;
+  name?: string;
+  folder_name?: string;
+  color?: string;
+  folder_color?: string;
+  icon?: string;
+  rank?: string;
+  index?: number;
+  pinned?: boolean;
+}
 
 export function isNetworkError(error: unknown): boolean {
   if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -43,8 +57,11 @@ export async function saveSidebarToIndexedDB(
       return;
     }
 
-    const tables: any[] = [offlineDb.lists, offlineDb.folders];
-    if (offlineDb.tasks) tables.push(offlineDb.tasks);
+    const tables: Table<ListsType | FolderType | TaskType, string>[] = [
+      offlineDb.lists as unknown as Table<ListsType | FolderType | TaskType, string>,
+      offlineDb.folders as unknown as Table<ListsType | FolderType | TaskType, string>,
+      ...(offlineDb.tasks ? [offlineDb.tasks as unknown as Table<ListsType | FolderType | TaskType, string>] : []),
+    ];
 
     await offlineDb.transaction("rw", tables, async () => {
       await offlineDb.lists.clear();
@@ -124,14 +141,15 @@ export async function reconcileWithOfflineState(
     const insertedFolderIds = new Set<string>();
 
     for (const item of compacted) {
-      if (item.action === "delete_list") {
-        deletedListIds.add(item.payload.list_id);
-      } else if (item.action === "delete_folder") {
-        deletedFolderIds.add(item.payload.folder_id);
-      } else if (item.action === "insert_list") {
-        insertedListIds.add(item.payload.list_id);
-      } else if (item.action === "insert_folder") {
-        insertedFolderIds.add(item.payload.folder_id);
+      const p = item.payload as SidebarPayload;
+      if (item.action === "delete_list" && p.list_id) {
+        deletedListIds.add(p.list_id);
+      } else if (item.action === "delete_folder" && p.folder_id) {
+        deletedFolderIds.add(p.folder_id);
+      } else if (item.action === "insert_list" && p.list_id) {
+        insertedListIds.add(p.list_id);
+      } else if (item.action === "insert_folder" && p.folder_id) {
+        insertedFolderIds.add(p.folder_id);
       }
     }
 
@@ -261,7 +279,7 @@ export async function removeFolderFromIndexedDB(folder_id: string): Promise<void
 export async function enqueueSyncMutation(
   action: SidebarActionType,
   entity: "list" | "folder",
-  payload: any
+  payload: Record<string, unknown>
 ): Promise<void> {
   if (!offlineDb) return;
   try {
@@ -289,7 +307,8 @@ export function compactSyncQueue(items: SyncQueueItem[]): {
   const entityActions = new Map<string, SyncQueueItem[]>();
 
   for (const item of items) {
-    const entityId = item.payload?.list_id || item.payload?.folder_id;
+    const p = item.payload as SidebarPayload;
+    const entityId = p?.list_id || p?.folder_id;
     if (!entityId) {
       continue;
     }
@@ -318,33 +337,34 @@ export function compactSyncQueue(items: SyncQueueItem[]): {
     }
 
     if (insertAction) {
-      const mergedPayload = { ...insertAction.payload };
+      const mergedPayload: SidebarPayload = { ...(insertAction.payload as SidebarPayload) };
 
       for (const a of actions) {
         if (a === insertAction) continue;
+        const ap = a.payload as SidebarPayload;
 
         if (a.action === "update_list_data") {
-          mergedPayload.name = a.payload.name;
-          mergedPayload.color = a.payload.color;
-          mergedPayload.icon = a.payload.icon;
+          mergedPayload.name = ap.name;
+          mergedPayload.color = ap.color;
+          mergedPayload.icon = ap.icon;
           discardedIds.add(a.id);
         } else if (a.action === "update_list_index") {
-          mergedPayload.folder_id = a.payload.folder_id;
-          mergedPayload.rank = a.payload.rank;
+          mergedPayload.folder_id = ap.folder_id;
+          mergedPayload.rank = ap.rank;
           discardedIds.add(a.id);
         } else if (a.action === "update_folder_data") {
-          mergedPayload.folder_name = a.payload.folder_name;
-          mergedPayload.folder_color = a.payload.folder_color;
+          mergedPayload.folder_name = ap.folder_name;
+          mergedPayload.folder_color = ap.folder_color;
           discardedIds.add(a.id);
         } else if (a.action === "update_folder_index") {
-          mergedPayload.rank = a.payload.rank;
+          mergedPayload.rank = ap.rank;
           discardedIds.add(a.id);
         } else {
           compacted.push(a);
         }
       }
 
-      insertAction.payload = mergedPayload;
+      insertAction.payload = mergedPayload as unknown as Record<string, unknown>;
       compacted.push(insertAction);
       return;
     }
@@ -402,7 +422,10 @@ export async function processSyncQueue(): Promise<{
   isProcessingQueue = true;
 
   try {
-    const rawItems = await offlineDb.syncQueue.orderBy("timestamp").toArray();
+    const rawItems = await offlineDb.syncQueue
+      .where("entity")
+      .anyOf(["list", "folder", "task"])
+      .sortBy("timestamp");
     if (rawItems.length === 0) {
       useSyncStore.getState().setPendingSyncCount?.(0);
       return { processed: 0, errors: 0 };

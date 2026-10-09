@@ -2,8 +2,13 @@
 
 import { useCallback } from "react";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { compactLayout } from "@/store/dashboardUtils";
+import {
+  compactLayout,
+  buildLayoutsFromInstances,
+  isResponsiveLayoutPopulated,
+} from "@/store/dashboardUtils";
 import { useSaveWidgetLayouts } from "@/hooks/dashboard/useSaveWidgetLayouts";
+import { saveDashboardToIndexedDB } from "@/lib/offline/dashboardSync";
 
 export function useDashboardLayoutActions() {
   const setLayout = useDashboardStore((s) => s.setLayout);
@@ -11,24 +16,27 @@ export function useDashboardLayoutActions() {
 
   const autoSortLayout = useCallback(
     (breakpoint?: "lg" | "md" | "xs") => {
-      const { layout } = useDashboardStore.getState();
-      const newLayout = { ...layout };
+      const { layout, predefinedWidgets, widgetLimits, widgetInstances } =
+        useDashboardStore.getState();
+      const currentLayout = isResponsiveLayoutPopulated(layout)
+        ? layout
+        : buildLayoutsFromInstances(widgetInstances);
+      const newLayout = { ...currentLayout };
 
       if (breakpoint) {
-        const currentItems = layout[breakpoint] || [];
+        const currentItems = currentLayout[breakpoint] || [];
         const cols = breakpoint === "lg" ? 3 : 1;
         newLayout[breakpoint] = compactLayout(currentItems, cols);
       } else {
         (["lg", "md", "xs"] as const).forEach((bp) => {
-          const items = layout[bp] || [];
+          const items = currentLayout[bp] || [];
           const cols = bp === "lg" ? 3 : 1;
           newLayout[bp] = compactLayout(items, cols);
         });
       }
       setLayout(newLayout);
 
-      const { widgetInstances, setWidgetInstances } =
-        useDashboardStore.getState();
+      const { setWidgetInstances } = useDashboardStore.getState();
       const newInstances = widgetInstances.map((instance) => {
         const id = instance.widgetKey;
         const lg = newLayout.lg?.find((l) => l.i === id);
@@ -48,6 +56,12 @@ export function useDashboardLayoutActions() {
         };
       });
       setWidgetInstances(newInstances);
+      saveDashboardToIndexedDB(
+        newInstances,
+        newLayout,
+        predefinedWidgets,
+        widgetLimits,
+      );
       scheduleSave();
     },
     [setLayout, scheduleSave],

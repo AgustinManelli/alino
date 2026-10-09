@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ResponsiveLayouts } from "react-grid-layout";
 
 import { useDashboardStore } from "@/store/useDashboardStore";
+import { isResponsiveLayoutPopulated } from "@/store/dashboardUtils";
 import { useUIStore } from "@/store/useUIStore";
 import { useUserDataStore } from "@/store/useUserDataStore";
 import { useSyncStore } from "@/store/useSyncStore";
@@ -37,7 +38,6 @@ import {
   Link,
 } from "@/components/ui/icons/icons";
 import styles from "./HomeDashboard.module.css";
-
 
 const EmbeddedWidget = dynamic(
   () => import("./parts/EmbeddedWidget").then((mod) => mod.EmbeddedWidget),
@@ -91,7 +91,7 @@ const useDateAndGreeting = (): DateAndGreeting => {
 };
 
 export const HomeDashboard = () => {
-  const { t, i18n } = useTranslation(["widgets"]);
+  const { t } = useTranslation(["widgets"]);
   const setBlurredFx = useUIStore((state) => state.setColor);
   const user = useUserDataStore((state) => state.user);
   const isOnline = useSyncStore((state) => state.isOnline);
@@ -119,14 +119,11 @@ export const HomeDashboard = () => {
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
-    const init = async () => {
-      await loadDashboard();
-    };
-    init();
+    loadDashboard();
   }, [loadDashboard]);
 
   useEffect(() => {
-    if (isConfigLoaded) {
+    if (isConfigLoaded && isResponsiveLayoutPopulated(layout)) {
       setTempLayout(layout);
     }
   }, [isConfigLoaded, layout]);
@@ -211,8 +208,7 @@ export const HomeDashboard = () => {
         }
 
         if (inst.widgetSource === "embedded" && inst.uwUrl) {
-          const safeUrl =
-            inst.uwUrl.startsWith("https://") ? inst.uwUrl : null;
+          const safeUrl = inst.uwUrl.startsWith("https://") ? inst.uwUrl : null;
 
           if (!isOnline) {
             return {
@@ -293,10 +289,10 @@ export const HomeDashboard = () => {
   const handleFinishEdit = useCallback(() => {
     if (JSON.stringify(layout) !== JSON.stringify(tempLayout)) {
       setLayout(tempLayout);
-      const { widgetInstances, setWidgetInstances } =
+      const { widgetInstances: currentInstances, setWidgetInstances } =
         useDashboardStore.getState();
 
-      const newInstances = widgetInstances.map((instance) => {
+      const newInstances = currentInstances.map((instance) => {
         const id = instance.widgetKey;
         const lg = tempLayout.lg?.find((l) => l.i === id);
         const md = tempLayout.md?.find((l) => l.i === id);
@@ -321,8 +317,11 @@ export const HomeDashboard = () => {
     setIsEdit(false);
   }, [layout, tempLayout, setLayout, saveLayouts]);
 
-  const effectiveLayout =
-    tempLayout && Object.keys(tempLayout).length > 0 ? tempLayout : layout;
+  const effectiveLayout = useMemo(() => {
+    return isResponsiveLayoutPopulated(tempLayout)
+      ? tempLayout
+      : (isResponsiveLayoutPopulated(layout) ? layout : tempLayout);
+  }, [tempLayout, layout]);
 
   const handleSetTempLayout = useCallback(
     (newLayouts: ResponsiveLayouts) => {
@@ -363,8 +362,7 @@ export const HomeDashboard = () => {
               <div className={styles.homeTimeContainer}>
                 <p>
                   <span>
-                    {t("widgets:dashboard.todayIs", "Hoy es")}{" "}
-                    {formattedDate}
+                    {t("widgets:dashboard.todayIs", "Hoy es")} {formattedDate}
                   </span>
                   <br />
                   <span>
@@ -444,13 +442,7 @@ export const HomeDashboard = () => {
 
       <main className={styles.dashboardContent}>
         {!isConfigLoaded ? (
-          <div className={styles.skeletonGrid}>
-            {Array(4)
-              .fill(null)
-              .map((_, i) => (
-                <div key={i} className={styles.skeletonCard} />
-              ))}
-          </div>
+          <div className={styles.dashboardPlaceholder} aria-hidden="true" />
         ) : bentoItems.length > 0 ? (
           <DraggableBentoGrid
             items={bentoItems}

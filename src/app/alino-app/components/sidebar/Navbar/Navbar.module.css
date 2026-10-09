@@ -1,7 +1,7 @@
 .mobileButton {
   position: absolute;
   top: calc(env(safe-area-inset-top, 0px) + 15px);
-  left: 0;
+  left: calc(env(safe-area-inset-left, 0px) + 15px);
   width: 40px;
   height: 40px;
   display: flex;
@@ -18,7 +18,7 @@
 }
 
 .navbarContainer {
-  width: 20vw;
+  width: 22vw;
   min-width: 400px;
   flex-shrink: 0;
   height: 100%;
@@ -30,6 +30,7 @@
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 15px);
   padding-top: calc(env(safe-area-inset-top, 0px) + 15px);
+  padding-left: calc(env(safe-area-inset-left, 0px) + 15px);
 }
 
 .navbarContainer.open {
@@ -120,7 +121,6 @@
   .navbarContainer {
     position: absolute;
     top: 0;
-    left: 0;
     bottom: 0;
     width: 85%;
     height: 100%;

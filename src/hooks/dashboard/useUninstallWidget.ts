@@ -10,6 +10,11 @@ import {
 } from "@/store/dashboardUtils";
 import { useSaveWidgetLayouts } from "@/hooks/dashboard/useSaveWidgetLayouts";
 import { useSyncStore } from "@/store/useSyncStore";
+import {
+  saveDashboardToIndexedDB,
+  enqueueDashboardMutation,
+} from "@/lib/offline/dashboardSync";
+import { isNetworkError } from "@/lib/offline/sidebarSync";
 
 export function useUninstallWidget() {
   const [isPending, setIsPending] = useState(false);
@@ -66,36 +71,105 @@ export function useUninstallWidget() {
         };
       });
 
+      const newLayout = buildLayoutsFromInstances(finalInstances);
+      const newActiveWidgets = finalInstances
+        .filter((i) => i.isInstalled)
+        .map((i) => i.widgetKey);
+
       useDashboardStore.setState({
         widgetInstances: finalInstances,
-        layout: buildLayoutsFromInstances(finalInstances),
-        activeWidgets: finalInstances
-          .filter((i) => i.isInstalled)
-          .map((i) => i.widgetKey),
+        layout: newLayout,
+        activeWidgets: newActiveWidgets,
       });
 
-      const { error } = await uninstallWidgetAction({
-        predefinedId:
-          inst?.widgetSource === "predefined" ? widgetKey : undefined,
-        userWidgetId:
-          inst?.widgetSource === "embedded"
-            ? (widgetKey as unknown as string)
-            : undefined,
-      });
+      await saveDashboardToIndexedDB(
+        finalInstances,
+        newLayout,
+        store.predefinedWidgets,
+        store.widgetLimits,
+      );
 
-      if (error) {
+      const isEmbedded = inst?.widgetSource === "embedded";
+      const mutationPayload = {
+        predefinedId: isEmbedded ? undefined : widgetKey,
+        userWidgetId: isEmbedded ? widgetKey : undefined,
+        widgetKey,
+      };
+
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        await enqueueDashboardMutation(
+          "uninstall_widget",
+          "widget_instance",
+          mutationPayload,
+        );
+        setIsPending(false);
+        removeLoading();
+        return {};
+      }
+
+      try {
+        const { error } = await uninstallWidgetAction({
+          predefinedId: isEmbedded ? undefined : widgetKey,
+          userWidgetId: isEmbedded ? widgetKey : undefined,
+        });
+
+        if (error) {
+          if (isNetworkError(error)) {
+            await enqueueDashboardMutation(
+              "uninstall_widget",
+              "widget_instance",
+              mutationPayload,
+            );
+            setIsPending(false);
+            removeLoading();
+            return {};
+          }
+
+          useDashboardStore.setState({
+            widgetInstances: previousInstances,
+            layout: previousLayout,
+            activeWidgets: previousActiveWidgets,
+          });
+          await saveDashboardToIndexedDB(
+            previousInstances,
+            previousLayout,
+            store.predefinedWidgets,
+            store.widgetLimits,
+          );
+        } else {
+          scheduleSave();
+        }
+
+        setIsPending(false);
+        removeLoading();
+        return { error };
+      } catch (err) {
+        if (isNetworkError(err)) {
+          await enqueueDashboardMutation(
+            "uninstall_widget",
+            "widget_instance",
+            mutationPayload,
+          );
+          setIsPending(false);
+          removeLoading();
+          return {};
+        }
+
         useDashboardStore.setState({
           widgetInstances: previousInstances,
           layout: previousLayout,
           activeWidgets: previousActiveWidgets,
         });
-      } else {
-        scheduleSave();
+        await saveDashboardToIndexedDB(
+          previousInstances,
+          previousLayout,
+          store.predefinedWidgets,
+          store.widgetLimits,
+        );
+        setIsPending(false);
+        removeLoading();
+        return { error: String(err) };
       }
-
-      setIsPending(false);
-      removeLoading();
-      return { error };
     },
     [addLoading, removeLoading, scheduleSave],
   );

@@ -6,12 +6,22 @@ import {
   getWidgetLimits,
 } from "@/lib/api/dashboard/actions";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { buildLayoutsFromInstances } from "@/store/dashboardUtils";
+import {
+  buildLayoutsFromInstances,
+  isResponsiveLayoutPopulated,
+} from "@/store/dashboardUtils";
 import { useSyncStore } from "@/store/useSyncStore";
-import { offlineDb } from "@/lib/offline/db";
+import {
+  loadDashboardFromIndexedDB,
+  saveDashboardToIndexedDB,
+  reconcileDashboardWithOfflineState,
+  processDashboardSyncQueue,
+  type DashboardOfflineState,
+} from "@/lib/offline/dashboardSync";
 import {
   WidgetInstance,
   PredefinedWidget,
+  WidgetLimits,
 } from "@/lib/schemas/dashboard.types";
 
 export function useLoadDashboard() {
@@ -23,49 +33,44 @@ export function useLoadDashboard() {
     const isConfigLoaded = useDashboardStore.getState().isConfigLoaded;
     if (isConfigLoaded) return;
 
+    let localState: DashboardOfflineState | null = null;
     try {
-      if (offlineDb?.dashboard) {
-        const cached = await offlineDb.dashboard.get("user_dashboard_config");
-        if (cached) {
-          const cachedCatalog = (
-            cached.predefinedWidgets as PredefinedWidget[] ?? []
-          ).filter((w) => w.id !== "weather");
+      localState = await loadDashboardFromIndexedDB();
+      if (localState && localState.widgetInstances.length > 0) {
+        const cachedCatalog = localState.predefinedWidgets.filter(
+          (w) => w.id !== "weather",
+        );
+        const rawCachedInstances = localState.widgetInstances.filter(
+          (i) => i.widgetKey !== "weather",
+        );
 
-          const rawCachedInstances = (
-            cached.widgetInstances as WidgetInstance[] ?? []
-          ).filter((i) => i.widgetKey !== "weather");
+        const instances = rawCachedInstances.map((inst) => {
+          if (inst.pwLocalizedName && inst.pwLocalizedDescription) return inst;
+          const pw = cachedCatalog.find((p) => p.id === inst.widgetKey);
+          if (!pw) return inst;
+          return {
+            ...inst,
+            pwLocalizedName: inst.pwLocalizedName ?? pw.localizedName,
+            pwLocalizedDescription:
+              inst.pwLocalizedDescription ?? pw.localizedDescription,
+          };
+        });
 
-          const instances = rawCachedInstances.map((inst) => {
-            if (inst.pwLocalizedName && inst.pwLocalizedDescription) return inst;
-            const pw = cachedCatalog.find((p) => p.id === inst.widgetKey);
-            if (!pw) return inst;
-            return {
-              ...inst,
-              pwLocalizedName: inst.pwLocalizedName ?? pw.localizedName,
-              pwLocalizedDescription:
-                inst.pwLocalizedDescription ?? pw.localizedDescription,
-            };
-          });
+        const layout = isResponsiveLayoutPopulated(localState.layout)
+          ? localState.layout
+          : buildLayoutsFromInstances(instances);
+        const activeWidgets = instances
+          .filter((i) => i.isInstalled)
+          .map((i) => i.widgetKey);
 
-          const layout = cached.layout ?? buildLayoutsFromInstances(instances);
-          const activeWidgets = instances
-            .filter((i) => i.isInstalled)
-            .map((i) => i.widgetKey);
-
-          useDashboardStore.setState({
-            predefinedWidgets: cachedCatalog,
-            widgetInstances: instances,
-            widgetLimits: cached.widgetLimits ?? {
-              free: 1,
-              student: 3,
-              pro: 99,
-              ultra: 99,
-            },
-            layout,
-            activeWidgets,
-            isConfigLoaded: true,
-          });
-        }
+        useDashboardStore.setState({
+          predefinedWidgets: cachedCatalog,
+          widgetInstances: instances,
+          widgetLimits: localState.widgetLimits,
+          layout,
+          activeWidgets,
+          isConfigLoaded: true,
+        });
       }
     } catch {
       useDashboardStore.setState({ isConfigLoaded: true });
@@ -80,6 +85,8 @@ export function useLoadDashboard() {
     setIsPending(true);
 
     try {
+      await processDashboardSyncQueue();
+
       const [dashResult, limitsResult] = await Promise.all([
         loadDashboardFull(),
         getWidgetLimits(),
@@ -93,7 +100,13 @@ export function useLoadDashboard() {
         (i) => i.widgetKey !== "weather",
       );
 
-      const instances = filteredInstances.map((inst) => {
+      const reconciled = await reconcileDashboardWithOfflineState(
+        catalog,
+        filteredInstances,
+        localState,
+      );
+
+      const instances = reconciled.instances.map((inst) => {
         if (inst.pwLocalizedName && inst.pwLocalizedDescription) return inst;
         const pw = catalog.find((p) => p.id === inst.widgetKey);
         if (!pw) return inst;
@@ -105,11 +118,13 @@ export function useLoadDashboard() {
         };
       });
 
-      const layout = buildLayoutsFromInstances(instances);
+      const layout = isResponsiveLayoutPopulated(reconciled.layout)
+        ? reconciled.layout
+        : buildLayoutsFromInstances(instances);
       const activeWidgets = instances
         .filter((i) => i.isInstalled)
         .map((i) => i.widgetKey);
-      const widgetLimits = limitsResult.data ?? {
+      const widgetLimits: WidgetLimits = limitsResult.data ?? {
         free: 1,
         student: 3,
         pro: 99,
@@ -125,16 +140,7 @@ export function useLoadDashboard() {
         isConfigLoaded: true,
       });
 
-      if (offlineDb?.dashboard) {
-        await offlineDb.dashboard.put({
-          key: "user_dashboard_config",
-          widgetInstances: instances,
-          layout,
-          predefinedWidgets: catalog,
-          widgetLimits,
-          updatedAt: Date.now(),
-        });
-      }
+      await saveDashboardToIndexedDB(instances, layout, catalog, widgetLimits);
     } catch {
       useDashboardStore.setState({ isConfigLoaded: true });
     } finally {
@@ -145,4 +151,3 @@ export function useLoadDashboard() {
 
   return { loadDashboard, isPending };
 }
-

@@ -17,6 +17,12 @@ const TIER_ORDER: Record<string, number> = {
 export const tierSatisfies = (userTier: string, required: string): boolean =>
   (TIER_ORDER[userTier] ?? 0) >= (TIER_ORDER[required] ?? 0);
 
+export const isResponsiveLayoutPopulated = (
+  layout?: ResponsiveLayouts | null,
+): boolean => {
+  return Boolean(layout?.lg && layout.lg.length > 0);
+};
+
 export const buildLayoutsFromInstances = (
   instances: WidgetInstance[],
 ): ResponsiveLayouts => {
@@ -24,36 +30,38 @@ export const buildLayoutsFromInstances = (
 
   const applyMeta = (
     item: WidgetLayoutItem | null | undefined,
+    widgetKey: string,
     pwIsResizable: boolean | null,
     isMobile: boolean,
-  ): LayoutItem | null => {
-    if (!item) return null;
+  ): LayoutItem => {
     const isResizable =
       pwIsResizable === false
         ? false
-        : (item.isResizable ?? true);
+        : (item?.isResizable ?? true);
     return {
-      ...item,
-      x: isMobile ? 0 : item.x,
-      w: isMobile ? 1 : item.w,
-      minW: isMobile ? 1 : item.minW,
-      maxW: isMobile ? 1 : item.maxW,
-      minH: item.minH ?? 1,
-      maxH: item.maxH,
+      i: item?.i ?? widgetKey,
+      x: isMobile ? 0 : (item?.x ?? 0),
+      y: item?.y ?? 0,
+      w: isMobile ? 1 : Math.max(item?.w ?? 1, 1),
+      h: Math.max(item?.h ?? 1, 1),
+      minW: isMobile ? 1 : (item?.minW ?? 1),
+      maxW: isMobile ? 1 : (item?.maxW ?? (isMobile ? 1 : 3)),
+      minH: item?.minH ?? 1,
+      maxH: item?.maxH,
       isResizable,
     };
   };
 
   return {
-    lg: installed
-      .map((i) => applyMeta(i.layoutLg, i.pwIsResizable, false))
-      .filter((item): item is LayoutItem => item !== null),
-    md: installed
-      .map((i) => applyMeta(i.layoutMd, i.pwIsResizable, true))
-      .filter((item): item is LayoutItem => item !== null),
-    xs: installed
-      .map((i) => applyMeta(i.layoutXs, i.pwIsResizable, true))
-      .filter((item): item is LayoutItem => item !== null),
+    lg: installed.map((i) =>
+      applyMeta(i.layoutLg, i.widgetKey, i.pwIsResizable, false),
+    ),
+    md: installed.map((i) =>
+      applyMeta(i.layoutMd, i.widgetKey, i.pwIsResizable, true),
+    ),
+    xs: installed.map((i) =>
+      applyMeta(i.layoutXs, i.widgetKey, i.pwIsResizable, true),
+    ),
   };
 };
 

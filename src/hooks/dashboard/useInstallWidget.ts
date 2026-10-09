@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { installWidgetAction } from "@/lib/api/dashboard/actions";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import {
@@ -9,6 +10,11 @@ import {
 } from "@/store/dashboardUtils";
 import { WidgetInstance } from "@/lib/schemas/dashboard.types";
 import { useSyncStore } from "@/store/useSyncStore";
+import {
+  saveDashboardToIndexedDB,
+  enqueueDashboardMutation,
+} from "@/lib/offline/dashboardSync";
+import { isNetworkError } from "@/lib/offline/sidebarSync";
 
 export function useInstallWidget() {
   const [isPending, setIsPending] = useState(false);
@@ -21,7 +27,7 @@ export function useInstallWidget() {
       setIsPending(true);
 
       const store = useDashboardStore.getState();
-      const isEmbedded = !!userWidgetId;
+      const isEmbedded = Boolean(userWidgetId);
       const existing = store.widgetInstances.find(
         (i) => i.widgetKey === widgetKey,
       );
@@ -45,8 +51,10 @@ export function useInstallWidget() {
         store.widgetInstances,
       );
 
+      let updated: WidgetInstance[];
+
       if (existing) {
-        const updated = store.widgetInstances.map((i) =>
+        updated = store.widgetInstances.map((i) =>
           i.widgetKey === widgetKey
             ? {
                 ...i,
@@ -57,17 +65,10 @@ export function useInstallWidget() {
               }
             : i,
         );
-        useDashboardStore.setState({
-          widgetInstances: updated,
-          layout: buildLayoutsFromInstances(updated),
-          activeWidgets: updated
-            .filter((i) => i.isInstalled)
-            .map((i) => i.widgetKey),
-        });
       } else {
         const pw = store.predefinedWidgets.find((w) => w.id === widgetKey);
         const newInstance: WidgetInstance = {
-          instanceId: "",
+          instanceId: uuidv4(),
           widgetKey,
           widgetSource: isEmbedded ? "embedded" : "predefined",
           componentKey: pw?.componentKey ?? widgetKey,
@@ -87,58 +88,128 @@ export function useInstallWidget() {
           layoutXs,
           isInstalled: true,
         };
-        const updated = [...store.widgetInstances, newInstance];
-        useDashboardStore.setState({
-          widgetInstances: updated,
-          layout: buildLayoutsFromInstances(updated),
-          activeWidgets: updated
-            .filter((i) => i.isInstalled)
-            .map((i) => i.widgetKey),
-        });
+        updated = [...store.widgetInstances, newInstance];
       }
 
-      const instanceForDb = useDashboardStore
-        .getState()
-        .widgetInstances.find((i) => i.widgetKey === widgetKey);
+      const newLayout = buildLayoutsFromInstances(updated);
+      const activeWidgets = updated
+        .filter((i) => i.isInstalled)
+        .map((i) => i.widgetKey);
 
-      const { error, instanceId } = await installWidgetAction({
-        predefinedId: isEmbedded ? undefined : widgetKey,
-        userWidgetId: isEmbedded ? (userWidgetId as string) : undefined,
-        layoutLg: instanceForDb?.layoutLg,
-        layoutMd: instanceForDb?.layoutMd,
-        layoutXs: instanceForDb?.layoutXs,
+      useDashboardStore.setState({
+        widgetInstances: updated,
+        layout: newLayout,
+        activeWidgets,
       });
 
-      if (error) {
-        const reverted = useDashboardStore
-          .getState()
-          .widgetInstances.map((i) =>
-            i.widgetKey === widgetKey ? { ...i, isInstalled: false } : i,
-          );
-        useDashboardStore.setState({
-          widgetInstances: reverted,
-          layout: buildLayoutsFromInstances(reverted),
-          activeWidgets: reverted
-            .filter((i) => i.isInstalled)
-            .map((i) => i.widgetKey),
+      await saveDashboardToIndexedDB(
+        updated,
+        newLayout,
+        store.predefinedWidgets,
+        store.widgetLimits,
+      );
+
+      const instanceForDb = updated.find((i) => i.widgetKey === widgetKey);
+
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        await enqueueDashboardMutation("install_widget", "widget_instance", {
+          predefinedId: isEmbedded ? undefined : widgetKey,
+          userWidgetId: isEmbedded ? userWidgetId : undefined,
+          layoutLg: instanceForDb?.layoutLg,
+          layoutMd: instanceForDb?.layoutMd,
+          layoutXs: instanceForDb?.layoutXs,
+          widgetKey,
         });
         setIsPending(false);
         removeLoading();
-        return { error };
+        return {};
       }
 
-      if (instanceId) {
-        useDashboardStore.setState({
-          widgetInstances: useDashboardStore
+      try {
+        const { error, instanceId } = await installWidgetAction({
+          predefinedId: isEmbedded ? undefined : widgetKey,
+          userWidgetId: isEmbedded ? userWidgetId : undefined,
+          layoutLg: instanceForDb?.layoutLg,
+          layoutMd: instanceForDb?.layoutMd,
+          layoutXs: instanceForDb?.layoutXs,
+        });
+
+        if (error) {
+          if (isNetworkError(error)) {
+            await enqueueDashboardMutation("install_widget", "widget_instance", {
+              predefinedId: isEmbedded ? undefined : widgetKey,
+              userWidgetId: isEmbedded ? userWidgetId : undefined,
+              layoutLg: instanceForDb?.layoutLg,
+              layoutMd: instanceForDb?.layoutMd,
+              layoutXs: instanceForDb?.layoutXs,
+              widgetKey,
+            });
+            setIsPending(false);
+            removeLoading();
+            return {};
+          }
+
+          const reverted = useDashboardStore
+            .getState()
+            .widgetInstances.map((i) =>
+              i.widgetKey === widgetKey ? { ...i, isInstalled: false } : i,
+            );
+          const revertedLayout = buildLayoutsFromInstances(reverted);
+          useDashboardStore.setState({
+            widgetInstances: reverted,
+            layout: revertedLayout,
+            activeWidgets: reverted
+              .filter((i) => i.isInstalled)
+              .map((i) => i.widgetKey),
+          });
+          await saveDashboardToIndexedDB(
+            reverted,
+            revertedLayout,
+            store.predefinedWidgets,
+            store.widgetLimits,
+          );
+          setIsPending(false);
+          removeLoading();
+          return { error };
+        }
+
+        if (instanceId) {
+          const synced = useDashboardStore
             .getState()
             .widgetInstances.map((i) =>
               i.widgetKey === widgetKey ? { ...i, instanceId } : i,
-            ),
-        });
+            );
+          useDashboardStore.setState({ widgetInstances: synced });
+          await saveDashboardToIndexedDB(
+            synced,
+            newLayout,
+            store.predefinedWidgets,
+            store.widgetLimits,
+          );
+        }
+
+        setIsPending(false);
+        removeLoading();
+        return {};
+      } catch (err) {
+        if (isNetworkError(err)) {
+          await enqueueDashboardMutation("install_widget", "widget_instance", {
+            predefinedId: isEmbedded ? undefined : widgetKey,
+            userWidgetId: isEmbedded ? userWidgetId : undefined,
+            layoutLg: instanceForDb?.layoutLg,
+            layoutMd: instanceForDb?.layoutMd,
+            layoutXs: instanceForDb?.layoutXs,
+            widgetKey,
+          });
+          setIsPending(false);
+          removeLoading();
+          return {};
+        }
+
+        setIsPending(false);
+        removeLoading();
+        return { error: String(err) };
       }
-      setIsPending(false);
-      removeLoading();
-      return {};
     },
     [addLoading, removeLoading],
   );

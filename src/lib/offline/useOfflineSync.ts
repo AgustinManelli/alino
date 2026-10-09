@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useSyncStore } from "@/store/useSyncStore";
 import { processSyncQueue } from "./sidebarSync";
+import { processDashboardSyncQueue } from "./dashboardSync";
 import { offlineDb } from "./db";
 
 export function useOfflineSync() {
@@ -13,6 +14,11 @@ export function useOfflineSync() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    const triggerSync = async () => {
+      await processSyncQueue();
+      await processDashboardSyncQueue();
+    };
+
     const handleOnline = () => {
       setIsOnline(true);
       if (debounceTimerRef.current) {
@@ -20,7 +26,7 @@ export function useOfflineSync() {
       }
       debounceTimerRef.current = setTimeout(() => {
         if (navigator.onLine) {
-          processSyncQueue();
+          triggerSync();
         }
       }, 800);
     };
@@ -39,7 +45,7 @@ export function useOfflineSync() {
       offlineDb.syncQueue.count().then((count) => {
         setPendingSyncCount(count);
         if (navigator.onLine && count > 0) {
-          processSyncQueue();
+          triggerSync();
         }
       });
     }
@@ -56,4 +62,3 @@ export function useOfflineSync() {
     };
   }, [setIsOnline, setPendingSyncCount]);
 }
-

@@ -1,11 +1,16 @@
-"use client"
+"use client";
 
 import { useState, useCallback } from "react";
-import { deleteEmbeddedWidget } from "@/lib/api/user-widgets/actions";
+import { deleteEmbeddedWidget as apiDeleteEmbeddedWidget } from "@/lib/api/user-widgets/actions";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { buildLayoutsFromInstances } from "@/store/dashboardUtils";
 import { useSyncStore } from "@/store/useSyncStore";
 import { customToast } from "@/lib/toasts";
+import {
+  saveDashboardToIndexedDB,
+  enqueueDashboardMutation,
+} from "@/lib/offline/dashboardSync";
+import { isNetworkError } from "@/lib/offline/sidebarSync";
 
 export function useDeleteEmbeddedWidget() {
   const [isPending, setIsPending] = useState(false);
@@ -20,23 +25,51 @@ export function useDeleteEmbeddedWidget() {
       addLoading();
       setIsPending(true);
 
+      const store = useDashboardStore.getState();
+      const updated = store.widgetInstances.map((i) =>
+        i.widgetKey === id ? { ...i, isInstalled: false } : i,
+      );
+      const newLayout = buildLayoutsFromInstances(updated);
+      const newActive = updated
+        .filter((i) => i.isInstalled)
+        .map((i) => i.widgetKey);
+
+      setWidgetInstances(updated);
+      setLayout(newLayout);
+      setActiveWidgets(newActive);
+
+      await saveDashboardToIndexedDB(
+        updated,
+        newLayout,
+        store.predefinedWidgets,
+        store.widgetLimits,
+      );
+
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        await enqueueDashboardMutation(
+          "delete_embedded_widget",
+          "user_widget",
+          { id },
+        );
+        setIsPending(false);
+        removeLoading();
+        return { success: true };
+      }
+
       try {
-        const { error } = await deleteEmbeddedWidget(id);
+        const { error } = await apiDeleteEmbeddedWidget(id);
         if (error) throw new Error(error);
-
-        const { widgetInstances } = useDashboardStore.getState();
-        const updated = widgetInstances.map((i) =>
-          i.widgetKey === id ? { ...i, isInstalled: false } : i
-        );
-
-        setWidgetInstances(updated);
-        setLayout(buildLayoutsFromInstances(updated));
-        setActiveWidgets(
-          updated.filter((i) => i.isInstalled).map((i) => i.widgetKey)
-        );
-
         return { success: true };
       } catch (err) {
+        if (isNetworkError(err)) {
+          await enqueueDashboardMutation(
+            "delete_embedded_widget",
+            "user_widget",
+            { id },
+          );
+          return { success: true };
+        }
+
         const msg = (err as Error).message;
         customToast.error(msg);
         return { error: msg };
@@ -45,7 +78,7 @@ export function useDeleteEmbeddedWidget() {
         removeLoading();
       }
     },
-    [addLoading, removeLoading, setWidgetInstances, setLayout, setActiveWidgets]
+    [addLoading, removeLoading, setWidgetInstances, setLayout, setActiveWidgets],
   );
 
   return { deleteWidget, isPending };

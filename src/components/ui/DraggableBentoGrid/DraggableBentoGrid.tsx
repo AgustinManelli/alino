@@ -526,7 +526,13 @@ export const DraggableBentoGrid = memo(
       <div
         ref={containerRef as React.RefObject<HTMLDivElement>}
         className={isInitializing ? styles.noTransitions : ""}
-        style={{ maxWidth: "800px", minHeight: "100%", margin: "auto" }}
+        style={{
+          maxWidth: "800px",
+          minHeight: "100%",
+          margin: "auto",
+          padding:
+            "0 calc(env(safe-area-inset-left, 0px) + 5px) 0 calc(env(safe-area-inset-right, 0px) + 5px)",
+        }}
       >
         {mounted && width > 0 && (
           <>
